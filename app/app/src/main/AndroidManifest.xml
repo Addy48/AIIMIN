@@ -9,6 +9,8 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Reading past bank SMS for the month the person picks; parsed on the phone, never uploaded. -->
+    <uses-permission android:name="android.permission.READ_SMS" />
     <!-- Steps: TYPE_STEP_COUNTER (API 29+ needs runtime grant). -->
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
     <!-- Day-total steps via Health Connect (Android Fitness / Settings parity). -->

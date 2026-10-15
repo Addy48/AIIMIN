@@ -238,6 +238,10 @@ interface MoneyDao {
     @Query("SELECT COUNT(*) FROM txn_drafts WHERE reference = :ref")
     suspend fun draftCountByRef(ref: String): Int
 
+    /** Same message already seen (any status), for messages without a bank reference. */
+    @Query("SELECT COUNT(*) FROM txn_drafts WHERE raw = :raw")
+    suspend fun draftCountByRaw(raw: String): Int
+
     @Upsert suspend fun upsertRule(r: PayeeRuleEntity)
 
     @Query("SELECT * FROM payee_rules WHERE `key` = :key")
@@ -421,6 +425,12 @@ interface NotificationDao {
 
     @Query("UPDATE notifications SET dismissed = 1 WHERE id = :id")
     suspend fun dismiss(id: String)
+
+    @Query("SELECT * FROM notifications WHERE dismissed = 0")
+    suspend fun openNow(): List<NotificationEntity>
+
+    @Query("UPDATE notifications SET dismissed = 1 WHERE id IN (:ids)")
+    suspend fun dismissAll(ids: List<String>)
 }
 
 @Dao

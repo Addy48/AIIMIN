@@ -110,6 +110,8 @@ import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDe
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import androidx.compose.foundation.layout.windowInsetsTopHeight
+import androidx.compose.foundation.layout.statusBars
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.delay
@@ -373,6 +375,12 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
                 }
             }
             ToastHost(toaster, Modifier.align(Alignment.BottomCenter).padding(bottom = if (top in ROOTS) 88.dp else 16.dp))
+            // Content scrolls edge to edge; this strip keeps it from running under the clock and battery icons.
+            androidx.compose.foundation.layout.Spacer(
+                Modifier.align(Alignment.TopCenter).fillMaxWidth()
+                    .windowInsetsTopHeight(androidx.compose.foundation.layout.WindowInsets.Companion.statusBars)
+                    .background(c.base.copy(alpha = 0.96f)),
+            )
         }
         capture?.let { (prefill, voice) -> CaptureSheet(prefill, voice, onDismiss = { capture = null }) }
         merge?.takeIf { it.webHasData }?.let { aiimin.feature.onboarding.MergeSheet(it, { vm.planReplace() }) { choice -> vm.mergeChoose(choice) } }

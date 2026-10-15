@@ -57,6 +57,7 @@ class NotificationRepository @Inject constructor(
     suspend fun dismiss(id: String) = dao.dismiss(id)
 
     suspend fun run() {
+        collapseRepeats()
         val today = clock.today()
         val now = LocalTime.now(clock.zone)
 
@@ -137,9 +138,19 @@ class NotificationRepository @Inject constructor(
         }
     }
 
+    /**
+     * Rules keyed by day ("inbox:2026-10-17", "task:<id>:2026-10-17") fire again each day; only the
+     * newest of each family stays in the list, so yesterday's "6 payments to review" never piles up.
+     */
+    private suspend fun collapseRepeats() {
+        val stale = dao.openNow().groupBy { family(it.ruleKey) }.values.flatMap { g -> g.sortedByDescending { it.at }.drop(1) }
+        if (stale.isNotEmpty()) dao.dismissAll(stale.map { it.id })
+    }
+
     private suspend fun emit(key: String, title: String, body: String, route: String, arg: String?, priority: Int) {
         val n = NotificationEntity(newId(), key, title, body, System.currentTimeMillis(), route, arg, priority)
         if (dao.insertIfNew(n) == -1L) return
+        collapseRepeats()
         val s = settings.current()
         val mins = LocalTime.now(clock.zone).let { it.hour * 60 + it.minute }
         val quiet = s.quiet.enabled && if (s.quiet.fromMin <= s.quiet.toMin) mins in s.quiet.fromMin until s.quiet.toMin else mins >= s.quiet.fromMin || mins < s.quiet.toMin
@@ -183,4 +194,10 @@ class NotificationRepository @Inject constructor(
             nm.createNotificationChannel(NotificationChannel(CH_FOCUS, "Focus timer", NotificationManager.IMPORTANCE_LOW).apply { description = "The running focus session" })
         }
     }
+}
+
+/** "inbox:2026-10-17" → "inbox:", "task:abc:2026-10-17" → "task:abc:"; keys without a date are their own family. */
+internal fun family(ruleKey: String): String {
+    val last = ruleKey.substringAfterLast(':', "")
+    return if (Regex("\\d{4}-\\d{2}-\\d{2}").matches(last)) ruleKey.substringBeforeLast(':') + ":" else ruleKey
 }

@@ -82,6 +82,7 @@ fun MoneyInboxScreen(vm: InboxViewModel = hiltViewModel()) {
     val skipped = remember { mutableStateListOf<String>() }
     val ordered = remember(pending, skipped.toList()) { pending.sortedBy { if (it.id in skipped) 1 else 0 } }
     var menu by remember { mutableStateOf(false) }
+    var smsSheet by remember { mutableStateOf(false) }
     // edits live per card, keyed by id, so a skip keeps what you typed
     val cats = remember { mutableStateOf(mapOf<String, String>()) }
     val remember = remember { mutableStateOf(mapOf<String, Boolean>()) }
@@ -99,6 +100,11 @@ fun MoneyInboxScreen(vm: InboxViewModel = hiltViewModel()) {
                         scope.launch { ordered.forEach { vm.settle(it.id, cats.value[it.id] ?: it.category, Ledger.PERSONAL, it.title, true) }; toaster.show("Confirmed ${ordered.size} payments") }
                     }.padding(12.dp),
                 )
+                Text(
+                    "Bring in past messages",
+                    style = Aiimin.type.bodyStrong,
+                    modifier = Modifier.weight(1f).clip(RoundedCornerShape(8.dp)).clickable { menu = false; smsSheet = true }.padding(12.dp),
+                )
             }
         }
         if (pending.isEmpty()) {
@@ -107,12 +113,16 @@ fun MoneyInboxScreen(vm: InboxViewModel = hiltViewModel()) {
                 Spacer(Modifier.height(18.dp))
                 Text("All caught up", style = Aiimin.type.cardTitle)
                 Spacer(Modifier.height(6.dp))
-                Text("Last alert read 4 minutes ago from HDFC", style = Aiimin.type.caption.copy(fontSize = 14.sp))
+                Text("New bank alerts land here as they arrive. Missed some? Bring in this month's messages, or start from an earlier month.", style = Aiimin.type.caption.copy(fontSize = 14.sp), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                 Spacer(Modifier.height(24.dp))
-                AppButton("Back to Money", { nav.back() }, kind = ButtonKind.SECONDARY, compact = true)
+                AppButton("Bring in past messages", { smsSheet = true }, compact = true)
+                Spacer(Modifier.height(8.dp))
+                AppButton("Back to Money", { nav.back() }, kind = ButtonKind.GHOST, compact = true)
             }
+            if (smsSheet) SmsImportSheet(vm::canReadSms, vm::importSms) { smsSheet = false }
             return@Column
         }
+        if (smsSheet) SmsImportSheet(vm::canReadSms, vm::importSms) { smsSheet = false }
         val front = ordered.first()
         val index = pending.indexOf(front) + 1
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Aiimin.space.gutter).padding(top = 6.dp)) {

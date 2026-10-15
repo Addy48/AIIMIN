@@ -419,7 +419,7 @@ fun VoicePage(
             }
         }
         Spacer(Modifier.height(16.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             AppButton("Try again", { cards = emptyList(); tried = false; text = "" }, Modifier.weight(1f), kind = ButtonKind.SECONDARY)
             AppButton("Save", { scope.launch { val label = save(cards); onSaved(label.ifBlank { cards.first().headline }) } }, Modifier.weight(1f))
         }

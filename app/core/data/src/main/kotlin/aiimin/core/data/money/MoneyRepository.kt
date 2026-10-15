@@ -15,6 +15,8 @@ import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import java.time.Instant
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.temporal.WeekFields
@@ -250,19 +252,20 @@ class MoneyRepository @Inject constructor(
      * A bank SMS, payment notification or pasted text. Parsed on the device and
      * dropped into the review inbox — nothing is booked until settled.
      */
-    suspend fun capture(text: String, source: String): Capture {
+    suspend fun capture(text: String, source: String, at: Long = System.currentTimeMillis()): Capture {
         val p = BankSms.parse(text) ?: return Capture.NotABankAlert
         val ref = p.reference
         if (ref != null && (dao.countByRef(ref) > 0 || dao.draftCountByRef(ref) > 0)) return Capture.Duplicate
-        // An account with a "track from" day ignores older alerts (M10).
-        if (accountIgnores(p.accountLast4)) return Capture.NotABankAlert
+        if (ref == null && dao.draftCountByRaw(text.take(500)) > 0) return Capture.Duplicate
+        // An account with a "track from" day ignores alerts dated before it (M10).
+        if (accountIgnores(p.accountLast4, at)) return Capture.NotABankAlert
         // Payee memory: by the UPI handle first (stable), then by the cleaned name.
         val rule = (p.upiId?.let { dao.rule(BankSms.payeeKey(it.substringBefore('@'))) }) ?: dao.rule(BankSms.payeeKey(p.name))
         // "Always ask" keeps the label but never pre-fills the category.
         val applied = rule?.takeIf { !it.alwaysAsk }
         val inbound = p.direction == MoneyDirection.IN
         val draft = TxnDraftEntity(
-            id = newId(), detectedAt = System.currentTimeMillis(), amountPaise = p.amount * 100,
+            id = newId(), detectedAt = at, amountPaise = p.amount * 100,
             direction = if (inbound) "in" else "out", title = rule?.label?.ifBlank { null } ?: p.name,
             category = applied?.category ?: if (inbound) "Other income" else BankSms.guessCategory(p.name),
             reference = ref, account4 = p.accountLast4, upiId = p.upiId, raw = text.take(500), source = source,
@@ -302,11 +305,47 @@ class MoneyRepository @Inject constructor(
         }
     }
 
-    private suspend fun accountIgnores(last4: String?): Boolean {
+    private suspend fun accountIgnores(last4: String?, at: Long): Boolean {
+        val day = Instant.ofEpochMilli(at).atZone(clock.zone).toLocalDate()
+        // The whole-app "track from" month (set when importing past messages) applies to every account.
+        settings.current().moneyTrackFrom?.let { runCatching { LocalDate.parse(it) }.getOrNull() }?.let { if (day.isBefore(it)) return true }
         if (last4 == null) return false
         val a = ledger.accountsNow().firstOrNull { it.last4 == last4 } ?: return false
         val from = a.trackFrom?.let { runCatching { LocalDate.parse(it) }.getOrNull() } ?: return false
-        return clock.today().isBefore(from)
+        return day.isBefore(from)
+    }
+
+    /** True when the person has let AIIMIN read the SMS inbox. */
+    fun canReadSms(): Boolean = androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.READ_SMS) == android.content.pm.PackageManager.PERMISSION_GRANTED
+
+    data class SmsImport(val read: Int, val added: Int, val duplicates: Int)
+
+    /**
+     * Reads bank messages from the SMS inbox starting at the first day of [from] (up to now), parses
+     * them on the phone and drops them into Review with their real dates. Nothing is booked until
+     * settled. Also sets the "track from" month, so alerts older than it are ignored from now on.
+     */
+    suspend fun importSms(from: YearMonth): SmsImport? = withContext(Dispatchers.IO) {
+        if (!canReadSms()) return@withContext null
+        val start = from.atDay(1).atStartOfDay(clock.zone).toInstant().toEpochMilli()
+        settings.update { it.copy(moneyTrackFrom = from.atDay(1).toString()) }
+        var read = 0; var added = 0; var dup = 0
+        val uri = android.net.Uri.parse("content://sms/inbox")
+        context.contentResolver.query(uri, arrayOf("body", "date"), "date >= ?", arrayOf(start.toString()), "date ASC")?.use { c ->
+            val bi = c.getColumnIndexOrThrow("body")
+            val di = c.getColumnIndexOrThrow("date")
+            while (c.moveToNext()) {
+                val body = c.getString(bi) ?: continue
+                read++
+                when (capture(body, "sms", c.getLong(di))) {
+                    is Capture.Added -> added++
+                    Capture.Duplicate -> dup++
+                    Capture.NotABankAlert -> Unit
+                }
+            }
+        }
+        log.log("txn.sms_import", data = mapOf("from" to from.toString(), "added" to added), tier = Tier.A, source = "user")
+        SmsImport(read, added, dup)
     }
 
     suspend fun dismiss(draftId: String) {

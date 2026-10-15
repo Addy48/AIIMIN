@@ -242,16 +242,33 @@ fun VaultScreen(vm: VaultViewModel = hiltViewModel()) {
                     "${all.size} documents · ${"%.1f".format(all.sumOf { it.doc.sizeBytes } / 1_048_576.0)} MB on this phone. Files stay on this phone; AIIMIN never uploads them.",
                     style = Aiimin.type.caption.copy(fontSize = 12.sp), modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 16.dp),
                 )
-                Row(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(18.dp)) {
-                    listOf("Family" to { nav.open(Route.Family) }, "Emergency card" to { nav.open(Route.EmergencyCard(ME)) }, "Who saw what" to { nav.open(Route.Activity) }).forEach { (t, go) ->
-                        Text(t, style = Aiimin.type.label.copy(color = c.accentText, fontSize = 14.sp), modifier = Modifier.clip(Shapes.small).pressable(go).padding(vertical = 12.dp))
+                // Everything else the vault does, as a quiet 2-column grid instead of a row of orange links.
+                val tools = listOf(
+                    Triple(AppIcons.Users, "Family", { nav.open(Route.Family) }),
+                    Triple(AppIcons.FirstAid, "Emergency card", { nav.open(Route.EmergencyCard(ME)) }),
+                    Triple(AppIcons.CloudArrowUp, "Backups", { nav.open(Route.VaultBackup) }),
+                    Triple(AppIcons.FirstAidKit, "Emergency kits", { nav.open(Route.EmergencyKits) }),
+                    Triple(AppIcons.Eye, "Who saw what", { nav.open(Route.Activity) }),
+                )
+                aiimin.designsystem.component.SectionHeader("Vault tools", Modifier.padding(horizontal = Aiimin.space.gutter))
+                Column(Modifier.padding(horizontal = Aiimin.space.gutter), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    tools.chunked(2).forEach { pair ->
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            pair.forEach { (icon, label, go) ->
+                                Row(
+                                    Modifier.weight(1f).clip(Shapes.card).background(c.surface).border(1.dp, c.border, Shapes.card).pressable(go).padding(horizontal = 14.dp, vertical = 14.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    androidx.compose.material3.Icon(icon, null, tint = c.text, modifier = Modifier.size(20.dp))
+                                    Spacer(Modifier.width(10.dp))
+                                    Text(label, style = Aiimin.type.bodyStrong, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                                }
+                            }
+                            if (pair.size == 1) Spacer(Modifier.weight(1f))
+                        }
                     }
                 }
-                Row(Modifier.padding(horizontal = Aiimin.space.gutter), horizontalArrangement = Arrangement.spacedBy(18.dp)) {
-                    listOf("Backups" to { nav.open(Route.VaultBackup) }, "Emergency kits" to { nav.open(Route.EmergencyKits) }).forEach { (t, go) ->
-                        Text(t, style = Aiimin.type.label.copy(color = c.accentText, fontSize = 14.sp), modifier = Modifier.clip(Shapes.small).pressable(go).padding(vertical = 12.dp))
-                    }
-                }
+                Spacer(Modifier.height(24.dp))
             }
         }
         if (busy) {
@@ -296,7 +313,7 @@ fun VaultScreen(vm: VaultViewModel = hiltViewModel()) {
             if (expires != null) SwitchRow("Add a renewal task", task, { task = it }, subtitle = "Two weeks before, with reminders at 90/60/30/7 days")
             Text("Stored only on this phone. Documents you store are your responsibility; keep the originals.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp))
             Spacer(Modifier.height(12.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 AppButton("Open", { scope.launch { commit(); nav.open(Route.Doc(r.docId)) } }, Modifier.weight(1f), kind = ButtonKind.SECONDARY)
                 AppButton("Done", { scope.launch { commit(); toaster.show(if (expires != null) "Saved · reminders set" else "Saved") } }, Modifier.weight(1f))
             }
