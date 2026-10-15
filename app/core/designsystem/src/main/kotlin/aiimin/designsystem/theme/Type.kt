@@ -29,6 +29,15 @@ val Funnel: FontFamily = variable(R.font.funnel_display, 400, 500, 600, 700)
 @OptIn(ExperimentalTextApi::class)
 val Golos: FontFamily = variable(R.font.golos_text, 400, 500, 600, 700)
 
+/**
+ * The AIIMIN wordmark face: Bodoni Moda 700 at its largest optical size (96), the same high-contrast
+ * Didone the website uses (`--font-brand`). Only for the wordmark, never for reading text.
+ */
+@OptIn(ExperimentalTextApi::class)
+val BrandSerif: FontFamily = FontFamily(
+    Font(R.font.bodoni_moda, FontWeight.Bold, variationSettings = FontVariation.Settings(FontVariation.weight(700), FontVariation.Setting("opsz", 96f))),
+)
+
 @Immutable
 data class AppType(
     /** heroTime: Today's clock. 68/65, -3%. */

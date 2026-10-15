@@ -8,6 +8,7 @@
 | File | Family | Used for | Upstream |
 |---|---|---|---|
 | `funnel_display.ttf` | Funnel Display (variable `wght`) | Display, headlines, numbers | `ofl/funneldisplay` |
+| `bodoni_moda.ttf` | Bodoni Moda (variable `opsz`, `wght`), SIL OFL 1.1 | The AIIMIN wordmark only | `ofl/bodonimoda` |
 | `golos_text.ttf` | Golos Text (variable `wght`) | Body text and controls | `ofl/golostext` |
 
 They are bundled rather than fetched so the type is identical offline, on first run, and on a

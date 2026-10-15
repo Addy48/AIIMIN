@@ -15,6 +15,9 @@ package aiimin.core.sensing.logic
  * 4. Events are read from a lookback before the window, then clipped, so an app
  *    opened at 23:50 and used past midnight counts its after-midnight minutes.
  * 5. The day total is the union of intervals, so split screen never double counts.
+ * 6. Time only counts while the screen is on. A clock screensaver (DreamActivity) that starts
+ *    after the screen goes off while charging, or a call screen behind the proximity sensor,
+ *    isn't use. An activity resumed while the screen is off starts counting when it turns on.
  */
 object UsageTimeline {
 
@@ -72,6 +75,9 @@ object UsageTimeline {
         var lastUnlock: Long? = null
         var firstUnlock: Long? = null
         var lastForegroundPkg: String? = null
+        var screenOn = true
+        // Resumed while the screen was off: key → pkg, opened if the screen turns on before it pauses.
+        val pending = LinkedHashMap<String, String>()
 
         // Signs of use (touches, screen on, any app resuming) for gap fill.
         val signs = if (gapFillMs == null) emptyList() else sorted.filter { it.kind == Kind.INTERACTION || it.kind == Kind.SCREEN_ON || it.kind == Kind.RESUMED }.map { it.at }
@@ -88,6 +94,10 @@ object UsageTimeline {
             if (e.at > windowEnd) break
             when (e.kind) {
                 Kind.RESUMED -> {
+                    if (!screenOn) {
+                        if (counted(e.pkg)) pending[e.pkg + "/" + e.cls] = e.pkg
+                        continue
+                    }
                     if (!counted(e.pkg)) {
                         // Home in front: whatever app was open has left. Other chrome
                         // (System UI, shade) is ignored so it can't cut real use.
@@ -107,10 +117,14 @@ object UsageTimeline {
                     }
                     lastForegroundPkg = e.pkg
                 }
-                Kind.PAUSED, Kind.STOPPED -> close(e.pkg + "/" + e.cls, e.at)
+                Kind.PAUSED, Kind.STOPPED -> {
+                    pending.remove(e.pkg + "/" + e.cls)
+                    close(e.pkg + "/" + e.cls, e.at)
+                }
                 Kind.SCREEN_OFF, Kind.KEYGUARD_SHOWN, Kind.SHUTDOWN -> {
                     closeAll(e.at)
                     lastForegroundPkg = null
+                    if (e.kind != Kind.KEYGUARD_SHOWN) screenOn = false
                 }
                 Kind.STARTUP -> {
                     open.clear()
@@ -121,9 +135,14 @@ object UsageTimeline {
                     lastUnlock = e.at
                     if (firstUnlock == null) firstUnlock = e.at
                 }
-                Kind.SCREEN_ON -> if (e.at in windowStart until windowEnd && (lastScreenOn == null || e.at - lastScreenOn!! >= UNLOCK_DEBOUNCE_MS)) {
-                    screenOns++
-                    lastScreenOn = e.at
+                Kind.SCREEN_ON -> {
+                    screenOn = true
+                    pending.forEach { (key, pkg) -> if (key !in open) open[key] = pkg to e.at }
+                    pending.clear()
+                    if (e.at in windowStart until windowEnd && (lastScreenOn == null || e.at - lastScreenOn!! >= UNLOCK_DEBOUNCE_MS)) {
+                        screenOns++
+                        lastScreenOn = e.at
+                    }
                 }
                 Kind.INTERACTION -> Unit
                 Kind.NOTIFICATION -> if (e.at in windowStart until windowEnd && counted(e.pkg)) {

@@ -318,7 +318,8 @@ fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, v
                     style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(top = 28.dp),
                 )
                 Box(Modifier.fillMaxWidth().padding(top = 14.dp)) {
-                    if (text.isEmpty()) Text("Spent 240 on lunch, call Ravi at 5…", style = Aiimin.type.title.copy(fontSize = 29.sp, lineHeight = 38.sp, color = c.textFaint, fontWeight = androidx.compose.ui.text.font.FontWeight.Medium))
+                    // The example hides as soon as you speak, so heard words never sit on top of it.
+                    if (text.isEmpty() && !(listening && heard.isNotBlank())) Text("Spent 240 on lunch, call Ravi at 5…", style = Aiimin.type.title.copy(fontSize = 29.sp, lineHeight = 38.sp, color = c.textFaint, fontWeight = androidx.compose.ui.text.font.FontWeight.Medium))
                     if (listening && heard.isNotBlank()) Text(
                         (if (text.isBlank()) "" else "$text ") + heard,
                         style = Aiimin.type.title.copy(fontSize = 29.sp, lineHeight = 38.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Medium),

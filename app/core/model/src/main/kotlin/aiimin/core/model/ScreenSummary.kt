@@ -17,6 +17,12 @@ data class ScreenSummary(val totalMs: Long, val personalMs: Long, val otherMs: L
         fun pickups(secure: Boolean, unlocks: Int, screenOns: Int): Pair<Int, String> =
             if (secure) unlocks to "unlocks" else screenOns to "pickups"
 
+        /** "1 pickup", "42 unlocks". */
+        fun pickupLine(n: Int, label: String?): String {
+            val word = label ?: "unlocks"
+            return "$n " + if (n == 1) word.removeSuffix("s") else word
+        }
+
         fun fmt(ms: Long): String {
             val min = ms / 60_000L
             return when {
