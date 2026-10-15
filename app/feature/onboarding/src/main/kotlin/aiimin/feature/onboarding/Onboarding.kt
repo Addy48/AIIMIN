@@ -24,6 +24,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -237,25 +238,64 @@ private fun Welcome() {
     val c = Aiimin.colors
     Spacer(Modifier.height(8.dp))
     Row(verticalAlignment = Alignment.CenterVertically) {
-        aiimin.designsystem.component.BrandMark(size = 30.dp)
+        aiimin.designsystem.component.BrandMark(size = 26.dp)
         Spacer(Modifier.width(8.dp))
-        Text("AIIMIN", style = Aiimin.type.headline.copy(fontSize = 15.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.8.sp))
+        Text("AIIMIN", style = Aiimin.type.headline.copy(fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.8.sp))
     }
-    Spacer(Modifier.height(30.dp))
+    Spacer(Modifier.height(20.dp))
+    // Hero: the day as an arc under a dawn sky, the sun a little past sunrise. The same arc lives on Today.
+    val shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp)
+    val sky = androidx.compose.ui.graphics.Brush.verticalGradient(listOf(c.accentSoft, c.surface))
+    androidx.compose.foundation.Canvas(
+        Modifier.fillMaxWidth().height(180.dp).clip(shape).background(sky).border(1.dp, c.border, shape),
+    ) {
+        val w = size.width
+        val h = size.height
+        val base = h * 0.80f
+        val arc = androidx.compose.ui.graphics.Path().apply {
+            moveTo(w * 0.08f, base)
+            cubicTo(w * 0.30f, h * 0.10f, w * 0.70f, h * 0.10f, w * 0.92f, base)
+        }
+        drawLine(c.border, androidx.compose.ui.geometry.Offset(w * 0.06f, base), androidx.compose.ui.geometry.Offset(w * 0.94f, base), strokeWidth = 2f)
+        drawPath(arc, c.text.copy(alpha = 0.85f), style = androidx.compose.ui.graphics.drawscope.Stroke(width = 5f, cap = androidx.compose.ui.graphics.StrokeCap.Round))
+        // A point on the arc's cubic curve at t, so markers sit exactly on the line.
+        fun on(t: Float): androidx.compose.ui.geometry.Offset {
+            val u = 1f - t
+            val x = u * u * u * w * 0.08f + 3 * u * u * t * w * 0.30f + 3 * u * t * t * w * 0.70f + t * t * t * w * 0.92f
+            val y = u * u * u * base + 3 * u * u * t * h * 0.10f + 3 * u * t * t * h * 0.10f + t * t * t * base
+            return androidx.compose.ui.geometry.Offset(x, y)
+        }
+        // three moments of a day sit on the arc
+        listOf(0.2f, 0.5f, 0.8f).forEach { t ->
+            drawCircle(c.surface, 9f, on(t))
+            drawCircle(c.text.copy(alpha = 0.55f), 9f, on(t), style = androidx.compose.ui.graphics.drawscope.Stroke(3f))
+        }
+        val sun = on(0.32f)
+        drawCircle(c.accent.copy(alpha = 0.18f), 34f, sun)
+        drawCircle(c.accent, 18f, sun)
+    }
+    Spacer(Modifier.height(24.dp))
     Text(
-        "Your days, your money and your family's papers. One app that only ever compares you with you.",
-        style = Aiimin.type.title.copy(fontSize = 32.sp, lineHeight = 37.sp, letterSpacing = (-0.7).sp),
+        "Your day, your money and your family's papers, in one calm place.",
+        style = Aiimin.type.title.copy(fontSize = 28.sp, lineHeight = 34.sp, letterSpacing = (-0.6).sp),
     )
-    Spacer(Modifier.height(32.dp))
+    Text(
+        "It only ever compares you with you.",
+        style = Aiimin.type.body.copy(fontSize = 16.sp, color = c.textMuted), modifier = Modifier.padding(top = 8.dp),
+    )
+    Spacer(Modifier.height(22.dp))
     listOf(
-        AppIcons.Mic to "Say it once, it lands in the right place.",
-        AppIcons.Phone to "Your phone logs what it can.",
-        AppIcons.Lock to "Private by default. Payment alerts are read on your phone. No ads, no loans, nothing sold.",
-    ).forEach { (icon, line) ->
-        Row(Modifier.padding(bottom = 18.dp), verticalAlignment = Alignment.Top) {
-            androidx.compose.material3.Icon(icon, null, tint = c.text, modifier = Modifier.padding(top = 2.dp).width(24.dp).height(24.dp))
-            Spacer(Modifier.width(16.dp))
-            Text(line, style = Aiimin.type.body.copy(fontSize = 17.sp, lineHeight = 25.sp))
+        Triple(AppIcons.Mic, "Say it once", "Tasks, money and notes land in the right place."),
+        Triple(AppIcons.DeviceMobile, "Your phone counts", "Screen time and steps fill in by themselves."),
+        Triple(AppIcons.Lock, "Private by default", "Bank alerts are read on your phone. No ads, no loans, nothing sold."),
+    ).forEach { (icon, title, line) ->
+        Row(Modifier.padding(bottom = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+            aiimin.designsystem.component.IconTile(icon)
+            Spacer(Modifier.width(14.dp))
+            Column(Modifier.weight(1f)) {
+                Text(title, style = Aiimin.type.bodyStrong)
+                Text(line, style = Aiimin.type.caption.copy(fontSize = 14.sp, lineHeight = 19.sp))
+            }
         }
     }
 }
