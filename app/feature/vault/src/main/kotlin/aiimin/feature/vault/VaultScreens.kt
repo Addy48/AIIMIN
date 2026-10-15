@@ -256,12 +256,12 @@ fun VaultScreen(vm: VaultViewModel = hiltViewModel()) {
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                             pair.forEach { (icon, label, go) ->
                                 Row(
-                                    Modifier.weight(1f).clip(Shapes.card).background(c.surface).border(1.dp, c.border, Shapes.card).pressable(go).padding(horizontal = 14.dp, vertical = 14.dp),
+                                    Modifier.weight(1f).heightIn(min = 52.dp).clip(Shapes.card).background(c.surface).border(1.dp, c.border, Shapes.card).pressable(go).padding(horizontal = 12.dp, vertical = 12.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
-                                    androidx.compose.material3.Icon(icon, null, tint = c.text, modifier = Modifier.size(20.dp))
-                                    Spacer(Modifier.width(10.dp))
-                                    Text(label, style = Aiimin.type.bodyStrong, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                                    androidx.compose.material3.Icon(icon, null, tint = c.text, modifier = Modifier.size(18.dp))
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(label, style = Aiimin.type.bodyStrong.copy(fontSize = 14.sp, lineHeight = 18.sp), maxLines = 2)
                                 }
                             }
                             if (pair.size == 1) Spacer(Modifier.weight(1f))
