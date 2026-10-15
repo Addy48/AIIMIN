@@ -73,6 +73,8 @@ class MainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
         var ready = false
         splash.setKeepOnScreenCondition { !ready }
+        // The opening animation plays once per cold start; rotation or returning from the background skips it.
+        var boot by mutableStateOf(savedInstanceState == null)
         handle(intent)
         setContent {
             val s by settings.settings.collectAsStateWithLifecycle(initialValue = null)
@@ -97,6 +99,7 @@ class MainActivity : FragmentActivity() {
                         }
                     }
                 }
+                if (boot && !st.reduceMotion) aiimin.designsystem.component.BootMark(onDone = { boot = false })
                 LaunchedEffect(st.appLock) { if (st.appLock && !unlocked) authenticate() }
                 // Hide in the app switcher also blocks screenshots (FLAG_SECURE).
                 LaunchedEffect(st.hideInRecents) {
