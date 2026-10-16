@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowLeft, Check, ChevronRight, Compass, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/productTour.css';
+import { POPUP_PRIORITY, usePopupSlot } from '../../utils/popupQueue';
 
 /**
  * Invite / completion flag. Any non-null value = never auto-ask again.
@@ -101,6 +102,8 @@ export default function ProductTour() {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+  // The invite waits its turn behind any other popup; a tour the user starts shows at once.
+  const inviteShowing = usePopupSlot('tour', { priority: POPUP_PRIORITY.tour, want: inviteOpen || isOpen });
 
   const endTour = useCallback((finished = true) => {
     setIsOpen(false);
@@ -189,7 +192,7 @@ export default function ProductTour() {
 
   return (
     <AnimatePresence>
-      {inviteOpen && !isOpen && (
+      {inviteShowing && inviteOpen && !isOpen && (
         <motion.div
           key="invite"
           role="dialog"

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { POPUP_PRIORITY, usePopupSlot } from '../../utils/popupQueue';
 import {
   X, ChevronRight, ChevronLeft, UserPlus, LogIn,
   BarChart2, Target, BookOpen, Zap,
@@ -134,8 +135,6 @@ const GuestTour = () => {
   const [step, setStep] = useState(0);
   const [collapsed, setCollapsed] = useState(false);
 
-  if (isPublicPath(location.pathname)) return null;
-
   const getInitialPos = () => {
     try {
       const saved = JSON.parse(localStorage.getItem(TOUR_POS_KEY));
@@ -156,7 +155,8 @@ const GuestTour = () => {
   }, [pos]);
 
   useEffect(() => {
-    const seen = sessionStorage.getItem(TOUR_KEY);
+    let seen = null;
+    try { seen = localStorage.getItem(TOUR_KEY); } catch { /* storage unavailable */ }
     if (!seen) {
       const t = setTimeout(() => setVisible(true), 1000);
       return () => clearTimeout(t);
@@ -181,7 +181,7 @@ const GuestTour = () => {
   };
 
   const handleDone = () => {
-    sessionStorage.setItem(TOUR_KEY, '1');
+    try { localStorage.setItem(TOUR_KEY, '1'); } catch { /* storage unavailable */ }
     setVisible(false);
   };
 
@@ -194,6 +194,10 @@ const GuestTour = () => {
     handleDone();
     navigate('/login');
   };
+
+  // Waits its turn behind any other popup (one at a time).
+  const slotShowing = usePopupSlot('guest-tour', { priority: POPUP_PRIORITY.tour, want: visible && !collapsed && !isPublicPath(location.pathname) });
+  // The collapsed pill is not a popup, so it never blocks others.
 
   const current = STEPS[step];
   const Icon = current.icon;
@@ -437,6 +441,9 @@ const GuestTour = () => {
       </div>
     </motion.div>
   );
+
+  // Hooks above run on every render; only now may we bail out (Rules of Hooks).
+  if (isPublicPath(location.pathname) || (!collapsed && !slotShowing)) return null;
 
   return (
     <>

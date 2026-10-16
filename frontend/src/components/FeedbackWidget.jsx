@@ -3,6 +3,7 @@ import { MessageSquare, X, Send } from 'lucide-react';
 import { apiPost } from '../utils/api';
 import { useThemeContext } from '../context/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAnyPopupOpen } from '../utils/popupQueue';
 
 export default function FeedbackWidget() {
     const { theme } = useThemeContext();
@@ -12,6 +13,8 @@ export default function FeedbackWidget() {
     const [feedback, setFeedback] = useState('');
     const [type, setType] = useState('general');
     const [status, setStatus] = useState('idle'); // idle | submitting | success | error
+    // Step aside while a tour or consent popup is up, so floating things never stack.
+    const popupOpen = useAnyPopupOpen();
 
     const bg = isDark ? '#161616' : '#ffffff';
     const border = isDark ? '#2a2a2a' : '#e5e7eb';
@@ -44,6 +47,8 @@ export default function FeedbackWidget() {
             setStatus('error');
         }
     };
+
+    if (popupOpen && !isOpen) return null;
 
     return (
         <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999 }}>

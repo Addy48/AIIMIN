@@ -1,147 +1,95 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { X } from 'lucide-react';
 import { LEGAL } from '../../constants/legal';
-import { CONSENT_STORAGE_KEY, readConsent } from '../../utils/consent';
-
-const buttonBase = {
-    minHeight: '44px',
-    padding: '10px 18px',
-    borderRadius: '10px',
-    fontSize: '13px',
-    fontWeight: 700,
-    lineHeight: 1.2,
-    textAlign: 'center',
-    cursor: 'pointer',
-    textDecoration: 'none',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'all 0.15s ease',
-};
+import { analyticsConfigured, needsConsentPrompt, readConsent, writeConsent } from '../../utils/consent';
+import { POPUP_PRIORITY, usePopupSlot } from '../../utils/popupQueue';
 
 const EXEMPT_PATHS = ['/login', '/onboarding', '/verify-email', '/auth', '/m', '/proto'];
 
+/** Wait for the visitor to engage (scroll or a few seconds of reading) before asking anything. */
+const ENGAGE_DELAY_MS = 12000;
+const ENGAGE_SCROLL_PX = 320;
+
+const pending = () => needsConsentPrompt(readConsent(), {
+    configured: analyticsConfigured(),
+    version: LEGAL.consentVersion,
+});
+
 export default function ConsentBanner() {
-    const [visible, setVisible] = useState(false);
-    const [reducedMotion, setReducedMotion] = useState(true);
     const location = useLocation();
+    const [needed, setNeeded] = useState(pending);
+    const [engaged, setEngaged] = useState(false);
+    const [reducedMotion, setReducedMotion] = useState(true);
 
     const isExempt = EXEMPT_PATHS.some((p) => location.pathname === p || location.pathname.startsWith(`${p}/`));
 
     useEffect(() => {
-        if (typeof window === 'undefined') return;
         setReducedMotion(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false);
-        if (!readConsent()) {
-            setVisible(true);
-        }
+        // The Cookie policy page's "Change my choice" asks again.
+        const reopen = () => { setNeeded(pending()); setEngaged(true); };
+        window.addEventListener('aiimin:consent-reopen', reopen);
+        return () => window.removeEventListener('aiimin:consent-reopen', reopen);
     }, []);
 
+    useEffect(() => {
+        if (!needed || engaged) return undefined;
+        const engage = () => setEngaged(true);
+        // Some pages scroll inside their own container, so listen in the capture phase.
+        const onScroll = (e) => {
+            const y = e.target === document ? window.scrollY : e.target?.scrollTop || 0;
+            if (y > ENGAGE_SCROLL_PX) engage();
+        };
+        const t = setTimeout(engage, ENGAGE_DELAY_MS);
+        document.addEventListener('scroll', onScroll, { passive: true, capture: true });
+        return () => {
+            clearTimeout(t);
+            document.removeEventListener('scroll', onScroll, { capture: true });
+        };
+    }, [needed, engaged]);
+
+    const showing = usePopupSlot('consent', {
+        priority: POPUP_PRIORITY.consent,
+        want: needed && engaged && !isExempt,
+    });
+
     const decide = (analytics) => {
-        try {
-            localStorage.setItem(CONSENT_STORAGE_KEY, JSON.stringify({
-                analytics,
-                version: LEGAL.consentVersion,
-                at: new Date().toISOString(),
-            }));
-            window.dispatchEvent(new CustomEvent('aiimin:consent-updated', { detail: { analytics } }));
-        } catch {
-            /* storage unavailable */
-        }
-        setVisible(false);
+        writeConsent(analytics, LEGAL.consentVersion);
+        setNeeded(false);
     };
 
-    if (!visible || isExempt) return null;
+    if (!showing) return null;
 
     return (
         <div
-            role="dialog"
-            aria-modal="false"
-            aria-labelledby="consent-banner-title"
-            style={{
-                position: 'fixed',
-                left: '16px',
-                right: '16px',
-                bottom: '16px',
-                maxWidth: '680px',
-                margin: '0 auto',
-                zIndex: 9999,
-                padding: '16px 20px',
-                background: '#242424',
-                border: '1px solid #3d3d3d',
-                borderRadius: '14px',
-                boxShadow: '0 12px 36px rgba(0, 0, 0, 0.45)',
-                animation: reducedMotion ? 'none' : 'aiimin-consent-rise 200ms ease-out',
-            }}
+            role="region"
+            aria-label="Analytics choice"
+            className="aiimin-consent"
+            style={{ animation: reducedMotion ? 'none' : 'aiimin-consent-rise 180ms ease-out' }}
         >
-            <style>{'@keyframes aiimin-consent-rise{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}'}</style>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h2 id="consent-banner-title" style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#f5f5f5' }}>
-                        Privacy & Analytics
-                    </h2>
-                    <button
-                        type="button"
-                        onClick={() => decide(false)}
-                        aria-label="Dismiss cookie notice"
-                        style={{
-                            background: 'transparent',
-                            border: 'none',
-                            color: '#a3a3a3',
-                            cursor: 'pointer',
-                            padding: '4px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            minHeight: '32px',
-                            minWidth: '32px',
-                            borderRadius: '6px',
-                        }}
-                    >
-                        <X size={16} />
-                    </button>
-                </div>
-                <p style={{ margin: 0, fontSize: '12.5px', lineHeight: 1.55, color: '#b5b5b5' }}>
-                    Strictly necessary cookies keep you signed in and remember your interface preferences. Analytics and telemetry stay disabled until you opt in. You can change this at any time in Account → Privacy.
-                </p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '4px' }}>
-                    <button
-                        type="button"
-                        onClick={() => decide(true)}
-                        style={{
-                            ...buttonBase,
-                            background: 'var(--color-accent, #ff6b35)',
-                            color: '#ffffff',
-                            border: '1px solid var(--color-accent, #ff6b35)',
-                            boxShadow: '0 2px 8px rgba(255, 107, 53, 0.35)',
-                        }}
-                    >
-                        Accept analytics
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => decide(false)}
-                        style={{
-                            ...buttonBase,
-                            background: 'rgba(255, 255, 255, 0.06)',
-                            color: '#f5f5f5',
-                            border: '1px solid #4b5563',
-                        }}
-                    >
-                        Reject
-                    </button>
-                    <Link
-                        to="/cookies"
-                        style={{
-                            ...buttonBase,
-                            background: 'transparent',
-                            color: '#a3a3a3',
-                            border: '1px solid #3d3d3d',
-                        }}
-                    >
-                        Cookie policy
-                    </Link>
-                </div>
+            <style>{`
+                @keyframes aiimin-consent-rise{from{transform:translateY(12px);opacity:0}to{transform:none;opacity:1}}
+                .aiimin-consent{position:fixed;left:16px;bottom:16px;z-index:9990;max-width:400px;
+                  display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 14px;
+                  background:var(--color-elevated,#1a1a1a);color:var(--color-text-1,#f5f5f5);
+                  border:1px solid var(--color-border,#3d3d3d);border-radius:12px;
+                  box-shadow:0 6px 20px rgba(0,0,0,.18);font-size:13px;line-height:1.45}
+                .aiimin-consent p{margin:0;flex:1 1 220px;color:var(--color-text-2,#b5b5b5)}
+                .aiimin-consent a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+                .aiimin-consent .row{display:flex;gap:8px}
+                .aiimin-consent button{min-height:40px;padding:0 14px;border-radius:9px;font:inherit;
+                  font-weight:700;cursor:pointer;border:1px solid var(--color-border,#4b5563);
+                  background:transparent;color:var(--color-text-1,#f5f5f5)}
+                .aiimin-consent button.yes{background:var(--color-text-1,#f5f5f5);
+                  color:var(--color-base,#0a0a0a);border-color:transparent}
+                @media (max-width:640px){.aiimin-consent{left:12px;right:12px;bottom:12px;max-width:none}}
+            `}</style>
+            <p>
+                Allow anonymous usage stats to help improve AIIMIN? Off unless you say yes.{' '}
+                <Link to="/cookies">Details</Link>
+            </p>
+            <div className="row">
+                <button type="button" onClick={() => decide(false)}>No thanks</button>
+                <button type="button" className="yes" onClick={() => decide(true)}>Allow</button>
             </div>
         </div>
     );

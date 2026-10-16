@@ -17,14 +17,16 @@ import WaitlistSecondaryCta from '../components/waitlist/landing/WaitlistSeconda
 import WaitlistFooter from '../components/waitlist/landing/WaitlistFooter';
 import WaitlistAnnouncementBar from '../components/waitlist/landing/WaitlistAnnouncementBar';
 import WaitlistFeatureMarquee from '../components/waitlist/landing/WaitlistFeatureMarquee';
-import WaitlistStickyFloatingCTA from '../components/waitlist/landing/WaitlistStickyFloatingCTA';
 import { PAGE_META } from '../components/waitlist/landing/waitlistLandingData';
 import '../styles/waitlistLanding.css';
+import { useAnyPopupOpen } from '../utils/popupQueue';
 
 function WaitlistLandingContent() {
   const { isLight, toggleWaitlistTheme } = useWaitlistSurfaceTheme();
   const [count, setCount] = useState(null);
   const [stickyHidden, setStickyHidden] = useState(false);
+  // Floating buttons step aside while a popup (e.g. the consent bar) is showing.
+  const popupOpen = useAnyPopupOpen();
   const faqRef = useRef(null);
   const footerRef = useRef(null);
 
@@ -148,13 +150,12 @@ function WaitlistLandingContent() {
 
       <a
         href="#waitlist-join"
-        className={`waitlist-mobile-cta waitlist-btn waitlist-btn-primary sticky-cta ${stickyHidden ? 'hidden' : ''}`}
+        className={`waitlist-mobile-cta waitlist-btn waitlist-btn-primary sticky-cta ${stickyHidden || popupOpen ? 'hidden' : ''}`}
       >
         <Sparkle size={15} weight="fill" />
         Reserve my spot
       </a>
 
-      <WaitlistStickyFloatingCTA count={count} />
     </div>
   );
 }
