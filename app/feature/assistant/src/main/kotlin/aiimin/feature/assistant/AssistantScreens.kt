@@ -25,6 +25,7 @@ import aiimin.designsystem.icon.AppIcons
 import aiimin.designsystem.nav.LocalNavigator
 import aiimin.designsystem.nav.LocalToaster
 import aiimin.designsystem.nav.Route
+import aiimin.designsystem.nav.go
 import aiimin.designsystem.theme.Aiimin
 import aiimin.designsystem.theme.Shapes
 import androidx.compose.animation.AnimatedVisibility
@@ -298,7 +299,9 @@ fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, v
     fun speak() { listening = true; voice() }
     LaunchedEffect(Unit) { if (startVoice) speak() else runCatching { focus.requestFocus() } }
     LaunchedEffect(preview) { dropped = emptySet(); edits = emptyMap() }
-    val journalLine = text.isNotBlank() && preview.isEmpty()
+    // Typing a feature's name ("budget", "open emergency card") offers to go there instead of saving it.
+    val goTo = remember(text) { aiimin.designsystem.nav.FeatureIndex.navigationMatches(text) }
+    val journalLine = text.isNotBlank() && preview.isEmpty() && goTo.isEmpty()
     val items = preview.mapIndexed { i, a -> edits[i] ?: a }
     val kept = items.filterIndexed { i, _ -> i !in dropped }
 
@@ -334,6 +337,19 @@ fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, v
                 }
                 Spacer(Modifier.height(28.dp))
                 Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    goTo.forEach { f ->
+                        Row(
+                            Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp)).background(c.raised)
+                                .clickable { keyboard?.hide(); focusManager.clearFocus(); onDismiss(); nav.go(f.route) }
+                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(f.icon, null, tint = c.text, modifier = Modifier.size(22.dp))
+                            Spacer(Modifier.width(14.dp))
+                            Text("Go to ${f.title}", style = Aiimin.type.body.copy(color = c.text, fontSize = 16.sp), maxLines = 1, modifier = Modifier.weight(1f))
+                            Icon(AppIcons.ArrowRight, null, tint = c.textMuted, modifier = Modifier.size(18.dp))
+                        }
+                    }
                     preview.forEach { a ->
                         Row(
                             Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp)).background(c.surface).border(1.dp, c.border, RoundedCornerShape(10.dp)).padding(horizontal = 16.dp, vertical = 14.dp),

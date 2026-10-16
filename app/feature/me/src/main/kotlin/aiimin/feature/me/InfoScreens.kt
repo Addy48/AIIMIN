@@ -33,6 +33,7 @@ import aiimin.designsystem.component.Tag
 import aiimin.designsystem.component.TopBar
 import aiimin.designsystem.icon.AppIcons
 import aiimin.designsystem.nav.LocalNavigator
+import aiimin.designsystem.nav.go
 import aiimin.designsystem.nav.Route
 import aiimin.designsystem.nav.Tab
 import aiimin.designsystem.theme.Aiimin
@@ -145,9 +146,18 @@ fun SearchScreen(vm: SearchViewModel = hiltViewModel()) {
     LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
     Column(Modifier.fillMaxSize().background(Aiimin.colors.base)) {
         TopBar("Search", onBack = { nav.back() })
-        AppTextField(q, { q = it }, placeholder = "Tasks, notes, payments, documents, people", leading = AppIcons.Search, modifier = Modifier.padding(horizontal = Aiimin.space.gutter).focusRequester(focus))
+        AppTextField(q, { q = it }, placeholder = "Features, tasks, notes, payments, people", leading = AppIcons.Search, modifier = Modifier.padding(horizontal = Aiimin.space.gutter).focusRequester(focus))
+        // Features first ("Go to"), then content: typing "budget" or "emergency" opens the screen itself.
+        val features = androidx.compose.runtime.remember(q) { aiimin.designsystem.nav.FeatureIndex.match(q) }
         LazyColumn(contentPadding = PaddingValues(horizontal = Aiimin.space.gutter, vertical = 8.dp)) {
-            if (q.length >= 2 && results.isEmpty()) item { Text("Nothing matches “$q”.", style = Aiimin.type.caption, modifier = Modifier.padding(8.dp)) }
+            if (q.isBlank()) item { Text("Type a feature or anything you saved: “budget”, “emergency”, “screen time”.", style = Aiimin.type.caption, modifier = Modifier.padding(8.dp)) }
+            if (q.length >= 2 && results.isEmpty() && features.isEmpty()) item { Text("Nothing matches “$q”.", style = Aiimin.type.caption, modifier = Modifier.padding(8.dp)) }
+            if (features.isNotEmpty()) {
+                item { SectionHeader("Go to") }
+                items(features, key = { "go-" + it.title }) { f ->
+                    ListRow(f.title, subtitle = f.subtitle, leading = { IconTile(f.icon) }, onClick = { nav.go(f.route) })
+                }
+            }
             results.groupBy { it.type }.forEach { (type, list) ->
                 item { SectionHeader("${type.label} · ${list.size}") }
                 items(list, key = { it.type.name + it.id }) { h ->
