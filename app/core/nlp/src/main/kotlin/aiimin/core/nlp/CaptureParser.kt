@@ -36,6 +36,8 @@ object CaptureParser {
 
     private val TAG = Regex("""#(\w+)""")
     private val TIME_12 = Regex("""\b(\d{1,2}(?::\d{2})?)\s*(am|pm)\b""", I)
+    /** "at 5", "at 5:30" with no am/pm: read as the next sensible clock time (1–7 → evening, 8–11 → morning). */
+    private val TIME_AT = Regex("""\bat\s+(\d{1,2})(?::([0-5]\d))?\b(?!\s*(?:%|k\b|rs|₹|/))""", I)
     private val TIME_24 = Regex("""\b([01]?\d|2[0-3]):([0-5]\d)\b""")
     private val DAY_PART = Regex("""\b(tomorrow|tonight|today|morning|afternoon|evening)\b""", I)
     private val MOOD = Regex("""(\d{1,2})\s*/\s*10""")
@@ -64,7 +66,9 @@ object CaptureParser {
         var timeLabel: String? = null
         var time24: String? = null
         val m12 = TIME_12.find(t)
-        val m24 = TIME_24.find(t)
+        // "at 5:30" with no am/pm is a clock time people mean in the evening, not 05:30.
+        val mAt = TIME_AT.find(t)?.takeIf { m12 == null && it.groupValues[1].toInt() in 1..12 }
+        val m24 = TIME_24.find(t)?.takeIf { mAt == null }
         if (m12 != null) {
             val parts = m12.groupValues[1].split(":")
             val hh = parts[0].toInt()
@@ -77,12 +81,22 @@ object CaptureParser {
             val mm = m24.groupValues[2].toInt()
             time24 = "%02d:%02d".format(h, mm)
             timeLabel = clockLabel(h, mm)
+        } else mAt?.let { at ->
+            val hh = at.groupValues[1].toInt()
+            if (hh in 1..12) {
+                val mm = at.groupValues[2].toIntOrNull() ?: 0
+                // People say "at 5" for 5 in the evening and "at 9" for 9 in the morning.
+                val h = when (hh) { 12 -> 12; in 1..7 -> hh + 12; else -> hh }
+                time24 = "%02d:%02d".format(h, mm)
+                timeLabel = clockLabel(h, mm)
+            }
         }
         val dayWord = DAY_PART.find(t)?.groupValues?.get(1)?.lowercase()
 
         val clean = t.replace(Regex("""\d{1,2}\s*/\s*10"""), " ")
             .replace(Regex("""\b\d{1,2}:\d{2}\b"""), " ")
             .replace(Regex("""\b\d{1,2}\s*(?:am|pm)\b""", I), " ")
+            .let { c -> if (mAt != null) c.replace(TIME_AT, " ") else c }
             .trim()
 
         val incomeWord = INCOME_WORD.containsMatchIn(clean)

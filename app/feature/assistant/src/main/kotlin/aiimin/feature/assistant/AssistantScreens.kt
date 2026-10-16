@@ -278,6 +278,8 @@ fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, v
     LaunchedEffect(text) { vm.text.value = text }
     val preview by vm.preview.collectAsStateWithLifecycle()
     var reviewing by remember { mutableStateOf(false) }
+    val keyboard = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
+    val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
     var listening by remember { mutableStateOf(false) }
     var dropped by remember { mutableStateOf(setOf<Int>()) }
     var edits by remember { mutableStateOf(mapOf<Int, Action>()) }
@@ -352,6 +354,8 @@ fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, v
                         AppButton(if (listening) "Stop" else "Speak", ::speak, Modifier.weight(1.5f), icon = AppIcons.Mic)
                     } else {
                         AppButton("Done · review", {
+                            // Close the keyboard first so it can't cover "Save all" on the review sheet.
+                            keyboard?.hide(); focusManager.clearFocus()
                             if (journalLine) { onDismiss(); nav.open(Route.JournalWrite()) } else reviewing = true
                         }, Modifier.weight(1.5f))
                     }
@@ -359,8 +363,10 @@ fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, v
             }
             if (reviewing) {
                 Box(Modifier.fillMaxSize().background(c.scrim).clickable(indication = null, interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }) { reviewing = false })
+                LaunchedEffect(Unit) { keyboard?.hide() }
                 Column(
-                    Modifier.align(Alignment.BottomCenter).fillMaxWidth().fillMaxHeight(0.82f)
+                    // imePadding: if the keyboard is still up, the sheet sits above it, so Save is never covered.
+                    Modifier.align(Alignment.BottomCenter).imePadding().fillMaxWidth().fillMaxHeight(0.82f)
                         .clip(RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp)).background(c.surface)
                         .navigationBarsPadding().padding(horizontal = Aiimin.space.gutter),
                 ) {
