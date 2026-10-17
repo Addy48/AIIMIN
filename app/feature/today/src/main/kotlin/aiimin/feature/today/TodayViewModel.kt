@@ -86,6 +86,7 @@ data class TodayUi(
     val hideScore: Boolean,
     val hideXp: Boolean,
     val pinned: NoteEntity? = null,
+    val glance: List<GlanceLine> = emptyList(),
 ) {
     val tasksOpen get() = flow.values.flatten().count { it.kind == FlowKind.TASK && !it.done }
 }
@@ -105,6 +106,8 @@ class TodayViewModel @Inject constructor(
     vault: VaultRepository,
     private val settingsStore: SettingsStore,
     notes: NoteRepository,
+    money: aiimin.core.data.money.MoneyRepository,
+    journal: aiimin.core.data.notes.JournalRepository,
 ) : ViewModel() {
 
     /** What the phone can measure right now; refreshed on every resume so a grant shows at once. */
@@ -149,7 +152,15 @@ class TodayViewModel @Inject constructor(
         // Score, phone numbers and unread come from Pulse's one snapshot, the same one the widget and reminders read.
         val live = pulse.liveDay.filterNotNull().filter { it.date == day }
         val ambient = combine(live, focus.active, activity.recent(4)) { l, f, a -> Ambient(l.life, l.device, l.unread, f, a) }
-        combine(plan, ambient, settingsStore.settings, yesterdayOpen, notes.all()) { p, a, s, y, ns ->
+        // At a glance: this month's personal spend, payments waiting for review, today's journal.
+        val glanceIn = combine(
+            money.month(java.time.YearMonth.from(day), aiimin.core.data.money.Ledger.PERSONAL, day),
+            money.pending(),
+            journal.entries,
+            notes.all(),
+        ) { m, pending, entries, ns -> GlanceIn(m.spent, pending.size, entries.any { it.day == day }, ns) }
+        combine(plan, ambient, settingsStore.settings, yesterdayOpen, glanceIn) { p, a, s, y, g ->
+            val ns = g.notes
             val items = buildFlow(day, p.tasks, p.events)
             TodayUi(
                 date = day, name = s.name, flow = items, now = nowCard(items.values.flatten()),
@@ -157,6 +168,11 @@ class TodayViewModel @Inject constructor(
                 unread = a.unread, focus = a.focus, activity = a.activity,
                 expiringTitle = p.expiring?.title, expiringId = p.expiring?.id, yesterdayOpen = y,
                 hideScore = s.hideScore, hideXp = s.hideXp, pinned = ns.firstOrNull { it.pinned && !it.deleted },
+                glance = atAGlance(
+                    day, g.spent, g.toReview,
+                    p.expiring?.let { d -> d.expires?.let { runCatching { java.time.LocalDate.parse(it) }.getOrNull() }?.let { GlanceDoc(d.id, d.title, it) } },
+                    g.journalToday,
+                ),
             )
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
@@ -168,6 +184,8 @@ class TodayViewModel @Inject constructor(
         val state: DayStateEntity?,
         val expiring: aiimin.core.database.DocEntity?,
     )
+
+    private data class GlanceIn(val spent: Long, val toReview: Int, val journalToday: Boolean, val notes: List<NoteEntity>)
 
     private data class Ambient(val life: LifeView?, val device: DeviceDayEntity?, val unread: Int, val focus: ActiveFocus?, val activity: List<ActivityLine>)
 

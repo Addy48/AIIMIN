@@ -27,6 +27,7 @@ import aiimin.designsystem.icon.AppIcons
 import aiimin.designsystem.nav.LocalNavigator
 import aiimin.designsystem.nav.LocalToaster
 import aiimin.designsystem.nav.Route
+import aiimin.designsystem.nav.go
 import aiimin.designsystem.theme.Aiimin
 import aiimin.designsystem.theme.Horizons
 import aiimin.designsystem.theme.Motion
@@ -278,16 +279,26 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
         // ---- Body of the day
         item { BatteryStreakLine(u, Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 22.dp)) }
         item { PhoneBody(u, Modifier.padding(horizontal = Aiimin.space.gutter)) }
-        if (u.expiringId != null && u.expiringTitle != null) {
+        // At a glance: Money review, Vault and Journal one tap from Today (findability audit, plan §2.3.3).
+        if (u.glance.isNotEmpty()) {
             item {
-                Row(
-                    Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 8.dp).fillMaxWidth().pressable({ nav.open(Route.Doc(u.expiringId)) }).heightIn(min = 52.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Icon(AppIcons.WarningCircle, null, tint = Aiimin.colors.warn, modifier = Modifier.size(22.dp))
-                    Spacer(Modifier.width(12.dp))
-                    Text("${u.expiringTitle} expires soon", style = Aiimin.type.bodyStrong, modifier = Modifier.weight(1f))
-                    Text("Renew", style = Aiimin.type.label.copy(color = Aiimin.colors.accentText, fontSize = 14.sp))
+                Column(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 14.dp)) {
+                    SectionHeader("At a glance")
+                    u.glance.forEach { g ->
+                        Row(
+                            Modifier.fillMaxWidth().pressable({ nav.go(g.route) }).heightIn(min = 52.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            val warn = g.area == GlanceArea.VAULT
+                            Icon(
+                                when (g.area) { GlanceArea.MONEY -> AppIcons.Wallet; GlanceArea.VAULT -> AppIcons.WarningCircle; GlanceArea.JOURNAL -> AppIcons.BookOpen },
+                                null, tint = if (warn) Aiimin.colors.warn else Aiimin.colors.text, modifier = Modifier.size(22.dp),
+                            )
+                            Spacer(Modifier.width(12.dp))
+                            Text(g.text, style = Aiimin.type.body, modifier = Modifier.weight(1f), maxLines = 2, overflow = TextOverflow.Ellipsis)
+                            Icon(AppIcons.CaretRight, null, tint = Aiimin.colors.textMuted, modifier = Modifier.size(16.dp))
+                        }
+                    }
                 }
             }
         }
