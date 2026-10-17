@@ -90,7 +90,7 @@
 
 ## 0. Ground rules (non-negotiable, same as next-plan, plus three)
 
-- Project root `/Users/aaditya/Desktop/aimin/repo/app`, branch `feat/native-v4`, debug appId `in.aiimin.app.v4`.
+- Project root `/Users/aaditya/Desktop/aiimin/01-repo/app`, branch `feat/native-v4`, debug appId `in.aiimin.app.v4`.
 - **Phase 0 commits the current working tree as a checkpoint first** (decision L-E). After that, every task commits only its own files with `git add <exact paths>`. Never `git stash` or `git checkout --` other files.
 - Light theme only. Use tokens only (`Aiimin.colors`, `Aiimin.type`, `Aiimin.space`, `Motion`). No glass, no purple, no emoji, no confetti.
 - `AppSettings.reduceMotion == true` means every animation in this plan jumps to its end state.

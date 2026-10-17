@@ -14,7 +14,7 @@
 
 ## 0. Ground rules (read first — non-negotiable)
 
-- Project root: `/Users/aaditya/Desktop/aimin/repo/app` (Gradle multi-module). Branch `feat/native-v4`. applicationId `in.aiimin.app.v4`.
+- Project root: `/Users/aaditya/Desktop/aiimin/01-repo/app` (Gradle multi-module). Branch `feat/native-v4`. applicationId `in.aiimin.app.v4`.
 - **Light theme only.** Never add/modify dark palettes.
 - Tokens only (no hard-coded colours in features): `core/designsystem/src/main/kotlin/aiimin/designsystem/theme/Palette.kt` (`LightPalette`), type in `Type.kt`, access via `Aiimin.colors` / `Aiimin.type`.
   Base paper `#F5F3EE`, ink `#1A1916`, accent `#FF6B35` (fills only), accent text `#C24E20`.
