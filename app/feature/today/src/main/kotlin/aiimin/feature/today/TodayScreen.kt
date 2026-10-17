@@ -77,6 +77,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -448,7 +449,10 @@ private fun NowCard(u: TodayUi, vm: TodayViewModel, hour: Int, light: Boolean, o
     }
 }
 
-/** One quiet line: score, minimums, focus. Numbers in Funnel 17, labels muted. Tap → Life Score. */
+/**
+ * Score, minimums, focus as three equal columns: number on top, a short label under it. Each cell
+ * is one line and shares the width equally, so nothing wraps letter by letter at large text sizes.
+ */
 @Composable
 private fun StatLine(u: TodayUi, modifier: Modifier) {
     val nav = LocalNavigator.current
@@ -456,29 +460,29 @@ private fun StatLine(u: TodayUi, modifier: Modifier) {
     val life = u.life
     val score = life?.readout?.score
     val focus = life?.today?.value(Signals.FOCUS)
-    Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
-        Row(Modifier.clickable { nav.open(Route.Score) }.heightIn(min = 40.dp), verticalAlignment = Alignment.CenterVertically) {
-            if (u.hideScore) {
-                Text("Score hidden", style = Aiimin.type.body.copy(color = c.textMuted))
-            } else if (score == null) {
-                // New accounts: say when the number arrives instead of a bare "Calibrating".
+    @Composable
+    fun RowScope.Cell(value: String, label: String, onClick: () -> Unit, trailing: (@Composable () -> Unit)? = null) {
+        Column(Modifier.weight(1f).clip(Shapes.small).clickable(onClick = onClick).padding(vertical = 6.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(value, style = Aiimin.type.numberMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                trailing?.let { Spacer(Modifier.width(4.dp)); it() }
+            }
+            Text(label, style = Aiimin.type.caption.copy(color = c.textMuted), maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+    }
+    Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
+        when {
+            u.hideScore -> Cell("—", "Score hidden", { nav.open(Route.Score) })
+            score == null -> {
                 val left = life?.readout?.calibrating?.values?.sorted()?.getOrNull(3)
-                Text(if (left != null && left > 0) "Score in $left ${if (left == 1) "day" else "days"}" else "Score soon", style = Aiimin.type.bodyStrong)
-            } else {
-                Text(score.toString(), style = Aiimin.type.numberSmall)
-                Text(" " + life.readout.band.label, style = Aiimin.type.body.copy(color = c.textMuted))
-                Spacer(Modifier.width(3.dp))
-                Icon(when (momentum(life.readout.series.mapNotNull { it.score })) { 1 -> AppIcons.ArrowUp; -1 -> AppIcons.ArrowDown; else -> AppIcons.ArrowRight }, null, tint = c.textMuted, modifier = Modifier.size(15.dp))
+                Cell(if (left != null && left > 0) "$left d" else "Soon", "Score", { nav.open(Route.Score) })
+            }
+            else -> Cell(score.toString(), life.readout.band.label, { nav.open(Route.Score) }) {
+                Icon(when (momentum(life.readout.series.mapNotNull { it.score })) { 1 -> AppIcons.ArrowUp; -1 -> AppIcons.ArrowDown; else -> AppIcons.ArrowRight }, null, tint = c.textMuted, modifier = Modifier.size(14.dp))
             }
         }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("${u.minimums.count { it.done }}", style = Aiimin.type.numberSmall)
-            Text(" of ${u.minimums.size} minimums", style = Aiimin.type.body.copy(color = c.textMuted))
-        }
-        Row(Modifier.clickable { nav.open(Route.Focus()) }.heightIn(min = 40.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(Dates.minutes((focus ?: 0.0).toLong()), style = Aiimin.type.numberSmall)
-            Text(" focus", style = Aiimin.type.body.copy(color = c.textMuted))
-        }
+        Cell("${u.minimums.count { it.done }}/${u.minimums.size}", "Minimums", { nav.open(Route.Minimums) })
+        Cell(Dates.minutes((focus ?: 0.0).toLong()), "Focus", { nav.open(Route.Focus()) })
     }
 }
 
@@ -634,7 +638,7 @@ private fun PhoneBody(u: TodayUi, modifier: Modifier) {
             Text("Screen time", style = Aiimin.type.caption)
             Text(sum?.let { ScreenSummary.fmt(it.totalMs) } ?: "—", style = Aiimin.type.numberSmall, modifier = Modifier.padding(top = 3.dp))
             Text(
-                sum?.countedLine ?: d?.pickups?.let { "$it ${d.pickupsLabel ?: "unlocks"}" } ?: d?.unlocks?.let { "$it unlocks" } ?: "Turn on screen time",
+                sum?.countedLine ?: d?.pickups?.let { ScreenSummary.pickupLine(it, d.pickupsLabel) } ?: d?.unlocks?.let { ScreenSummary.pickupLine(it, "unlocks") } ?: "Turn on screen time",
                 style = Aiimin.type.caption,
             )
         }
@@ -690,11 +694,11 @@ private fun KeepAliveCard(vm: TodayViewModel, modifier: Modifier) {
     Column(modifier.fillMaxWidth().clip(shape).background(c.surface).border(1.dp, c.border, shape).padding(16.dp)) {
         Text("Your phone is pausing AIIMIN in the background", style = Aiimin.type.headline)
         Text("So screen time, steps and reminders fall behind until you open the app. $text", style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp))
-        Row(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
-            AppButton("Open App info", { runCatching { context.startActivity(vm.appDetails()) } }, compact = true)
-            AppButton("What's running", { nav.open(aiimin.designsystem.nav.Route.Running) }, kind = ButtonKind.GHOST, compact = true)
-            Spacer(Modifier.weight(1f))
-            Text("Later", style = Aiimin.type.label.copy(color = c.textMuted), modifier = Modifier.clip(Shapes.small).clickable { vm.dismissKeepAlive() }.padding(8.dp))
+        // Primary action full width; the two quiet ones share a row. Fits any phone width and text size.
+        AppButton("Open App info", { runCatching { context.startActivity(vm.appDetails()) } }, Modifier.fillMaxWidth().padding(top = 14.dp))
+        Row(Modifier.fillMaxWidth().padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            AppButton("What's running", { nav.open(aiimin.designsystem.nav.Route.Running) }, Modifier.weight(1f), kind = ButtonKind.GHOST, compact = true)
+            AppButton("Later", { vm.dismissKeepAlive() }, Modifier.weight(1f), kind = ButtonKind.GHOST, compact = true)
         }
     }
 }

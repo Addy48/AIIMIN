@@ -7,6 +7,12 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
@@ -41,6 +47,7 @@ fun BootMark(onDone: () -> Unit) {
     val peak = remember { Animatable(0f) }
     val inner = remember { Animatable(0f) }
     val sun = remember { Animatable(0f) }
+    val word = remember { Animatable(0f) }
     val exit = remember { Animatable(0f) }
     val ease = CubicBezierEasing(0.2f, 0f, 0f, 1f)
     LaunchedEffect(Unit) {
@@ -49,8 +56,9 @@ fun BootMark(onDone: () -> Unit) {
             async { delay(120); peak.animateTo(1f, tween(420, easing = ease)) }
             async { delay(240); inner.animateTo(1f, tween(340, easing = ease)) }
             async { delay(430); sun.animateTo(1f, tween(420, easing = CubicBezierEasing(0.34f, 1.56f, 0.64f, 1f))) }
+            async { delay(560); word.animateTo(1f, tween(520, easing = ease)) }
         }
-        delay(120)
+        delay(380)
         exit.animateTo(1f, tween(280, easing = CubicBezierEasing(0.4f, 0f, 0.2f, 1f)))
         onDone()
     }
@@ -65,7 +73,8 @@ fun BootMark(onDone: () -> Unit) {
         Modifier.fillMaxSize().graphicsLayer { alpha = 1f - exit.value }.background(c.base),
         contentAlignment = Alignment.Center,
     ) {
-        Canvas(Modifier.size(132.dp).graphicsLayer { val s = 1f + 0.12f * exit.value; scaleX = s; scaleY = s; translationY = -24f * exit.value }) {
+      Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.graphicsLayer { val s = 1f + 0.06f * exit.value; scaleX = s; scaleY = s; translationY = -24f * exit.value }) {
+        Canvas(Modifier.size(120.dp)) {
             val k = size.minDimension / 512f
             scale(k, k, pivot = Offset.Zero) {
                 drawPath(trimmed(archPath, arch.value), Color(0xFFD1D5DB), style = Stroke(24f, cap = StrokeCap.Round))
@@ -75,5 +84,17 @@ fun BootMark(onDone: () -> Unit) {
                 if (r > 0f) translate(0f, 70f * (1f - sun.value.coerceAtMost(1f))) { drawCircle(Color(0xFFFF6B35), r, Offset(256f, 240f)) }
             }
         }
+        // The wordmark rises in under the mark, in the website's Bodoni Moda, then a quiet line.
+        Text(
+            "AIIMIN",
+            style = TextStyle(fontFamily = aiimin.designsystem.theme.BrandSerif, fontWeight = FontWeight.Bold, fontSize = 44.sp, letterSpacing = (-0.03f * 44).sp, color = c.text),
+            modifier = Modifier.padding(top = 14.dp).graphicsLayer { alpha = word.value; translationY = 18f * (1f - word.value) },
+        )
+        Text(
+            "One screen, every day.",
+            style = Aiimin.type.caption.copy(color = c.textMuted, letterSpacing = 0.4.sp),
+            modifier = Modifier.padding(top = 6.dp).graphicsLayer { alpha = (word.value * 1.4f - 0.4f).coerceIn(0f, 1f) },
+        )
+      }
     }
 }

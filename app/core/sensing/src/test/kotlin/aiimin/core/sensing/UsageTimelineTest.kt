@@ -164,4 +164,26 @@ class UsageTimelineTest {
         assertThat(r.hourlyMs[0]).isEqualTo(t(30))
         assertThat(r.hourlyMs.size).isEqualTo(24)
     }
+
+    @Test
+    fun `a clock screensaver that starts after the screen goes off is not use`() {
+        val r = run(listOf(
+            Event(t(60), Kind.SCREEN_OFF),
+            Event(t(60) + 200, Kind.RESUMED, "clock", "DreamActivity"),
+            Event(t(78), Kind.PAUSED, "clock", "DreamActivity"),
+            Event(t(78), Kind.SCREEN_ON),
+        ))
+        assertThat(r.totalMs).isEqualTo(0)
+    }
+
+    @Test
+    fun `an alarm resumed a moment before the screen wakes counts from screen on`() {
+        val r = run(listOf(
+            Event(t(10), Kind.SCREEN_OFF),
+            Event(t(400), Kind.RESUMED, "clock", "AlarmActivity"),
+            Event(t(400) + 50, Kind.SCREEN_ON),
+            Event(t(401), Kind.PAUSED, "clock", "AlarmActivity"),
+        ))
+        assertThat(r.totalMs).isEqualTo(t(1) - 50)
+    }
 }

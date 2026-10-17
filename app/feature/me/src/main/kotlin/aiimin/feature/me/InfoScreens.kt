@@ -234,7 +234,7 @@ fun PhoneDayScreen(vm: PhoneDayViewModel = hiltViewModel()) {
                     Text(
                         listOfNotNull(
                             sum.countedLine,
-                            data.pickups?.let { "$it ${data.pickupsLabel ?: "unlocks"}" } ?: data.unlocks?.let { "$it unlocks" },
+                            data.pickups?.let { ScreenSummary.pickupLine(it, data.pickupsLabel) } ?: data.unlocks?.let { ScreenSummary.pickupLine(it, "unlocks") },
                             data.notifications?.takeIf { it > 0 }?.let { "$it notifications" },
                             data.lateScreenMs?.takeIf { it >= 60_000 }?.let { "${ScreenSummary.fmt(it)} after ${prefs?.lateHour ?: 23}:00" },
                         ).joinToString(" · "),
@@ -323,9 +323,9 @@ fun PhoneDayScreen(vm: PhoneDayViewModel = hiltViewModel()) {
                 }
             }
             item {
-                Row(Modifier.fillMaxWidth().padding(top = 16.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    if (total != null) Tag("Observed · counts fully toward your score", icon = AppIcons.CheckCircle, color = c.done) else Spacer(Modifier.width(1.dp))
-                    AppButton(if (refreshing) "Measuring…" else "Re-measure", { vm.refresh() }, kind = ButtonKind.GHOST, compact = true)
+                Column(Modifier.fillMaxWidth().padding(top = 16.dp)) {
+                    if (total != null) Tag("Observed · counts fully toward your score", icon = AppIcons.CheckCircle, color = c.done)
+                    AppButton(if (refreshing) "Measuring…" else "Re-measure", { vm.refresh() }, Modifier.fillMaxWidth().padding(top = 10.dp), kind = ButtonKind.SECONDARY, compact = true)
                 }
             }
         }

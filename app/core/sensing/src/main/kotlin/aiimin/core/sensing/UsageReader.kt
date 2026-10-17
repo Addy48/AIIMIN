@@ -99,6 +99,14 @@ class UsageReader @Inject constructor(@ApplicationContext private val context: C
             }
             cursor = sliceEnd
         }
+        // Debug builds only: keep the exact event stream of the last read so a mismatch with
+        // Digital Wellbeing can be replayed off the phone. Private app storage, never synced.
+        if (context.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE != 0) runCatching {
+            java.io.File(context.filesDir, "usage-debug-" + Instant.ofEpochMilli(start).atZone(zone).toLocalDate() + ".tsv").printWriter().use { w ->
+                w.println("homes\t" + homePackages().joinToString(","))
+                events.forEach { e -> w.println("${e.at}\t${e.kind}\t${e.pkg}\t${e.cls}") }
+            }
+        }
         val homes = homePackages()
         val lateFrom = Instant.ofEpochMilli(start).atZone(zone).toLocalDate().atTime(lateHour, 0).atZone(zone).toInstant().toEpochMilli()
         val r = UsageTimeline.compute(

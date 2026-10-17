@@ -100,7 +100,15 @@ fun AppButton(
             Icon(icon, null, tint = fg, modifier = Modifier.size(if (compact) 16.dp else 18.dp))
             Spacer(Modifier.width(8.dp))
         }
-        Text(text, style = Aiimin.type.bodyStrong.copy(color = fg, fontSize = if (compact) 14.sp else 15.5.sp), maxLines = 1)
+        // Labels shrink a step at large text sizes instead of being cut ("Plan tomorrow" → "Plan").
+        val size = if (compact) 14.sp else 15.5.sp
+        androidx.compose.foundation.text.BasicText(
+            text,
+            style = Aiimin.type.bodyStrong.copy(color = fg, fontSize = size),
+            maxLines = 1,
+            autoSize = androidx.compose.foundation.text.TextAutoSize.StepBased(minFontSize = 11.sp, maxFontSize = size, stepSize = 0.5.sp),
+            modifier = Modifier.weight(1f, fill = false),
+        )
     }
 }
 
