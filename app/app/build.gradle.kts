@@ -33,6 +33,17 @@ android {
         buildConfig = true
     }
 
+    // Release key passwords live in ~/.gradle/gradle.properties, typed by the owner, never in the repo.
+    val releaseSigned = providers.gradleProperty("AIIMIN_STORE_PASSWORD").isPresent
+    signingConfigs {
+        create("release") {
+            storeFile = rootProject.file("aiimin-release.keystore")
+            storePassword = providers.gradleProperty("AIIMIN_STORE_PASSWORD").orNull
+            keyAlias = providers.gradleProperty("AIIMIN_KEY_ALIAS").orNull
+            keyPassword = providers.gradleProperty("AIIMIN_KEY_PASSWORD").orNull
+        }
+    }
+
     buildTypes {
         debug {
             // Installs alongside the V2 build while V3 is being brought to parity.
@@ -48,8 +59,8 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
-            // Signed from the environment on CI; falls back to debug locally.
-            signingConfig = signingConfigs.getByName("debug")
+            // The release key when its passwords are present; otherwise the debug key, so local builds still work.
+            signingConfig = signingConfigs.getByName(if (releaseSigned) "release" else "debug")
         }
     }
 
@@ -77,6 +88,7 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.process)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.bundles.compose)

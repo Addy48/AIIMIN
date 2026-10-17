@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Window ground before Compose draws: Warm Paper / Warm Obsidian L0. -->
-    <color name="drafting_bg">#0A0A0B</color>
-    <color name="industry_bg">#F8F7F4</color>
-    <color name="launcher_bg">#1E1E1E</color>
+    <!-- Window ground before Compose draws (light theme only). -->
+    <color name="industry_bg">#F5F3EE</color>
+    <!-- Launcher ground for the light AIIMIN mark. -->
+    <color name="launcher_bg">#FFFFFF</color>
 </resources>

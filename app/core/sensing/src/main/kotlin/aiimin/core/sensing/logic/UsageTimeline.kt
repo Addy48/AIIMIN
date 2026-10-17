@@ -15,10 +15,13 @@ package aiimin.core.sensing.logic
  * 4. Events are read from a lookback before the window, then clipped, so an app
  *    opened at 23:50 and used past midnight counts its after-midnight minutes.
  * 5. The day total is the union of intervals, so split screen never double counts.
+ * 6. Time only counts while the screen is on. A clock screensaver (DreamActivity) that starts
+ *    after the screen goes off while charging, or a call screen behind the proximity sensor,
+ *    isn't use. An activity resumed while the screen is off starts counting when it turns on.
  */
 object UsageTimeline {
 
-    enum class Kind { RESUMED, PAUSED, STOPPED, SCREEN_ON, SCREEN_OFF, KEYGUARD_SHOWN, KEYGUARD_HIDDEN, SHUTDOWN, STARTUP, NOTIFICATION }
+    enum class Kind { RESUMED, PAUSED, STOPPED, SCREEN_ON, SCREEN_OFF, KEYGUARD_SHOWN, KEYGUARD_HIDDEN, SHUTDOWN, STARTUP, NOTIFICATION, INTERACTION }
 
     data class Event(val at: Long, val kind: Kind, val pkg: String = "", val cls: String = "")
 
@@ -31,7 +34,10 @@ object UsageTimeline {
         val personalMs: Long,
         val apps: List<AppUsage>,
         val unlocks: Int,
+        /** SCREEN_INTERACTIVE events in the window, debounced. Pickups on phones with no secure lock. */
+        val screenOns: Int,
         val notifications: Int,
+        /** Foreground time per local hour; slot 0 is the hour containing windowStart. */
         val hourlyMs: LongArray,
         /** Foreground time at or after [lateFrom] inside the window. */
         val lateMs: Long,
@@ -44,7 +50,6 @@ object UsageTimeline {
      * @param events every event from (window start − lookback) to window end, any order.
      * @param counted false for launchers, System UI and other chrome that DW ignores.
  * @param isHome launcher packages: bringing home to the front ends the app session.
-     * @param hourOf maps an instant to its local hour 0–23.
      * @param hourStart maps an instant to the start of its local hour.
      */
     fun compute(
@@ -55,8 +60,9 @@ object UsageTimeline {
         isHome: (String) -> Boolean = { false },
         isWork: (String) -> Boolean = { false },
         lateFrom: Long = Long.MAX_VALUE,
-        hourOf: (Long) -> Int,
         hourStart: (Long) -> Long,
+        /** Phones that drop pause events: cap a session this long after the last sign of use. */
+        gapFillMs: Long? = null,
     ): Result {
         val sorted = events.sortedWith(compareBy<Event> { it.at }.thenBy { it.kind.ordinal })
         val open = LinkedHashMap<String, Pair<String, Long>>() // key → (pkg, start)
@@ -64,13 +70,22 @@ object UsageTimeline {
         val opens = HashMap<String, Int>()
         val notifs = HashMap<String, Int>()
         var unlocks = 0
+        var screenOns = 0
+        var lastScreenOn: Long? = null
         var lastUnlock: Long? = null
         var firstUnlock: Long? = null
         var lastForegroundPkg: String? = null
+        var screenOn = true
+        // Resumed while the screen was off: key → pkg, opened if the screen turns on before it pauses.
+        val pending = LinkedHashMap<String, String>()
+
+        // Signs of use (touches, screen on, any app resuming) for gap fill.
+        val signs = if (gapFillMs == null) emptyList() else sorted.filter { it.kind == Kind.INTERACTION || it.kind == Kind.SCREEN_ON || it.kind == Kind.RESUMED }.map { it.at }
 
         fun close(key: String, at: Long) {
             val (pkg, start) = open.remove(key) ?: return
-            if (at > start) intervals.getOrPut(pkg) { mutableListOf() } += longArrayOf(start, at)
+            val end = if (gapFillMs == null) at else GapFill.cap(start, at, signs.filter { it in start..at }, gapFillMs)
+            if (end > start) intervals.getOrPut(pkg) { mutableListOf() } += longArrayOf(start, end)
         }
 
         fun closeAll(at: Long) = open.keys.toList().forEach { close(it, at) }
@@ -79,6 +94,10 @@ object UsageTimeline {
             if (e.at > windowEnd) break
             when (e.kind) {
                 Kind.RESUMED -> {
+                    if (!screenOn) {
+                        if (counted(e.pkg)) pending[e.pkg + "/" + e.cls] = e.pkg
+                        continue
+                    }
                     if (!counted(e.pkg)) {
                         // Home in front: whatever app was open has left. Other chrome
                         // (System UI, shade) is ignored so it can't cut real use.
@@ -98,10 +117,14 @@ object UsageTimeline {
                     }
                     lastForegroundPkg = e.pkg
                 }
-                Kind.PAUSED, Kind.STOPPED -> close(e.pkg + "/" + e.cls, e.at)
+                Kind.PAUSED, Kind.STOPPED -> {
+                    pending.remove(e.pkg + "/" + e.cls)
+                    close(e.pkg + "/" + e.cls, e.at)
+                }
                 Kind.SCREEN_OFF, Kind.KEYGUARD_SHOWN, Kind.SHUTDOWN -> {
                     closeAll(e.at)
                     lastForegroundPkg = null
+                    if (e.kind != Kind.KEYGUARD_SHOWN) screenOn = false
                 }
                 Kind.STARTUP -> {
                     open.clear()
@@ -112,7 +135,16 @@ object UsageTimeline {
                     lastUnlock = e.at
                     if (firstUnlock == null) firstUnlock = e.at
                 }
-                Kind.SCREEN_ON -> Unit
+                Kind.SCREEN_ON -> {
+                    screenOn = true
+                    pending.forEach { (key, pkg) -> if (key !in open) open[key] = pkg to e.at }
+                    pending.clear()
+                    if (e.at in windowStart until windowEnd && (lastScreenOn == null || e.at - lastScreenOn!! >= UNLOCK_DEBOUNCE_MS)) {
+                        screenOns++
+                        lastScreenOn = e.at
+                    }
+                }
+                Kind.INTERACTION -> Unit
                 Kind.NOTIFICATION -> if (e.at in windowStart until windowEnd && counted(e.pkg)) {
                     notifs[e.pkg] = (notifs[e.pkg] ?: 0) + 1
                 }
@@ -131,12 +163,15 @@ object UsageTimeline {
         val work = merge(perApp.filterKeys(isWork).values.flatten())
         val personal = merge(perApp.filterKeys { !isWork(it) }.values.flatten())
 
-        val hourly = LongArray(24)
+        val slots = (((windowEnd - windowStart) + 3_599_999L) / 3_600_000L).toInt().coerceIn(1, 26) // 23/25 on DST days
+        val firstHour = hourStart(windowStart)
+        val hourly = LongArray(slots)
         for ((s, t) in all) {
             var c = s
             while (c < t) {
-                val next = minOf(t, hourStart(c) + 3_600_000L)
-                hourly[hourOf(c)] += next - c
+                val h = hourStart(c)
+                val next = minOf(t, h + 3_600_000L)
+                hourly[((h - firstHour) / 3_600_000L).toInt().coerceIn(0, slots - 1)] += next - c
                 c = if (next > c) next else t
             }
         }
@@ -154,6 +189,7 @@ object UsageTimeline {
             personalMs = personal.sumOf { it[1] - it[0] },
             apps = apps,
             unlocks = unlocks,
+            screenOns = screenOns,
             notifications = notifs.values.sum(),
             hourlyMs = hourly,
             lateMs = late,

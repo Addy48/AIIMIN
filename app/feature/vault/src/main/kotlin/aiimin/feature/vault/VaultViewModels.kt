@@ -62,6 +62,9 @@ class VaultViewModel @Inject constructor(
 
     suspend fun doc(id: String) = vault.get(id)
     fun setCategory(d: DocEntity, cat: String) = viewModelScope.launch { vault.edit(d.copy(category = cat)) }
+    suspend fun saveDoc(d: DocEntity) = vault.edit(d)
+    /** Drops a just-imported duplicate (V3 "This file is already in the vault"). */
+    suspend fun removeCopy(id: String) { vault.delete(id) }
     fun setExpiry(id: String, date: LocalDate?, task: Boolean) = viewModelScope.launch { vault.setExpiry(id, date, task) }
     suspend fun today() = clock.today()
 }
@@ -99,6 +102,9 @@ class DocViewModel @Inject constructor(
 
     fun rename(d: DocEntity, title: String) = viewModelScope.launch { vault.edit(d.copy(title = title.trim())) }
     fun setCategory(d: DocEntity, cat: String) = viewModelScope.launch { vault.edit(d.copy(category = cat)) }
+    suspend fun saveDoc(d: DocEntity) = vault.edit(d)
+    /** Drops a just-imported duplicate (V3 "This file is already in the vault"). */
+    suspend fun removeCopy(id: String) { vault.delete(id) }
     fun move(d: DocEntity, owner: String) = viewModelScope.launch { vault.edit(d.copy(owner = owner)) }
     fun setExpiry(d: DocEntity, date: LocalDate?, task: Boolean) = viewModelScope.launch { vault.setExpiry(d.id, date, task) }
     fun share(d: DocEntity, who: String, level: AccessLevel, whenKind: String, until: LocalDate?) = viewModelScope.launch { vault.setShare(d.id, who, level, whenKind, until) }

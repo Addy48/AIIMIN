@@ -1,5 +1,17 @@
 package aiimin.feature.me
 
+import kotlinx.coroutines.launch
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
+import aiimin.designsystem.theme.Shapes
+import aiimin.designsystem.component.pressable
+import aiimin.core.model.ScreenSummary
+import aiimin.designsystem.component.Segmented
+import aiimin.designsystem.component.AppSheet
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import aiimin.core.data.app.ResultType
 import aiimin.core.data.device.DeviceRepository
 import aiimin.core.data.util.Dates
@@ -59,7 +71,7 @@ fun ActivityScreen(vm: ActivityViewModel = hiltViewModel()) {
     val lines by vm.lines.collectAsStateWithLifecycle()
     val zone = ZoneId.systemDefault()
     Column(Modifier.fillMaxSize().background(Aiimin.colors.base)) {
-        TopBar("Activity", onBack = { nav.back() })
+        TopBar("Activity", onBack = { nav.back() }) { AppIconButton(AppIcons.Waveform, "Recent captures", { nav.open(Route.RecentCaptures) }) }
         if (lines.isEmpty()) {
             EmptyState(AppIcons.ClockCounter, "Nothing yet", "Everything you do is written to a private, tamper-evident log. It shows up here.")
             return@Column
@@ -101,7 +113,7 @@ fun NotificationsScreen(vm: NotificationsViewModel = hiltViewModel()) {
                         n.title, subtitle = n.body, maxSubtitleLines = 3,
                         leading = {
                             IconTile(
-                                when (n.route) { "doc" -> AppIcons.ShieldCheck; "money" -> AppIcons.Money; "score" -> AppIcons.Pulse; else -> AppIcons.Bell },
+                                when (n.route) { "doc" -> AppIcons.ShieldCheck; "money", "bills" -> AppIcons.Money; "score" -> AppIcons.Pulse; else -> AppIcons.Bell },
                                 tint = if (n.priority >= 2) Aiimin.colors.accent else Aiimin.colors.textMuted,
                             )
                         },
@@ -110,6 +122,8 @@ fun NotificationsScreen(vm: NotificationsViewModel = hiltViewModel()) {
                             when (n.route) {
                                 "doc" -> n.routeArg?.let { nav.open(Route.Doc(it)) }
                                 "money" -> nav.open(Route.MoneyInbox)
+                                "bills" -> nav.open(Route.Recurring)
+                                "backup" -> nav.open(Route.VaultBackup)
                                 "score" -> nav.open(Route.Score)
                                 else -> nav.tab(Tab.TODAY)
                             }
@@ -159,6 +173,9 @@ fun SearchScreen(vm: SearchViewModel = hiltViewModel()) {
 
 @Composable
 fun PhoneDayScreen(vm: PhoneDayViewModel = hiltViewModel()) {
+    var appSheet by remember { mutableStateOf<aiimin.core.data.device.AppUse?>(null) }
+    var checkSheet by remember { mutableStateOf(false) }
+    val prefs by vm.prefs.collectAsStateWithLifecycle()
     val nav = LocalNavigator.current
     val d by vm.data.collectAsStateWithLifecycle()
     val week by vm.week.collectAsStateWithLifecycle()
@@ -168,6 +185,7 @@ fun PhoneDayScreen(vm: PhoneDayViewModel = hiltViewModel()) {
     val c = Aiimin.colors
     val stepsTarget = life?.intentions?.card(Signals.STEPS)?.target ?: 8000.0
     val screenLimit = life?.intentions?.card(Signals.SCREEN_PERSONAL)?.target
+    val context = androidx.compose.ui.platform.LocalContext.current
     Column(Modifier.fillMaxSize().background(c.base)) {
         TopBar(Dates.relative(day, LocalDate.now()), onBack = { nav.back() }) {
             AppIconButton(AppIcons.CaretLeft, "Previous day", { vm.shift(-1) }, tint = c.textMuted)
@@ -183,7 +201,11 @@ fun PhoneDayScreen(vm: PhoneDayViewModel = hiltViewModel()) {
                 SectionHeader("Movement")
                 Panel {
                     Row(verticalAlignment = Alignment.Bottom) {
-                        Stat(data.steps?.let { "%,d".format(it) } ?: "—", "steps · ${if (data.stepsSource == "health_connect") "Health Connect" else if (data.stepsSource == "sensor") "phone step counter" else "not measured"}", Modifier.weight(1f))
+                        Stat(data.steps?.let { "%,d".format(it) } ?: "—", "steps · " + when (data.stepsSource) {
+                            "health_connect" -> data.stepsOrigin?.takeIf { it != "Health Connect" }?.let { "from $it via Health Connect" } ?: "Health Connect"
+                            "sensor" -> "phone step counter"
+                            else -> "not measured"
+                        }, Modifier.weight(1f))
                         Text("of %,d".format(stepsTarget.toLong()), style = Aiimin.type.caption)
                     }
                     Spacer(Modifier.height(8.dp))
@@ -191,41 +213,88 @@ fun PhoneDayScreen(vm: PhoneDayViewModel = hiltViewModel()) {
                     val hourly = DeviceRepository.longs(data.stepsHourly)
                     if (hourly.any { it > 0 }) {
                         Spacer(Modifier.height(14.dp))
-                        Bars(hourly.map { it.toFloat() }, color = c.domains[0], labels = listOf("12a", "6a", "12p", "6p", "12a"), description = "Steps by hour")
-                    }
-                }
-            }
-            item {
-                SectionHeader("Screen")
-                Panel {
-                    Row {
-                        Stat(data.screenMs?.let { Dates.minutes(it / 60_000) } ?: "—", "screen time", Modifier.weight(1f))
-                        Stat(data.unlocks?.toString() ?: "—", "unlocks", Modifier.weight(1f))
-                        Stat(data.notifications?.toString() ?: "—", "notifications", Modifier.weight(1f))
-                    }
-                    Spacer(Modifier.height(12.dp))
-                    Row {
-                        Stat(data.screenPersonalMs?.let { Dates.minutes(it / 60_000) } ?: "—", "personal" + (screenLimit?.let { " · limit ${Dates.minutes(it.toLong())}" } ?: ""), Modifier.weight(1f))
-                        Stat(data.screenWorkMs?.let { Dates.minutes(it / 60_000) } ?: "—", "work apps", Modifier.weight(1f))
-                        Stat(data.lateScreenMs?.let { Dates.minutes(it / 60_000) } ?: "—", "late night", Modifier.weight(1f))
-                    }
-                    data.firstUnlockAt?.let { Text("First unlock ${Dates.clock(Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalTime())}", style = Aiimin.type.caption, modifier = Modifier.padding(top = 10.dp)) }
-                    val hourly = DeviceRepository.longs(data.screenHourly)
-                    if (hourly.any { it > 0 }) {
-                        Spacer(Modifier.height(14.dp))
-                        Bars(hourly.map { it.toFloat() }, color = c.accent, labels = listOf("12a", "6a", "12p", "6p", "12a"), description = "Screen time by hour")
+                        Bars(hourly.map { it.toFloat() }, color = c.text, labels = listOf("12a", "6a", "12p", "6p", "12a"), description = "Steps by hour")
                     }
                 }
             }
             val apps = DeviceRepository.apps(data)
+            val total = data.screenMs
+            val sum = total?.let { ScreenSummary.of(it, data.screenPersonalMs ?: it, apps.map { a -> a.ms }, shown = 12) }
+            item {
+                SectionHeader("Screen")
+                if (total == null || sum == null) {
+                    Text(
+                        "Turn on usage access to see your screen time. AIIMIN reads which apps were in front and for how long. The app list stays on your phone; only daily totals sync if backup is on.",
+                        style = Aiimin.type.body,
+                    )
+                    AppButton("Open settings", { runCatching { context.startActivity(vm.usageSettingsIntent()) } }, compact = true, modifier = Modifier.padding(top = 10.dp))
+                } else {
+                    // One hero number: the calendar-day total, the same window as Digital Wellbeing.
+                    Text(ScreenSummary.fmt(total), style = Aiimin.type.numberLarge)
+                    Text(
+                        listOfNotNull(
+                            sum.countedLine,
+                            data.pickups?.let { ScreenSummary.pickupLine(it, data.pickupsLabel) } ?: data.unlocks?.let { ScreenSummary.pickupLine(it, "unlocks") },
+                            data.notifications?.takeIf { it > 0 }?.let { "$it notifications" },
+                            data.lateScreenMs?.takeIf { it >= 60_000 }?.let { "${ScreenSummary.fmt(it)} after ${prefs?.lateHour ?: 23}:00" },
+                        ).joinToString(" · "),
+                        style = Aiimin.type.caption, modifier = Modifier.padding(top = 4.dp),
+                    )
+                    screenLimit?.let {
+                        Meter((((data.screenPersonalMs ?: total) / 60_000.0) / it).toFloat().coerceIn(0f, 1f), color = c.text, modifier = Modifier.padding(top = 10.dp))
+                        Text("Your personal limit: ${Dates.minutes(it.toLong())}", style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp))
+                    }
+                    data.firstUnlockAt?.let { Text("First unlock ${Dates.clock(Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalTime())}", style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp)) }
+                    val hourly = DeviceRepository.longs(data.screenHourly)
+                    if (hourly.any { it > 0 }) {
+                        Spacer(Modifier.height(14.dp))
+                        Bars(hourly.map { it.toFloat() }, color = c.text, labels = listOf("12a", "6a", "12p", "6p", "12a"), description = "Screen time by hour")
+                    }
+                    Text("Updated ${Dates.ago(data.updatedAt)} · midnight to midnight, like Android's Digital Wellbeing", style = Aiimin.type.caption.copy(color = c.textFaint), modifier = Modifier.padding(top = 8.dp))
+                    if (day == LocalDate.now()) {
+                        // Confidence: checked against the phone's own number, or an offer to check.
+                        val cal = prefs?.screenCalibration
+                        val checked = cal != null && kotlin.math.abs(cal - 1.0) <= 0.10
+                        Row(Modifier.padding(top = 6.dp).clip(Shapes.small).pressable({ checkSheet = true }).heightIn(min = 40.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(if (checked) AppIcons.SealCheck else AppIcons.Scales, null, tint = if (checked) c.done else c.accentText, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                when {
+                                    checked -> "Measured · checked against your phone"
+                                    cal != null -> "Estimated · off by ${(kotlin.math.abs(cal - 1.0) * 100).toInt()}% last check · check again"
+                                    else -> "Check against your phone (20 seconds)"
+                                },
+                                style = Aiimin.type.caption.copy(color = if (checked) c.textMuted else c.accentText),
+                            )
+                        }
+                    }
+                }
+            }
+            appSheet?.let { a ->
+                item {
+                    val work = a.pkg in (prefs?.workApps ?: emptySet())
+                    val weekAvg = week.mapNotNull { d -> DeviceRepository.apps(d).firstOrNull { it.pkg == a.pkg }?.ms }.let { if (it.isEmpty()) 0L else it.sum() / week.size.coerceAtLeast(1) }
+                    AppSheet({ appSheet = null }, title = a.label) {
+                        Text("Today ${Dates.minutes(a.ms / 60_000)} · 7-day average ${Dates.minutes(weekAvg / 60_000)}", style = Aiimin.type.body)
+                        SectionHeader("Counts as")
+                        Segmented(listOf("Personal", "Work"), if (work) 1 else 0, { i -> vm.tagWork(a.pkg, i == 1) })
+                        Text(if (work) "Work time isn't counted against your personal screen time." else "Counted in personal screen time.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp, bottom = 12.dp))
+                    }
+                }
+            }
             if (apps.isNotEmpty()) {
                 item { SectionHeader("Apps") }
+                val dupes = apps.groupBy { it.label }.filterValues { it.size > 1 }.keys
                 items(apps.filter { it.ms > 0 }.take(12), key = { it.pkg }) { a ->
                     ListRow(
-                        a.label,
+                        a.label + (if (a.label in dupes) " · " + a.pkg.substringAfterLast('.') else "") + if (a.pkg in (prefs?.workApps ?: emptySet())) " · work" else "", onClick = { appSheet = a },
                         subtitle = listOfNotNull("opened ${a.opens}×".takeIf { a.opens > 0 }, "${a.notifications} notifications".takeIf { a.notifications > 0 }).joinToString(" · ").ifBlank { null },
-                        trailing = { Text(if (a.ms < 60_000) "<1m" else Dates.minutes(a.ms / 60_000), style = Aiimin.type.numberSmall) },
+                        trailing = { Text(ScreenSummary.fmt(a.ms), style = Aiimin.type.numberSmall) },
                     )
+                }
+                // The rows plus this one add up to the hero number.
+                if (sum != null && sum.otherMs >= 60_000) item(key = "other-apps") {
+                    ListRow("Other apps", trailing = { Text(ScreenSummary.fmt(sum.otherMs), style = Aiimin.type.numberSmall) })
                 }
             }
             item {
@@ -248,17 +317,41 @@ fun PhoneDayScreen(vm: PhoneDayViewModel = hiltViewModel()) {
                         Text("Steps", style = Aiimin.type.caption)
                         Bars(week.map { (it.steps ?: 0).toFloat() }, color = c.domains[0], height = 48.dp, highlight = week.size - 1, description = "Steps per day this week")
                         Spacer(Modifier.height(10.dp))
-                        Text("Screen time", style = Aiimin.type.caption)
-                        Bars(week.map { ((it.screenMs ?: 0) / 60_000).toFloat() }, color = c.accent, height = 48.dp, highlight = week.size - 1, description = "Screen time per day this week")
+                        Text("Counted screen time", style = Aiimin.type.caption)
+                        Bars(week.map { ((it.screenPersonalMs ?: it.screenMs ?: 0) / 60_000).toFloat() }, color = c.text, height = 48.dp, highlight = week.size - 1, description = "Screen time per day this week")
                     }
                 }
             }
             item {
-                Row(Modifier.fillMaxWidth().padding(top = 16.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Tag("Observed · counts fully toward your score", icon = AppIcons.CheckCircle, color = c.done)
-                    AppButton(if (refreshing) "Measuring…" else "Re-measure", { vm.refresh() }, kind = ButtonKind.GHOST, compact = true)
+                Column(Modifier.fillMaxWidth().padding(top = 16.dp)) {
+                    if (total != null) Tag("Observed · counts fully toward your score", icon = AppIcons.CheckCircle, color = c.done)
+                    AppButton(if (refreshing) "Measuring…" else "Re-measure", { vm.refresh() }, Modifier.fillMaxWidth().padding(top = 10.dp), kind = ButtonKind.SECONDARY, compact = true)
                 }
             }
+        }
+    }
+    if (checkSheet) {
+        var typed by remember { mutableStateOf("") }
+        var busy by remember { mutableStateOf(false) }
+        val toaster = aiimin.designsystem.nav.LocalToaster.current
+        val scope = androidx.compose.runtime.rememberCoroutineScope()
+        AppSheet({ checkSheet = false }, title = "Check against your phone") {
+            Text("Open Digital Wellbeing, read today's screen time, and type it here. AIIMIN keeps whichever way of measuring matches this phone best.", style = Aiimin.type.body)
+            AppButton("Open Digital Wellbeing", {
+                runCatching {
+                    context.startActivity(android.content.Intent().setClassName("com.google.android.apps.wellbeing", "com.google.android.apps.wellbeing.settings.TopLevelSettingsActivity").addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK))
+                }.recoverCatching { context.startActivity(android.content.Intent(android.provider.Settings.ACTION_SETTINGS).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)) }
+            }, kind = ButtonKind.SECONDARY, compact = true, modifier = Modifier.padding(top = 12.dp))
+            AppTextField(typed, { typed = it }, label = "Your phone says", placeholder = "1h 31m", modifier = Modifier.padding(top = 14.dp))
+            AppButton(if (busy) "Checking…" else "Save", {
+                busy = true
+                scope.launch {
+                    val msg = vm.calibrate(typed)
+                    busy = false
+                    toaster.show(msg ?: "Couldn't read screen time. Is usage access on?")
+                    if (msg != null && msg != "Type it like 1h 31m") checkSheet = false
+                }
+            }, enabled = typed.isNotBlank() && !busy, modifier = Modifier.fillMaxWidth().padding(top = 14.dp, bottom = 8.dp))
         }
     }
 }

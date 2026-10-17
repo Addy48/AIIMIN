@@ -24,8 +24,10 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.mlkit.text.recognition)
+    api(libs.play.billing)
     implementation(libs.mlkit.text.recognition.devanagari)
 
     testImplementation(libs.bundles.unit.test)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.org.json)
 }

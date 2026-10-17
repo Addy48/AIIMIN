@@ -47,7 +47,7 @@ import kotlinx.serialization.json.longOrNull
 class DayClock @Inject constructor(private val settings: SettingsStore) {
 
     val zone: ZoneId get() = ZoneId.systemDefault()
-    val rules: RulesConfig = RulesConfig.V2
+    val rules: RulesConfig = RulesConfig.V3
 
     /** A tick every minute the app is alive; screens observe it to roll over at midnight. */
     private val _tick = MutableStateFlow(System.currentTimeMillis())
@@ -177,11 +177,11 @@ class Crypto @Inject constructor() {
         return c.doFinal(cipher)
     }
 
-    fun encryptText(s: String): Pair<String, String> =
-        encrypt(s.toByteArray()).let { (c, iv) -> b64(c) to b64(iv) }
+    fun encryptText(s: String, alias: String = JOURNAL): Pair<String, String> =
+        encrypt(s.toByteArray(), alias).let { (c, iv) -> b64(c) to b64(iv) }
 
-    fun decryptText(cipher: String, iv: String): String =
-        runCatching { String(decrypt(unb64(cipher), unb64(iv))) }.getOrDefault("")
+    fun decryptText(cipher: String, iv: String, alias: String = JOURNAL): String =
+        runCatching { String(decrypt(unb64(cipher), unb64(iv), alias)) }.getOrDefault("")
 
     private fun b64(b: ByteArray) = Base64.encodeToString(b, Base64.NO_WRAP)
     private fun unb64(s: String) = Base64.decode(s, Base64.NO_WRAP)
@@ -189,6 +189,7 @@ class Crypto @Inject constructor() {
     companion object {
         const val JOURNAL = "aiimin.journal.v1"
         const val VAULT = "aiimin.vault.v1"
+        const val SESSION = "aiimin.session.v1"
         private const val TRANSFORM = "AES/GCM/NoPadding"
     }
 }

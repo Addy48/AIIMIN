@@ -113,17 +113,26 @@ fun Bars(
             val n = values.size.coerceAtLeast(1)
             val slot = this.size.width / n
             val bw = (slot * 0.62f).coerceAtLeast(2f)
+            val base = this.size.height - 1.dp.toPx()
+            // Spec §5: bars 3 dp rounded top, square bottom on a 1 dp ink baseline; empty slots get a 2 % stub.
             values.forEachIndexed { i, v ->
-                val h = (v / peak) * this.size.height * grow
+                val h = (v / peak) * (base - 2f) * grow
                 val x = i * slot + (slot - bw) / 2
                 val col = when {
                     highlight == null -> color
                     i == highlight -> color
                     else -> color.copy(alpha = 0.45f)
                 }
-                drawRoundRect(c.raised, Offset(x, 0f), Size(bw, this.size.height), CornerRadius(bw / 2))
-                if (v > 0f) drawRoundRect(col, Offset(x, this.size.height - h), Size(bw, max(h, bw)), CornerRadius(bw / 2))
+                if (v <= 0f) {
+                    drawRect(c.border, Offset(x, base - 2.dp.toPx()), Size(bw, 2.dp.toPx()))
+                } else {
+                    val hh = max(h, 3.dp.toPx())
+                    val r = minOf(3.dp.toPx(), bw / 2)
+                    drawRoundRect(col, Offset(x, base - hh), Size(bw, hh), CornerRadius(r))
+                    drawRect(col, Offset(x, base - minOf(hh, r)), Size(bw, minOf(hh, r)))
+                }
             }
+            drawRect(c.text, Offset(0f, base), Size(this.size.width, 1.dp.toPx()))
         }
         if (labels != null) {
             Row(Modifier.fillMaxWidth().padding(top = 6.dp), horizontalArrangement = Arrangement.SpaceBetween) {

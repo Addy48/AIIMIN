@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
@@ -104,6 +105,16 @@ class CalendarViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DayAgenda(emptyList(), emptyList()))
 
     fun select(d: LocalDate) { selected.value = d }
+
+    /** Day · Week · Month. */
+    val mode = MutableStateFlow(0)
+
+    /** Events of the month around the selected day, by day (week and month views). */
+    val month: StateFlow<Map<LocalDate, List<CalendarEventEntity>>> = selected.map { java.time.YearMonth.from(it) }.distinctUntilChanged().flatMapLatest { ym ->
+        val from = ym.atDay(1).minusDays(7).atStartOfDay(clock.zone).toInstant()
+        val to = ym.atEndOfMonth().plusDays(8).atStartOfDay(clock.zone).toInstant()
+        calendar.between(from, to).map { list -> list.groupBy { java.time.Instant.ofEpochMilli(it.startAt).atZone(clock.zone).toLocalDate() } }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
 
     fun save(id: String?, title: String, date: LocalDate, start: LocalTime, end: LocalTime, allDay: Boolean, location: String) = viewModelScope.launch {
         val l = clock.logical()

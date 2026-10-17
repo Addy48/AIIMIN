@@ -5,6 +5,7 @@ import aiimin.core.data.settings.AppTheme
 import aiimin.core.data.util.Dates
 import aiimin.core.engine.DayMode
 import aiimin.core.nlp.AiModule
+import aiimin.designsystem.component.Chevron
 import aiimin.designsystem.component.AppButton
 import aiimin.designsystem.component.AppSheet
 import aiimin.designsystem.component.AppTextField
@@ -81,8 +82,24 @@ fun SettingsScreen(vm: MeViewModel = hiltViewModel()) {
         TopBar("Settings", onBack = { nav.back() })
         LazyColumn(contentPadding = PaddingValues(start = Aiimin.space.gutter, end = Aiimin.space.gutter, bottom = 40.dp)) {
             item {
+                // Every settings page in one place, so nothing is only reachable from somewhere else.
+                SectionHeader("Account")
+                SettingsLink(AppIcons.UserCircle, "Account and sync", "Sign in, profile, what syncs") { nav.open(Route.Account) }
+                SettingsLink(AppIcons.Star, "Plan", "Free, Plus, Pro, Family") { nav.open(Route.Plans) }
+                SettingsLink(AppIcons.Devices, "Linked devices", "Browsers and phones on your account") { nav.open(Route.LinkedDevices) }
+                SectionHeader("App")
+                SettingsLink(AppIcons.Bell, "Notifications", "Inbox and what AIIMIN tells you") { nav.open(Route.Notifications) }
+                SettingsLink(AppIcons.Footprints, "Phone data", "Screen time, steps, sleep, work apps") { nav.open(Route.Sensors) }
+                SettingsLink(AppIcons.Wallet, "Money", "Ledgers, accounts, bank messages, payee memory") { nav.open(Route.MoneySettings) }
+                SettingsLink(AppIcons.ChatCircleText, "Assistant and voice", "What it may read, recent captures") { nav.open(Route.AiSettings) }
+                SettingsLink(AppIcons.TextAa, "Appearance", "Text size, motion") { nav.open(Route.Appearance) }
+                SettingsLink(AppIcons.Translate, "Language and region", "English (India)") { nav.open(Route.Language) }
+                SettingsLink(AppIcons.Pulse, "How AIIMIN is running", "Background jobs and their last run") { nav.open(Route.Running) }
+                SettingsLink(AppIcons.Lifebuoy, "Help", "Questions and contact") { nav.open(Route.Help) }
+                SettingsLink(AppIcons.Info, "About and legal", "Version, privacy policy, terms") { nav.open(Route.About) }
+            }
+            item {
                 SectionHeader("Look")
-                Segmented(listOf("System", "Light", "Dark"), st.theme.ordinal, { vm.update { s -> s.copy(theme = AppTheme.entries[it]) } })
                 SwitchRow("Reduce motion", st.reduceMotion, { v -> vm.update { it.copy(reduceMotion = v) } })
             }
             item {
@@ -96,15 +113,16 @@ fun SettingsScreen(vm: MeViewModel = hiltViewModel()) {
                     } + " · late entries can be filed to yesterday until noon",
                     leading = { IconTile(AppIcons.MoonStars) }, maxSubtitleLines = 2, onClick = { dayMode = true },
                 )
-                ListRow("Late-night screen time starts", subtitle = "${st.lateHour}:00", leading = { IconTile(AppIcons.Moon) }, trailing = {
-                    Row { listOf(22, 23, 0).forEach { h -> Pill(if (h == 0) "12" else "$h", st.lateHour == h, { vm.update { it.copy(lateHour = h) } }) } }
-                })
+                ListRow("Late-night screen time starts", subtitle = "Phone use after this counts as late", leading = { IconTile(AppIcons.Moon) })
+                Row(Modifier.padding(start = 52.dp, bottom = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf(22 to "10 PM", 23 to "11 PM", 0 to "Midnight").forEach { (h, label) -> Pill(label, st.lateHour == h, { vm.update { it.copy(lateHour = h) } }) }
+                }
             }
             item {
                 SectionHeader("Notifications")
                 SwitchRow("Quiet hours", st.quiet.enabled, { v -> vm.update { it.copy(quiet = it.quiet.copy(enabled = v)) } }, subtitle = "Holds back low and medium alerts. Important ones still come through.")
                 if (st.quiet.enabled) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         ListRow("From", subtitle = Dates.clock(LocalTime.of(st.quiet.fromMin / 60, st.quiet.fromMin % 60)), modifier = Modifier.weight(1f), onClick = { quietPick = "from" })
                         ListRow("Until", subtitle = Dates.clock(LocalTime.of(st.quiet.toMin / 60, st.quiet.toMin % 60)), modifier = Modifier.weight(1f), onClick = { quietPick = "to" })
                     }
@@ -123,6 +141,9 @@ fun SettingsScreen(vm: MeViewModel = hiltViewModel()) {
                     true -> "Intact — nothing changed outside AIIMIN"
                     false -> "Data was changed outside AIIMIN. Your score is greyed until you re-baseline."
                 }, leading = { IconTile(AppIcons.ShieldCheck) }, maxSubtitleLines = 2, onClick = { vm.verify() })
+                ListRow("Privacy and data", subtitle = "Where your data lives, export, erase, delete", leading = { IconTile(AppIcons.ShieldCheck) }, trailing = { Chevron() }, onClick = { nav.open(Route.Privacy) })
+                ListRow("Sync", subtitle = "What goes to aiimin.in, when, and changes to choose", leading = { IconTile(AppIcons.ArrowsClockwise) }, trailing = { Chevron() }, onClick = { nav.open(Route.SyncSettings) })
+                ListRow("Trash", subtitle = "Deleted items, kept 30 days", leading = { IconTile(AppIcons.Trash) }, trailing = { Chevron() }, onClick = { nav.open(Route.Trash) })
                 ListRow("Export everything", subtitle = "A zip of your log, tasks, notes and vault files", leading = { IconTile(AppIcons.Export) }, onClick = {
                     scope.launch {
                         val f = vm.exportAll(journal = false)
@@ -266,6 +287,7 @@ fun AiSettingsScreen(vm: MeViewModel = hiltViewModel()) {
         LazyColumn(contentPadding = PaddingValues(Aiimin.space.gutter)) {
             item {
                 Text("The assistant proposes and you approve. It never changes anything silently, never edits settled days, never touches your score, and never writes your journal.", style = Aiimin.type.body)
+                ListRow("Recent captures", subtitle = "The last 24 hours of ＋, with undo per capture", leading = { IconTile(AppIcons.Waveform) }, trailing = { Chevron() }, onClick = { nav.open(Route.RecentCaptures) })
                 SectionHeader("What it may read")
             }
             items(AiModule.entries) { m ->
@@ -293,43 +315,5 @@ fun AiSettingsScreen(vm: MeViewModel = hiltViewModel()) {
 // =================================================================== account
 
 @Composable
-fun AccountScreen(vm: AccountViewModel = hiltViewModel()) {
-    val nav = LocalNavigator.current
-    val toaster = LocalToaster.current
-    val session by vm.session.collectAsStateWithLifecycle()
-    val s by vm.settings.collectAsStateWithLifecycle()
-    val busy by vm.busy.collectAsStateWithLifecycle()
-    val msg by vm.message.collectAsStateWithLifecycle()
-    val c = Aiimin.colors
-    LaunchedEffect(msg) { msg?.let { toaster.show(it); vm.message.value = null } }
-    Column(Modifier.fillMaxSize().background(c.base)) {
-        TopBar("Account & sync", onBack = { nav.back() })
-        Column(Modifier.padding(Aiimin.space.gutter)) {
-            if (session?.signedIn == true) {
-                Panel {
-                    Text(session?.label.orEmpty(), style = Aiimin.type.headline)
-                    Text("Tasks, notes and payments sync with aiimin.in. The phone works offline and catches up.", style = Aiimin.type.caption)
-                    Text("Last sync: " + (s?.lastSyncAt?.let { java.text.DateFormat.getDateTimeInstance().format(java.util.Date(it)) } ?: "never"), style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp))
-                }
-                Spacer(Modifier.height(10.dp))
-                SwitchRow("Sync journal text", s?.journalSync == true, { vm.journalSync(it) }, subtitle = "Off by default. When off, your journal never leaves this phone.")
-                Spacer(Modifier.height(10.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    AppButton(if (busy) "Syncing…" else "Sync now", { vm.syncNow() }, Modifier.weight(1f), enabled = !busy, icon = AppIcons.ArrowsClockwise)
-                    AppButton("Sign out", { vm.signOut() }, Modifier.weight(1f), kind = ButtonKind.SECONDARY)
-                }
-            } else {
-                var id by remember { mutableStateOf("") }
-                var pin by remember { mutableStateOf("") }
-                Text("Connect aiimin.in", style = Aiimin.type.title)
-                Text("Use your OS-ID or email and your 6-digit PIN — the same as the website. You can use the app fully without an account.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 4.dp, bottom = 16.dp))
-                AppTextField(id, { id = it }, label = "OS-ID or email")
-                Spacer(Modifier.height(10.dp))
-                AppTextField(pin, { pin = it.filter(Char::isDigit).take(6) }, label = "PIN", keyboardType = KeyboardType.NumberPassword)
-                Spacer(Modifier.height(16.dp))
-                AppButton(if (busy) "Signing in…" else "Sign in", { vm.signIn(id, pin) }, Modifier.fillMaxWidth(), enabled = !busy && id.isNotBlank() && pin.length == 6)
-                Text("New here? Create your OS-ID on aiimin.in.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 12.dp))
-            }
-        }
-    }
-}
+private fun SettingsLink(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, subtitle: String, onClick: () -> Unit) =
+    ListRow(title, subtitle = subtitle, leading = { IconTile(icon) }, trailing = { Chevron() }, onClick = onClick)

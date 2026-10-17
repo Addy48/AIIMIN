@@ -1,6 +1,7 @@
 package aiimin.core.database
 
 import android.content.Context
+import androidx.room3.AutoMigration
 import androidx.room3.Database
 import androidx.room3.Room
 import androidx.room3.RoomDatabase
@@ -21,9 +22,12 @@ import kotlinx.coroutines.Dispatchers
         FocusSessionEntity::class, DocEntity::class, DocShareEntity::class, PersonEntity::class,
         EmergencyRequestEntity::class, AccessLogEntity::class, LinkEntity::class, NotificationEntity::class,
         DeviceDayEntity::class, DayStateEntity::class, ChatThreadEntity::class, ChatMessageEntity::class,
+        GoalEntity::class, SyncShadowEntity::class, SyncConflictEntity::class,
+        AccountEntity::class, BillEntity::class, PulseRunEntity::class,
     ],
-    version = 1,
+    version = 5,
     exportSchema = true,
+    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3), AutoMigration(from = 3, to = 4), AutoMigration(from = 4, to = 5)],
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun events(): EventDao
@@ -39,8 +43,12 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun links(): LinkDao
     abstract fun notifications(): NotificationDao
     abstract fun deviceDays(): DeviceDayDao
+    abstract fun pulse(): PulseDao
     abstract fun dayState(): DayStateDao
     abstract fun chat(): ChatDao
+    abstract fun goals(): GoalDao
+    abstract fun syncMeta(): SyncMetaDao
+    abstract fun ledgerExtras(): LedgerDao
 }
 
 @Module
@@ -68,6 +76,10 @@ object DatabaseModule {
     @Provides fun links(db: AppDatabase) = db.links()
     @Provides fun notifications(db: AppDatabase) = db.notifications()
     @Provides fun deviceDays(db: AppDatabase) = db.deviceDays()
+    @Provides fun pulse(db: AppDatabase) = db.pulse()
     @Provides fun dayState(db: AppDatabase) = db.dayState()
     @Provides fun chat(db: AppDatabase) = db.chat()
+    @Provides fun goals(db: AppDatabase) = db.goals()
+    @Provides fun syncMeta(db: AppDatabase) = db.syncMeta()
+    @Provides fun ledgerExtras(db: AppDatabase) = db.ledgerExtras()
 }

@@ -33,6 +33,9 @@ object Money {
         }
     }
 
+    /** Whole rupees only, for averages and projections (no fake precision). */
+    fun whole(paise: Long): String = format(((paise + 50) / 100) * 100)
+
     /** ₹1.2L / ₹45.6k for tight spaces. */
     fun short(paise: Long): String {
         val r = kotlin.math.abs(paise) / 100.0
@@ -50,14 +53,33 @@ object Money {
 
 object Dates {
     private val dayLabel = DateTimeFormatter.ofPattern("EEE d MMM", Locale.ENGLISH)
+    private val dayComma = DateTimeFormatter.ofPattern("EEE, d MMM", Locale.ENGLISH)
+    private val time12Plain = DateTimeFormatter.ofPattern("h:mm", Locale.ENGLISH)
     private val longLabel = DateTimeFormatter.ofPattern("EEEE, d MMMM", Locale.ENGLISH)
     private val time12 = DateTimeFormatter.ofPattern("h:mm a", Locale.ENGLISH)
 
     fun key(d: LocalDate): String = d.toString()
+
+    /** "just now", "12 min ago", "3 h ago": how fresh a measured number is. */
+    fun ago(epochMs: Long, now: Long = System.currentTimeMillis()): String {
+        val m = (now - epochMs) / 60_000
+        return when {
+            m < 1 -> "just now"
+            m < 60 -> "$m min ago"
+            else -> "${m / 60} h ago"
+        }
+    }
     fun parse(s: String): LocalDate = LocalDate.parse(s)
     fun short(d: LocalDate): String = dayLabel.format(d)
+    /** "Mon, 12 Oct" (plan §2.13). */
+    fun dayMonth(d: LocalDate): String = dayComma.format(d)
+    fun dayMonthOf(d: LocalDate): String = dayComma.format(d)
+    fun shortDm(d: LocalDate): String = DateTimeFormatter.ofPattern("d MMM", Locale.ENGLISH).format(d)
+    /** "3:00" without the meridiem, for the time column. */
+    fun clockPlain(t: LocalTime): String = time12Plain.format(t)
+    fun meridiem(t: LocalTime): String = if (t.hour < 12) "AM" else "PM"
     fun long(d: LocalDate): String = longLabel.format(d)
-    fun clock(t: LocalTime): String = time12.format(t).replace("AM", "am").replace("PM", "pm")
+    fun clock(t: LocalTime): String = time12.format(t)
     fun clock(hhmm: String?): String? = hhmm?.let { runCatching { clock(LocalTime.parse(it)) }.getOrNull() }
 
     /** "Today", "Tomorrow", "Yesterday", weekday within a week, else "12 Oct". */

@@ -1,5 +1,9 @@
 package aiimin.designsystem.component
 
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
 import aiimin.designsystem.icon.AppIcons
 import aiimin.designsystem.theme.Aiimin
 import aiimin.designsystem.theme.Motion
@@ -72,11 +76,13 @@ fun AppButton(
     compact: Boolean = false,
 ) {
     val c = Aiimin.colors
+    // Handoff §5.7: primary = ink fill + white text; secondary = transparent with a 1dp outline. No gradients, no pills.
+    val onInk = if (c.isDark) c.base else Color.White
     val (bg, fg, border) = when (kind) {
-        ButtonKind.PRIMARY -> Triple(c.accent, c.onAccent, null)
-        ButtonKind.SECONDARY -> Triple(c.raised, c.text, c.border)
-        ButtonKind.GHOST -> Triple(Color.Transparent, c.text, null)
-        ButtonKind.DANGER -> Triple(c.dangerSoft, c.danger, null)
+        ButtonKind.PRIMARY -> Triple(c.text, onInk, null)
+        ButtonKind.SECONDARY -> Triple(Color.Transparent, c.text, c.borderStrong)
+        ButtonKind.GHOST -> Triple(Color.Transparent, c.accentText, null)
+        ButtonKind.DANGER -> Triple(Color.Transparent, c.warn, c.warn)
     }
     Row(
         modifier
@@ -84,8 +90,8 @@ fun AppButton(
             .pressable(if (enabled) onClick else null)
             .clip(Shapes.control)
             .background(bg)
-            .then(if (border != null) Modifier.border(1.dp, border, Shapes.control) else Modifier)
-            .heightIn(min = if (compact) 36.dp else 48.dp)
+            .then(if (border != null) Modifier.border(1.5.dp, border, Shapes.control) else Modifier)
+            .heightIn(min = if (compact) 40.dp else 52.dp)
             .padding(horizontal = if (compact) 14.dp else 20.dp),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
@@ -94,7 +100,15 @@ fun AppButton(
             Icon(icon, null, tint = fg, modifier = Modifier.size(if (compact) 16.dp else 18.dp))
             Spacer(Modifier.width(8.dp))
         }
-        Text(text, style = Aiimin.type.bodyStrong.copy(color = fg), maxLines = 1)
+        // Labels shrink a step at large text sizes instead of being cut ("Plan tomorrow" → "Plan").
+        val size = if (compact) 14.sp else 15.5.sp
+        androidx.compose.foundation.text.BasicText(
+            text,
+            style = Aiimin.type.bodyStrong.copy(color = fg, fontSize = size),
+            maxLines = 1,
+            autoSize = androidx.compose.foundation.text.TextAutoSize.StepBased(minFontSize = 11.sp, maxFontSize = size, stepSize = 0.5.sp),
+            modifier = Modifier.weight(1f, fill = false),
+        )
     }
 }
 
@@ -114,7 +128,7 @@ fun AppIconButton(
     Box(
         modifier
             .size(size)
-            .clip(CircleShape)
+            .clip(Shapes.control)
             .background(background)
             .clickable(role = Role.Button, onClickLabel = contentDescription, onClick = onClick)
             .semantics { this.contentDescription = contentDescription },
@@ -127,8 +141,8 @@ fun AppIconButton(
 // ------------------------------------------------------------------ check
 
 /**
- * The completion circle. Fills with a spring and a tick, with a light haptic;
- * unchecking is quiet. 28 dp visual inside a 44 dp target.
+ * The completion checkbox (handoff §5.10): 22 dp, radius 6. Off = 1.5 dp ring,
+ * on = ink fill with a white check that draws in over 150 ms. 44 dp touch target.
  */
 @Composable
 fun CheckCircle(
@@ -136,16 +150,18 @@ fun CheckCircle(
     onToggle: () -> Unit,
     label: String,
     modifier: Modifier = Modifier,
-    color: Color = Aiimin.colors.done,
+    color: Color = Aiimin.colors.text,
+    proof: Boolean = false,
 ) {
     val c = Aiimin.colors
     val haptics = LocalHapticFeedback.current
     val fill by animateColorAsState(if (checked) color else Color.Transparent, tween(Motion.FAST), label = "fill")
-    val tick by animateFloatAsState(if (checked) 1f else 0f, spring(dampingRatio = 0.45f, stiffness = Spring.StiffnessMediumLow), label = "tick")
+    val tick by animateFloatAsState(if (checked) 1f else 0f, tween(150, easing = Motion.enter), label = "tick")
+    val shape = RoundedCornerShape(6.dp)
     Box(
         modifier
             .size(44.dp)
-            .clip(CircleShape)
+            .clip(Shapes.small)
             .clickable(role = Role.Checkbox, onClickLabel = label) {
                 if (!checked) haptics.performHapticFeedback(HapticFeedbackType.ToggleOn)
                 onToggle()
@@ -158,14 +174,15 @@ fun CheckCircle(
     ) {
         Box(
             Modifier
-                .size(26.dp)
-                .clip(CircleShape)
+                .size(22.dp)
+                .then(if (proof && checked) Modifier.border(1.5.dp, color, RoundedCornerShape(8.dp)).padding(2.5.dp) else Modifier)
+                .clip(shape)
                 .background(fill)
-                .border(1.75.dp, if (checked) color else c.borderStrong, CircleShape),
+                .then(if (checked) Modifier else Modifier.border(1.5.dp, c.textFaint, shape)),
             contentAlignment = Alignment.Center,
         ) {
             if (tick > 0.01f) {
-                Icon(AppIcons.Check, null, tint = Color.White, modifier = Modifier.size(14.dp).scale(tick))
+                Icon(AppIcons.Check, null, tint = if (c.isDark) c.base else Color.White, modifier = Modifier.size(15.dp).scale(0.6f + 0.4f * tick).alpha(tick))
             }
         }
     }
@@ -195,22 +212,24 @@ fun Pill(
     count: Int? = null,
 ) {
     val c = Aiimin.colors
-    val bg by animateColorAsState(if (selected) c.accentSoft else c.raised, tween(Motion.FAST), label = "pillBg")
-    val fg = if (selected) c.accent else c.textMuted
+    val onInk = if (c.isDark) c.base else Color.White
+    val bg by animateColorAsState(if (selected) c.text else Color.Transparent, tween(Motion.FAST), label = "pillBg")
+    val fg by animateColorAsState(if (selected) onInk else c.text, tween(Motion.FAST), label = "pillFg")
+    val chip = RoundedCornerShape(6.dp)
     Row(
         modifier
-            .clip(Shapes.control)
+            .pressable(onClick, role = Role.Tab)
+            .clip(chip)
             .background(bg)
-            .border(1.dp, if (selected) c.accent.copy(alpha = 0.5f) else c.border, Shapes.control)
-            .clickable(role = Role.Tab, onClick = onClick)
-            .heightIn(min = 34.dp)
+            .then(if (selected) Modifier else Modifier.border(1.dp, c.borderStrong, chip))
+            .heightIn(min = 36.dp)
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        if (icon != null) Icon(icon, null, tint = fg, modifier = Modifier.size(15.dp))
-        Text(text, style = Aiimin.type.label.copy(color = fg), maxLines = 1)
-        if (count != null) Text(count.toString(), style = Aiimin.type.caption.copy(color = fg.copy(alpha = 0.7f), fontFeatureSettings = "tnum"))
+        if (icon != null) Icon(icon, null, tint = fg, modifier = Modifier.size(16.dp))
+        Text(text, style = Aiimin.type.label.copy(color = fg, fontSize = 14.sp), maxLines = 1)
+        if (count != null) Text(count.toString(), style = Aiimin.type.caption.copy(color = fg.copy(alpha = 0.7f)))
     }
 }
 
@@ -229,19 +248,24 @@ fun PillRow(content: @Composable () -> Unit) {
 @Composable
 fun Segmented(options: List<String>, selected: Int, onSelect: (Int) -> Unit, modifier: Modifier = Modifier) {
     val c = Aiimin.colors
+    val inner = RoundedCornerShape(8.dp)
     BoxWithConstraints(
-        modifier.fillMaxWidth().height(38.dp).clip(Shapes.control).background(c.raised).border(1.dp, c.border, Shapes.control).padding(3.dp),
+        modifier.fillMaxWidth().height(40.dp).clip(Shapes.control).background(c.segmentTrack).padding(3.dp),
     ) {
         val w = maxWidth / options.size
-        val x by animateDpAsState(w * selected, spring(dampingRatio = 0.85f, stiffness = Spring.StiffnessMediumLow), label = "thumb")
-        Box(Modifier.offset(x = x).width(w).fillMaxHeight().clip(Shapes.control).background(c.overlay))
+        val x by animateDpAsState(w * selected, spring(dampingRatio = 0.85f, stiffness = 400f), label = "thumb")
+        Box(
+            Modifier.offset(x = x).width(w).fillMaxHeight()
+                .shadow(1.dp, inner, ambientColor = Color(0x33000000), spotColor = Color(0x33000000))
+                .clip(inner).background(if (c.isDark) c.overlay else Color.White),
+        )
         Row(Modifier.fillMaxWidth()) {
             options.forEachIndexed { i, o ->
                 Box(
-                    Modifier.width(w).fillMaxHeight().clip(Shapes.control).clickable(role = Role.Tab) { onSelect(i) },
+                    Modifier.width(w).fillMaxHeight().clip(inner).clickable(role = Role.Tab) { onSelect(i) },
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(o, style = Aiimin.type.label.copy(color = if (i == selected) c.text else c.textMuted), maxLines = 1, textAlign = TextAlign.Center)
+                    Text(o, style = Aiimin.type.label.copy(color = c.text, fontWeight = FontWeight.SemiBold), maxLines = 1, textAlign = TextAlign.Center)
                 }
             }
         }
@@ -260,6 +284,7 @@ fun AppTextField(
     singleLine: Boolean = true,
     minLines: Int = 1,
     keyboardType: KeyboardType = KeyboardType.Text,
+    capitalization: androidx.compose.ui.text.input.KeyboardCapitalization = androidx.compose.ui.text.input.KeyboardCapitalization.None,
     leading: ImageVector? = null,
     textStyle: TextStyle = Aiimin.type.body,
     onDone: (() -> Unit)? = null,
@@ -273,9 +298,9 @@ fun AppTextField(
         Row(
             Modifier
                 .fillMaxWidth()
-                .clip(Shapes.row)
-                .background(c.raised)
-                .border(1.dp, c.border, Shapes.row)
+                .clip(Shapes.control)
+                .background(c.surface)
+                .border(1.dp, c.borderStrong, Shapes.control)
                 .heightIn(min = 48.dp)
                 .padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = if (singleLine) Alignment.CenterVertically else Alignment.Top,
@@ -293,7 +318,7 @@ fun AppTextField(
                     minLines = minLines,
                     textStyle = textStyle,
                     cursorBrush = SolidColor(c.accent),
-                    keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+                    keyboardOptions = KeyboardOptions(keyboardType = keyboardType, capitalization = capitalization),
                     keyboardActions = KeyboardActions(onDone = { onDone?.invoke() }, onSend = { onDone?.invoke() }),
                     modifier = Modifier.fillMaxWidth().semantics { contentDescription = label ?: placeholder },
                 )
@@ -314,13 +339,13 @@ fun SwitchRow(title: String, checked: Boolean, onChange: (Boolean) -> Unit, subt
         leading = icon?.let { { IconTile(it) } },
         onClick = { onChange(!checked) },
         trailing = {
-            val x by animateDpAsState(if (checked) 18.dp else 0.dp, tween(Motion.FAST), label = "knob")
-            val track by animateColorAsState(if (checked) c.accent else c.overlay, tween(Motion.FAST), label = "track")
+            val x by animateDpAsState(if (checked) 16.dp else 0.dp, tween(Motion.FAST, easing = Motion.enter), label = "knob")
+            val track by animateColorAsState(if (checked) c.text else c.borderStrong, tween(Motion.FAST), label = "track")
             Box(
-                Modifier.width(44.dp).height(26.dp).clip(Shapes.pill).background(track).padding(3.dp)
+                Modifier.width(46.dp).height(28.dp).clip(Shapes.control).background(track).padding(3.dp)
                     .semantics { stateDescription = if (checked) "On" else "Off" },
             ) {
-                Box(Modifier.offset(x = x).size(20.dp).clip(CircleShape).background(Color.White))
+                Box(Modifier.offset(x = x + 2.dp).size(22.dp).clip(RoundedCornerShape(6.dp)).background(if (checked && c.isDark) c.base else Color.White))
             }
         },
     )

@@ -20,6 +20,34 @@ import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
+/** Something a note can link to with [[ ]] (N3). */
+data class LinkTarget(val kind: String, val id: String, val title: String, val subtitle: String)
+
+@Singleton
+class LinkSearch @Inject constructor(
+    private val notes: NoteDao,
+    private val tasks: aiimin.core.database.TaskDao,
+    private val docs: aiimin.core.database.VaultDao,
+    private val people: aiimin.core.database.FamilyDao,
+    private val money: aiimin.core.database.MoneyDao,
+) {
+    /** Notes, tasks, documents, people and payments matching [q], best matches first. */
+    suspend fun find(q: String, excludeNote: String? = null): List<LinkTarget> {
+        val like = "%${q.trim()}%"
+        val out = mutableListOf<LinkTarget>()
+        notes.search(like).filter { it.id != excludeNote && it.title.isNotBlank() }.take(8).forEach { out += LinkTarget("note", it.id, it.title, "Note") }
+        tasks.search(like).take(6).forEach { out += LinkTarget("task", it.id, it.title, "Task" + (it.day?.let { d -> " · $d" } ?: " · Someday")) }
+        docs.search(like).filter { !it.sensitive }.take(6).forEach { out += LinkTarget("doc", it.id, it.title, "Document · ${it.category}") }
+        people.allNow().filter { q.isBlank() || it.name.contains(q.trim(), true) }.filter { it.id != "household" }.take(6).forEach { out += LinkTarget("person", it.id, it.name, it.relation.ifBlank { "Person" }) }
+        money.search(like).take(5).forEach { out += LinkTarget("txn", it.id, it.title, "Payment · ${aiimin.core.data.util.Money.whole(it.amountPaise)} · ${it.day}") }
+        val ql = q.trim().lowercase()
+        return out.sortedBy { if (it.title.lowercase().startsWith(ql)) 0 else 1 }
+    }
+
+    /** What a [[Title]] chip opens: a note first, then a task, document, person or payment with that exact title. */
+    suspend fun resolve(title: String): LinkTarget? = find(title).firstOrNull { it.title.equals(title.trim(), ignoreCase = true) }
+}
+
 @Singleton
 class NoteRepository @Inject constructor(
     private val dao: NoteDao,
@@ -118,7 +146,7 @@ class JournalRepository @Inject constructor(
         dao.upsert(
             JournalEntity(
                 id, existing?.day ?: day.toString(), cipher, iv, mood?.coerceIn(1, 5), Codecs.encodeList(tags), q.words, q.ok,
-                existing?.createdAt ?: now, now,
+                existing?.createdAt ?: now, now, remoteId = existing?.remoteId,
             ),
         )
         log.log("journal.entry", "journal", id, mapOf("words" to q.words, "ok" to q.ok), if (forYesterday) Tier.D else if (q.ok) Tier.B else Tier.C, day = day)

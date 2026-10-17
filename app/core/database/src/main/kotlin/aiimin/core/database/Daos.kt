@@ -84,11 +84,28 @@ interface TaskDao {
     @Query("SELECT * FROM tasks WHERE deleted = 0 AND remoteId IS NULL")
     suspend fun unsynced(): List<TaskEntity>
 
+    @Query("SELECT * FROM tasks WHERE deleted = 1 AND remoteId IS NOT NULL")
+    suspend fun deletedWithRemote(): List<TaskEntity>
+
+    @Query("SELECT * FROM tasks WHERE deleted = 0 AND remoteId IS NOT NULL")
+    suspend fun withRemote(): List<TaskEntity>
+
     @Query("SELECT * FROM tasks WHERE remoteId = :remoteId")
     suspend fun byRemote(remoteId: String): TaskEntity?
 
     @Query("SELECT * FROM tasks WHERE deleted = 0 AND (title LIKE :q OR notes LIKE :q) LIMIT 30")
     suspend fun search(q: String): List<TaskEntity>
+
+    /** Trash (G7): soft-deleted, newest first. */
+    @Query("SELECT * FROM tasks WHERE deleted = 1 ORDER BY updatedAt DESC")
+    fun trashed(): Flow<List<TaskEntity>>
+
+    /** Past the 30-day window and already settled with the web. */
+    @Query("DELETE FROM tasks WHERE deleted = 1 AND remoteId IS NULL AND updatedAt < :before")
+    suspend fun purgeTrashed(before: Long): Int
+
+    @Query("DELETE FROM tasks WHERE id = :id AND deleted = 1")
+    suspend fun deleteForever(id: String)
 }
 
 @Dao
@@ -109,6 +126,28 @@ interface CalendarDao {
 
     @Query("SELECT * FROM calendar_events WHERE deleted = 0 AND title LIKE :q LIMIT 30")
     suspend fun search(q: String): List<CalendarEventEntity>
+
+    /** Only events made here travel; vault and task markers are derived on each side. */
+    @Query("SELECT * FROM calendar_events WHERE deleted = 0 AND source = 'local' AND remoteId IS NULL")
+    suspend fun unsynced(): List<CalendarEventEntity>
+
+    @Query("SELECT * FROM calendar_events WHERE deleted = 1 AND remoteId IS NOT NULL")
+    suspend fun deletedWithRemote(): List<CalendarEventEntity>
+
+    @Query("SELECT * FROM calendar_events WHERE deleted = 0 AND remoteId IS NOT NULL")
+    suspend fun withRemote(): List<CalendarEventEntity>
+
+    @Query("SELECT * FROM calendar_events WHERE remoteId = :remoteId LIMIT 1")
+    suspend fun byRemote(remoteId: String): CalendarEventEntity?
+
+    @Query("SELECT * FROM calendar_events WHERE deleted = 1 AND source = 'local' ORDER BY updatedAt DESC")
+    fun trashed(): Flow<List<CalendarEventEntity>>
+
+    @Query("DELETE FROM calendar_events WHERE deleted = 1 AND remoteId IS NULL AND updatedAt < :before")
+    suspend fun purgeTrashed(before: Long): Int
+
+    @Query("DELETE FROM calendar_events WHERE id = :id AND deleted = 1")
+    suspend fun deleteForever(id: String)
 }
 
 @Dao
@@ -140,6 +179,18 @@ interface MinimumDao {
 
     @Query("SELECT * FROM minimum_ticks WHERE day >= :from ORDER BY day")
     fun ticksSince(from: String): Flow<List<MinimumTickEntity>>
+
+    @Query("SELECT * FROM minimum_ticks WHERE synced = 0 AND day >= :from")
+    suspend fun unsyncedTicks(from: String): List<MinimumTickEntity>
+
+    @Query("UPDATE minimum_ticks SET synced = 1 WHERE minimumId = :id AND day = :day AND updatedAt = :updatedAt")
+    suspend fun markTickSynced(id: String, day: String, updatedAt: Long)
+
+    @Query("SELECT * FROM minimums WHERE remoteId = :remoteId LIMIT 1")
+    suspend fun byRemote(remoteId: String): MinimumEntity?
+
+    @Query("SELECT * FROM minimum_ticks WHERE minimumId = :id AND day >= :from")
+    suspend fun ticksFor(id: String, from: String): List<MinimumTickEntity>
 }
 
 @Dao
@@ -157,6 +208,15 @@ interface MoneyDao {
 
     @Query("SELECT * FROM txns WHERE deleted = 0 ORDER BY at DESC LIMIT :limit")
     fun recent(limit: Int): Flow<List<TxnEntity>>
+
+    @Query("SELECT * FROM txns WHERE remoteId = :remoteId LIMIT 1")
+    suspend fun byRemote(remoteId: String): TxnEntity?
+
+    @Query("SELECT * FROM txns WHERE deleted = 1 AND remoteId IS NOT NULL AND remoteId != 'sent'")
+    suspend fun deletedWithRemote(): List<TxnEntity>
+
+    @Query("SELECT COUNT(*) FROM txns WHERE deleted = 0")
+    suspend fun count(): Int
 
     @Query("SELECT COUNT(*) FROM txns WHERE reference = :ref AND deleted = 0")
     suspend fun countByRef(ref: String): Int
@@ -177,6 +237,10 @@ interface MoneyDao {
 
     @Query("SELECT COUNT(*) FROM txn_drafts WHERE reference = :ref")
     suspend fun draftCountByRef(ref: String): Int
+
+    /** Same message already seen (any status), for messages without a bank reference. */
+    @Query("SELECT COUNT(*) FROM txn_drafts WHERE raw = :raw")
+    suspend fun draftCountByRaw(raw: String): Int
 
     @Upsert suspend fun upsertRule(r: PayeeRuleEntity)
 
@@ -219,6 +283,15 @@ interface NoteDao {
 
     @Query("SELECT * FROM notes WHERE remoteId = :remoteId")
     suspend fun byRemote(remoteId: String): NoteEntity?
+
+    @Query("SELECT * FROM notes WHERE deleted = 1 ORDER BY updatedAt DESC")
+    fun trashed(): Flow<List<NoteEntity>>
+
+    @Query("DELETE FROM notes WHERE deleted = 1 AND dirty = 0 AND updatedAt < :before")
+    suspend fun purgeTrashed(before: Long): Int
+
+    @Query("DELETE FROM notes WHERE id = :id AND deleted = 1")
+    suspend fun deleteForever(id: String)
 }
 
 @Dao
@@ -239,6 +312,12 @@ interface JournalDao {
 
     @Query("SELECT * FROM journal WHERE dirty = 1")
     suspend fun dirty(): List<JournalEntity>
+
+    @Query("SELECT * FROM journal WHERE day = :day AND deleted = 0 ORDER BY createdAt")
+    suspend fun dayNow(day: String): List<JournalEntity>
+
+    @Query("UPDATE journal SET dirty = 0, remoteId = :remoteId WHERE id = :id AND updatedAt = :updatedAt")
+    suspend fun markSynced(id: String, remoteId: String?, updatedAt: Long)
 }
 
 @Dao
@@ -346,6 +425,12 @@ interface NotificationDao {
 
     @Query("UPDATE notifications SET dismissed = 1 WHERE id = :id")
     suspend fun dismiss(id: String)
+
+    @Query("SELECT * FROM notifications WHERE dismissed = 0")
+    suspend fun openNow(): List<NotificationEntity>
+
+    @Query("UPDATE notifications SET dismissed = 1 WHERE id IN (:ids)")
+    suspend fun dismissAll(ids: List<String>)
 }
 
 @Dao
@@ -405,4 +490,159 @@ interface ChatDao {
 
     @Query("DELETE FROM chat_messages WHERE threadId = :id")
     suspend fun deleteMessages(id: String)
+}
+
+@Dao
+interface GoalDao {
+    @Upsert suspend fun upsert(g: GoalEntity)
+
+    @Query("SELECT * FROM goals WHERE deleted = 0 ORDER BY createdAt")
+    fun all(): Flow<List<GoalEntity>>
+
+    @Query("SELECT * FROM goals WHERE deleted = 0 ORDER BY createdAt")
+    suspend fun allNow(): List<GoalEntity>
+
+    @Query("SELECT * FROM goals WHERE id = :id")
+    suspend fun get(id: String): GoalEntity?
+
+    @Query("SELECT * FROM goals WHERE remoteId = :remoteId LIMIT 1")
+    suspend fun byRemote(remoteId: String): GoalEntity?
+
+    @Query("SELECT * FROM goals WHERE deleted = 0 AND remoteId IS NULL")
+    suspend fun unsynced(): List<GoalEntity>
+
+    @Query("SELECT * FROM goals WHERE deleted = 1 AND remoteId IS NOT NULL")
+    suspend fun deletedWithRemote(): List<GoalEntity>
+
+    @Query("SELECT * FROM goals WHERE deleted = 0 AND remoteId IS NOT NULL")
+    suspend fun withRemote(): List<GoalEntity>
+
+    @Query("SELECT * FROM goals WHERE deleted = 1 ORDER BY updatedAt DESC")
+    fun trashed(): Flow<List<GoalEntity>>
+
+    @Query("DELETE FROM goals WHERE deleted = 1 AND remoteId IS NULL AND updatedAt < :before")
+    suspend fun purgeTrashed(before: Long): Int
+
+    @Query("DELETE FROM goals WHERE id = :id AND deleted = 1")
+    suspend fun deleteForever(id: String)
+
+    @Query("SELECT COUNT(*) FROM goals")
+    suspend fun count(): Int
+}
+
+@Dao
+interface SyncMetaDao {
+    @Upsert suspend fun putShadow(s: SyncShadowEntity)
+
+    @Query("SELECT * FROM sync_shadow WHERE kind = :kind AND localId = :localId")
+    suspend fun shadow(kind: String, localId: String): SyncShadowEntity?
+
+    @Query("DELETE FROM sync_shadow WHERE kind = :kind AND localId = :localId")
+    suspend fun dropShadow(kind: String, localId: String)
+
+    @Upsert suspend fun putConflict(c: SyncConflictEntity)
+
+    @Query("SELECT * FROM sync_conflicts WHERE resolved = 0 ORDER BY createdAt DESC")
+    fun openConflicts(): Flow<List<SyncConflictEntity>>
+
+    @Query("SELECT * FROM sync_conflicts WHERE resolved = 0 AND kind = :kind AND localId = :localId LIMIT 1")
+    suspend fun openFor(kind: String, localId: String): SyncConflictEntity?
+
+    @Query("SELECT * FROM sync_conflicts WHERE id = :id")
+    suspend fun conflict(id: String): SyncConflictEntity?
+
+    @Query("UPDATE sync_conflicts SET resolved = 1 WHERE id = :id")
+    suspend fun resolve(id: String)
+
+    @Query("DELETE FROM sync_conflicts WHERE resolved = 1 AND createdAt < :before")
+    suspend fun purgeResolved(before: Long)
+
+    @Query("DELETE FROM sync_shadow")
+    suspend fun clearShadows()
+
+    @Query("DELETE FROM sync_conflicts")
+    suspend fun clearConflicts()
+
+    // Unlinking (sign-out, wiped server): the phone keeps everything, with no ties to an account.
+    @Query("UPDATE tasks SET remoteId = NULL")
+    suspend fun unlinkTasks()
+
+    @Query("UPDATE notes SET remoteId = NULL, dirty = CASE WHEN deleted = 0 THEN 1 ELSE 0 END")
+    suspend fun unlinkNotes()
+
+    @Query("UPDATE txns SET remoteId = NULL")
+    suspend fun unlinkTxns()
+
+    @Query("UPDATE calendar_events SET remoteId = NULL")
+    suspend fun unlinkEvents()
+
+    @Query("UPDATE goals SET remoteId = NULL")
+    suspend fun unlinkGoals()
+
+    @Query("UPDATE minimums SET remoteId = NULL")
+    suspend fun unlinkMinimums()
+
+    @Query("UPDATE minimum_ticks SET synced = 0")
+    suspend fun unlinkTicks()
+
+    @Query("UPDATE journal SET remoteId = NULL, dirty = CASE WHEN deleted = 0 THEN 1 ELSE 0 END")
+    suspend fun unlinkJournal()
+}
+
+/** Accounts, bills and payee memory (Money v2). */
+@Dao
+interface LedgerDao {
+    @Upsert suspend fun upsertAccount(a: AccountEntity)
+
+    @Query("SELECT * FROM accounts WHERE archived = 0 ORDER BY `primary` DESC, type = 'CASH', createdAt")
+    fun accounts(): Flow<List<AccountEntity>>
+
+    @Query("SELECT * FROM accounts ORDER BY createdAt")
+    suspend fun accountsNow(): List<AccountEntity>
+
+    @Query("SELECT * FROM accounts WHERE id = :id")
+    suspend fun account(id: String): AccountEntity?
+
+    @Query("UPDATE accounts SET `primary` = 0 WHERE ledger = :ledger AND id != :keep")
+    suspend fun clearPrimary(ledger: String, keep: String)
+
+    @Upsert suspend fun upsertBill(b: BillEntity)
+
+    @Query("SELECT * FROM bills WHERE status != 'DISMISSED' ORDER BY status = 'SUGGESTED' DESC, nextDue")
+    fun bills(): Flow<List<BillEntity>>
+
+    @Query("SELECT * FROM bills")
+    suspend fun billsNow(): List<BillEntity>
+
+    @Query("SELECT * FROM bills WHERE id = :id")
+    suspend fun bill(id: String): BillEntity?
+
+    @Query("SELECT * FROM payee_rules ORDER BY hits DESC, updatedAt DESC")
+    fun rules(): Flow<List<PayeeRuleEntity>>
+
+    @Query("DELETE FROM payee_rules WHERE `key` = :key")
+    suspend fun deleteRule(key: String)
+
+    @Query("SELECT * FROM txns WHERE deleted = 0 AND day >= :from ORDER BY at")
+    suspend fun txnsSince(from: String): List<TxnEntity>
+
+    @Query("SELECT * FROM txns WHERE deleted = 0 AND splits != '[]' ORDER BY at DESC")
+    fun splitTxns(): Flow<List<TxnEntity>>
+
+    @Query("SELECT MAX(at) FROM txns WHERE account4 = :last4 AND source IN ('sms', 'notification')")
+    suspend fun lastAlertAt(last4: String): Long?
+
+    @Query("SELECT DISTINCT account4 FROM txns WHERE account4 IS NOT NULL UNION SELECT DISTINCT account4 FROM txn_drafts WHERE account4 IS NOT NULL")
+    suspend fun knownLast4(): List<String>
+}
+
+@Dao
+interface PulseDao {
+    @Upsert suspend fun upsert(r: PulseRunEntity)
+
+    @Query("SELECT * FROM pulse_runs")
+    suspend fun all(): List<PulseRunEntity>
+
+    @Query("SELECT * FROM pulse_runs ORDER BY job")
+    fun observe(): Flow<List<PulseRunEntity>>
 }

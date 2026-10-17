@@ -46,6 +46,7 @@ class NotificationRepository @Inject constructor(
     private val tasks: TaskDao,
     private val calendar: CalendarDao,
     private val money: MoneyDao,
+    private val ledger: aiimin.core.database.LedgerDao,
     private val life: LifeRepository,
     private val settings: SettingsStore,
     private val clock: DayClock,
@@ -56,6 +57,7 @@ class NotificationRepository @Inject constructor(
     suspend fun dismiss(id: String) = dao.dismiss(id)
 
     suspend fun run() {
+        collapseRepeats()
         val today = clock.today()
         val now = LocalTime.now(clock.zone)
 
@@ -70,6 +72,22 @@ class NotificationRepository @Inject constructor(
                 else -> "Expires in $left days, on ${LocalDate.parse(d.expires).let { "${it.dayOfMonth} ${it.month.name.lowercase().replaceFirstChar(Char::uppercase).take(3)}" }}."
             }
             emit("doc:${d.id}:$t", d.title, body, "doc", d.id, if (t <= 30) 2 else 1)
+        }
+
+        // NT23 · vault backup overdue: 14 days without one (and again at 30), only once there are documents.
+        val docsHeld = vault.allNow().count { !it.deleted }
+        if (docsHeld > 0) {
+            val last = context.getSharedPreferences(aiimin.core.data.vault.VaultBackupRepository.PREFS, Context.MODE_PRIVATE).getLong("last_at", 0L)
+            val days = if (last == 0L) null else ChronoUnit.DAYS.between(java.time.Instant.ofEpochMilli(last).atZone(clock.zone).toLocalDate(), today)
+            val step = when { days == null -> "never"; days >= 30 -> "30"; days >= 14 -> "14"; else -> null }
+            if (step != null) emit("backup:$step", "Back up your vault", if (days == null) "Your documents live only on this phone. Keep a backup somewhere you trust." else "Last backup $days days ago.", "backup", null, 1)
+        }
+
+        // NT2 · a confirmed bill due tomorrow (reminder on, not AutoPay).
+        for (b in ledger.billsNow().filter { it.status == "CONFIRMED" && it.remind && !it.autopay }) {
+            if (LocalDate.parse(b.nextDue) == today.plusDays(1)) {
+                emit("bill:${b.id}:${b.nextDue}", "${b.title} ${aiimin.core.data.util.Money.whole(b.amountPaise)} is due tomorrow", "Mark it paid in Bills once it's done.", "bills", b.id, 1)
+            }
         }
 
         // Events starting within 15 minutes.
@@ -120,9 +138,19 @@ class NotificationRepository @Inject constructor(
         }
     }
 
+    /**
+     * Rules keyed by day ("inbox:2026-10-17", "task:<id>:2026-10-17") fire again each day; only the
+     * newest of each family stays in the list, so yesterday's "6 payments to review" never piles up.
+     */
+    private suspend fun collapseRepeats() {
+        val stale = dao.openNow().groupBy { family(it.ruleKey) }.values.flatMap { g -> g.sortedByDescending { it.at }.drop(1) }
+        if (stale.isNotEmpty()) dao.dismissAll(stale.map { it.id })
+    }
+
     private suspend fun emit(key: String, title: String, body: String, route: String, arg: String?, priority: Int) {
         val n = NotificationEntity(newId(), key, title, body, System.currentTimeMillis(), route, arg, priority)
         if (dao.insertIfNew(n) == -1L) return
+        collapseRepeats()
         val s = settings.current()
         val mins = LocalTime.now(clock.zone).let { it.hour * 60 + it.minute }
         val quiet = s.quiet.enabled && if (s.quiet.fromMin <= s.quiet.toMin) mins in s.quiet.fromMin until s.quiet.toMin else mins >= s.quiet.fromMin || mins < s.quiet.toMin
@@ -166,4 +194,10 @@ class NotificationRepository @Inject constructor(
             nm.createNotificationChannel(NotificationChannel(CH_FOCUS, "Focus timer", NotificationManager.IMPORTANCE_LOW).apply { description = "The running focus session" })
         }
     }
+}
+
+/** "inbox:2026-10-17" → "inbox:", "task:abc:2026-10-17" → "task:abc:"; keys without a date are their own family. */
+internal fun family(ruleKey: String): String {
+    val last = ruleKey.substringAfterLast(':', "")
+    return if (Regex("\\d{4}-\\d{2}-\\d{2}").matches(last)) ruleKey.substringBeforeLast(':') + ":" else ruleKey
 }

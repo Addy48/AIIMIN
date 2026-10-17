@@ -2,7 +2,9 @@ package aiimin.feature.me
 
 import aiimin.core.data.app.ActivityRepository
 import aiimin.core.data.app.ExportRepository
-import aiimin.core.data.app.Maintenance
+import aiimin.core.data.pulse.Pulse
+import aiimin.core.data.pulse.Reason
+import aiimin.core.engine.pulse.Job
 import aiimin.core.data.app.PreferencesRepository
 import aiimin.core.data.app.SearchHit
 import aiimin.core.data.app.SearchRepository
@@ -46,11 +48,22 @@ class MeViewModel @Inject constructor(
     private val log: EventLogger,
     private val export: ExportRepository,
     auth: AuthRepository,
+    notes: aiimin.core.data.notes.NoteRepository,
+    calendar: aiimin.core.data.plan.CalendarRepository,
+    billing: aiimin.core.data.plan.PlayBillingRepository,
 ) : ViewModel() {
+    val plan = kotlinx.coroutines.flow.MutableStateFlow(aiimin.core.data.plan.Plan.FREE).also { f ->
+        viewModelScope.launch { runCatching { billing.refreshPurchases() }; billing.entitlement.collect { f.value = it.plan } }
+    }
     val life = life.view
     val settings: StateFlow<AppSettings?> = prefs.state.stateIn(viewModelScope, SharingStarted.Eagerly, null)
     val session = auth.session.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
     val integrity = MutableStateFlow<Boolean?>(null)
+    /** (notes, pinned) for the Workspace caption. */
+    val noteCounts: StateFlow<Pair<Int, Int>> = notes.all().mapLatest { l -> l.size to l.count { it.pinned } }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0 to 0)
+    val eventsThisWeek: StateFlow<Int> = calendar.between(
+        java.time.Instant.now(), java.time.Instant.now().plusSeconds(7 * 86_400L),
+    ).mapLatest { it.size }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
 
     fun update(change: (AppSettings) -> AppSettings) = viewModelScope.launch { prefs.update(change) }
     suspend fun setBattery(m: BatteryMode) = prefs.setBatteryMode(m)
@@ -58,7 +71,7 @@ class MeViewModel @Inject constructor(
     suspend fun applyPreset(key: String) = prefs.applyPreset(key)
     suspend fun change(key: String, next: Intention): IntentionChange = prefs.changeIntention(key, next)
     suspend fun suggestion(key: String) = prefs.suggestedTarget(key)
-    suspend fun addCustom(name: String, unit: String, domain: String, target: Double) = prefs.addCustomSignal(name, unit, domain, target)
+    suspend fun addCustom(name: String, unit: String, domain: String, target: Double, more: Boolean = true) = prefs.addCustomSignal(name, unit, domain, target, more)
     suspend fun logCustom(key: String, value: Double, yesterday: Boolean) = prefs.logCustom(key, value, yesterday)
     fun verify() = viewModelScope.launch { integrity.value = log.verify() }
     suspend fun exportAll(journal: Boolean): File = export.exportAll(journal)
@@ -86,7 +99,7 @@ class MeViewModel @Inject constructor(
 class SensorsViewModel @Inject constructor(
     private val device: DeviceRepository,
     private val prefs: PreferencesRepository,
-    private val maintenance: Maintenance,
+    private val pulse: Pulse,
 ) : ViewModel() {
     val access = MutableStateFlow<SensorAccess?>(null)
     val apps = MutableStateFlow<List<Pair<String, String>>>(emptyList())
@@ -94,7 +107,7 @@ class SensorsViewModel @Inject constructor(
 
     fun refresh() = viewModelScope.launch {
         access.value = device.access()
-        maintenance.run()
+        pulse.beat(Reason.MANUAL, force = setOf(Job.DEVICE))
     }
 
     fun loadApps() = viewModelScope.launch { if (apps.value.isEmpty()) apps.value = device.launchableApps() }
@@ -109,7 +122,10 @@ class SensorsViewModel @Inject constructor(
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
-class PhoneDayViewModel @Inject constructor(private val device: DeviceRepository, private val clock: DayClock, life: LifeRepository) : ViewModel() {
+class PhoneDayViewModel @Inject constructor(private val device: DeviceRepository, private val clock: DayClock, life: LifeRepository, private val settings: aiimin.core.data.settings.SettingsStore, private val pulse: Pulse) : ViewModel() {
+    val prefs = settings.settings.stateIn(viewModelScope, SharingStarted.Eagerly, null)
+    /** S9: tag an app as work (its time stops counting as personal screen time). */
+    fun tagWork(pkg: String, work: Boolean) = viewModelScope.launch { settings.update { it.copy(workApps = if (work) it.workApps + pkg else it.workApps - pkg) } }
     val day = MutableStateFlow(LocalDate.now())
     val data: StateFlow<DeviceDayEntity?> = day.flatMapLatest { device.observe(it) }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
     val week: StateFlow<List<DeviceDayEntity>> = day.flatMapLatest { device.since(it.minusDays(6)) }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
@@ -117,52 +133,35 @@ class PhoneDayViewModel @Inject constructor(private val device: DeviceRepository
     val refreshing = MutableStateFlow(false)
 
     init {
-        viewModelScope.launch {
-            day.value = clock.today()
-            refresh()
+        viewModelScope.launch { day.value = clock.today() }
+    }
+
+    /** Today goes through Pulse so every surface updates together; an earlier day is re-read directly. */
+    fun refresh() = viewModelScope.launch {
+        refreshing.value = true
+        if (day.value == clock.today()) pulse.beat(Reason.MANUAL, force = setOf(Job.DEVICE)) else runCatching { device.refresh(day.value) }
+        refreshing.value = false
+    }
+
+    fun usageSettingsIntent() = device.usageSettingsIntent()
+
+    /** Self-check against Digital Wellbeing; returns a sentence for the toast, or null if it couldn't measure. */
+    suspend fun calibrate(text: String): String? {
+        val ms = aiimin.core.model.DurationText.parseMs(text) ?: return "Type it like 1h 31m"
+        val r = device.calibrate(ms) ?: return null
+        return when {
+            r.offPercent <= 3 -> "Matches your phone"
+            r.capped -> "Adjusted for this phone; now within ${r.offPercent}%"
+            else -> "Saved. AIIMIN is within ${r.offPercent}% of your phone"
         }
     }
 
-    fun refresh() = viewModelScope.launch {
-        refreshing.value = true
-        runCatching { device.refresh(day.value) }
-        refreshing.value = false
-    }
 
     fun shift(by: Long) = viewModelScope.launch {
         val t = clock.today()
         day.value = day.value.plusDays(by).let { if (it > t) t else it }
         runCatching { device.refresh(day.value) }
     }
-}
-
-@HiltViewModel
-class AccountViewModel @Inject constructor(
-    private val auth: AuthRepository,
-    private val sync: SyncRepository,
-    private val prefs: PreferencesRepository,
-) : ViewModel() {
-    val session = auth.session.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
-    val settings = prefs.state.stateIn(viewModelScope, SharingStarted.Eagerly, null)
-    val busy = MutableStateFlow(false)
-    val message = MutableStateFlow<String?>(null)
-
-    fun signIn(id: String, pin: String) = viewModelScope.launch {
-        busy.value = true
-        message.value = auth.signIn(id, pin).fold({ "Signed in" }, { it.message ?: "Couldn't sign in" })
-        if (session.value?.signedIn == true) runCatching { sync.sync() }
-        busy.value = false
-    }
-
-    fun syncNow() = viewModelScope.launch {
-        busy.value = true
-        val r = runCatching { sync.sync() }.getOrNull()
-        message.value = r?.let { "Synced · ${it.pushed} sent, ${it.pulled} received" + if (it.failed > 0) ", ${it.failed} to retry" else "" } ?: "Sign in first"
-        busy.value = false
-    }
-
-    fun signOut() = viewModelScope.launch { auth.signOut(); message.value = "Signed out. Everything stays on this phone." }
-    fun journalSync(on: Boolean) = viewModelScope.launch { prefs.update { it.copy(journalSync = on) } }
 }
 
 @HiltViewModel

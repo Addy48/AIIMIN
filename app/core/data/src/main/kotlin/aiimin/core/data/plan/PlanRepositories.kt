@@ -244,12 +244,12 @@ class MinimumRepository @Inject constructor(
     }
 
     suspend fun edit(m: MinimumEntity) {
-        dao.upsert(m)
+        dao.upsert(m.copy(updatedAt = System.currentTimeMillis()))
         log.log("min.edit", "min", m.id)
     }
 
     suspend fun archive(id: String) {
-        dao.get(id)?.let { dao.upsert(it.copy(archived = true)) }
+        dao.get(id)?.let { dao.upsert(it.copy(archived = true, updatedAt = System.currentTimeMillis())) }
         log.log("min.archive", "min", id)
     }
 
@@ -358,7 +358,7 @@ class FocusRepository @Inject constructor(
         val screen = runCatching {
             usage.read(Instant.ofEpochMilli(a.startAt), Instant.ofEpochMilli(now), clock.zone, emptySet())
         }.getOrNull()
-        val distracted = screen?.apps?.filter { it.pkg != context.packageName }?.sumOf { it.ms }?.div(60_000L)?.toInt() ?: 0
+        val distracted = screen?.let { distractedMinutes(it.apps.map { a -> a.pkg to a.ms }, context.packageName, settings.current().focusAllowedApps) } ?: 0
         val minutes = (rawMin - distracted).coerceAtLeast(0).coerceAtMost(clock.rules.focus.maxDayMin)
         if (minutes >= 1) {
             dao.upsert(FocusSessionEntity(a.id, a.startAt, now, minutes, a.label, a.taskId, if (completed) "done" else "stopped"))
@@ -366,6 +366,15 @@ class FocusRepository @Inject constructor(
         log.log("focus.session", "focus", a.id, mapOf("min" to minutes, "distracted" to distracted, "done" to completed), Tier.A, "timer")
         val award = if (minutes >= clock.rules.focus.minSession) xp.award(XpEvent.FocusSession(minutes)).awarded else 0
         return FocusResult(minutes, distracted, award)
+    }
+
+    companion object {
+        /** Calls ring through the dialer; answering one isn't losing focus. */
+        val DIALERS = setOf("com.google.android.dialer", "com.android.dialer", "com.android.incallui", "com.samsung.android.incallui", "com.samsung.android.dialer", "com.nothing.dialer", "com.oneplus.dialer", "com.android.server.telecom")
+
+        /** Minutes spent in other apps during a session, minus AIIMIN itself, calls and allowed apps. */
+        fun distractedMinutes(apps: List<Pair<String, Long>>, self: String, allowed: Set<String>): Int =
+            (apps.filter { (pkg, _) -> pkg != self && pkg !in DIALERS && pkg !in allowed }.sumOf { it.second } / 60_000L).toInt()
     }
 
     suspend fun discard() {

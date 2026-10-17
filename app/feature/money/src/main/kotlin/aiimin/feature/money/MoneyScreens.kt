@@ -19,6 +19,7 @@ import aiimin.designsystem.component.EmptyState
 import aiimin.designsystem.component.IconTile
 import aiimin.designsystem.component.LargeHeader
 import aiimin.designsystem.component.ListRow
+import aiimin.designsystem.component.pressable
 import aiimin.designsystem.component.Meter
 import aiimin.designsystem.component.Panel
 import aiimin.designsystem.component.Pill
@@ -84,187 +85,10 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlinx.coroutines.launch
 
-private val monthFmt = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH)
+internal val monthFmt = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH)
 
 @Composable
-fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
-    val nav = LocalNavigator.current
-    val toaster = LocalToaster.current
-    val scope = rememberCoroutineScope()
-    val context = LocalContext.current
-    val data by vm.data.collectAsStateWithLifecycle()
-    val ledger by vm.ledger.collectAsStateWithLifecycle()
-    val month by vm.month.collectAsStateWithLifecycle()
-    val today by vm.today.collectAsStateWithLifecycle()
-    var adding by remember { mutableStateOf(false) }
-    var pasting by remember { mutableStateOf(false) }
-    val c = Aiimin.colors
-
-    LazyColumn(Modifier.fillMaxSize().background(c.base), contentPadding = PaddingValues(bottom = 120.dp)) {
-        item {
-            LargeHeader("Money", overline = "Local · your SMS never leaves the phone") {
-                AppIconButton(AppIcons.Export, "Export CSV for your CA", {
-                    scope.launch {
-                        val f = vm.export()
-                        val uri = FileProvider.getUriForFile(context, context.packageName + ".files", f)
-                        context.startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).setType("text/csv").putExtra(Intent.EXTRA_STREAM, uri).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION), "Export ${month.format(monthFmt)}"))
-                    }
-                })
-                AppIconButton(AppIcons.Plus, "Add payment", { adding = true })
-            }
-        }
-        item {
-            Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
-                Segmented(Ledger.entries.map { it.label }, Ledger.entries.indexOf(ledger), { vm.ledger.value = Ledger.entries[it] })
-                Row(Modifier.fillMaxWidth().padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                    AppIconButton(AppIcons.CaretLeft, "Previous month", { vm.shift(-1) }, tint = c.textMuted, size = 40.dp)
-                    Text(month.format(monthFmt), style = Aiimin.type.label, textAlign = TextAlign.Center, modifier = Modifier.weight(1f))
-                    AppIconButton(AppIcons.CaretRight, "Next month", { vm.shift(1) }, tint = c.textMuted, size = 40.dp)
-                }
-            }
-        }
-        val d = data
-        if (d == null) {
-            item { Skeleton(Modifier.padding(Aiimin.space.gutter).fillMaxWidth().height(160.dp)) }
-            return@LazyColumn
-        }
-        item { Hero(d, today) }
-        if (d.pending.isNotEmpty()) {
-            item {
-                Panel(Modifier.padding(horizontal = Aiimin.space.gutter, vertical = 6.dp), onClick = { nav.open(Route.MoneyInbox) }, color = c.accentSoft) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        IconTile(AppIcons.Receipt, tint = c.accent, background = c.surface)
-                        Spacer(Modifier.width(12.dp))
-                        Column(Modifier.weight(1f)) {
-                            Text("${d.pending.size} payment${if (d.pending.size == 1) "" else "s"} to review", style = Aiimin.type.bodyStrong)
-                            Text("From bank alerts. Nothing is booked until you settle it.", style = Aiimin.type.caption)
-                        }
-                        Icon(AppIcons.CaretRight, null, tint = c.accent, modifier = Modifier.size(16.dp))
-                    }
-                }
-            }
-        }
-        item {
-            Row(Modifier.padding(horizontal = Aiimin.space.gutter, vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                AppButton("Paste bank SMS", { pasting = true }, kind = ButtonKind.SECONDARY, compact = true, icon = AppIcons.Copy)
-                if (ledger == Ledger.PERSONAL) AppButton("Monthly plan", { nav.open(Route.Budget) }, kind = ButtonKind.SECONDARY, compact = true, icon = AppIcons.Target)
-            }
-        }
-        item {
-            Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
-                SectionHeader("Each day")
-                Bars(
-                    d.byDay.map { it.toFloat() }, highlight = if (month == java.time.YearMonth.from(today)) today.dayOfMonth - 1 else null,
-                    labels = listOf("1", "8", "15", "22", d.byDay.size.toString()), description = "Spending per day",
-                )
-            }
-        }
-        if (d.byCategory.isNotEmpty()) {
-            item {
-                Column(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 12.dp)) {
-                    SectionHeader("Where it went")
-                    Panel {
-                        d.byCategory.take(8).forEachIndexed { i, cat ->
-                            if (i > 0) Spacer(Modifier.height(12.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(cat.category, style = Aiimin.type.body, modifier = Modifier.weight(1f))
-                                Text(Money.format(cat.paise), style = Aiimin.type.numberSmall)
-                                cat.cap?.let { Text(" / " + Money.short(it), style = Aiimin.type.caption) }
-                            }
-                            Spacer(Modifier.height(6.dp))
-                            Meter(if (cat.cap != null && cat.cap!! > 0) cat.paise.toFloat() / cat.cap!! else cat.paise.toFloat() / (d.byCategory.first().paise.coerceAtLeast(1)), color = if (cat.cap != null) c.accent else c.textFaint)
-                        }
-                    }
-                }
-            }
-        }
-        if (d.rollups.isNotEmpty()) {
-            item {
-                Column(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 12.dp)) {
-                    SectionHeader("Small payments, rolled up")
-                    d.rollups.take(4).forEach { r -> ListRow(r.label, subtitle = "${r.count} payments under ₹200 this week", trailing = { Text(Money.format(r.paise), style = Aiimin.type.numberSmall) }) }
-                }
-            }
-        }
-        item { Box(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 12.dp)) { SectionHeader("Ledger") } }
-        if (d.txns.isEmpty()) {
-            item { EmptyState(AppIcons.Money, "No payments in ${month.format(monthFmt)}", "Add one, paste a bank SMS, or say it to the assistant: “spent 240 on lunch”.", action = "Add payment", onAction = { adding = true }) }
-        }
-        d.txns.groupBy { it.day }.forEach { (day, list) ->
-            item(key = "h$day") {
-                Row(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 10.dp, bottom = 2.dp)) {
-                    Text(Dates.relative(LocalDate.parse(day), today), style = Aiimin.type.label.copy(color = c.textMuted), modifier = Modifier.weight(1f))
-                    Text(Money.format(list.filter { it.direction == "out" }.sumOf { it.amountPaise }), style = Aiimin.type.caption.copy(fontFeatureSettings = "tnum"))
-                }
-            }
-            items(list, key = { it.id }) { t -> TxnRow(t) { nav.open(Route.Txn(t.id)) } }
-        }
-    }
-
-    if (adding) AddPaymentSheet(ledger, today, { adding = false }) { paise, dir, title, cat, l, day, note ->
-        scope.launch {
-            vm.add(paise, dir, title, cat, l, day, note)
-            toaster.show("Logged ${Money.format(paise)}")
-        }
-        adding = false
-    }
-    if (pasting) {
-        var text by remember { mutableStateOf("") }
-        AppSheet({ pasting = false }, title = "Paste a bank SMS", subtitle = "Parsed on this phone. HDFC, ICICI, SBI, Axis, Kotak and UPI alerts. It lands in your review inbox.") {
-            AppTextField(text, { text = it }, placeholder = "Rs.450.00 debited from A/c XX8912 to VPA zomato@icici…", singleLine = false, minLines = 4)
-            Spacer(Modifier.height(12.dp))
-            AppButton("Read it", {
-                scope.launch {
-                    when (vm.capture(text)) {
-                        is MoneyRepository.Capture.Added -> { toaster.show("Added to your review inbox"); pasting = false; nav.open(Route.MoneyInbox) }
-                        MoneyRepository.Capture.Duplicate -> toaster.show("Already captured (same reference)")
-                        MoneyRepository.Capture.NotABankAlert -> toaster.show("No amount found — is this a bank alert?")
-                    }
-                }
-            }, Modifier.fillMaxWidth(), enabled = text.isNotBlank())
-        }
-    }
-}
-
-@Composable
-private fun Hero(d: MonthMoney, today: LocalDate) {
-    val c = Aiimin.colors
-    Panel(Modifier.padding(horizontal = Aiimin.space.gutter, vertical = 8.dp)) {
-        Text(if (d.ledger == Ledger.BUSINESS) "BUSINESS SPEND" else "SPENT", style = Aiimin.type.eyebrow)
-        Row(verticalAlignment = Alignment.Bottom) {
-            CountingNumber((d.spent / 100).toInt(), Aiimin.type.numberLarge, format = { Money.format(it * 100L) })
-            d.budget?.let { Text("  of ${Money.format(it.totalPaise)}", style = Aiimin.type.caption, modifier = Modifier.padding(bottom = 6.dp)) }
-        }
-        if (d.budget != null) {
-            Spacer(Modifier.height(10.dp))
-            val total = d.budget!!.totalPaise.coerceAtLeast(1)
-            Box(Modifier.fillMaxWidth()) {
-                Meter(d.spent.toFloat() / total, color = if ((d.paceLine ?: 0) >= d.spent) c.done else c.warn, height = 8.dp)
-                d.paceLine?.let { pl ->
-                    Box(Modifier.fillMaxWidth((pl.toFloat() / total).coerceIn(0f, 1f)).height(14.dp).padding(top = 0.dp)) {
-                        Box(Modifier.align(Alignment.CenterEnd).size(width = 2.dp, height = 14.dp).background(c.text))
-                    }
-                }
-            }
-            Spacer(Modifier.height(8.dp))
-            val diff = (d.paceLine ?: 0) - d.spent
-            Row {
-                Text(
-                    if (diff >= 0) "${Money.format(diff)} under your pace" else "${Money.format(-diff)} over your pace",
-                    style = Aiimin.type.caption.copy(color = if (diff >= 0) c.done else c.warn), modifier = Modifier.weight(1f),
-                )
-                d.perDay?.let { Text("${Money.format(it)}/day left", style = Aiimin.type.caption) }
-            }
-        } else if (d.ledger == Ledger.PERSONAL) {
-            Text("Set a monthly plan to see your pace and a safe daily amount.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp))
-        }
-        if (d.income > 0) Tag("+${Money.format(d.income)} in", color = c.done, background = c.doneSoft)
-        if (today.dayOfMonth == 1) Text("Your plan is fixed for the month from today.", style = Aiimin.type.caption)
-    }
-}
-
-@Composable
-private fun TxnRow(t: TxnEntity, onClick: () -> Unit) {
+internal fun TxnRow(t: TxnEntity, onClick: () -> Unit) {
     val c = Aiimin.colors
     Row(
         Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = Aiimin.space.gutter, vertical = 10.dp),
@@ -330,50 +154,6 @@ internal fun AddPaymentSheet(
     if (pickDay) DatePick(day, { day = it }, { pickDay = false })
 }
 
-// ------------------------------------------------------------------ inbox
-
-@Composable
-fun MoneyInboxScreen(vm: InboxViewModel = hiltViewModel()) {
-    val nav = LocalNavigator.current
-    val toaster = LocalToaster.current
-    val scope = rememberCoroutineScope()
-    val pending by vm.pending.collectAsStateWithLifecycle()
-    val c = Aiimin.colors
-    Column(Modifier.fillMaxSize().background(c.base)) {
-        TopBar("Review", onBack = { nav.back() })
-        if (pending.isEmpty()) {
-            EmptyState(AppIcons.CheckCircle, "All reviewed", "New bank alerts land here. Turn on notification access in Me → Sensors to catch them automatically.")
-            return@Column
-        }
-        LazyColumn(contentPadding = PaddingValues(Aiimin.space.gutter)) {
-            items(pending, key = { it.id }) { d ->
-                var cat by remember(d.id) { mutableStateOf(d.category) }
-                var ledger by remember(d.id) { mutableStateOf(Ledger.PERSONAL) }
-                var title by remember(d.id) { mutableStateOf(d.title) }
-                var learn by remember(d.id) { mutableStateOf(true) }
-                Panel(Modifier.padding(vertical = 6.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Column(Modifier.weight(1f)) {
-                            Text((if (d.direction == "in") "+" else "") + Money.format(d.amountPaise), style = Aiimin.type.numberMedium.copy(color = if (d.direction == "in") c.done else c.text))
-                            Text(listOfNotNull(d.account4?.let { "A/c ••$it" }, d.upiId, d.reference?.let { "Ref $it" }).joinToString(" · "), style = Aiimin.type.caption, maxLines = 1)
-                        }
-                        Tag(if (d.confidence >= 0.9) "Known payee" else if (d.confidence >= 0.75) "Confident" else "Check this", color = if (d.confidence >= 0.75) c.textMuted else c.warn)
-                    }
-                    Spacer(Modifier.height(10.dp))
-                    AppTextField(title, { title = it }, placeholder = "Payee")
-                    PillRow { (if (d.direction == "in") Categories.INCOME else Categories.SPEND).forEach { k -> Pill(k, cat == k, { cat = k }) } }
-                    PillRow { Ledger.entries.forEach { e -> Pill(e.label, ledger == e, { ledger = e }) } }
-                    SwitchRow("Remember for this payee", learn, { learn = it }, subtitle = "Next time it's filed the same way")
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        AppButton("Not mine", { vm.dismiss(d.id) }, Modifier.weight(1f), kind = ButtonKind.SECONDARY, compact = true)
-                        AppButton("Settle", { scope.launch { vm.settle(d.id, cat, ledger, title, learn); toaster.show("Booked to ${ledger.label}") } }, Modifier.weight(1f), compact = true)
-                    }
-                }
-            }
-        }
-    }
-}
-
 // ------------------------------------------------------------------ txn detail
 
 @Composable
@@ -428,6 +208,22 @@ fun TxnScreen(id: String, vm: TxnViewModel = hiltViewModel()) {
                     ListRow(receipt!!, subtitle = "In your vault", leading = { IconTile(AppIcons.Receipt) }, onClick = { nav.open(Route.Doc(txn.receiptDocId!!)) })
                 } else {
                     ListRow("Attach a receipt or warranty", subtitle = "Photo or PDF — saved to the vault and linked here", leading = { IconTile(AppIcons.Paperclip) }, onClick = { picker.launch(arrayOf("image/*", "application/pdf")) })
+                }
+            }
+            if (txn.direction == "out" && txn.method != "IOU") {
+                item {
+                    var splitting by remember { mutableStateOf(false) }
+                    SectionHeader("Split")
+                    val shares = aiimin.core.data.money.Splits.decode(txn.splits)
+                    if (shares.isEmpty()) {
+                        ListRow("Split with…", subtitle = "Equal parts; they show in Splits until settled", leading = { IconTile(AppIcons.Users) }, onClick = { splitting = true })
+                    } else {
+                        shares.forEach { sh ->
+                            ListRow(sh.name.ifBlank { sh.who }, subtitle = if (sh.settled) "Settled" else "Owes you ${Money.whole(sh.paise)}", leading = { IconTile(AppIcons.Users) }, onClick = { nav.open(Route.SplitPerson(sh.who)) })
+                        }
+                        Text("Remove split", style = Aiimin.type.label.copy(color = c.accentText), modifier = Modifier.padding(vertical = 8.dp).pressable({ vm.clearSplit() }))
+                    }
+                    if (splitting) SplitSheet(txn.amountPaise, people, { splitting = false }) { picked -> vm.split(picked); splitting = false; toaster.show("Split with ${picked.joinToString { it.second }}") }
                 }
             }
             if (txn.direction == "out") {

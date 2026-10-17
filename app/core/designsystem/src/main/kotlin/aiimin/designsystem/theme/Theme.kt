@@ -10,7 +10,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -31,20 +35,21 @@ data class Spacing(
 )
 
 object Shapes {
-    val card = RoundedCornerShape(16.dp)
+    val card = RoundedCornerShape(14.dp)
     val row = RoundedCornerShape(12.dp)
     val small = RoundedCornerShape(8.dp)
     val pill = RoundedCornerShape(percent = 50)
     /** Buttons, chips, segments: squared-off, not pills. */
     val control = RoundedCornerShape(10.dp)
     val tag = RoundedCornerShape(5.dp)
-    val sheet = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+    val sheet = RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp)
 }
 
 /** Motion: short, ease-out on enter, ease-in on exit (plan Part 2 §9). */
 object Motion {
-    val enter = CubicBezierEasing(0.16f, 1f, 0.3f, 1f)
+    val enter = CubicBezierEasing(0.23f, 1f, 0.32f, 1f)
     val exit = CubicBezierEasing(0.7f, 0f, 0.84f, 0f)
+    val drawer = CubicBezierEasing(0.32f, 0.72f, 0f, 1f)
     val standard = CubicBezierEasing(0.2f, 0f, 0f, 1f)
     const val FAST = 150
     const val BASE = 220
@@ -63,7 +68,7 @@ object Aiimin {
 }
 
 @Composable
-fun AiiminTheme(mode: ThemeMode = ThemeMode.SYSTEM, content: @Composable () -> Unit) {
+fun AiiminTheme(mode: ThemeMode = ThemeMode.SYSTEM, textScale: Float = 1f, content: @Composable () -> Unit) {
     val dark = when (mode) {
         ThemeMode.SYSTEM -> isSystemInDarkTheme()
         ThemeMode.LIGHT -> false
@@ -88,7 +93,15 @@ fun AiiminTheme(mode: ThemeMode = ThemeMode.SYSTEM, content: @Composable () -> U
         )
     }
     val type = appType(p)
-    CompositionLocalProvider(LocalPalette provides p, LocalType provides type, LocalSpacing provides Spacing()) {
+    // The design is drawn at 390 dp wide. Narrow phones scale everything down a little and wide ones up a little,
+    // so a 320 dp phone doesn't wrap every line and a 450 dp one doesn't look sparse. The person's own font size
+    // setting is kept (up to 1.6x); the layouts have no fixed heights on text rows.
+    val base = LocalDensity.current
+    val widthDp = LocalConfiguration.current.screenWidthDp.toFloat()
+    val fit = if (widthDp <= 0f) 1f else (widthDp / 390f).coerceIn(0.92f, 1.1f)
+    // The in-app text size (Appearance) multiplies the system one; the result stays inside the tested range.
+    val density = remember(base.density, base.fontScale, fit, textScale) { Density(base.density * fit, (base.fontScale * textScale).coerceIn(0.85f, 1.6f)) }
+    CompositionLocalProvider(LocalDensity provides density, LocalPalette provides p, LocalType provides type, LocalSpacing provides Spacing()) {
         MaterialTheme(colorScheme = scheme, typography = type.material, content = content)
     }
 }

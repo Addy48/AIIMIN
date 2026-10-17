@@ -173,11 +173,11 @@ class PreferencesRepository @Inject constructor(
 
     suspend fun suggestedTarget(key: String): Double? = IntentionPolicy(clock.rules).suggestedTarget(settings.current().intentions, key, days.history())
 
-    suspend fun addCustomSignal(name: String, unit: String, domain: String, target: Double): String {
+    suspend fun addCustomSignal(name: String, unit: String, domain: String, target: Double, more: Boolean = true): String {
         val key = "c_" + System.currentTimeMillis().toString(36)
         settings.update {
             val def = SignalDef(key, name.trim(), unit.trim().ifBlank { "count" }, domain, Tier.C, "Logged by you")
-            it.copy(intentions = it.intentions.copy(customDefs = it.intentions.customDefs + (key to def)).with(key, Intention(aiimin.core.engine.Direction.MORE, target, 1)))
+            it.copy(intentions = it.intentions.copy(customDefs = it.intentions.customDefs + (key to def)).with(key, Intention(if (more) aiimin.core.engine.Direction.MORE else aiimin.core.engine.Direction.LESS, target, 1)))
         }
         log.log("intent.custom", "signal", key)
         return key
@@ -213,21 +213,38 @@ class SetupRepository @Inject constructor(
     private val money: MoneyRepository,
     private val log: EventLogger,
 ) {
-    suspend fun complete(name: String, role: String, priorities: List<String>, battery: BatteryMode, mins: List<String>, monthlyPlanRupees: Long?) {
-        val preset = RolePreset.byKey(role)
+    /** Everything onboarding gathered. Nothing here needs an account. */
+    data class SetupInput(
+        val name: String,
+        val dob: java.time.LocalDate?,
+        val role: String,
+        /** (minimum, tiny version) */
+        val mins: List<Pair<String, String>>,
+        val battery: BatteryMode,
+        val banks: List<String>,
+        val primaryBank: String?,
+        val cash: Boolean,
+        val monthlyPlanRupees: Long?,
+    )
+
+    suspend fun complete(i: SetupInput) {
+        val preset = RolePreset.byKey(i.role)
         settings.update {
             it.copy(
-                name = name.trim(), role = role, priorities = priorities, batteryMode = preset?.suggestsBattery ?: battery,
+                name = i.name.trim(), role = i.role, dob = i.dob?.toString(),
+                batteryMode = preset?.suggestsBattery ?: i.battery,
+                batteryModeChangedOn = null,
                 intentions = preset?.applyTo(aiimin.core.engine.IntentionSet.default()) ?: it.intentions,
+                banks = i.banks, primaryBank = i.primaryBank ?: i.banks.firstOrNull(), cashWallet = i.cash || i.banks.isEmpty(),
             )
         }
-        family.ensureSelf(name)
+        family.ensureSelf(i.name)
         days.ensureToday()
-        mins.filter { it.isNotBlank() }.forEach { minimums.add(it, startToday = true) }
-        monthlyPlanRupees?.takeIf { it > 0 }?.let { money.setBudget(it * 100, 0, emptyMap()) }
+        i.mins.filter { it.first.isNotBlank() }.forEach { (m, tiny) -> minimums.add(m, tiny.ifBlank { "" }, startToday = true) }
+        i.monthlyPlanRupees?.takeIf { it > 0 }?.let { money.setBudget(it * 100, 0, emptyMap()) }
         // Last: flipping this swaps the UI to Today.
         settings.update { it.copy(onboarded = true) }
-        log.log("onboarding.done", data = mapOf("role" to role, "mins" to mins.size), tier = Tier.A, source = "system")
+        log.log("onboarding.done", data = mapOf("role" to i.role, "mins" to i.mins.size, "banks" to i.banks.size), tier = Tier.A, source = "system")
     }
 }
 
@@ -263,27 +280,23 @@ class ExportRepository @Inject constructor(
 
 // ------------------------------------------------------------------ maintenance
 
-/** The heartbeat: run on open, on resume, and from the periodic worker. */
+// ------------------------------------------------------------------ erase
+
+/**
+ * "Remove data from this phone": the database, vault files, caches, goals and every setting.
+ * What was already synced to aiimin.in is not touched here; that has its own, separate choice.
+ */
 @Singleton
-class Maintenance @Inject constructor(
-    private val days: DayRepository,
-    private val money: MoneyRepository,
-    private val device: DeviceRepository,
-    private val family: FamilyRepository,
-    private val notifications: NotificationRepository,
-    private val sync: SyncRepository,
+class DataControlRepository @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val db: AppDatabase,
     private val settings: SettingsStore,
-    private val clock: DayClock,
 ) {
-    suspend fun run(syncNow: Boolean = false) {
-        if (!settings.current().onboarded) return
-        runCatching { device.refreshRecent() }
-        days.ensureToday()
-        runCatching { money.ensureBudgetCarried() }
-        runCatching { family.tick() }
-        runCatching { notifications.run() }
-        val last = settings.current().lastSyncAt ?: 0
-        if (syncNow || System.currentTimeMillis() - last > 15 * 60_000L) runCatching { sync.sync() }
-        clock.pulse()
+    suspend fun eraseThisPhone() = withContext(Dispatchers.IO) {
+        runCatching { db.clearAllTables() }
+        listOf("vault", "exports").forEach { File(context.filesDir, it).deleteRecursively() }
+        context.cacheDir.listFiles()?.forEach { it.deleteRecursively() }
+        listOf("goals", "demo", "onboarding_draft", "vault_backup", "replace_undo", "captures").forEach { name -> context.getSharedPreferences(name, Context.MODE_PRIVATE).edit().clear().apply() }
+        settings.clearAll()
     }
 }

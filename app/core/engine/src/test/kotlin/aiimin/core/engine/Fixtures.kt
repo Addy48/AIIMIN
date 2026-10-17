@@ -6,7 +6,7 @@ import java.time.LocalDate
 internal object Fixtures {
 
     val TODAY: LocalDate = LocalDate.of(2026, 10, 9)
-    val RULES = RulesConfig.V2
+    val RULES = RulesConfig.V3
 
     val BASE_VALUES: Map<String, Double?> = mapOf(
         Signals.TASKS to 70.0, Signals.FOCUS to 110.0, Signals.MINIMUMS to 75.0, Signals.STEPS to 7500.0,

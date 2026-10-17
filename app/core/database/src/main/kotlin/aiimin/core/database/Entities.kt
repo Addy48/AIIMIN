@@ -1,5 +1,6 @@
 package aiimin.core.database
 
+import androidx.room3.ColumnInfo
 import androidx.room3.Entity
 import androidx.room3.Index
 import androidx.room3.PrimaryKey
@@ -82,6 +83,8 @@ data class CalendarEventEntity(
     val remindMin: Int? = 15,
     val deleted: Boolean = false,
     val updatedAt: Long,
+    /** The aiimin.in calendar_events id once pushed (v2). */
+    @ColumnInfo(defaultValue = "NULL") val remoteId: String? = null,
 )
 
 @Entity(tableName = "minimums")
@@ -96,6 +99,9 @@ data class MinimumEntity(
     val archived: Boolean = false,
     val sort: Int = 0,
     val createdAt: Long,
+    /** The aiimin.in habits id once pushed (v2). */
+    @ColumnInfo(defaultValue = "NULL") val remoteId: String? = null,
+    @ColumnInfo(defaultValue = "0") val updatedAt: Long = createdAt,
 )
 
 @Entity(tableName = "minimum_ticks", primaryKeys = ["minimumId", "day"], indices = [Index("day")])
@@ -108,6 +114,8 @@ data class MinimumTickEntity(
     val toggles: Int = 1,
     val backfilled: Boolean = false,
     val updatedAt: Long,
+    /** False until this tick (or untick) has reached aiimin.in (v2). */
+    @ColumnInfo(defaultValue = "0") val synced: Boolean = false,
 )
 
 @Entity(tableName = "txns", indices = [Index("day"), Index("reference")])
@@ -161,7 +169,66 @@ data class TxnDraftEntity(
 )
 
 @Entity(tableName = "payee_rules")
-data class PayeeRuleEntity(@PrimaryKey val key: String, val category: String, val ledger: String, val updatedAt: Long)
+data class PayeeRuleEntity(
+    @PrimaryKey val key: String,
+    val category: String,
+    val ledger: String,
+    val updatedAt: Long,
+    /** What the payee is shown as ("Sharma Kirana" for 9822…@ybl) (v2). */
+    @ColumnInfo(defaultValue = "") val label: String = "",
+    /** "Always ask for Amazon": the rule is remembered but never applied on its own (v2). */
+    @ColumnInfo(defaultValue = "0") val alwaysAsk: Boolean = false,
+    /** Times the rule was used, for sorting M16 (v2). */
+    @ColumnInfo(defaultValue = "0") val hits: Int = 0,
+)
+
+/** A bank account, card, wallet or cash (M9/M10, v2). */
+@Entity(tableName = "accounts")
+data class AccountEntity(
+    @PrimaryKey val id: String,
+    val name: String,
+    val bank: String = "",
+    val last4: String? = null,
+    /** SAVINGS · CREDIT · WALLET · CASH */
+    val type: String = "SAVINGS",
+    /** Ledger payments from this account go to by default. */
+    val ledger: String = "PERSONAL",
+    /** Primary for its ledger: spends spoken or typed without an account go here. */
+    val primary: Boolean = false,
+    /** Ignore alerts older than this day (ISO). */
+    val trackFrom: String? = null,
+    /** "salary account", for voice. */
+    val nickname: String = "",
+    val notifAlerts: Boolean = true,
+    val smsAlerts: Boolean = true,
+    val archived: Boolean = false,
+    val createdAt: Long,
+    val updatedAt: Long,
+)
+
+/** A recurring payment or bill (M13, v2). Suggested from payment history, confirmed by the person. */
+@Entity(tableName = "bills", indices = [Index("status"), Index("nextDue")])
+data class BillEntity(
+    @PrimaryKey val id: String,
+    val title: String,
+    /** BankSms.payeeKey of the payee, to match new payments. */
+    val payeeKey: String,
+    val amountPaise: Long,
+    /** WEEKLY · MONTHLY · YEARLY */
+    val cadence: String = "MONTHLY",
+    val nextDue: String,
+    /** SUGGESTED · CONFIRMED · DISMISSED */
+    val status: String = "SUGGESTED",
+    /** UPI AutoPay / e-mandate: money leaves on its own. */
+    val autopay: Boolean = false,
+    /** A reminder one day before. */
+    val remind: Boolean = true,
+    val category: String = "Bills",
+    val ledger: String = "PERSONAL",
+    val lastPaid: String? = null,
+    val createdAt: Long,
+    val updatedAt: Long,
+)
 
 /** The plan is fixed on the 1st; mid-month edits apply next month. */
 @Entity(tableName = "budgets")
@@ -204,6 +271,8 @@ data class JournalEntity(
     val updatedAt: Long,
     val dirty: Boolean = true,
     val deleted: Boolean = false,
+    /** aiimin.in journal_entries id, only when journal sync is switched on (v2). */
+    @ColumnInfo(defaultValue = "NULL") val remoteId: String? = null,
 )
 
 @Entity(tableName = "focus_sessions", indices = [Index("startAt")])
@@ -281,6 +350,8 @@ data class PersonEntity(
     val delegateCats: String = "[]",
     val delegateConsentOn: String? = null,
     val createdAt: Long,
+    /** Their UPI ID, for "Pay via UPI" when settling a split (v2). */
+    @ColumnInfo(defaultValue = "") val upiId: String = "",
 )
 
 @Entity(tableName = "emergency_requests")
@@ -342,12 +413,20 @@ data class DeviceDayEntity(
     val steps: Long? = null,
     /** health_connect · sensor */
     val stepsSource: String? = null,
+    /** The app the steps came from, as a name ("Google Fit"); null when unknown or from the phone sensor. */
+    val stepsOrigin: String? = null,
+    /** EVENTS · EVENTS_WITH_GAP_FILL: how screen time was measured this day. */
+    val screenStrategy: String? = null,
     val stepsHourly: String = "[]",
     val screenMs: Long? = null,
     val screenPersonalMs: Long? = null,
     val screenWorkMs: Long? = null,
     val lateScreenMs: Long? = null,
     val unlocks: Int? = null,
+    /** Unlocks on a secure phone, screen-ons otherwise; [pickupsLabel] says which. */
+    val pickups: Int? = null,
+    /** unlocks · pickups */
+    val pickupsLabel: String? = null,
     val notifications: Int? = null,
     val firstUnlockAt: Long? = null,
     /** JSON [{pkg, label, ms, opens}] top apps. */
@@ -358,6 +437,18 @@ data class DeviceDayEntity(
     val sleepEnd: Long? = null,
     val restingHr: Int? = null,
     val updatedAt: Long,
+)
+
+/** Heartbeat of one Pulse job: when it last ran, whether it worked, and how often it fails. */
+@Entity(tableName = "pulse_runs")
+data class PulseRunEntity(
+    @PrimaryKey val job: String,
+    val lastRunAt: Long,
+    val lastOkAt: Long? = null,
+    val lastError: String? = null,
+    val lastMs: Long = 0,
+    val runs: Int = 0,
+    val fails: Int = 0,
 )
 
 /** The day's frozen plan and, once settled, its frozen snapshot. */
@@ -395,4 +486,42 @@ data class ChatMessageEntity(
     val sources: String = "[]",
     val followups: String = "[]",
     val createdAt: Long,
+)
+
+/** Goals (v2; were a SharedPreferences document in v1). milestones/taskIds are small JSON lists. */
+@Entity(tableName = "goals")
+data class GoalEntity(
+    @PrimaryKey val id: String,
+    val title: String,
+    val why: String = "",
+    val due: String? = null,
+    val milestones: String = "[]",
+    val taskIds: String = "[]",
+    val archived: Boolean = false,
+    val createdAt: Long,
+    val updatedAt: Long,
+    val remoteId: String? = null,
+    val deleted: Boolean = false,
+)
+
+/**
+ * The last state both sides agreed on, per synced item: the base of a three-way merge.
+ * If the phone and the web both moved away from it since the last sync, that is a conflict.
+ */
+@Entity(tableName = "sync_shadow", primaryKeys = ["kind", "localId"])
+data class SyncShadowEntity(val kind: String, val localId: String, val snapshot: String, val at: Long)
+
+/** A change made on both sides; held for the person to choose (G5). */
+@Entity(tableName = "sync_conflicts", indices = [Index("resolved")])
+data class SyncConflictEntity(
+    @PrimaryKey val id: String,
+    val kind: String,
+    val localId: String,
+    val remoteId: String,
+    val title: String,
+    /** JSON snapshots, same shape as the shadow. */
+    val local: String,
+    val remote: String,
+    val createdAt: Long,
+    val resolved: Boolean = false,
 )

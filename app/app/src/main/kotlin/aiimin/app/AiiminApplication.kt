@@ -1,8 +1,9 @@
 package aiimin.app
 
-import aiimin.core.data.app.Maintenance
 import aiimin.core.data.money.MoneyRepository
 import aiimin.core.data.notify.NotificationRepository
+import aiimin.core.data.pulse.Pulse
+import aiimin.core.data.pulse.Reason
 import aiimin.core.data.sync.AuthRepository
 import android.app.Application
 import android.content.Context
@@ -39,28 +40,73 @@ class AiiminApplication : Application() {
         NotificationRepository.ensureChannels(this)
         val deps = EntryPointAccessors.fromApplication(this, AppDeps::class.java)
         appScope.launch { runCatching { deps.auth().restore() } }
-        // Day rollover, noon settlement, sensors, notification rules and sync,
-        // every half hour even when the app is closed.
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            "maintenance",
-            ExistingPeriodicWorkPolicy.KEEP,
-            PeriodicWorkRequestBuilder<MaintenanceWorker>(30, TimeUnit.MINUTES).build(),
-        )
+        // Offline edits go as soon as the network is back, without waiting for the half-hourly job.
+        runCatching {
+            val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+            cm.registerDefaultNetworkCallback(object : android.net.ConnectivityManager.NetworkCallback() {
+                override fun onAvailable(network: android.net.Network) {
+                    appScope.launch { if (runCatching { deps.auth().current().signedIn }.getOrDefault(false)) requestSync(this@AiiminApplication) }
+                }
+            })
+        }
+        // One heartbeat for every background job (plan Phase 15). In front: a beat on open and every
+        // minute. Closed: the 15-minute worker. A job the phone skipped runs first on the next beat.
+        androidx.lifecycle.ProcessLifecycleOwner.get().lifecycle.addObserver(object : androidx.lifecycle.DefaultLifecycleObserver {
+            override fun onStart(owner: androidx.lifecycle.LifecycleOwner) = deps.pulse().setForeground(true)
+            override fun onStop(owner: androidx.lifecycle.LifecycleOwner) = deps.pulse().setForeground(false)
+        })
+        PulseWorker.schedule(this)
+        // Sync has its own job: network constraint (Wi-Fi only if asked) and exponential retry.
+        appScope.launch {
+            val wifiOnly = runCatching { deps.settings().current().syncWifiOnly }.getOrDefault(false)
+            aiimin.core.data.sync.SyncScheduler.schedulePeriodic(this@AiiminApplication, wifiOnly)
+        }
     }
 }
 
 @EntryPoint
 @InstallIn(SingletonComponent::class)
 interface AppDeps {
-    fun maintenance(): Maintenance
+    fun pulse(): Pulse
     fun money(): MoneyRepository
     fun auth(): AuthRepository
+    fun settings(): aiimin.core.data.settings.SettingsStore
 }
 
-class MaintenanceWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
+/** Runs a Pulse beat with the app closed: every 15 minutes, after boot, and on demand. */
+class PulseWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
         val deps = EntryPointAccessors.fromApplication(applicationContext, AppDeps::class.java)
-        return runCatching { deps.maintenance().run() }.fold({ Result.success() }, { Result.retry() })
+        val reason = runCatching { Reason.valueOf(inputData.getString("reason") ?: "") }.getOrDefault(Reason.WORKER)
+        // After a reboot or an update, measure and re-arm reminders at once instead of waiting for freshness.
+        val force = if (reason == Reason.BOOT) setOf(aiimin.core.engine.pulse.Job.DEVICE, aiimin.core.engine.pulse.Job.DAY, aiimin.core.engine.pulse.Job.NOTIFY) else emptySet()
+        return runCatching { deps.pulse().beat(reason, force = force) }.fold({ Result.success() }, { Result.retry() })
+    }
+
+    companion object {
+        fun schedule(context: Context) {
+            val wm = WorkManager.getInstance(context)
+            wm.cancelUniqueWork("maintenance") // the 30-minute job Pulse replaced
+            wm.enqueueUniquePeriodicWork(
+                "pulse",
+                ExistingPeriodicWorkPolicy.UPDATE,
+                PeriodicWorkRequestBuilder<PulseWorker>(15, TimeUnit.MINUTES, 5, TimeUnit.MINUTES).build(),
+            )
+        }
+
+        fun now(context: Context, reason: Reason) = WorkManager.getInstance(context).enqueueUniqueWork(
+            "pulse-now", ExistingWorkPolicy.KEEP,
+            OneTimeWorkRequestBuilder<PulseWorker>().setInputData(workDataOf("reason" to reason.name)).build(),
+        )
+    }
+}
+
+/** After a restart nothing of ours is running; one beat brings every job back. */
+class BootReceiver : android.content.BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: android.content.Intent) {
+        if (intent.action == android.content.Intent.ACTION_BOOT_COMPLETED || intent.action == android.content.Intent.ACTION_MY_PACKAGE_REPLACED) {
+            PulseWorker.now(context, Reason.BOOT)
+        }
     }
 }
 
@@ -100,11 +146,4 @@ class FocusDoneWorker(context: Context, params: WorkerParameters) : CoroutineWor
 }
 
 /** One-off sync when the network comes back (e.g. after offline edits). */
-fun requestSync(context: Context) {
-    WorkManager.getInstance(context).enqueueUniqueWork(
-        "sync-now", ExistingWorkPolicy.KEEP,
-        OneTimeWorkRequestBuilder<MaintenanceWorker>()
-            .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
-            .build(),
-    )
-}
+fun requestSync(context: Context) = aiimin.core.data.sync.SyncScheduler.requestNow(context)

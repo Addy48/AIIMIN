@@ -71,7 +71,7 @@ class ChatViewModel @Inject constructor(private val repo: AssistantRepository) :
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 @HiltViewModel
-class CaptureViewModel @Inject constructor(private val repo: AssistantRepository) : ViewModel() {
+class CaptureViewModel @Inject constructor(private val repo: AssistantRepository, private val log: aiimin.core.data.ai.CaptureLog) : ViewModel() {
     val text = MutableStateFlow("")
     val preview: StateFlow<List<Action>> = text.debounce(180).mapLatest { repo.preview(it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
@@ -79,9 +79,25 @@ class CaptureViewModel @Inject constructor(private val repo: AssistantRepository
     suspend fun save(): List<Source> {
         val list = repo.preview(text.value)
         val created = repo.execute(list, "capture")
+        log.record(text.value, created)
+        text.value = ""
+        return created
+    }
+
+    /** Save exactly these (the person may have removed or edited some on the review sheet). */
+    suspend fun saveActions(list: List<Action>): List<Source> {
+        val created = repo.execute(list, "capture")
+        log.record(text.value, created)
         text.value = ""
         return created
     }
 
     fun revert(created: List<Source>) = viewModelScope.launch { repo.revert(created) }
+}
+
+@HiltViewModel
+class RecentCapturesViewModel @Inject constructor(private val log: aiimin.core.data.ai.CaptureLog) : ViewModel() {
+    val recent = log.recent
+    init { log.refresh() }
+    fun undo(id: String) = viewModelScope.launch { log.undo(id) }
 }

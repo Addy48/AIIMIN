@@ -24,7 +24,6 @@ class UsageTimelineTest {
         isHome = { it == "launcher" },
         isWork = { it in work },
         lateFrom = lateFrom,
-        hourOf = { ((it.coerceAtLeast(0) / 3_600_000L) % 24).toInt() },
         hourStart = { it - Math.floorMod(it, 3_600_000L) },
     )
 
@@ -141,5 +140,50 @@ class UsageTimelineTest {
         assertThat(SleepMath.regularity(listOf(900, 905, 895, 910))).isAtLeast(90)
         assertThat(SleepMath.regularity(listOf(780, 960, 870, 1020))!!).isLessThan(30)
         assertThat(SleepMath.regularity(listOf(900, 905))).isNull()
+    }
+
+    @Test
+    fun `screen-on events are counted so phones without a lock still show pickups`() {
+        val r = run(listOf(
+            Event(t(60), Kind.SCREEN_ON), Event(t(61), Kind.RESUMED, "yt", "Main"), Event(t(70), Kind.SCREEN_OFF),
+            Event(t(120), Kind.SCREEN_ON), Event(t(120) + 400, Kind.SCREEN_ON), // debounced duplicate
+            Event(t(130), Kind.SCREEN_OFF),
+        ))
+        assertThat(r.unlocks).isEqualTo(0)
+        assertThat(r.screenOns).isEqualTo(2)
+    }
+
+    @Test
+    fun `hourly slots follow the window, so a window starting at 4am puts 4am in slot 0`() {
+        val start = t(4 * 60)
+        val r = UsageTimeline.compute(
+            events = listOf(Event(start + t(10), Kind.RESUMED, "yt", "M"), Event(start + t(40), Kind.PAUSED, "yt", "M")),
+            windowStart = start, windowEnd = start + day,
+            counted = { true }, hourStart = { it - Math.floorMod(it, 3_600_000L) },
+        )
+        assertThat(r.hourlyMs[0]).isEqualTo(t(30))
+        assertThat(r.hourlyMs.size).isEqualTo(24)
+    }
+
+    @Test
+    fun `a clock screensaver that starts after the screen goes off is not use`() {
+        val r = run(listOf(
+            Event(t(60), Kind.SCREEN_OFF),
+            Event(t(60) + 200, Kind.RESUMED, "clock", "DreamActivity"),
+            Event(t(78), Kind.PAUSED, "clock", "DreamActivity"),
+            Event(t(78), Kind.SCREEN_ON),
+        ))
+        assertThat(r.totalMs).isEqualTo(0)
+    }
+
+    @Test
+    fun `an alarm resumed a moment before the screen wakes counts from screen on`() {
+        val r = run(listOf(
+            Event(t(10), Kind.SCREEN_OFF),
+            Event(t(400), Kind.RESUMED, "clock", "AlarmActivity"),
+            Event(t(400) + 50, Kind.SCREEN_ON),
+            Event(t(401), Kind.PAUSED, "clock", "AlarmActivity"),
+        ))
+        assertThat(r.totalMs).isEqualTo(t(1) - 50)
     }
 }

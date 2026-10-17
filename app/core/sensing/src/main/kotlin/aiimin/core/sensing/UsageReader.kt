@@ -27,6 +27,8 @@ data class ScreenDay(
     val workMs: Long,
     val lateMs: Long,
     val unlocks: Int,
+    /** Debounced screen-on count: pickups on phones without a secure lock. */
+    val screenOns: Int,
     val notifications: Int,
     val firstUnlockAt: Long?,
     val hourlyMs: List<Long>,
@@ -54,10 +56,16 @@ class UsageReader @Inject constructor(@ApplicationContext private val context: C
         return mode == AppOpsManager.MODE_ALLOWED
     }
 
+    /** True with a PIN, pattern or password. Without one the keyguard never hides, so unlocks read 0. */
+    fun isSecure(): Boolean = (context.getSystemService(Context.KEYGUARD_SERVICE) as android.app.KeyguardManager).isDeviceSecure
+
     fun settingsIntent(): Intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
     /**
      * @param lateHour local hour after which screen time counts as "late" (default 23:00).
+     * @param lateUntil end of the person's day (e.g. 04:00 next morning). Use between [windowEnd]
+     *   and this instant is added to [ScreenDay.lateMs], so a 01:00 scroll is late for the night it belongs to.
+     * @param gapFill for phones that drop pause events (see DeviceProfile): sessions end 30 min after the last sign of use.
      */
     suspend fun read(
         windowStart: Instant,
@@ -65,17 +73,21 @@ class UsageReader @Inject constructor(@ApplicationContext private val context: C
         zone: ZoneId,
         workPackages: Set<String>,
         lateHour: Int = 23,
+        lateUntil: Instant = windowEnd,
+        gapFill: Boolean = false,
     ): ScreenDay? = withContext(Dispatchers.IO) {
         if (!hasAccess()) return@withContext null
         val start = windowStart.toEpochMilli()
-        val end = minOf(windowEnd.toEpochMilli(), System.currentTimeMillis())
+        val now = System.currentTimeMillis()
+        val end = minOf(windowEnd.toEpochMilli(), now)
+        val readTo = maxOf(end, minOf(lateUntil.toEpochMilli(), now))
         val lookback = start - LOOKBACK_MS
         val events = ArrayList<UsageTimeline.Event>(4096)
         // Walk in 2 h slices: a single long query can come back truncated on
         // busy OEM builds. Half-open slices, so boundary events are read once.
         var cursor = lookback
-        while (cursor < end) {
-            val sliceEnd = minOf(cursor + SLICE_MS, end)
+        while (cursor < readTo) {
+            val sliceEnd = minOf(cursor + SLICE_MS, readTo)
             val it = usm.queryEvents(cursor, sliceEnd)
             val ev = UsageEvents.Event()
             while (it.hasNextEvent()) {
@@ -87,6 +99,14 @@ class UsageReader @Inject constructor(@ApplicationContext private val context: C
             }
             cursor = sliceEnd
         }
+        // Debug builds only: keep the exact event stream of the last read so a mismatch with
+        // Digital Wellbeing can be replayed off the phone. Private app storage, never synced.
+        if (context.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE != 0) runCatching {
+            java.io.File(context.filesDir, "usage-debug-" + Instant.ofEpochMilli(start).atZone(zone).toLocalDate() + ".tsv").printWriter().use { w ->
+                w.println("homes\t" + homePackages().joinToString(","))
+                events.forEach { e -> w.println("${e.at}\t${e.kind}\t${e.pkg}\t${e.cls}") }
+            }
+        }
         val homes = homePackages()
         val lateFrom = Instant.ofEpochMilli(start).atZone(zone).toLocalDate().atTime(lateHour, 0).atZone(zone).toInstant().toEpochMilli()
         val r = UsageTimeline.compute(
@@ -97,19 +117,30 @@ class UsageReader @Inject constructor(@ApplicationContext private val context: C
             isHome = { it in homes },
             isWork = { it in workPackages },
             lateFrom = lateFrom,
-            hourOf = { Instant.ofEpochMilli(it).atZone(zone).hour },
             hourStart = { Instant.ofEpochMilli(it).atZone(zone).truncatedTo(ChronoUnit.HOURS).toInstant().toEpochMilli() },
+            gapFillMs = if (gapFill) GAP_FILL_MS else null,
         )
+        val afterMidnight = if (readTo <= end) 0L else UsageTimeline.compute(
+            events = events,
+            windowStart = end,
+            windowEnd = readTo,
+            counted = { pkg -> counts(pkg, homes) },
+            isHome = { it in homes },
+            hourStart = { Instant.ofEpochMilli(it).atZone(zone).truncatedTo(ChronoUnit.HOURS).toInstant().toEpochMilli() },
+            gapFillMs = if (gapFill) GAP_FILL_MS else null,
+        ).totalMs
         ScreenDay(
             totalMs = r.totalMs,
             personalMs = r.personalMs,
             workMs = r.workMs,
-            lateMs = r.lateMs,
+            lateMs = r.lateMs + afterMidnight,
             unlocks = r.unlocks,
+            screenOns = r.screenOns,
             notifications = r.notifications,
             firstUnlockAt = r.firstUnlockAt,
-            hourlyMs = r.hourlyMs.toList(),
-            apps = r.apps.take(40).map { AppLine(it.pkg, label(it.pkg), it.ms, it.opens, it.notifications) },
+            // Reading stops at "now"; pad to the whole window so 00:00 to 24:00 always has its 24 bars (23/25 on DST days).
+            hourlyMs = r.hourlyMs.toList() + List((((windowEnd.toEpochMilli() - start) + 3_599_999L) / 3_600_000L).toInt().coerceIn(1, 26).minus(r.hourlyMs.size).coerceAtLeast(0)) { 0L },
+            apps = r.apps.take(60).map { AppLine(it.pkg, label(it.pkg), it.ms, it.opens, it.notifications) },
         )
     }
 
@@ -143,7 +174,9 @@ class UsageReader @Inject constructor(@ApplicationContext private val context: C
         if (pkg.startsWith("com.android.systemui") || pkg.startsWith("com.android.permissioncontroller") ||
             pkg.startsWith("com.google.android.permissioncontroller") || pkg.startsWith("com.android.packageinstaller") ||
             pkg.startsWith("com.google.android.packageinstaller") || pkg.startsWith("com.android.providers.") ||
-            pkg.startsWith("com.google.android.gms") || pkg == "com.android.settings.intelligence"
+            pkg.startsWith("com.google.android.gms") || pkg == "com.android.settings.intelligence" ||
+            // Digital Wellbeing leaves its own screens out of its total; so do we, or a self-check never matches.
+            pkg == "com.google.android.apps.wellbeing"
         ) {
             return false
         }
@@ -161,12 +194,14 @@ class UsageReader @Inject constructor(@ApplicationContext private val context: C
         UsageEvents.Event.DEVICE_SHUTDOWN -> UsageTimeline.Kind.SHUTDOWN
         UsageEvents.Event.DEVICE_STARTUP -> UsageTimeline.Kind.STARTUP
         NOTIFICATION_INTERRUPTION -> UsageTimeline.Kind.NOTIFICATION
+        UsageEvents.Event.USER_INTERACTION -> UsageTimeline.Kind.INTERACTION
         else -> null
     }
 
     private companion object {
         const val LOOKBACK_MS = 6L * 3_600_000L
         const val SLICE_MS = 2L * 3_600_000L
+        const val GAP_FILL_MS = 30L * 60_000L
         /** UsageEvents.Event.NOTIFICATION_INTERRUPTION is hidden API; value 12 since API 28. */
         const val NOTIFICATION_INTERRUPTION = 12
     }

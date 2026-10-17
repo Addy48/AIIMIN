@@ -134,6 +134,15 @@ data class RulesConfig(
     data class VcsRules(val seasonDays: Int, val leagueSize: Int, val provisionalDays: Int)
 
     companion object {
+        /**
+         * Rules 3.0.0 — Score Engine 3 (plan §9.2, constants §9.8). The point, credit and level maths
+         * live in [Score3]; this carries the versioned constants that changed from 2.0.0.
+         */
+        val V3: RulesConfig get() = V2.copy(
+            version = "3.0.0",
+            battery = V2.battery.copy(gentleFloor = 10),
+        )
+
         /** Rules 2.0.0 — identical to the prototype's `CFG` (v2_10_core.js). */
         val V2 = RulesConfig(
             version = "2.0.0",
