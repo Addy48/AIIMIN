@@ -1,5 +1,7 @@
 package aiimin.designsystem.component
 
+import androidx.compose.foundation.selection.toggleable
+
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.sp
@@ -334,16 +336,17 @@ fun SwitchRow(title: String, checked: Boolean, onChange: (Boolean) -> Unit, subt
     val c = Aiimin.colors
     ListRow(
         title = title,
+        // The whole row is a switch for TalkBack ("Haptics, switch, on"), not a plain button (audit A-046).
+        modifier = Modifier.toggleable(value = checked, role = androidx.compose.ui.semantics.Role.Switch, onValueChange = onChange),
         subtitle = subtitle,
         maxSubtitleLines = 3,
         leading = icon?.let { { IconTile(it) } },
-        onClick = { onChange(!checked) },
+        onClick = null,
         trailing = {
             val x by animateDpAsState(if (checked) 16.dp else 0.dp, tween(Motion.FAST, easing = Motion.enter), label = "knob")
             val track by animateColorAsState(if (checked) c.text else c.borderStrong, tween(Motion.FAST), label = "track")
             Box(
-                Modifier.width(46.dp).height(28.dp).clip(Shapes.control).background(track).padding(3.dp)
-                    .semantics { stateDescription = if (checked) "On" else "Off" },
+                Modifier.width(46.dp).height(28.dp).clip(Shapes.control).background(track).padding(3.dp),
             ) {
                 Box(Modifier.offset(x = x + 2.dp).size(22.dp).clip(RoundedCornerShape(6.dp)).background(if (checked && c.isDark) c.base else Color.White))
             }
