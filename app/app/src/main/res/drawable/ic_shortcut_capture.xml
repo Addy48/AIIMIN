@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Launcher shortcut icon: Plus (Phosphor, MIT) on a circle, per Android's shortcut icon guidelines. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="256"
+    android:viewportHeight="256">
+    <path
+        android:fillColor="#F2EFE9"
+        android:pathData="M128,0a128,128 0,1 1,0 256a128,128 0,1 1,0 -256z" />
+    <group
+        android:translateX="72"
+        android:translateY="72"
+        android:scaleX="0.4375"
+        android:scaleY="0.4375">
+        <path
+            android:fillColor="#1A1A1A"
+            android:pathData="M228,128a12,12,0,0,1-12,12H140v76a12,12,0,0,1-24,0V140H40a12,12,0,0,1,0-24h76V40a12,12,0,0,1,24,0v76h76A12,12,0,0,1,228,128Z" />
+    </group>
+</vector>

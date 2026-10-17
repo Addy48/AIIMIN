@@ -71,6 +71,7 @@ class MainActivity : FragmentActivity() {
             navigationBarStyle = androidx.activity.SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT),
         )
         super.onCreate(savedInstanceState)
+        AppShortcuts.publish(applicationContext)
         var ready = false
         splash.setKeepOnScreenCondition { !ready }
         // The opening animation plays once per cold start; rotation or returning from the background skips it.
@@ -151,6 +152,10 @@ class MainActivity : FragmentActivity() {
         if (intent.action == "androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" || intent.action == "android.intent.action.VIEW_PERMISSION_USAGE") {
             request = LaunchRequest.Open(Route.HealthPrivacy)
             return
+        }
+        // Launcher shortcuts (long-press the app icon).
+        intent.getStringExtra(AppShortcuts.EXTRA)?.let { id ->
+            AppShortcuts.requestFor(id)?.let { request = it; AppShortcuts.reportUsed(this, id); return }
         }
         // Dev/demo hooks: `--es aiimin_demo load` fills Meera's sample life; `--es aiimin_go money` opens a screen.
         if (intent.getStringExtra("aiimin_demo") == "load") lifecycleScope.launch { runCatching { demo.load() } }
