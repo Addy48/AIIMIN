@@ -306,10 +306,12 @@ private fun BalanceRow(b: Balance, onClick: () -> Unit) {
             Text(b.name, style = Aiimin.type.bodyStrong)
             Text("${b.lines.size} shared · last ${Dates.short(LocalDate.parse(b.lines.first().txn.day))}", style = Aiimin.type.caption)
         }
-        Text(
-            (if (b.theyOwe) "owes you " else "you owe ") + Money.whole(kotlin.math.abs(b.netPaise)),
-            style = Aiimin.type.bodyStrong.copy(color = if (b.theyOwe) c.done else c.accentText),
-        )
+        // Gap + amount over its words, so a long date never runs into it at 1.3× text (audit A-042).
+        Spacer(Modifier.width(12.dp))
+        Column(horizontalAlignment = Alignment.End) {
+            Text(Money.whole(kotlin.math.abs(b.netPaise)), style = Aiimin.type.bodyStrong.copy(color = if (b.theyOwe) c.done else c.accentText), maxLines = 1)
+            Text(if (b.theyOwe) "owes you" else "you owe", style = Aiimin.type.caption, maxLines = 1)
+        }
     }
     Hairline()
 }
@@ -508,7 +510,7 @@ fun RecurringScreen(vm: BillsViewModel = hiltViewModel()) {
                     Hairline()
                 }
             }
-            item { SectionHeader("Bills · ${Money.whole(confirmed.sumOf { it.amountPaise })} a cycle") }
+            item { SectionHeader(if (confirmed.isEmpty()) "Bills" else "Bills · ${Money.whole(confirmed.sumOf { it.amountPaise })} a cycle") }
             if (confirmed.isEmpty()) item {
                 Text("Confirmed bills show here with their next date. AIIMIN spots them after two or three similar payments, or add one with ＋.", style = Aiimin.type.caption, modifier = Modifier.padding(vertical = 6.dp))
             }

@@ -64,6 +64,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -379,14 +380,16 @@ fun ScoreScreen(vm: MeViewModel = hiltViewModel()) {
             }
             item {
                 SectionHeader("By area · last 7 days")
+                // Ink bars; only the weakest area is orange, so the eye goes where the score can grow (audit A-024).
+                val weakest = Domain.BUILT_IN.mapNotNull { d -> life.areas[d.key]?.let { d.key to it } }.minByOrNull { it.second }?.first
                 Column {
                     Domain.BUILT_IN.forEach { d ->
                         val keys = life.intentions.cards.filter { (k, card) -> card.isScored && life.intentions.def(k)?.domain == d.key }.keys
                         if (keys.isEmpty()) return@forEach
                         val v = life.areas[d.key]
                         Row(Modifier.padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Text(d.name, style = Aiimin.type.body, modifier = Modifier.width(110.dp))
-                            Meter(((v ?: 0.0) / 100).toFloat().coerceIn(0f, 1f), Modifier.weight(1f), color = c.accent)
+                            Text(d.name, style = Aiimin.type.body, maxLines = 1, softWrap = false, modifier = Modifier.widthIn(min = 110.dp).padding(end = 8.dp)) // "Work / Craft" on one line (A-043)
+                            Meter(((v ?: 0.0) / 100).toFloat().coerceIn(0f, 1f), Modifier.weight(1f), color = if (d.key == weakest) c.accent else c.text)
                             Text(if (v == null) "  —" else "  ${v.roundToInt()}", style = Aiimin.type.caption.copy(fontFeatureSettings = "tnum"), modifier = Modifier.width(36.dp))
                         }
                     }
@@ -421,10 +424,11 @@ private fun MarkDot(m: StreakMark) {
         StreakMark.PAUSED -> c.textFaint to "Paused"
         StreakMark.MISSED -> c.raised to "Missed"
     }
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.width(78.dp)) {
+    // At least 78 dp, never a broken word: "Repaire / d" at 1.3× text (audit A-044).
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.widthIn(min = 78.dp)) {
         Box(Modifier.size(10.dp).clip(CircleShape).background(col))
         Spacer(Modifier.width(6.dp))
-        Text(label, style = Aiimin.type.caption)
+        Text(label, style = Aiimin.type.caption, maxLines = 1, softWrap = false)
     }
 }
 
@@ -552,7 +556,7 @@ fun SignalsScreen(vm: MeViewModel = hiltViewModel()) {
                         def.name,
                         subtitle = listOfNotNull(
                             card.direction.label,
-                            if (card.direction in setOf(Direction.MORE, Direction.LESS)) "target ${fmtTarget(card.target)} ${def.unit}" else if (card.direction == Direction.BAND) card.band?.let { "${fmtTarget(it.start)}–${fmtTarget(it.endInclusive)} ${def.unit}" } else null,
+                            if (card.direction in setOf(Direction.MORE, Direction.LESS)) "target ${withUnit(fmtTarget(card.target), def.unit)}" else if (card.direction == Direction.BAND) card.band?.let { "${fmtTarget(it.start)}–${withUnit(fmtTarget(it.endInclusive), def.unit)}" } else null,
                             if (card.isScored && cal < 14) "calibrating $cal/14" else null,
                             card.pending?.let { "change on ${Dates.short(it.applyOn)}" },
                         ).joinToString(" · "),
@@ -639,7 +643,7 @@ fun SignalScreen(key: String, vm: MeViewModel = hiltViewModel()) {
                     Panel {
                         Text("LAST 4 WEEKS", style = Aiimin.type.eyebrow)
                         Sparkline(hist, baseline = normal?.first?.toFloat(), height = 80.dp)
-                        normal?.let { (med, p40, p60) -> Text("Your normal: ${fmtTarget(med)} ${def.unit} · typical range ${fmtTarget(p40)}–${fmtTarget(p60)}", style = Aiimin.type.caption) }
+                        normal?.let { (med, p40, p60) -> Text("Your normal: ${withUnit(fmtTarget(med), def.unit)} · typical range ${fmtTarget(p40)}–${fmtTarget(p60)}", style = Aiimin.type.caption) }
                     }
                 } else {
                     Tag("Calibrating · ${vm.calibration(key)} of 14 days")
@@ -651,7 +655,7 @@ fun SignalScreen(key: String, vm: MeViewModel = hiltViewModel()) {
                 if (dir in setOf(Direction.MORE, Direction.LESS, Direction.BAND)) {
                     SectionHeader(if (dir == Direction.LESS) "Limit" else "Target")
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("${fmtTarget(target)} ${def.unit}", style = Aiimin.type.numberMedium, modifier = Modifier.weight(1f))
+                        Text("${withUnit(fmtTarget(target), def.unit)}", style = Aiimin.type.numberMedium, modifier = Modifier.weight(1f))
                         Stepper("", { target = (target - step).coerceAtLeast(0.0); blocked = null }, { target += step; blocked = null })
                     }
                     // Live challenge label (§4.21): where this target sits in your own last 28 days.
@@ -772,4 +776,11 @@ fun BatteryScreen(vm: MeViewModel = hiltViewModel()) {
             }
         }
     }
+}
+
+/** "70%", "75/100", but "150 min": symbols sit against the number, words get a space (audit A-021). */
+internal fun withUnit(value: String, unit: String): String = when {
+    unit.isBlank() -> value
+    unit.startsWith("%") || unit.startsWith("/") -> value + unit
+    else -> "$value $unit"
 }

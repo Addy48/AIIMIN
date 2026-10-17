@@ -154,7 +154,7 @@ private fun pair(history: List<DaySnapshot>, xKey: String, yKey: String, xWord: 
     if (abs(r) < 0.25) return null
     val conf = when { abs(r) > 0.6 && rows.size >= 30 -> "Strong"; abs(r) > 0.4 -> "Moderate"; else -> "Weak" }
     return Pattern(
-        "On days your $xWord ${if (xWord.endsWith("s") && !xWord.endsWith("ss")) "are" else "is"} ${xFmt(med)} or more, your $yWord averages ${yFmt(hi.average())} against ${yFmt(lo.average())}.",
+        "On days your $xWord ${copulaFor(xWord)} ${xFmt(med)} or more, your $yWord averages ${yFmt(hi.average())} against ${yFmt(lo.average())}.",
         hi.average(), lo.average(), hiLabel, loLabel, rows.size, conf,
     )
 }
@@ -243,9 +243,11 @@ fun WhyScoreScreen(vm: MeViewModel = hiltViewModel()) {
                 }
                 Text(
                     buildString {
-                        append("Day index ${day.di?.let { "%.0f".format(it) } ?: "—"}")
-                        if (now != null) append(" · level ${prev?.let { "%.1f → ".format(it) } ?: ""}${"%.1f".format(now)}")
-                        if (move != null) append(" (${if (move >= 0) "+" else "−"}${"%.1f".format(abs(move))})")
+                        // Plain words (audit A-023): the day's own score, then how the Life Score moved.
+                        fun n(v: Double) = if (v % 1.0 == 0.0) "%.0f".format(v) else "%.1f".format(v)
+                        append("This day scored ${day.di?.let { "%.0f".format(it) } ?: "—"}")
+                        if (now != null) append(" · Life Score ${prev?.let { n(it) + " → " } ?: ""}${n(now)}")
+                        if (move != null) append(" (${if (move >= 0) "+" else "−"}${n(abs(move))})")
                     },
                     style = Aiimin.type.headline, modifier = Modifier.padding(top = 12.dp),
                 )
@@ -270,7 +272,7 @@ fun WhyScoreScreen(vm: MeViewModel = hiltViewModel()) {
                 }
             }
             item {
-                Text("Score Engine rules 3.0.0 · ${if (back == 0) "settled at noon the next day" else "settled"}", style = Aiimin.type.caption, modifier = Modifier.padding(top = 20.dp))
+                Text(if (back == 0) "Final at noon tomorrow; late entries can still change it." else "Final.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 20.dp))
             }
         }
     }
@@ -282,4 +284,11 @@ internal fun valueText(key: String, v: Double): String = when (key) {
     Signals.FOCUS, Signals.SCREEN_PERSONAL, Signals.SCREEN_WORK, Signals.LATE_SCREEN -> hm(v)
     Signals.UNLOCKS -> "${v.roundToInt()} unlocks"
     else -> "${v.roundToInt()}%"
+}
+
+/** "is" or "are" for a measure's name: "steps are", but "focus is" (a final s is not always a plural). */
+internal fun copulaFor(word: String): String {
+    val w = word.trim().lowercase()
+    val singularS = setOf("focus", "stress", "fitness", "progress", "status", "wellness", "news")
+    return if (w.endsWith("s") && w !in singularS && !w.endsWith("ss")) "are" else "is"
 }

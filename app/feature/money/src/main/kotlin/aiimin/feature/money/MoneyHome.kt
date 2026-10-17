@@ -218,7 +218,7 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
         if (d.pending.isNotEmpty()) {
             item {
                 Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
-                    SectionHeader("Floating above · not in yet · ${d.pending.size}", action = "Review", onAction = { nav.open(Route.MoneyInbox) })
+                    SectionHeader("Not booked yet · ${d.pending.size}", action = "Review", onAction = { nav.open(Route.MoneyInbox) })
                     Text("Read from bank alerts on this phone. Nothing is booked until you look.", style = Aiimin.type.caption)
                     Spacer(Modifier.height(6.dp))
                     d.pending.take(2).forEach { p ->
@@ -306,15 +306,19 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
             }
         }
         item {
-            Row(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 16.dp), horizontalArrangement = Arrangement.spacedBy(18.dp)) {
-                FooterLink("Add payment") { adding = true }
-                FooterLink("Paste a bank SMS") { pasting = true }
-                FooterLink("Export for CA") { exporting = true }
-            }
-            Row(Modifier.padding(horizontal = Aiimin.space.gutter), horizontalArrangement = Arrangement.spacedBy(18.dp)) {
-                FooterLink("Payee memory") { nav.open(Route.PayeeMemory) }
-                FooterLink("Splits") { nav.open(Route.Splits) }
-            }
+            // Money's tools as the same quiet grid the Vault uses, not five orange links.
+            aiimin.designsystem.component.ToolGrid(
+                "Money tools",
+                listOf(
+                    aiimin.designsystem.component.Tool(AppIcons.Plus, "Add payment") { adding = true },
+                    aiimin.designsystem.component.Tool(AppIcons.ChatText, "Paste a bank SMS") { pasting = true },
+                    aiimin.designsystem.component.Tool(AppIcons.Export, "Export for CA") { exporting = true },
+                    aiimin.designsystem.component.Tool(AppIcons.Bookmark, "Payee memory") { nav.open(Route.PayeeMemory) },
+                    aiimin.designsystem.component.Tool(AppIcons.HandCoins, "Splits") { nav.open(Route.Splits) },
+                    aiimin.designsystem.component.Tool(AppIcons.Repeat, "Bills") { nav.open(Route.Recurring) },
+                ),
+                Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 8.dp),
+            )
             Text(
                 "For personal budgeting only. Not investment, tax or credit advice. AIIMIN is not registered with SEBI.",
                 style = Aiimin.type.caption.copy(fontSize = 11.5.sp),
@@ -347,11 +351,6 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
             }, Modifier.fillMaxWidth(), enabled = text.isNotBlank())
         }
     }
-}
-
-@Composable
-private fun FooterLink(text: String, onClick: () -> Unit) {
-    Text(text, style = Aiimin.type.label.copy(color = Aiimin.colors.accentText, fontSize = 14.sp), modifier = Modifier.clip(Shapes.small).pressable(onClick).padding(vertical = 10.dp))
 }
 
 private data class HeadlineState(val label: String, val paise: Long, val overall: Boolean, val future: Boolean)
@@ -482,15 +481,15 @@ private fun paceData(s: aiimin.core.data.money.SpendSeries, plan: Long?, today: 
         append("${s.title}: ${Money.format(spent)}")
         if (plan != null) append(" of ${Money.whole(plan)}")
         if (pace != null && cum.isNotEmpty()) append(if (over.last()) ". Ahead of pace" else ". On pace")
-        if (proj != null) append(". Likely ${Money.whole(proj.first)} to ${Money.whole(proj.second)} by ${Dates.shortDm(monthEnd)}")
+        if (proj != null) append(". Likely ${MoneyChartMath.rangeLabel(proj.first, proj.second, sep = " to ")} by ${Dates.shortDm(monthEnd)}")
         append('.')
     }
     val footnote = when {
         proj == null -> null
-        plan == null -> "Likely ${Money.whole(proj.first)} – ${Money.whole(proj.second)} by ${Dates.shortDm(monthEnd)}"
+        plan == null -> "Likely ${MoneyChartMath.rangeLabel(proj.first, proj.second)} by ${Dates.shortDm(monthEnd)}"
         else -> {
             val perDay = ((plan - spent) / daysLeft.coerceAtLeast(1)).coerceAtLeast(0)
-            "Likely ${Money.whole(proj.first)} – ${Money.whole(proj.second)} by ${Dates.shortDm(monthEnd)} · " +
+            "Likely ${MoneyChartMath.rangeLabel(proj.first, proj.second)} by ${Dates.shortDm(monthEnd)} · " +
                 if (perDay > 0) "${Money.whole(perDay)} a day keeps it on plan" else "Over plan; every rupee from here is extra"
         }
     }

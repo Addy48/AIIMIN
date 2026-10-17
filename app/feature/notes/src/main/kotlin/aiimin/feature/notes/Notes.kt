@@ -203,7 +203,7 @@ fun NotesScreen(vm: NotesViewModel = hiltViewModel()) {
                         Text(n.title, style = Aiimin.type.bodyStrong, modifier = Modifier.weight(1f), maxLines = 1)
                         Text(Dates.relative(java.time.Instant.ofEpochMilli(n.updatedAt).atZone(java.time.ZoneId.systemDefault()).toLocalDate(), LocalDate.now()), style = Aiimin.type.caption)
                     }
-                    Text(n.body.replace('\n', ' ').take(140), style = Aiimin.type.caption, maxLines = 2)
+                    Text(aiimin.core.data.notes.notePreview(n.body).take(140), style = Aiimin.type.caption, maxLines = 2)
                 }
                 Hairline(Modifier.padding(horizontal = Aiimin.space.gutter))
             }
@@ -317,7 +317,7 @@ fun NoteScreen(id: String?, vm: NoteViewModel = hiltViewModel()) {
         }
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Aiimin.space.gutter)) {
             Text(
-                (if (pinned) "Pinned to Today" else "Not pinned") + (if (note != null) " · saved" else ""),
+                listOfNotNull("Pinned to Today".takeIf { pinned }, "Saved".takeIf { note != null }).joinToString(" · "),
                 style = Aiimin.type.body.copy(color = c.textMuted, fontSize = 14.sp),
             )
             Box(Modifier.padding(top = 6.dp)) {
@@ -569,7 +569,7 @@ fun MoodYearScreen(vm: JournalViewModel = hiltViewModel()) {
                 val withMood = inYear.values.filterNotNull()
                 Text("$year", style = Aiimin.type.title.copy(fontSize = 26.sp))
                 Text(
-                    if (inYear.isEmpty()) "No entries this year." else "${inYear.size} days written" + if (withMood.isNotEmpty()) " · mostly ${moodLabels[(withMood.average().roundToInt() - 1).coerceIn(0, 4)].lowercase()}" else "",
+                    if (inYear.isEmpty()) "No entries this year." else "${inYear.size} ${if (inYear.size == 1) "day" else "days"} written" + if (withMood.isNotEmpty()) " · mostly ${moodLabels[(withMood.average().roundToInt() - 1).coerceIn(0, 4)].lowercase()}" else "",
                     style = Aiimin.type.caption,
                 )
                 Spacer(Modifier.height(10.dp))

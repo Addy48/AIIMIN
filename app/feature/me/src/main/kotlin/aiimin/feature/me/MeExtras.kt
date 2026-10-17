@@ -258,12 +258,7 @@ private fun PlanBlock(plan: Plan, pp: PlanPrices?, period: Period, current: Bool
             if (plan == Plan.FAMILY) Tag("Coming soon")
         }
         Text(plan.promise, style = Aiimin.type.caption.copy(color = c.accentText, fontWeight = FontWeight.SemiBold))
-        val price = when {
-            plan == Plan.FREE -> "₹0"
-            pp == null -> "—"
-            period == Period.YEARLY -> pp.yearly?.formatted?.let { "$it/year" + (pp.yearlySavingPct?.let { s -> " · save $s%" } ?: "") } ?: "—"
-            else -> pp.monthly?.formatted?.let { "$it/month" } ?: "—"
-        }
+        val price = aiimin.core.data.plan.planPriceLabel(plan, pp?.monthly?.formatted, pp?.yearly?.formatted, pp?.yearlySavingPct, yearly = period == Period.YEARLY)
         Text(price, style = Aiimin.type.headline.copy(fontSize = 18.sp), modifier = Modifier.padding(top = 8.dp))
         Text(plan.hero, style = Aiimin.type.body, modifier = Modifier.padding(top = 6.dp))
         plan.adds.forEach { Text("· $it", style = Aiimin.type.caption.copy(fontSize = 13.sp, lineHeight = 19.sp), modifier = Modifier.padding(top = 3.dp)) }
@@ -274,7 +269,11 @@ private fun PlanBlock(plan: Plan, pp: PlanPrices?, period: Period, current: Bool
 private fun Faq(q: String, a: String) {
     var open by remember { mutableStateOf(false) }
     Column(Modifier.fillMaxWidth().pressable({ open = !open }).padding(vertical = 12.dp)) {
-        Text(q, style = Aiimin.type.bodyStrong)
+        // A caret shows the row opens (audit A-038).
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(q, style = Aiimin.type.bodyStrong, modifier = Modifier.weight(1f))
+            androidx.compose.material3.Icon(if (open) AppIcons.CaretUp else AppIcons.CaretDown, null, tint = Aiimin.colors.textMuted, modifier = Modifier.size(16.dp))
+        }
         if (open) Text(a, style = Aiimin.type.body.copy(color = Aiimin.colors.textMuted), modifier = Modifier.padding(top = 4.dp))
     }
     Hairline()
@@ -492,7 +491,9 @@ fun AppearanceScreen(vm: ProfileViewModel = hiltViewModel()) {
             SectionHeader("Text size")
             Text("On top of your phone's own text size.", style = Aiimin.type.caption)
             PillRow { listOf(0.9f to "Smaller", 1f to "Default", 1.15f to "Larger", 1.3f to "Largest").forEach { (v, l) -> Pill(l, kotlin.math.abs(st.textScale - v) < 0.01f, { vm.save { it.copy(textScale = v) } }) } }
-            Text("Your day so far", style = Aiimin.type.body.copy(fontSize = (16 * st.textScale).sp), modifier = Modifier.padding(top = 8.dp))
+            // A labelled sample, so the line reads as a preview of the chosen size, not stray text (audit A-033).
+            Text("Preview", style = Aiimin.type.caption, modifier = Modifier.padding(top = 10.dp))
+            Text("Your day so far · ₹1,240 spent · 3 of 3 kept", style = Aiimin.type.body.copy(fontSize = (16 * st.textScale).sp), modifier = Modifier.padding(top = 2.dp))
             SectionHeader("Motion and touch")
             SwitchRow("Reduce motion", st.reduceMotion, { v -> vm.save { it.copy(reduceMotion = v) } }, subtitle = "Charts and meters stop animating")
             SwitchRow("Haptics", st.haptics, { v -> vm.save { it.copy(haptics = v) } }, subtitle = "A light tick when scrubbing charts and confirming")

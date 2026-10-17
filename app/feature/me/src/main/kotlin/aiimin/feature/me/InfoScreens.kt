@@ -197,7 +197,8 @@ fun PhoneDayScreen(vm: PhoneDayViewModel = hiltViewModel()) {
     val screenLimit = life?.intentions?.card(Signals.SCREEN_PERSONAL)?.target
     val context = androidx.compose.ui.platform.LocalContext.current
     Column(Modifier.fillMaxSize().background(c.base)) {
-        TopBar(Dates.relative(day, LocalDate.now()), onBack = { nav.back() }) {
+        // "Phone day · Today": a bare "Today" read like the Today tab (audit A-026).
+        TopBar("Phone day · " + Dates.relative(day, LocalDate.now()), onBack = { nav.back() }) {
             AppIconButton(AppIcons.CaretLeft, "Previous day", { vm.shift(-1) }, tint = c.textMuted)
             AppIconButton(AppIcons.CaretRight, "Next day", { vm.shift(1) }, tint = c.textMuted)
         }
@@ -245,7 +246,7 @@ fun PhoneDayScreen(vm: PhoneDayViewModel = hiltViewModel()) {
                         listOfNotNull(
                             sum.countedLine,
                             data.pickups?.let { ScreenSummary.pickupLine(it, data.pickupsLabel) } ?: data.unlocks?.let { ScreenSummary.pickupLine(it, "unlocks") },
-                            data.notifications?.takeIf { it > 0 }?.let { "$it notifications" },
+                            data.notifications?.takeIf { it > 0 }?.let { ScreenSummary.pickupLine(it, "notifications") },
                             data.lateScreenMs?.takeIf { it >= 60_000 }?.let { "${ScreenSummary.fmt(it)} after ${prefs?.lateHour ?: 23}:00" },
                         ).joinToString(" · "),
                         style = Aiimin.type.caption, modifier = Modifier.padding(top = 4.dp),
@@ -298,7 +299,7 @@ fun PhoneDayScreen(vm: PhoneDayViewModel = hiltViewModel()) {
                 items(apps.filter { it.ms > 0 }.take(12), key = { it.pkg }) { a ->
                     ListRow(
                         a.label + (if (a.label in dupes) " · " + a.pkg.substringAfterLast('.') else "") + if (a.pkg in (prefs?.workApps ?: emptySet())) " · work" else "", onClick = { appSheet = a },
-                        subtitle = listOfNotNull("opened ${a.opens}×".takeIf { a.opens > 0 }, "${a.notifications} notifications".takeIf { a.notifications > 0 }).joinToString(" · ").ifBlank { null },
+                        subtitle = listOfNotNull("opened ${a.opens}×".takeIf { a.opens > 0 }, ScreenSummary.pickupLine(a.notifications, "notifications").takeIf { a.notifications > 0 }).joinToString(" · ").ifBlank { null },
                         trailing = { Text(ScreenSummary.fmt(a.ms), style = Aiimin.type.numberSmall) },
                     )
                 }
@@ -325,7 +326,9 @@ fun PhoneDayScreen(vm: PhoneDayViewModel = hiltViewModel()) {
                     SectionHeader("This week")
                     Panel {
                         Text("Steps", style = Aiimin.type.caption)
-                        Bars(week.map { (it.steps ?: 0).toFloat() }, color = c.domains[0], height = 48.dp, highlight = week.size - 1, description = "Steps per day this week")
+                        // No steps measured all week: say so instead of drawing an empty chart (audit A-027).
+                        if (week.all { (it.steps ?: 0L) == 0L }) Text("Not measured this week. Connect Health Connect in Phone data.", style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(vertical = 8.dp))
+                        else Bars(week.map { (it.steps ?: 0).toFloat() }, color = c.domains[0], height = 48.dp, highlight = week.size - 1, description = "Steps per day this week")
                         Spacer(Modifier.height(10.dp))
                         Text("Counted screen time", style = Aiimin.type.caption)
                         Bars(week.map { ((it.screenPersonalMs ?: it.screenMs ?: 0) / 60_000).toFloat() }, color = c.text, height = 48.dp, highlight = week.size - 1, description = "Screen time per day this week")

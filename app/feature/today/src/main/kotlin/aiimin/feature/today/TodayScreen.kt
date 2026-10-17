@@ -271,7 +271,7 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
                     SectionHeader("Pinned note")
                     Column(Modifier.fillMaxWidth().pressable({ nav.open(Route.Note(n.id)) })) {
                         Text(n.title.ifBlank { "Untitled" }, style = Aiimin.type.headline)
-                        Text(n.body.lineSequence().firstOrNull { it.isNotBlank() }.orEmpty(), style = Aiimin.type.caption.copy(fontSize = 14.sp, lineHeight = 20.sp), maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 3.dp))
+                        Text(aiimin.core.data.notes.notePreview(n.body), style = Aiimin.type.caption.copy(fontSize = 14.sp, lineHeight = 20.sp), maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 3.dp))
                     }
                 }
             }
@@ -611,12 +611,13 @@ private fun BatteryStreakLine(u: TodayUi, modifier: Modifier) {
                 if (b.state == BatteryState.COMEBACK) "Comeback ${b.comebackDays} of 3" else "${b.value}",
                 style = Aiimin.type.bodyStrong,
             )
-            Text(" · ${u.life.settings.batteryMode.name.lowercase().replaceFirstChar { it.uppercase() }}", style = Aiimin.type.body.copy(color = c.textMuted))
+            Text(" · ${u.life.settings.batteryMode.name.lowercase().replaceFirstChar { it.uppercase() }}", style = Aiimin.type.body.copy(color = c.textMuted), maxLines = 1)
             Spacer(Modifier.weight(1f))
             if (streak > 0) {
                 Icon(AppIcons.Flame, null, tint = c.text, modifier = Modifier.size(15.dp))
                 Spacer(Modifier.width(4.dp))
-                Text("Streak $streak days", style = Aiimin.type.caption.copy(color = c.textMuted, fontSize = 13.sp))
+                // The flame already says "streak"; one line, right plural (audit A-039).
+                Text("$streak ${if (streak == 1) "day" else "days"}", style = Aiimin.type.caption.copy(color = c.textMuted, fontSize = 13.sp), maxLines = 1, softWrap = false, modifier = Modifier.semantics { contentDescription = "Streak $streak ${if (streak == 1) "day" else "days"}" })
             }
             Spacer(Modifier.width(6.dp))
             Icon(AppIcons.CaretRight, null, tint = c.textFaint, modifier = Modifier.size(16.dp))

@@ -557,7 +557,7 @@ fun UpcomingScreen(vm: UpcomingViewModel = hiltViewModel()) {
                             t.title,
                             subtitle = listOfNotNull(t.day?.let { Dates.relative(LocalDate.parse(it), today) }, t.time?.let(Dates::clock)).joinToString(" · ").ifBlank { null },
                             onClick = { nav.open(Route.Task(t.id)) },
-                            trailing = { Text("Today", style = Aiimin.type.label.copy(color = c.accent), modifier = Modifier.clip(Shapes.small).clickable { vm.moveToday(t.id) }.padding(8.dp)) },
+                            trailing = { Text("Do today", style = Aiimin.type.label.copy(color = c.accentText), modifier = Modifier.clip(Shapes.small).clickable(onClickLabel = "Move to today") { vm.moveToday(t.id) }.heightIn(min = 48.dp).padding(horizontal = 8.dp, vertical = 14.dp)) },
                         )
                     }
                 }

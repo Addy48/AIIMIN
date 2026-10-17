@@ -77,6 +77,8 @@ class MainActivity : FragmentActivity() {
         // The opening animation plays once per cold start; rotation or returning from the background skips it.
         var boot by mutableStateOf(savedInstanceState == null)
         handle(intent)
+        // Opened to a specific screen (launcher shortcut, notification, deep link): go straight there, no logo (audit A-034).
+        if (request != null) boot = false
         setContent {
             val s by settings.settings.collectAsStateWithLifecycle(initialValue = null)
             val st = s

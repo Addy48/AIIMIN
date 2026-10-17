@@ -176,7 +176,7 @@ fun VaultBackupScreen(vm: VaultBackupViewModel = hiltViewModel()) {
             )
             Hairline()
             SectionHeader("Restore")
-            ListRow("Restore from a backup", subtitle = "Pick an .aiimin backup file and type its passphrase", leading = { IconTile(AppIcons.ClockCounter) }, trailing = { Chevron() }, onClick = { pickFile.launch(arrayOf("*/*")) })
+            ListRow("Restore from a backup", subtitle = "Pick an .aiimin backup file and type its passphrase", maxSubtitleLines = 2, leading = { IconTile(AppIcons.ClockCounter) }, trailing = { Chevron() }, onClick = { pickFile.launch(arrayOf("*/*")) })
             Hairline()
             SectionHeader("How it works")
             listOf(

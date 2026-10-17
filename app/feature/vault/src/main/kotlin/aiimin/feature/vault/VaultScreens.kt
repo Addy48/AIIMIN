@@ -216,7 +216,8 @@ fun VaultScreen(vm: VaultViewModel = hiltViewModel()) {
             }
             item {
                 Column(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 18.dp)) {
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // Filter chips only once there is something to filter ("All 0" said nothing).
+                    if (mine.isNotEmpty()) FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Pill("All ${mine.size}", cat == null, { cat = null })
                         DOC_CATEGORIES.filter { k -> mine.any { it.doc.category == k } }.forEach { k -> Pill("$k ${mine.count { it.doc.category == k }}", cat == k, { cat = k }) }
                     }
@@ -238,36 +239,23 @@ fun VaultScreen(vm: VaultViewModel = hiltViewModel()) {
                 Hairline(Modifier.padding(start = Aiimin.space.gutter + 54.dp, end = Aiimin.space.gutter))
             }
             item {
-                Text(
-                    "${all.size} documents · ${"%.1f".format(all.sumOf { it.doc.sizeBytes } / 1_048_576.0)} MB on this phone. Files stay on this phone; AIIMIN never uploads them.",
+                // The empty state already promises files stay on the phone; the count line is for a vault with papers.
+                if (all.isNotEmpty()) Text(
+                    "${all.size} ${if (all.size == 1) "document" else "documents"} · ${"%.1f".format(all.sumOf { it.doc.sizeBytes } / 1_048_576.0)} MB on this phone. Files stay on this phone; AIIMIN never uploads them.",
                     style = Aiimin.type.caption.copy(fontSize = 12.sp), modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 16.dp),
                 )
                 // Everything else the vault does, as a quiet 2-column grid instead of a row of orange links.
-                val tools = listOf(
-                    Triple(AppIcons.Users, "Family", { nav.open(Route.Family) }),
-                    Triple(AppIcons.FirstAid, "Emergency card", { nav.open(Route.EmergencyCard(ME)) }),
-                    Triple(AppIcons.CloudArrowUp, "Backups", { nav.open(Route.VaultBackup) }),
-                    Triple(AppIcons.FirstAidKit, "Emergency kits", { nav.open(Route.EmergencyKits) }),
-                    Triple(AppIcons.Eye, "Who saw what", { nav.open(Route.Activity) }),
+                aiimin.designsystem.component.ToolGrid(
+                    "Vault tools",
+                    listOf(
+                        aiimin.designsystem.component.Tool(AppIcons.Users, "Family") { nav.open(Route.Family) },
+                        aiimin.designsystem.component.Tool(AppIcons.FirstAid, "Emergency card") { nav.open(Route.EmergencyCard(ME)) },
+                        aiimin.designsystem.component.Tool(AppIcons.CloudArrowUp, "Backups") { nav.open(Route.VaultBackup) },
+                        aiimin.designsystem.component.Tool(AppIcons.FirstAidKit, "Emergency kits") { nav.open(Route.EmergencyKits) },
+                        aiimin.designsystem.component.Tool(AppIcons.Eye, "Who saw what") { nav.open(Route.Activity) },
+                    ),
+                    Modifier.padding(horizontal = Aiimin.space.gutter),
                 )
-                aiimin.designsystem.component.SectionHeader("Vault tools", Modifier.padding(horizontal = Aiimin.space.gutter))
-                Column(Modifier.padding(horizontal = Aiimin.space.gutter), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    tools.chunked(2).forEach { pair ->
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            pair.forEach { (icon, label, go) ->
-                                Row(
-                                    Modifier.weight(1f).heightIn(min = 52.dp).clip(Shapes.card).background(c.surface).border(1.dp, c.border, Shapes.card).pressable(go).padding(horizontal = 12.dp, vertical = 12.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    androidx.compose.material3.Icon(icon, null, tint = c.text, modifier = Modifier.size(18.dp))
-                                    Spacer(Modifier.width(8.dp))
-                                    Text(label, style = Aiimin.type.bodyStrong.copy(fontSize = 14.sp, lineHeight = 18.sp), maxLines = 2)
-                                }
-                            }
-                            if (pair.size == 1) Spacer(Modifier.weight(1f))
-                        }
-                    }
-                }
                 Spacer(Modifier.height(24.dp))
             }
         }

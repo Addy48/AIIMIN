@@ -178,8 +178,9 @@ fun PlanDayScreen(tomorrow: Boolean, vm: PlanDayViewModel = hiltViewModel()) {
                     val z = ZoneId.systemDefault()
                     val st = java.time.Instant.ofEpochMilli(e.startAt).atZone(z).toLocalTime()
                     Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Text(if (e.allDay) "all day" else Dates.clock(st), style = Aiimin.type.body.copy(color = c.textMuted, fontFeatureSettings = "tnum"), modifier = Modifier.width(64.dp))
-                        Text(e.title, style = Aiimin.type.body.copy(color = c.text))
+                        // 92 dp and one line: at 64 dp "10:00 AM" broke onto two lines at 1.15× text (audit A-028).
+                        Text(if (e.allDay) "all day" else Dates.clock(st), style = Aiimin.type.body.copy(color = c.textMuted, fontFeatureSettings = "tnum"), maxLines = 1, softWrap = false, modifier = Modifier.width(92.dp))
+                        Text(e.title, style = Aiimin.type.body.copy(color = c.text), modifier = Modifier.weight(1f))
                     }
                     Hairline()
                 }

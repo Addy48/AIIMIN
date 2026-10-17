@@ -544,29 +544,7 @@ fun PersonScreen(id: String, vm: PersonViewModel = hiltViewModel()) {
             }
         }
     }
-    if (editCard && person != null) {
-        var blood by remember { mutableStateOf(person.blood) }
-        var allergies by remember { mutableStateOf(person.allergies) }
-        var meds by remember { mutableStateOf(person.meds) }
-        var doctor by remember { mutableStateOf(person.doctor) }
-        var contact by remember { mutableStateOf(Codecs.decodeList(person.contacts).firstOrNull().orEmpty()) }
-        AppSheet({ editCard = false }, title = "Emergency card", subtitle = "Visible to family even when the vault is locked.") {
-            AppTextField(blood, { blood = it }, label = "Blood group")
-            Spacer(Modifier.height(8.dp))
-            AppTextField(allergies, { allergies = it }, label = "Allergies")
-            Spacer(Modifier.height(8.dp))
-            AppTextField(meds, { meds = it }, label = "Medicines")
-            Spacer(Modifier.height(8.dp))
-            AppTextField(doctor, { doctor = it }, label = "Doctor")
-            Spacer(Modifier.height(8.dp))
-            AppTextField(contact, { contact = it }, label = "Emergency contact (name · phone)")
-            Spacer(Modifier.height(12.dp))
-            AppButton("Save", {
-                vm.save(person.copy(blood = blood, allergies = allergies, meds = meds, doctor = doctor, contacts = Codecs.encodeList(listOf(contact).filter { it.isNotBlank() })))
-                editCard = false
-            }, Modifier.fillMaxWidth())
-        }
-    }
+    if (editCard && person != null) EmergencyCardEditor(person, onSave = { vm.save(it) }) { editCard = false }
     if (delegate && person != null) {
         var cats by remember { mutableStateOf(Codecs.decodeList(person.delegateCats).toSet().ifEmpty { setOf("Insurance", "Health") }) }
         AppSheet({ delegate = false }, title = "Caregiver for ${person.name}", subtitle = "${person.name} agrees to let you manage these categories. Re-confirmed every year.") {
@@ -588,12 +566,19 @@ fun EmergencyCardScreen(id: String, vm: PersonViewModel = hiltViewModel()) {
     val p by vm.person.collectAsStateWithLifecycle()
     val c = Aiimin.colors
     val person = p ?: return
+    var editing by remember { mutableStateOf(false) }
+    val empty = listOf(person.blood, person.allergies, person.meds, person.doctor).all { it.isBlank() } && Codecs.decodeList(person.contacts).isEmpty()
     Column(Modifier.fillMaxSize().background(c.base)) {
-        TopBar("Emergency card", onBack = { nav.back() })
+        TopBar("Emergency card", onBack = { nav.back() }) { AppIconButton(AppIcons.Pencil, "Edit emergency card", { editing = true }) }
         Column(Modifier.padding(Aiimin.space.gutter)) {
             Text(person.name, style = Aiimin.type.title)
+            // An empty card says how to fill it instead of four dashes.
+            if (empty) {
+                Text("Nothing on this card yet. Add a blood group, allergies and someone to call; it opens even when the phone is locked.", style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(top = 8.dp))
+                AppButton("Fill in the card", { editing = true }, Modifier.padding(top = 16.dp))
+            }
             Spacer(Modifier.height(16.dp))
-            listOf("Blood group" to person.blood, "Allergies" to person.allergies, "Medicines" to person.meds, "Doctor" to person.doctor).forEach { (k, v) ->
+            if (!empty) listOf("Blood group" to person.blood, "Allergies" to person.allergies, "Medicines" to person.meds, "Doctor" to person.doctor).forEach { (k, v) ->
                 Text(k.uppercase(), style = Aiimin.type.eyebrow)
                 Text(v.ifBlank { "—" }, style = Aiimin.type.headline.copy(fontSize = 22.sp), modifier = Modifier.padding(bottom = 14.dp))
             }
@@ -604,6 +589,33 @@ fun EmergencyCardScreen(id: String, vm: PersonViewModel = hiltViewModel()) {
                 })
             }
         }
+    }
+    if (editing) EmergencyCardEditor(person, onSave = { vm.save(it) }) { editing = false }
+}
+
+/** The one editor for an emergency card, used on the person's page and on the card itself. */
+@Composable
+private fun EmergencyCardEditor(person: aiimin.core.database.PersonEntity, onSave: (aiimin.core.database.PersonEntity) -> Unit, onDismiss: () -> Unit) {
+    var blood by remember { mutableStateOf(person.blood) }
+    var allergies by remember { mutableStateOf(person.allergies) }
+    var meds by remember { mutableStateOf(person.meds) }
+    var doctor by remember { mutableStateOf(person.doctor) }
+    var contact by remember { mutableStateOf(Codecs.decodeList(person.contacts).firstOrNull().orEmpty()) }
+    AppSheet(onDismiss, title = "Emergency card", subtitle = "Visible to family even when the vault is locked.") {
+        AppTextField(blood, { blood = it }, label = "Blood group")
+        Spacer(Modifier.height(8.dp))
+        AppTextField(allergies, { allergies = it }, label = "Allergies")
+        Spacer(Modifier.height(8.dp))
+        AppTextField(meds, { meds = it }, label = "Medicines")
+        Spacer(Modifier.height(8.dp))
+        AppTextField(doctor, { doctor = it }, label = "Doctor")
+        Spacer(Modifier.height(8.dp))
+        AppTextField(contact, { contact = it }, label = "Emergency contact (name · phone)")
+        Spacer(Modifier.height(12.dp))
+        AppButton("Save", {
+            onSave(person.copy(blood = blood, allergies = allergies, meds = meds, doctor = doctor, contacts = Codecs.encodeList(listOf(contact).filter { it.isNotBlank() })))
+            onDismiss()
+        }, Modifier.fillMaxWidth())
     }
 }
 

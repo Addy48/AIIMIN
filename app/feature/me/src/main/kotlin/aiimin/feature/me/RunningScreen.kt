@@ -44,12 +44,14 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 @HiltViewModel
-class RunningViewModel @Inject constructor(private val pulse: Pulse) : ViewModel() {
+class RunningViewModel @Inject constructor(private val pulse: Pulse, auth: aiimin.core.data.sync.AuthRepository) : ViewModel() {
     val runs = pulse.runs.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    val signedIn = auth.session.map { it?.signedIn == true }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), true)
     val running = pulse.running
 
     fun runAll() = viewModelScope.launch { pulse.beat(Reason.MANUAL, force = Job.entries.toSet()) }
@@ -63,6 +65,7 @@ fun RunningScreen(vm: RunningViewModel = hiltViewModel()) {
     val c = Aiimin.colors
     val runs by vm.runs.collectAsStateWithLifecycle()
     val running by vm.running.collectAsStateWithLifecycle()
+    val signedIn by vm.signedIn.collectAsStateWithLifecycle()
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
     LaunchedEffect(Unit) { while (true) { delay(15_000); now = System.currentTimeMillis() } }
     val unrestricted = remember(running) {
@@ -78,15 +81,15 @@ fun RunningScreen(vm: RunningViewModel = hiltViewModel()) {
             SectionHeader("Jobs")
             val byJob = runs.associateBy { it.job }
             Freshness.order.forEach { job ->
-                val st = RunStatus.of(job, byJob[job.name], now)
+                val st = RunStatus.of(job, byJob[job.name], now, signedIn = signedIn)
                 ListRow(
                     job.label,
                     subtitle = st.line,
                     maxSubtitleLines = 2,
                     trailing = {
                         Box(
-                            Modifier.size(8.dp).background(if (st.healthy) c.done else c.accent, CircleShape)
-                                .semantics { contentDescription = if (st.healthy) "Healthy" else "Needs attention" },
+                            Modifier.size(8.dp).background(when { st.waiting -> c.border; st.healthy -> c.done; else -> c.accent }, CircleShape)
+                                .semantics { contentDescription = when { st.waiting -> "Waiting"; st.healthy -> "Healthy"; else -> "Needs attention" } },
                         )
                     },
                 )
