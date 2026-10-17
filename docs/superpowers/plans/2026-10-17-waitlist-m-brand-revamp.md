@@ -442,3 +442,116 @@ About 7–8 working days in total:
 | H, ship | 0.5 |
 
 Research (B) and execution start only when the owner says usage is available.
+
+---
+
+# v2 update (17 Oct, owner's answers): read this before Phase A
+
+## A. Owner decisions, applied
+1. **Canonical app page = `/app`.** `/mobile` redirects to `/app`.
+   **Warning, verified in code:** `/m` is the URL the installed **v2 Capacitor app loads** (`frontend/capacitor.config.json:9` → `https://www.aiimin.in/m`), and it's the logged-in capture shell (`App.js:229`). Redirecting `/m` would break every installed v2 app. So the rules are:
+   - logged-in users and the app's WebView stay on `/m`;
+   - logged-out web visitors are sent to `/app` instead of `/login`;
+   - `/m` is fully retired only once the v4 APK replaces v2.
+2. **Founder / contact:** "AIIMIN team" everywhere; remove the owner's name and the "made with love" lines. They're currently in `WaitlistFooter.jsx`, `WaitlistAndroidSection.jsx`, `MobilePreviewMock.jsx` and `AndroidApp.jsx`.
+   **Contact:** the owner wrote "support@aimin.in", but the domain is aiimin.in. The plan uses **support@aiimin.in**, which the owner must confirm and set up the mailbox for.
+3. **Raahi:** shown on `/app` as "coming to Plus and above" (it's still being built, so it's labelled "in development"), with the minimal glyph art.
+4. **Analytics (none wired today):**
+   - **Vercel Web Analytics + Speed Insights:** cookie-free, one line each, so no consent banner is needed.
+   - **PostHog** (free tier): funnels, events from §7, session replay **off** by default.
+   - **Google Search Console:** search queries and indexing.
+   - No ad pixels until paid ads start (then Meta/Google with consent).
+5. **Lighthouse, phone performance and acceptance status** are tracked as a table in STATUS.md for every deploy (performance / accessibility / SEO on phone, LCP, CLS, INP).
+
+## B. The waitlist counter: honest version (not 122)
+**Showing an invented number ("122 waiting") is fake social proof.** It breaks India's dark-pattern guidelines (CCPA 2023, "false urgency / fake social proof") and the plan's own no-fake-numbers rule, and one screenshot comparison can expose it. I won't build an inflated counter. Honest options that convert as well or better:
+- **(a) Founding seats remaining:** "First 500 founding members · 377 seats left". This counts down from a real cap, so it shows scarcity truthfully.
+- **(b) Show the real number only once it reaches 250**; until then show "Founding cohort is open" with no number.
+- **(c) Recent-joins ticker** with real first names and cities, opt-in only.
+
+**Recommended: (a) + (c).**
+
+## C. Founding-member offer (so people pay, and it's genuine)
+Benchmarks, to verify in Phase B:
+- Superhuman: paid onboarding.
+- Arc: free invite plus member perks.
+- Linear: no discount, craft as the hook.
+- Notion and Raycast: student/early pricing.
+- Typical "founding" offers: lifetime 30–50% off, a badge, roadmap votes.
+
+Proposal:
+- **Founding member (first 500 to join the paid plan when billing starts):**
+  - **50% off for life on Plus or Pro** (Plus ₹24/month, Pro ₹49/month instead of ₹49/₹99) while they stay subscribed;
+  - the first 30 days free;
+  - a founding badge in the app and on the waitlist pass;
+  - a vote on the roadmap;
+  - Raahi early access.
+- **Price-lock pre-commit:** join now, pay nothing, and your founding price is held for 14 days after billing opens. That honours the "no charge without subscribing" rule.
+- **Referral:** each friend who joins moves you up and gives you both +1 free month when billing starts. Capped at 6 months.
+
+## D. Motion stack (owner-supplied libraries)
+**Lenis (smooth scroll):**
+- Use it on `/app` and `/brand` only, not on the form-heavy `/waitlist`.
+- Settings: `respectReducedMotion: true`, `anchors: true`, `allowNestedScroll: true`.
+- Install with `npm i lenis`.
+
+**GSAP 3.15 (now free, including SplitText and ScrollTrigger) + `@gsap/react` `useGSAP()`:**
+- logo assembly;
+- the pinned "day with AIIMIN" phone story (ScrollTrigger, synced to Lenis via `lenis.on('scroll', ScrollTrigger.update)`);
+- SplitText for the headline;
+- `gsap.matchMedia()` for reduced motion and phones;
+- only transform and opacity are animated.
+
+**React Bits (MIT + Commons Clause, fine to use in our site):**
+- Pick at most 3, added through the shadcn registry (`@react-bits/...-TS-TW`): SplitText or a scroll reveal for headings, one subtle background on the `/brand` hero, a card/gallery for screenshots.
+- No heavy WebGL backgrounds on phones (LCP budget).
+
+**Rules:**
+- Framer Motion already exists (`framer-motion` + `motion`); don't mix GSAP and Framer on the same component tree.
+- Remove one of the two motion packages if it becomes unused.
+- **Budget:** under 45 KB of extra JS (gzip) on `/app`; phone LCP under 2.5 s.
+
+## E. Tagline shortlist (for the owner to pick; Phase C tests the top 3)
+1. One screen, every day.
+2. Your whole day. One quiet screen.
+3. Less app-hopping. More living.
+4. Your day, sorted before you are.
+5. Run your life like you mean it. Gently.
+6. Twelve apps walked into a bar. Only AIIMIN came out. *(witty, for ads)*
+7. The calm way to keep score of your life.
+8. Know your day. Know your money. Know where the papers are.
+9. Say it once. It files itself.
+10. Fewer tabs, more life.
+11. Your phone already knows. AIIMIN makes it useful.
+12. Plan less. Live more. Miss nothing.
+13. Built for people who forget the passport is expiring.
+14. All your life admin, none of the admin feeling.
+15. The only app that compares you with you.
+
+**Pairing:** brand line #1 or #2. The waitlist hero uses #9 or #15 as proof lines, and ads test #6, #11 and #13.
+
+## F. Growth plan: more users, traffic and revenue (new Phase I, after launch)
+| Channel | What | Skills |
+|---|---|---|
+| **SEO / programmatic** | Pages for "SMS expense tracker India", "screen time tracker that matches Digital Wellbeing", "document expiry reminder", one page per bank ("HDFC SMS to budget") | seo-audit, programmatic-seo, site-architecture, schema-markup |
+| **AEO** | FAQ answers written to be quoted by AI search | aeo |
+| **Launch** | Product Hunt + Indie Hackers + Reddit (r/IndiaInvestments, r/productivity, r/androidapps) + LinkedIn founder-less "AIIMIN team" posts; a launch-week calendar | launch-strategy, social-content, linkedin-strategy |
+| **Referral loop** | Shareable waitlist pass (OG image with seat number), +1 month per friend | referral-program |
+| **Content** | "Week in AIIMIN" changelog, 20 s reels of capture and the Money chart (built with hyperframes) | content-strategy, video-content-strategist |
+| **Play Store** | Listing, screenshots and keywords reusing `/app` assets once release-signed | app-store-optimization |
+| **Email** | Waitlist welcome, beta access, founding offer (via the existing Resend; consent only) | email-sequence, onboarding-cro |
+| **Pricing and paywall** | Founding offer, then a Plus upgrade moment inside the app | pricing-strategy, paywall-upgrade-cro |
+| **Measure** | Weekly funnel review; A/B tests on the hero line and form | analytics-tracking, ab-test-setup, campaign-analytics |
+
+**Targets for 30 days after launch** (to be confirmed against the Phase A baseline):
+- 1,000 waitlist sign-ups;
+- 25% of `/app` visitors tap download;
+- 10% of waitlist members pre-commit to the founding price.
+
+## G. Added tasks
+- **A6:** check `/m` usage (how many active v2 Capacitor installs), then apply the redirect rule from §A1.
+- **E0:** install Lenis, GSAP and `@gsap/react`, plus the React Bits picks; bundle-size check.
+- **E6:** founding seats counter (real cap, server count read-only) + referral pass. **Any schema change needs the owner's OK.**
+- **E7:** footer and credits → "AIIMIN team"; contact support@aiimin.in (once confirmed).
+- **G0:** wire Vercel Analytics, Speed Insights and PostHog; submit to Search Console.
+- **I1–I6:** the growth channels from §F, each with its own one-page brief before it runs.
