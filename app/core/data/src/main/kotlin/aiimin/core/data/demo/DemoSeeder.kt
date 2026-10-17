@@ -52,6 +52,7 @@ class DemoSeeder @Inject constructor(
     private val money: MoneyRepository,
     private val moneyDao: MoneyDao,
     private val dayState: DayStateDao,
+    private val minimumDao: aiimin.core.database.MinimumDao,
     private val notes: NoteRepository,
     private val journal: JournalRepository,
     private val family: FamilyRepository,
@@ -77,10 +78,11 @@ class DemoSeeder @Inject constructor(
         seedHistory(today)
 
         // ---- today: minimums, tasks, events
-        minimums.add("Walk 20 minutes", "Walk to the gate", "body", startToday = true)
-        minimums.add("Read 10 pages", "Read one page", "mind", startToday = true)
+        val walk = minimums.add("Walk 20 minutes", "Walk to the gate", "body", startToday = true)
+        val read = minimums.add("Read 10 pages", "Read one page", "mind", startToday = true)
         val plan = minimums.add("Plan my day", "Pick one thing", "discipline", startToday = true)
         runCatching { minimums.toggle(plan) }
+        seedTicks(today, listOf(walk, read, plan))
 
         val done1 = tasks.create("Standup notes to Slack", today, "09:45", DayPart.MORNING, notes = "")
         val done2 = tasks.create("Review pitch deck copy", today, null, DayPart.MORNING, priority = 2)
@@ -127,6 +129,22 @@ class DemoSeeder @Inject constructor(
         seedDoc("ECG report · Apollo", dad, listOf("Apollo Clinic Pune", "ECG report Aug 2026", "Normal sinus rhythm"), null)
         seedDoc("Prescription · Dr Iyer", mom, listOf("Dr Sneha Iyer MD", "Metformin 500 mg twice daily", "Review in 3 months"), null)
         return "Meera's sample life is loaded"
+    }
+
+    /**
+     * The same four weeks as [seedHistory], as minimum ticks: without them the Minimums grid stayed empty
+     * while Battery showed a 28-day streak (audit A-019). Uses the same "kept" rule as the history.
+     */
+    private suspend fun seedTicks(today: LocalDate, ids: List<String>) {
+        ids.forEach { id -> minimumDao.get(id)?.let { minimumDao.upsert(it.copy(addedOn = today.minusDays(29).toString())) } }
+        for (back in 28 downTo 1) {
+            val d = today.minusDays(back.toLong())
+            val good = back <= 10 || (back * 7 + 3) % 10 > 2
+            val kept = if (good) 3 else if (back % 2 == 0) 2 else 1
+            ids.take(kept).forEach { id ->
+                minimumDao.upsertTick(aiimin.core.database.MinimumTickEntity(id, d.toString(), done = true, updatedAt = at(d, 20)))
+            }
+        }
     }
 
     /** Four weeks of closed days (frozen snapshots) so the score, trends and streaks have something to show. */

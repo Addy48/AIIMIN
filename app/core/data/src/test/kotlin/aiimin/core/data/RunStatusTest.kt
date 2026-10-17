@@ -31,4 +31,16 @@ class RunStatusTest {
     @Test fun `never run is neutral`() {
         assertThat(RunStatus.of(Job.TRASH, null, now).line).isEqualTo("Not run yet")
     }
+
+    @Test fun `a job that has not run yet is neutral, not healthy`() {
+        val s = RunStatus.of(Job.DEVICE, null, now)
+        assertThat(s.line).isEqualTo("Not run yet")
+        assertThat(s.waiting).isTrue()
+    }
+
+    @Test fun `sync while signed out says it is off`() {
+        val s = RunStatus.of(Job.SYNC, PulseRunEntity("SYNC", lastRunAt = now - 16 * m, lastOkAt = now - 16 * m, lastMs = 0), now, signedIn = false)
+        assertThat(s.line).isEqualTo("Off · sign in to sync")
+        assertThat(s.waiting).isTrue()
+    }
 }

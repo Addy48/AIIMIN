@@ -81,9 +81,34 @@ class SearchRepository @Inject constructor(
 data class ActivityLine(val at: Long, val text: String, val tier: Tier, val type: String, val refId: String?)
 
 @Singleton
-class ActivityRepository @Inject constructor(private val log: EventLogger) {
-    /** The real activity bus: what you did, from the log, in plain words. */
-    fun recent(n: Int = 60): Flow<List<ActivityLine>> = log.recent(n * 2).map { list -> list.mapNotNull(::line).take(n) }
+class ActivityRepository @Inject constructor(
+    private val log: EventLogger,
+    private val taskDao: aiimin.core.database.TaskDao,
+    private val minimumDao: aiimin.core.database.MinimumDao,
+    private val moneyDao: aiimin.core.database.MoneyDao,
+    private val noteDao: aiimin.core.database.NoteDao,
+    private val vaultDao: aiimin.core.database.VaultDao,
+) {
+    /** The real activity bus: what you did, from the log, in plain words — and which thing (audit A-032). */
+    fun recent(n: Int = 60): Flow<List<ActivityLine>> = log.recent(n * 2).map { list -> list.mapNotNull(::line).take(n).map { named(it) } }
+
+    /** Adds the task, note, payee, document or minimum a row is about. The journal stays unnamed: it is private. */
+    private suspend fun named(l: ActivityLine): ActivityLine {
+        val id = l.refId ?: return l
+        val name = runCatching {
+            when {
+                l.type.startsWith("task.") -> taskDao.get(id)?.title
+                l.type.startsWith("min.") -> minimumDao.get(id)?.name
+                l.type == "txn.add" -> moneyDao.get(id)?.let { "${it.title} ${aiimin.core.data.util.Money.whole(it.amountPaise)}" }
+                l.type == "txn.detect" -> (moneyDao.draft(id)?.let { it.title to it.amountPaise } ?: moneyDao.get(id)?.let { it.title to it.amountPaise })
+                    ?.let { (t, p) -> "$t ${aiimin.core.data.util.Money.whole(p)}" }
+                l.type.startsWith("doc.") -> vaultDao.get(id)?.title
+                l.type == "note.create" -> noteDao.get(id)?.title
+                else -> null
+            }
+        }.getOrNull()
+        return l.copy(text = withName(l.text, name))
+    }
 
     private fun line(e: LogEvent): ActivityLine? {
         val d = e.data
@@ -299,4 +324,11 @@ class DataControlRepository @Inject constructor(
         listOf("goals", "demo", "onboarding_draft", "vault_backup", "replace_undo", "captures").forEach { name -> context.getSharedPreferences(name, Context.MODE_PRIVATE).edit().clear().apply() }
         settings.clearAll()
     }
+}
+
+/** "Added a task · Buy milk": the row's words plus what it was about, cut to fit one line. */
+fun withName(text: String, name: String?): String {
+    val n = name?.trim().orEmpty()
+    if (n.isEmpty()) return text
+    return "$text · " + if (n.length > 40) n.take(39) + "…" else n
 }

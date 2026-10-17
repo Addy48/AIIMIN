@@ -207,6 +207,12 @@ data class MinimumToday(val minimum: MinimumEntity, val tick: MinimumTickEntity?
 }
 
 @Singleton
+/** Two minimum names mean the same habit when they differ only in case or spacing. */
+fun sameMinimumName(a: String, b: String): Boolean {
+    fun norm(s: String) = s.trim().replace(Regex("\\s+"), " ").lowercase()
+    return norm(a).isNotEmpty() && norm(a) == norm(b)
+}
+
 class MinimumRepository @Inject constructor(
     private val dao: MinimumDao,
     private val dayState: DayStateDao,
@@ -225,8 +231,16 @@ class MinimumRepository @Inject constructor(
 
     /** New minimums join the frozen plan tomorrow, so nobody adds an easy one at 11 PM. */
     suspend fun add(name: String, tiny: String = "", domain: String = "discipline", startToday: Boolean = false): String {
-        val id = newId()
         val today = clock.today()
+        // The same habit typed twice (or picked in onboarding and again later) stays one minimum.
+        dao.activeNow().firstOrNull { sameMinimumName(it.name, name) }?.let { existing ->
+            if (startToday) dayState.get(today.toString())?.let { st ->
+                val planned = Codecs.decodeList(st.plannedMins)
+                if (existing.id !in planned) dayState.upsert(st.copy(plannedMins = Codecs.encodeList(planned + existing.id)))
+            }
+            return existing.id
+        }
+        val id = newId()
         dao.upsert(
             MinimumEntity(
                 id, name.trim(), tiny.trim(), domain,

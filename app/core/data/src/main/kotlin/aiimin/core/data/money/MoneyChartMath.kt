@@ -1,11 +1,18 @@
 package aiimin.core.data.money
 
+import aiimin.core.data.util.Money
+
 /**
  * The numbers behind the month chart (plan Phase 20): money spent so far as a climbing line,
  * the even pace to the plan, where the month is likely to land, and the one day worth labelling.
  * Pure, so the chart and the old "Likely to land" card can never disagree.
  */
 object MoneyChartMath {
+
+    /** "₹400 – ₹600", or just "₹400" when both ends round to the same amount. */
+    fun rangeLabel(lowPaise: Long, highPaise: Long, sep: String = " – "): String =
+        if (Money.whole(lowPaise) == Money.whole(highPaise)) Money.whole(lowPaise)
+        else Money.whole(lowPaise) + sep + Money.whole(highPaise)
 
     /** Running total per day. */
     fun cumulative(days: List<Long>): List<Long> {

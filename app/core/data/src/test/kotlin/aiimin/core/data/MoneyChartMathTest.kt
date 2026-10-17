@@ -43,4 +43,13 @@ class MoneyChartMathTest {
         val over = MoneyChartMath.overPace(cumulative = listOf(50L, 250L, 280L), pace = listOf(100L, 200L, 300L))
         assertThat(over).containsExactly(false, true, false).inOrder()
     }
+
+    @Test fun `a range whose ends match is said once`() =
+        assertThat(MoneyChartMath.rangeLabel(40_000, 40_000)).isEqualTo("₹400")
+
+    @Test fun `a real range keeps both ends`() =
+        assertThat(MoneyChartMath.rangeLabel(40_000, 60_000)).isEqualTo("₹400 – ₹600")
+
+    @Test fun `the separator can be words`() =
+        assertThat(MoneyChartMath.rangeLabel(40_000, 60_000, sep = " to ")).isEqualTo("₹400 to ₹600")
 }

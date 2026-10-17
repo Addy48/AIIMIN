@@ -196,3 +196,21 @@ class JournalRepository @Inject constructor(
         }
     }
 }
+
+/**
+ * A note body as one readable line for lists and Today: checkboxes become ✓ / ○,
+ * [[links]] show the linked name, bullets lose their dash, lines join with " · ".
+ */
+fun notePreview(body: String): String = body.lineSequence()
+    .map { it.trim() }
+    .filter { it.isNotEmpty() }
+    .map { line ->
+        when {
+            line.startsWith("- [x]", ignoreCase = true) -> "✓ " + line.drop(5).trim()
+            line.startsWith("- [ ]") -> "○ " + line.drop(5).trim()
+            line.startsWith("- ") || line.startsWith("* ") -> line.drop(2).trim()
+            else -> line
+        }
+    }
+    .map { it.replace(Regex("""\[\[([^\[\]]{1,80})]]"""), "$1") }
+    .joinToString(" · ")

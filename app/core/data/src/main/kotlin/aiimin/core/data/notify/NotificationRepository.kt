@@ -108,7 +108,7 @@ class NotificationRepository @Inject constructor(
             val m = view.today.minimums
             val left = m.planned - m.kept
             if (left > 0 && !view.today.paused) {
-                emit("streak:$today", "$left minimum${if (left == 1) "" else "s"} left today", "Keep ${if (left == 1) "it" else "them"} and your ${view.readout.streak.current}-day streak carries on.", "today", null, 2)
+                emit("streak:$today", "$left minimum${if (left == 1) "" else "s"} left today", streakNudgeBody(left, view.readout.streak.current), "today", null, 2)
             }
         }
         if (view?.battery?.state == BatteryState.LOW) {
@@ -200,4 +200,10 @@ class NotificationRepository @Inject constructor(
 internal fun family(ruleKey: String): String {
     val last = ruleKey.substringAfterLast(':', "")
     return if (Regex("\\d{4}-\\d{2}-\\d{2}").matches(last)) ruleKey.substringBeforeLast(':') + ":" else ruleKey
+}
+
+/** The evening minimums reminder's second line; a zero streak is an invitation, not "your 0-day streak". */
+fun streakNudgeBody(left: Int, streak: Int): String {
+    val them = if (left == 1) "it" else "them"
+    return if (streak <= 0) "Keep $them today to start a streak." else "Keep $them and your $streak-day streak carries on."
 }

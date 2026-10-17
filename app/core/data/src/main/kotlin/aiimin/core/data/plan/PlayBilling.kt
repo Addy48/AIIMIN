@@ -215,3 +215,16 @@ class PlayBillingRepository @Inject constructor(@ApplicationContext private val 
     fun manageUrl(plan: Plan): String =
         "https://play.google.com/store/account/subscriptions?package=${context.packageName}" + (plan.productId?.let { "&sku=$it" } ?: "")
 }
+
+/**
+ * A plan card's price: Google Play's localised price when the store has the product,
+ * else the planned list price (beta / no Play), never a bare dash (audit A-035).
+ */
+fun planPriceLabel(plan: Plan, playMonthly: String?, playYearly: String?, yearlySavingPct: Int?, yearly: Boolean): String {
+    if (plan == Plan.FREE) return "₹0"
+    return if (yearly) {
+        (playYearly ?: "₹${plan.plannedYearlyInr}") + "/year" + (yearlySavingPct?.takeIf { playYearly != null }?.let { " · save $it%" } ?: "")
+    } else {
+        (playMonthly ?: "₹${plan.plannedMonthlyInr}") + "/month"
+    }
+}
