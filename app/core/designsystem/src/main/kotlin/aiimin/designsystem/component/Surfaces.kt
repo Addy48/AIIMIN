@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -98,18 +99,21 @@ fun SectionHeader(
     onAction: (() -> Unit)? = null,
     trailing: (@Composable RowScope.() -> Unit)? = null,
 ) {
+    val hasAction = action != null && onAction != null
     Row(
-        modifier.fillMaxWidth().padding(top = 18.dp, bottom = 8.dp),
+        // With an action the row is the action's 48 dp touch height, so the header grows ~4 dp, not ~30.
+        modifier.fillMaxWidth().padding(top = if (hasAction) 0.dp else 18.dp, bottom = if (hasAction) 0.dp else 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(title.uppercase(), style = Aiimin.type.eyebrow, modifier = Modifier.weight(1f))
         trailing?.invoke(this)
-        if (action != null && onAction != null) {
-            Text(
-                action,
-                style = Aiimin.type.label.copy(color = Aiimin.colors.accentText, fontSize = 14.sp, fontWeight = FontWeight.Medium),
-                modifier = Modifier.clip(Shapes.small).clickable(onClick = onAction).padding(horizontal = 6.dp, vertical = 4.dp),
-            )
+        if (hasAction) {
+            Box(
+                Modifier.heightIn(min = 48.dp).widthIn(min = 48.dp).clip(Shapes.small).clickable(onClick = onAction!!).padding(horizontal = 6.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(action!!, style = Aiimin.type.label.copy(color = Aiimin.colors.accentText, fontSize = 14.sp, fontWeight = FontWeight.Medium))
+            }
         }
     }
 }
@@ -132,7 +136,8 @@ fun ListRow(
     trailing: (@Composable () -> Unit)? = null,
     onClick: (() -> Unit)? = null,
     titleColor: Color = Aiimin.colors.text,
-    maxSubtitleLines: Int = 1,
+    // Two lines by default: at 1.15× and 1.3× text one line cut targets and instructions mid-word (audit A-018).
+    maxSubtitleLines: Int = 2,
 ) {
     Row(
         modifier
