@@ -50,6 +50,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -127,7 +128,11 @@ fun AuthFlow(
                 AuthMode.SIGN_IN -> {
                     Text("Sign in to aiimin.in", style = Aiimin.type.title.copy(fontSize = 28.sp, lineHeight = 34.sp))
                     Text("Use the OS-ID or email and the 6-digit PIN you use on the website.", style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(top = 8.dp, bottom = 24.dp))
-                    AppTextField(id, { id = it; error = null }, label = "OS-ID or email", placeholder = "AADI2004 or you@mail.com")
+                    // Like aiimin.in: an OS-ID is always capitals, whatever the keyboard sends; an email stays as typed.
+                    AppTextField(
+                        id, { id = osIdOrEmail(it); error = null }, label = "OS-ID or email", placeholder = "AADI2004 or you@mail.com",
+                        capitalization = if ('@' in id) KeyboardCapitalization.None else KeyboardCapitalization.Characters,
+                    )
                     Spacer(Modifier.height(16.dp))
                     Text("PIN", style = Aiimin.type.label.copy(color = c.textMuted), modifier = Modifier.padding(bottom = 8.dp))
                     PinInput(pin, { pin = it; error = null }, autoFocus = false)
@@ -142,7 +147,7 @@ fun AuthFlow(
                     Spacer(Modifier.height(12.dp))
                     AppTextField(email, { email = it.trim(); error = null }, label = "Email", keyboardType = KeyboardType.Email, placeholder = "you@mail.com")
                     Spacer(Modifier.height(12.dp))
-                    AppTextField(osId, { osId = it.uppercase().filter { ch -> ch.isLetterOrDigit() }.take(8); error = null }, label = "OS-ID · 8 characters, up to 4 numbers", placeholder = "AADI2004")
+                    AppTextField(osId, { osId = it.uppercase().filter { ch -> ch.isLetterOrDigit() }.take(8); error = null }, label = "OS-ID · 8 characters, up to 4 numbers", placeholder = "AADI2004", capitalization = KeyboardCapitalization.Characters)
                     if (osCheck != null) Text(osCheck!!, style = Aiimin.type.caption.copy(color = if (osOk == true) c.done else c.warn), modifier = Modifier.padding(top = 6.dp))
                     Spacer(Modifier.height(16.dp))
                     Text("Choose a 6-digit PIN", style = Aiimin.type.label.copy(color = c.textMuted), modifier = Modifier.padding(bottom = 8.dp))
@@ -233,3 +238,5 @@ private fun ErrorLine(text: String?) {
     if (text != null) Text(text, style = Aiimin.type.caption.copy(color = Aiimin.colors.warn, fontSize = 13.sp), modifier = Modifier.padding(top = 8.dp))
 }
 
+/** Sign-in field: no "@" means an OS-ID, shown and sent in capitals (as aiimin.in does); with "@" it is an email, left as typed. */
+internal fun osIdOrEmail(raw: String): String = if ('@' in raw) raw.trim() else raw.uppercase().filter { !it.isWhitespace() }

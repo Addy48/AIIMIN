@@ -284,6 +284,7 @@ fun AppTextField(
     singleLine: Boolean = true,
     minLines: Int = 1,
     keyboardType: KeyboardType = KeyboardType.Text,
+    capitalization: androidx.compose.ui.text.input.KeyboardCapitalization = androidx.compose.ui.text.input.KeyboardCapitalization.None,
     leading: ImageVector? = null,
     textStyle: TextStyle = Aiimin.type.body,
     onDone: (() -> Unit)? = null,
@@ -317,7 +318,7 @@ fun AppTextField(
                     minLines = minLines,
                     textStyle = textStyle,
                     cursorBrush = SolidColor(c.accent),
-                    keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+                    keyboardOptions = KeyboardOptions(keyboardType = keyboardType, capitalization = capitalization),
                     keyboardActions = KeyboardActions(onDone = { onDone?.invoke() }, onSend = { onDone?.invoke() }),
                     modifier = Modifier.fillMaxWidth().semantics { contentDescription = label ?: placeholder },
                 )
