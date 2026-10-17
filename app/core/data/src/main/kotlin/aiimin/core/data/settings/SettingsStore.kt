@@ -76,6 +76,8 @@ data class AppSettings(
     val keepAliveDismissedAt: Long? = null,
     /** When Pulse last found a job that had missed two background runs (the phone paused AIIMIN). */
     val stallDetectedAt: Long? = null,
+    /** First day bank alerts count from (yyyy-MM-dd), chosen when importing past messages. */
+    val moneyTrackFrom: String? = null,
     val deviceId: String = "",
     /** Your UPI ID, for "Ask for ₹…" pay links when settling splits (P2). Never a collect request. */
     val myUpiId: String = "",
@@ -131,6 +133,7 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         val screenStrategy = stringPreferencesKey("screen_strategy")
         val keepAliveDismissed = stringPreferencesKey("keep_alive_dismissed")
         val stallDetected = stringPreferencesKey("stall_detected")
+        val moneyTrackFrom = stringPreferencesKey("money_track_from")
         val screenCalibration = doublePreferencesKey("screen_calibration")
         val lateHour = intPreferencesKey("late_hour")
         val quiet = stringPreferencesKey("quiet")
@@ -205,6 +208,7 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         lastSyncAt = p[K.lastSync]?.toLongOrNull(),
         keepAliveDismissedAt = p[K.keepAliveDismissed]?.toLongOrNull(),
         stallDetectedAt = p[K.stallDetected]?.toLongOrNull(),
+        moneyTrackFrom = p[K.moneyTrackFrom],
         deviceId = p[K.device].orEmpty(),
         myUpiId = p[K.myUpi].orEmpty(),
         city = p[K.city].orEmpty(),
@@ -258,6 +262,7 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
             s.lastSyncAt?.let { p[K.lastSync] = it.toString() } ?: p.remove(K.lastSync)
             s.keepAliveDismissedAt?.let { p[K.keepAliveDismissed] = it.toString() } ?: p.remove(K.keepAliveDismissed)
             s.stallDetectedAt?.let { p[K.stallDetected] = it.toString() } ?: p.remove(K.stallDetected)
+            s.moneyTrackFrom?.let { p[K.moneyTrackFrom] = it } ?: p.remove(K.moneyTrackFrom)
             p[K.device] = s.deviceId
             p[K.myUpi] = s.myUpiId
             p[K.city] = s.city

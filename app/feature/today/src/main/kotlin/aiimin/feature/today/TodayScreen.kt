@@ -394,7 +394,7 @@ private fun NowCard(u: TodayUi, vm: TodayViewModel, hour: Int, light: Boolean, o
             Spacer(Modifier.height(4.dp))
             Text("A minute to say how it went, and name tomorrow's first task.", style = Aiimin.type.caption.copy(fontSize = 14.sp, lineHeight = 20.sp))
             Spacer(Modifier.height(16.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 AppButton("Debrief", { nav.open(Route.Debrief) }, modifier = Modifier.weight(1f))
                 AppButton("Plan tomorrow", { nav.open(Route.PlanDay(tomorrow = true)) }, kind = ButtonKind.SECONDARY, modifier = Modifier.weight(1f))
             }
@@ -409,7 +409,7 @@ private fun NowCard(u: TodayUi, vm: TodayViewModel, hour: Int, light: Boolean, o
             Spacer(Modifier.height(4.dp))
             Text("Nothing on the calendar for a while. Plan the rest of the day, or just start a focus session.", style = Aiimin.type.caption.copy(fontSize = 14.sp, lineHeight = 20.sp))
             Spacer(Modifier.height(16.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 AppButton("Plan my day", { nav.open(Route.PlanDay()) }, modifier = Modifier.weight(1f))
                 AppButton("Start focus", { nav.open(Route.Focus()) }, kind = ButtonKind.SECONDARY, modifier = Modifier.weight(1f))
             }

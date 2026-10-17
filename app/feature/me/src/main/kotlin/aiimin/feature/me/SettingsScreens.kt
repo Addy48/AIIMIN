@@ -82,6 +82,23 @@ fun SettingsScreen(vm: MeViewModel = hiltViewModel()) {
         TopBar("Settings", onBack = { nav.back() })
         LazyColumn(contentPadding = PaddingValues(start = Aiimin.space.gutter, end = Aiimin.space.gutter, bottom = 40.dp)) {
             item {
+                // Every settings page in one place, so nothing is only reachable from somewhere else.
+                SectionHeader("Account")
+                SettingsLink(AppIcons.UserCircle, "Account and sync", "Sign in, profile, what syncs") { nav.open(Route.Account) }
+                SettingsLink(AppIcons.Star, "Plan", "Free, Plus, Pro, Family") { nav.open(Route.Plans) }
+                SettingsLink(AppIcons.Devices, "Linked devices", "Browsers and phones on your account") { nav.open(Route.LinkedDevices) }
+                SectionHeader("App")
+                SettingsLink(AppIcons.Bell, "Notifications", "Inbox and what AIIMIN tells you") { nav.open(Route.Notifications) }
+                SettingsLink(AppIcons.Footprints, "Phone data", "Screen time, steps, sleep, work apps") { nav.open(Route.Sensors) }
+                SettingsLink(AppIcons.Wallet, "Money", "Ledgers, accounts, bank messages, payee memory") { nav.open(Route.MoneySettings) }
+                SettingsLink(AppIcons.ChatCircleText, "Assistant and voice", "What it may read, recent captures") { nav.open(Route.AiSettings) }
+                SettingsLink(AppIcons.TextAa, "Appearance", "Text size, motion") { nav.open(Route.Appearance) }
+                SettingsLink(AppIcons.Translate, "Language and region", "English (India)") { nav.open(Route.Language) }
+                SettingsLink(AppIcons.Pulse, "How AIIMIN is running", "Background jobs and their last run") { nav.open(Route.Running) }
+                SettingsLink(AppIcons.Lifebuoy, "Help", "Questions and contact") { nav.open(Route.Help) }
+                SettingsLink(AppIcons.Info, "About and legal", "Version, privacy policy, terms") { nav.open(Route.About) }
+            }
+            item {
                 SectionHeader("Look")
                 SwitchRow("Reduce motion", st.reduceMotion, { v -> vm.update { it.copy(reduceMotion = v) } })
             }
@@ -96,15 +113,16 @@ fun SettingsScreen(vm: MeViewModel = hiltViewModel()) {
                     } + " · late entries can be filed to yesterday until noon",
                     leading = { IconTile(AppIcons.MoonStars) }, maxSubtitleLines = 2, onClick = { dayMode = true },
                 )
-                ListRow("Late-night screen time starts", subtitle = "${st.lateHour}:00", leading = { IconTile(AppIcons.Moon) }, trailing = {
-                    Row { listOf(22, 23, 0).forEach { h -> Pill(if (h == 0) "12" else "$h", st.lateHour == h, { vm.update { it.copy(lateHour = h) } }) } }
-                })
+                ListRow("Late-night screen time starts", subtitle = "Phone use after this counts as late", leading = { IconTile(AppIcons.Moon) })
+                Row(Modifier.padding(start = 52.dp, bottom = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf(22 to "10 PM", 23 to "11 PM", 0 to "Midnight").forEach { (h, label) -> Pill(label, st.lateHour == h, { vm.update { it.copy(lateHour = h) } }) }
+                }
             }
             item {
                 SectionHeader("Notifications")
                 SwitchRow("Quiet hours", st.quiet.enabled, { v -> vm.update { it.copy(quiet = it.quiet.copy(enabled = v)) } }, subtitle = "Holds back low and medium alerts. Important ones still come through.")
                 if (st.quiet.enabled) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         ListRow("From", subtitle = Dates.clock(LocalTime.of(st.quiet.fromMin / 60, st.quiet.fromMin % 60)), modifier = Modifier.weight(1f), onClick = { quietPick = "from" })
                         ListRow("Until", subtitle = Dates.clock(LocalTime.of(st.quiet.toMin / 60, st.quiet.toMin % 60)), modifier = Modifier.weight(1f), onClick = { quietPick = "to" })
                     }
@@ -296,3 +314,6 @@ fun AiSettingsScreen(vm: MeViewModel = hiltViewModel()) {
 
 // =================================================================== account
 
+@Composable
+private fun SettingsLink(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, subtitle: String, onClick: () -> Unit) =
+    ListRow(title, subtitle = subtitle, leading = { IconTile(icon) }, trailing = { Chevron() }, onClick = onClick)
