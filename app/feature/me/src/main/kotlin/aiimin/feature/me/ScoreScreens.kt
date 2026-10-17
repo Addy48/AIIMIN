@@ -105,6 +105,18 @@ fun MeScreen(vm: MeViewModel = hiltViewModel()) {
     val name = settings.name.ifBlank { "You" }
     LazyColumn(Modifier.fillMaxSize().background(c.base), contentPadding = PaddingValues(bottom = 120.dp)) {
         item { LargeHeader("Me") { RootActions(0) } }
+        // Search row: every feature and setting is one search away (findability plan §2.3.5).
+        item {
+            Row(
+                Modifier.padding(horizontal = Aiimin.space.gutter, vertical = 4.dp).fillMaxWidth().clip(RoundedCornerShape(10.dp))
+                    .background(c.raised).clickable { nav.open(Route.Search) }.heightIn(min = 48.dp).padding(horizontal = 14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                androidx.compose.material3.Icon(AppIcons.Search, null, tint = c.textMuted, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.width(10.dp))
+                Text("Search features and settings", style = Aiimin.type.body.copy(color = c.textMuted))
+            }
+        }
         item {
             Row(
                 Modifier.fillMaxWidth().clickable { nav.open(Route.EditProfile) }.padding(horizontal = Aiimin.space.gutter, vertical = 8.dp),
@@ -163,16 +175,22 @@ fun MeScreen(vm: MeViewModel = hiltViewModel()) {
             MeLink(AppIcons.Timer, "Focus", null) { nav.open(Route.Focus()) },
             MeLink(AppIcons.ListChecks, "Daily minimums", null) { nav.open(Route.Minimums) },
             MeLink(AppIcons.Flag, "Upcoming tasks", null) { nav.open(Route.Upcoming) },
+            MeLink(AppIcons.ChatCircleText, "Assistant", "Ask or tell AIIMIN anything") { nav.open(Route.Assistant()) },
         ))
-        meGroup("You", listOf(
+        meGroup("Insights", listOf(
             MeLink(AppIcons.Sliders, "What counts for you", "Intentions, targets, weights") { nav.open(Route.Signals) },
             MeLink(AppIcons.BatteryHigh, "Discipline battery", r?.battery?.let { "${it.value}% · ${it.mode.name.lowercase().replaceFirstChar(Char::uppercase)}" }) { nav.open(Route.Battery) },
             MeLink(AppIcons.Pulse, "Why this score", "Day by day, what moved it") { nav.open(Route.WhyScore) },
             MeLink(AppIcons.Phone, "Phone day", "Screen time and unlocks") { nav.open(Route.PhoneDay) },
             MeLink(AppIcons.Footprints, "Body", "Steps, sleep, heart rate") { nav.open(Route.Body) },
             MeLink(AppIcons.Sparkle, "Patterns", "What goes with what") { nav.open(Route.Patterns) },
-            MeLink(AppIcons.Users, "Family", null) { nav.open(Route.Family) },
-            MeLink(AppIcons.FirstAid, "My emergency card", null) { nav.open(Route.EmergencyCard("me")) },
+            MeLink(AppIcons.ClockCounter, "Activity", "Everything you did, from the log") { nav.open(Route.Activity) },
+        ))
+        meGroup("Family & papers", listOf(
+            MeLink(AppIcons.FirstAid, "My emergency card", "Blood group, allergies, contacts") { nav.open(Route.EmergencyCard("me")) },
+            MeLink(AppIcons.Users, "Family", "People and their papers") { nav.open(Route.Family) },
+            MeLink(AppIcons.CloudArrowUp, "Backups", "Keep a copy of your vault") { nav.open(Route.VaultBackup) },
+            MeLink(AppIcons.FirstAidKit, "Emergency kits", "What to grab when it matters") { nav.open(Route.EmergencyKits) },
         ))
         meGroup("Account", listOf(
             MeLink(AppIcons.CloudCheck, "Account and sync", if (session?.signedIn == true) "Synced with aiimin.in" else "Only on this phone") { nav.open(Route.Account) },
@@ -188,7 +206,6 @@ fun MeScreen(vm: MeViewModel = hiltViewModel()) {
             MeLink(AppIcons.Chat, "Assistant and voice", "What it may read, recent captures") { nav.open(Route.AiSettings) },
             MeLink(AppIcons.TextAa, "Appearance", "Text size, motion") { nav.open(Route.Appearance) },
             MeLink(AppIcons.Translate, "Language and region", "English (India)") { nav.open(Route.Language) },
-            MeLink(AppIcons.ClockCounter, "Activity", "Everything you did, from the log") { nav.open(Route.Activity) },
         ))
         meGroup("Support", listOf(
             MeLink(AppIcons.Lifebuoy, "Help and feedback", null) { nav.open(Route.Help) },

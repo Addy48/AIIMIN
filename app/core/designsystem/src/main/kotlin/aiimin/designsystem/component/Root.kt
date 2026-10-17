@@ -31,8 +31,10 @@ class SyncUiState(val ui: SyncUi, val onClick: () -> Unit)
 val LocalSyncUi = androidx.compose.runtime.staticCompositionLocalOf { SyncUiState(SyncUi.SIGNED_OUT) {} }
 
 /**
- * The four icons on every root bar (handoff §5.1): sync, search, assistant, bell.
- * No sparkle icons; the assistant is a speech bubble. The bell is the only place a notification count appears.
+ * Every root bar: search and the bell (findability plan §2.3.6, at most two icons).
+ * The sync icon joins them only when sync needs you (offline, attention, syncing); the calm state
+ * lives in Me → Account and sync. The Assistant lives in Me, search and the ＋ sheet's voice.
+ * The bell is the only place a notification count appears.
  */
 @Composable
 fun RowScope.RootActions(unread: Int, sync: SyncUi = LocalSyncUi.current.ui, onSync: () -> Unit = LocalSyncUi.current.onClick) {
@@ -52,13 +54,12 @@ fun RowScope.RootActions(unread: Int, sync: SyncUi = LocalSyncUi.current.ui, onS
         SyncUi.ATTENTION -> "Sync needs attention"
         SyncUi.SIGNED_OUT -> "Only on this phone"
     }
-    Box {
+    if (sync != SyncUi.SYNCED && sync != SyncUi.SIGNED_OUT) Box {
         AppIconButton(syncIcon, syncLabel, onSync, tint = if (sync == SyncUi.SYNCED || sync == SyncUi.SIGNED_OUT) c.textMuted else c.text)
         if (sync == SyncUi.OFFLINE) Box(Modifier.align(Alignment.TopEnd).padding(10.dp).size(7.dp).clip(androidx.compose.foundation.shape.CircleShape).background(c.warn))
         if (sync == SyncUi.ATTENTION) Box(Modifier.align(Alignment.TopEnd).padding(10.dp).size(7.dp).clip(androidx.compose.foundation.shape.CircleShape).background(c.danger))
     }
     AppIconButton(AppIcons.Search, "Search", { nav.open(Route.Search) })
-    AppIconButton(AppIcons.ChatCircleText, "Assistant", { nav.open(Route.Assistant()) })
     Box {
         AppIconButton(AppIcons.BellSimple, "Notifications", { nav.open(Route.Notifications) })
         if (unread > 0) {
