@@ -396,7 +396,7 @@ fun ScoreScreen(vm: MeViewModel = hiltViewModel()) {
                         Row(Modifier.padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                             Text(d.name, style = Aiimin.type.body, maxLines = 1, softWrap = false, modifier = Modifier.widthIn(min = 110.dp).padding(end = 8.dp)) // "Work / Craft" on one line (A-043)
                             Meter(((v ?: 0.0) / 100).toFloat().coerceIn(0f, 1f), Modifier.weight(1f), color = if (d.key == weakest) c.accent else c.text)
-                            Text(if (v == null) "  —" else "  ${v.roundToInt()}", style = Aiimin.type.caption.copy(fontFeatureSettings = "tnum"), modifier = Modifier.width(36.dp))
+                            Text(if (v == null) "  —" else "  ${v.roundToInt()}", style = Aiimin.type.caption.copy(fontFeatureSettings = "tnum"), maxLines = 1, softWrap = false, modifier = Modifier.widthIn(min = 36.dp))
                         }
                     }
                     if (Domain.BUILT_IN.any { d -> life.areas[d.key] == null && life.intentions.cards.any { (k, card) -> card.isScored && life.intentions.def(k)?.domain == d.key } }) {

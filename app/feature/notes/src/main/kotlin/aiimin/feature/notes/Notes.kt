@@ -3,6 +3,7 @@ package aiimin.feature.notes
 import androidx.compose.ui.graphics.Color
 import kotlin.math.roundToInt
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.width
 import kotlinx.coroutines.flow.map
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -586,7 +587,7 @@ fun MoodYearScreen(vm: JournalViewModel = hiltViewModel()) {
             items((1..12).toList()) { mo ->
                 val ym = java.time.YearMonth.of(year, mo)
                 Row(Modifier.fillMaxWidth().padding(vertical = 3.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text(ym.month.getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.ENGLISH), style = Aiimin.type.caption.copy(fontSize = 11.5.sp), modifier = Modifier.width(34.dp))
+                    Text(ym.month.getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.ENGLISH), style = Aiimin.type.caption.copy(fontSize = 11.5.sp), maxLines = 1, softWrap = false, modifier = Modifier.widthIn(min = 34.dp))
                     Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                         (1..31).forEach { d ->
                             Box(Modifier.weight(1f).aspectRatio(1f)) {

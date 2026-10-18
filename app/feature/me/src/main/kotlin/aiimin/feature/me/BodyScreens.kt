@@ -19,6 +19,7 @@ import aiimin.designsystem.nav.Route
 import aiimin.designsystem.theme.Aiimin
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -194,7 +195,7 @@ fun PatternsScreen(vm: MeViewModel = hiltViewModel()) {
                     val top = maxOf(p.a, p.b).coerceAtLeast(1.0)
                     listOf(p.aLabel to p.a, p.bLabel to p.b).forEachIndexed { k, (label, v) ->
                         Row(Modifier.fillMaxWidth().padding(vertical = 3.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Text(label, style = Aiimin.type.caption, modifier = Modifier.width(96.dp))
+                            Text(label, style = Aiimin.type.caption, maxLines = 1, softWrap = false, modifier = Modifier.widthIn(min = 96.dp))
                             Box(Modifier.weight(1f).height(8.dp).clip(RoundedCornerShape(2.dp)).background(c.border)) {
                                 Box(Modifier.fillMaxWidth((v / top).toFloat().coerceIn(0.03f, 1f)).height(8.dp).background(if (k == 0) c.text else c.chartInactive))
                             }

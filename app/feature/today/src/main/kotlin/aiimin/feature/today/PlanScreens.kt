@@ -43,6 +43,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -593,7 +594,7 @@ private fun WeekList(selected: LocalDate, byDay: Map<LocalDate, List<CalendarEve
                         if (evs.isEmpty()) Text("Free", style = Aiimin.type.caption)
                         evs.forEach { e ->
                             Row(Modifier.fillMaxWidth().clickable { onOpen(e) }.padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Text(if (e.allDay) "all day" else Dates.clock(vm.instant(e.startAt).toLocalTime()), style = Aiimin.type.caption, modifier = Modifier.width(64.dp))
+                                Text(if (e.allDay) "all day" else Dates.clock(vm.instant(e.startAt).toLocalTime()), style = Aiimin.type.caption, maxLines = 1, softWrap = false, modifier = Modifier.widthIn(min = 64.dp))
                                 Text(e.title, style = Aiimin.type.body, maxLines = 1)
                             }
                         }

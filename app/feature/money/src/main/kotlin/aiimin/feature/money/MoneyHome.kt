@@ -52,6 +52,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -246,7 +247,7 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
                                 Text(cat.category, style = Aiimin.type.bodyStrong, modifier = Modifier.weight(1f))
                                 Text(Money.format(cat.paise), style = Aiimin.type.bodyStrong)
                                 Spacer(Modifier.width(10.dp))
-                                Text(if (d.spent > 0) "${(cat.paise * 100 / d.spent)}%" else "", style = Aiimin.type.caption, modifier = Modifier.width(34.dp))
+                                Text(if (d.spent > 0) "${(cat.paise * 100 / d.spent)}%" else "", style = Aiimin.type.caption, maxLines = 1, softWrap = false, textAlign = androidx.compose.ui.text.style.TextAlign.End, modifier = Modifier.widthIn(min = 34.dp))
                             }
                             Spacer(Modifier.height(8.dp))
                             Box(Modifier.fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)).background(c.overlay)) {
