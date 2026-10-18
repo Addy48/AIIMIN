@@ -312,6 +312,7 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
                 listOf(
                     aiimin.designsystem.component.Tool(AppIcons.Plus, "Add payment") { adding = true },
                     aiimin.designsystem.component.Tool(AppIcons.ChatText, "Paste a bank SMS") { pasting = true },
+                    aiimin.designsystem.component.Tool(AppIcons.ClockCounter, "Past bank messages") { nav.open(Route.SmsImport) },
                     aiimin.designsystem.component.Tool(AppIcons.Export, "Export for CA") { exporting = true },
                     aiimin.designsystem.component.Tool(AppIcons.Bookmark, "Payee memory") { nav.open(Route.PayeeMemory) },
                     aiimin.designsystem.component.Tool(AppIcons.HandCoins, "Splits") { nav.open(Route.Splits) },

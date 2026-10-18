@@ -99,8 +99,6 @@ class InboxViewModel @Inject constructor(private val money: MoneyRepository) : V
     val pending = money.pending().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
     suspend fun settle(id: String, category: String, ledger: Ledger, title: String, learn: Boolean) = money.settle(id, category, ledger, title, learn)
     fun dismiss(id: String) = viewModelScope.launch { money.dismiss(id) }
-    fun canReadSms() = money.canReadSms()
-    suspend fun importSms(from: java.time.YearMonth) = money.importSms(from)
 }
 
 @HiltViewModel

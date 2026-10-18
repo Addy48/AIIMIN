@@ -337,6 +337,7 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
                         entry<Route.HealthPrivacy> { aiimin.feature.onboarding.HealthPrivacyScreen(onBack = { navigator.back() }) }
                         entry<Route.PhoneDay> { PhoneDayScreen() }
                         entry<Route.MoneyInbox> { MoneyInboxScreen() }
+                        entry<Route.SmsImport> { aiimin.feature.money.SmsImportScreen() }
                         entry<Route.Txn> { TxnScreen(it.id) }
                         entry<Route.Budget> { BudgetScreen() }
                         entry<Route.Payments> { PaymentsScreen() }

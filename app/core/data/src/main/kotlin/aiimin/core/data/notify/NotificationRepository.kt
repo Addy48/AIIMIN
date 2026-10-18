@@ -147,6 +147,9 @@ class NotificationRepository @Inject constructor(
         if (stale.isNotEmpty()) dao.dismissAll(stale.map { it.id })
     }
 
+    /** A one-off notice from a finished job (a whole-year SMS import). Opens [route] when tapped. */
+    suspend fun announce(key: String, title: String, body: String, route: String) = emit(key, title, body, route, null, 1)
+
     private suspend fun emit(key: String, title: String, body: String, route: String, arg: String?, priority: Int) {
         val n = NotificationEntity(newId(), key, title, body, System.currentTimeMillis(), route, arg, priority)
         if (dao.insertIfNew(n) == -1L) return

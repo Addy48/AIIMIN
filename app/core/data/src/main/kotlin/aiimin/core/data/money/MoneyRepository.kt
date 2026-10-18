@@ -254,6 +254,10 @@ class MoneyRepository @Inject constructor(
      */
     suspend fun capture(text: String, source: String, at: Long = System.currentTimeMillis()): Capture {
         val p = BankSms.parse(text) ?: return Capture.NotABankAlert
+        // Live alerts follow the person's bank-message filter (amount, direction, account, words).
+        if (source == "notification" && aiimin.core.nlp.SmsSift.filterReason(p, text, aiimin.core.nlp.SmsFilter.decode(settings.current().smsFilter)) != null) {
+            return Capture.NotABankAlert
+        }
         val ref = p.reference
         if (ref != null && (dao.countByRef(ref) > 0 || dao.draftCountByRef(ref) > 0)) return Capture.Duplicate
         if (ref == null && dao.draftCountByRaw(text.take(500)) > 0) return Capture.Duplicate
@@ -317,36 +321,6 @@ class MoneyRepository @Inject constructor(
 
     /** True when the person has let AIIMIN read the SMS inbox. */
     fun canReadSms(): Boolean = androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.READ_SMS) == android.content.pm.PackageManager.PERMISSION_GRANTED
-
-    data class SmsImport(val read: Int, val added: Int, val duplicates: Int)
-
-    /**
-     * Reads bank messages from the SMS inbox starting at the first day of [from] (up to now), parses
-     * them on the phone and drops them into Review with their real dates. Nothing is booked until
-     * settled. Also sets the "track from" month, so alerts older than it are ignored from now on.
-     */
-    suspend fun importSms(from: YearMonth): SmsImport? = withContext(Dispatchers.IO) {
-        if (!canReadSms()) return@withContext null
-        val start = from.atDay(1).atStartOfDay(clock.zone).toInstant().toEpochMilli()
-        settings.update { it.copy(moneyTrackFrom = from.atDay(1).toString()) }
-        var read = 0; var added = 0; var dup = 0
-        val uri = android.net.Uri.parse("content://sms/inbox")
-        context.contentResolver.query(uri, arrayOf("body", "date"), "date >= ?", arrayOf(start.toString()), "date ASC")?.use { c ->
-            val bi = c.getColumnIndexOrThrow("body")
-            val di = c.getColumnIndexOrThrow("date")
-            while (c.moveToNext()) {
-                val body = c.getString(bi) ?: continue
-                read++
-                when (capture(body, "sms", c.getLong(di))) {
-                    is Capture.Added -> added++
-                    Capture.Duplicate -> dup++
-                    Capture.NotABankAlert -> Unit
-                }
-            }
-        }
-        log.log("txn.sms_import", data = mapOf("from" to from.toString(), "added" to added), tier = Tier.A, source = "user")
-        SmsImport(read, added, dup)
-    }
 
     suspend fun dismiss(draftId: String) {
         dao.draft(draftId)?.let { dao.upsertDraft(it.copy(status = "dismissed")) }

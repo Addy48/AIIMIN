@@ -464,6 +464,7 @@ fun MoneySettingsScreen(vm: ProfileViewModel = hiltViewModel()) {
             Text("Payments below this roll up per payee per week on Money (each still counts once in your budget).", style = Aiimin.type.caption)
             PillRow { listOf(50, 100, 200, 500).forEach { r -> Pill("Under ₹$r", st.rollupBelow == r, { vm.save { it.copy(rollupBelow = r) } }) } }
             SectionHeader("More")
+            ListRow("Bank messages", subtitle = "Bring in past SMS, choose which banks and payments count", leading = { IconTile(AppIcons.ChatText) }, trailing = { Chevron() }, onClick = { nav.open(Route.SmsImport) })
             ListRow("Accounts", subtitle = "Banks, cards, wallets, cash · primary per ledger", leading = { IconTile(AppIcons.Bank) }, trailing = { Chevron() }, onClick = { nav.open(Route.Accounts) })
             ListRow("Payee memory", subtitle = "What AIIMIN learned about payees", leading = { IconTile(AppIcons.Tag) }, trailing = { Chevron() }, onClick = { nav.open(Route.PayeeMemory) })
             ListRow("Recurring and bills", subtitle = "Subscriptions, rent, AutoPay", leading = { IconTile(AppIcons.Repeat) }, trailing = { Chevron() }, onClick = { nav.open(Route.Recurring) })

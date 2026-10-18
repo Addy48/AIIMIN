@@ -68,6 +68,7 @@ object FeatureIndex {
         f("Bills and subscriptions", "What's due next", Route.Recurring, { AppIcons.Repeat }, "bills", "recurring", "subscriptions", "emi", "rent"),
         f("Payee memory", "Places AIIMIN has learned", Route.PayeeMemory, { AppIcons.Bookmark }, "payees", "merchants", "places", "rules"),
         f("Money settings", "Ledgers, bank messages, payee memory", Route.MoneySettings, { AppIcons.Coins }, "ledgers", "currency", "sms import"),
+        f("Past bank messages", "Bring in SMS one by one, by month or a whole year", Route.SmsImport, { AppIcons.ChatText }, "sms", "import", "bank sms", "old messages", "parse", "filter"),
 
         // Vault and family
         f("Vault", "Your family's papers", Route.Vault, { AppIcons.Archive }, "documents", "papers", "files"),

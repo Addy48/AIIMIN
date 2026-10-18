@@ -78,6 +78,10 @@ data class AppSettings(
     val stallDetectedAt: Long? = null,
     /** First day bank alerts count from (yyyy-MM-dd), chosen when importing past messages. */
     val moneyTrackFrom: String? = null,
+    /** The bank-message filter ([aiimin.core.nlp.SmsFilter.encode]); past imports and live alerts both use it. */
+    val smsFilter: String? = null,
+    /** A whole-year import in progress or just finished ([aiimin.core.data.money.SmsYearRun.encode]). */
+    val smsYearRun: String? = null,
     val deviceId: String = "",
     /** Your UPI ID, for "Ask for ₹…" pay links when settling splits (P2). Never a collect request. */
     val myUpiId: String = "",
@@ -134,6 +138,8 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         val keepAliveDismissed = stringPreferencesKey("keep_alive_dismissed")
         val stallDetected = stringPreferencesKey("stall_detected")
         val moneyTrackFrom = stringPreferencesKey("money_track_from")
+        val smsFilter = stringPreferencesKey("sms_filter")
+        val smsYearRun = stringPreferencesKey("sms_year_run")
         val screenCalibration = doublePreferencesKey("screen_calibration")
         val lateHour = intPreferencesKey("late_hour")
         val quiet = stringPreferencesKey("quiet")
@@ -209,6 +215,8 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         keepAliveDismissedAt = p[K.keepAliveDismissed]?.toLongOrNull(),
         stallDetectedAt = p[K.stallDetected]?.toLongOrNull(),
         moneyTrackFrom = p[K.moneyTrackFrom],
+        smsFilter = p[K.smsFilter],
+        smsYearRun = p[K.smsYearRun],
         deviceId = p[K.device].orEmpty(),
         myUpiId = p[K.myUpi].orEmpty(),
         city = p[K.city].orEmpty(),
@@ -263,6 +271,8 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
             s.keepAliveDismissedAt?.let { p[K.keepAliveDismissed] = it.toString() } ?: p.remove(K.keepAliveDismissed)
             s.stallDetectedAt?.let { p[K.stallDetected] = it.toString() } ?: p.remove(K.stallDetected)
             s.moneyTrackFrom?.let { p[K.moneyTrackFrom] = it } ?: p.remove(K.moneyTrackFrom)
+            s.smsFilter?.let { p[K.smsFilter] = it } ?: p.remove(K.smsFilter)
+            s.smsYearRun?.let { p[K.smsYearRun] = it } ?: p.remove(K.smsYearRun)
             p[K.device] = s.deviceId
             p[K.myUpi] = s.myUpiId
             p[K.city] = s.city

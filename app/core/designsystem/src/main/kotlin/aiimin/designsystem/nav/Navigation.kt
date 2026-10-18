@@ -77,6 +77,8 @@ sealed interface Route {
     data class SplitPerson(val who: String) : Route
     data object Recurring : Route
     data object PayeeMemory : Route
+    /** Past bank messages: one by one, a month, or a whole year, with a filter. */
+    data object SmsImport : Route
 
     // vault / family
     data class Doc(val id: String) : Route
