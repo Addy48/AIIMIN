@@ -14,6 +14,21 @@ export default function WaitlistTestimonialsSection() {
   const [showAll, setShowAll] = useState(false);
   const displayedTestimonials = showAll ? TESTIMONIALS : TESTIMONIALS.slice(0, 6);
 
+  // Only real feedback, shared with permission. Until there is some, invite people to give it.
+  if (TESTIMONIALS.length === 0) {
+    return (
+      <section className="waitlist-section waitlist-testimonials" id="reviews">
+        <p className="waitlist-section-label">Beta</p>
+        <h2>Be one of the first testers</h2>
+        <p className="waitlist-section-copy">
+          AIIMIN is in closed beta. Testers get the Android app first, 1 year of Pro free when paid plans start, and a
+          direct line to the founder. What testers say will appear here, with their permission.
+        </p>
+        <a href="#waitlist-join" className="waitlist-btn waitlist-btn-primary">Join the waitlist</a>
+      </section>
+    );
+  }
+
   return (
     <section className="waitlist-section waitlist-testimonials" id="reviews">
       <p className="waitlist-section-label">Closed Beta Feedback</p>

@@ -2,8 +2,8 @@ import React from 'react';
 import { Gift, SealCheck, Key } from '@phosphor-icons/react';
 
 export const FOUNDING_PERKS = [
-  { icon: Gift, text: 'Free Core at go-live' },
-  { icon: SealCheck, text: 'Pro ₹49/mo · Elite ₹79/mo founding rates' },
+  { icon: Gift, text: '1 month of Plus free when paid plans start' },
+  { icon: SealCheck, text: 'Invite friends: up to 1 year of Pro free' },
   { icon: Key, text: 'Reserve your OS-ID at signup' },
 ];
 

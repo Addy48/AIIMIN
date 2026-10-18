@@ -18,9 +18,9 @@ const About = () => {
         >
             <Section title="What AIIMIN is">
                 <Para>
-                    AIIMIN is a Personal Life OS. You put your life into it — days, habits, money, documents, people,
-                    practice sessions — and it gives you back an honest picture. One screen replaces the scattered set of
-                    habit trackers, spreadsheets, note apps and reminders most people juggle.
+                    AIIMIN keeps your day, your money and your family&apos;s papers in one calm place. Tasks, focus and a
+                    journal; money that fills itself from your bank SMS, read on your phone; documents, expiry reminders
+                    and an emergency card for the people you look after. It only ever compares you with you.
                 </Para>
                 <Para>
                     It runs on the web at aiimin.in, on phones as a capture surface at aiimin.in/m, and as a native
@@ -38,9 +38,9 @@ const About = () => {
 
             <Section title="How it is priced">
                 <Para>
-                    AIIMIN is a paid product with a free tier. <strong>Explore</strong> is free and stays free.
-                    {' '}<strong>Core</strong>, <strong>Pro</strong> and <strong>Elite</strong> are paid monthly
-                    subscriptions in Indian Rupees. Founding rates apply to waitlist members for the stated period. Plan
+                    <strong>Free</strong> is free for one person, for as long as you like. <strong>Plus</strong>,
+                    {' '}<strong>Pro</strong> and <strong>Family</strong> are paid monthly or yearly subscriptions in Indian
+                    Rupees, at the same prices on the web and in the Android app. Plan
                     prices, renewal, cancellation and refunds are set out in{' '}
                     <a href="/refunds" style={link}>Refund, Billing &amp; Cancellation</a>.
                 </Para>

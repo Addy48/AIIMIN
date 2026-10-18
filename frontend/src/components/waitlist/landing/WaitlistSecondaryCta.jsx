@@ -5,9 +5,9 @@ import WaitlistForm from '../WaitlistForm';
 export default function WaitlistSecondaryCta({ onSignupSuccess }) {
   return (
     <section className="waitlist-section waitlist-secondary-cta">
-      <h2>Join the waitlist — founding member perks at launch</h2>
+      <h2>Join the waitlist</h2>
       <p className="waitlist-section-copy">
-        Starter kit, complimentary Core, Pro founding ₹49/mo, and Elite founding ₹79/mo. Invited testers get the VIP package — sign in instead.
+        Free for one person. Waitlist members get 1 month of Plus free when paid plans start, and more for every friend who joins. Invited beta testers: sign in instead.
       </p>
       <div className="waitlist-secondary-cta-form">
         <WaitlistForm compact onSuccess={onSignupSuccess} showFeatureVote={false} />

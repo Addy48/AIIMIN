@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { BadgeCheck, Check } from 'lucide-react';
-import { fadeUp, PRICING, STACK_MONTHLY_INR } from './waitlistLandingData';
+import { fadeUp, PRICING } from './waitlistLandingData';
 
 function TierPriceBlock({ item }) {
   const hasDiscount = Boolean(item.discounted);
@@ -25,54 +25,26 @@ function TierPriceBlock({ item }) {
       </div>
       <span
         className={`tier-price-waitlist-label ${
-          isFree || hasDiscount ? '' : 'tier-price-row-placeholder'
+          isFree || item.priceLine ? '' : 'tier-price-row-placeholder'
         }`}
       >
-        {isFree ? 'Always free' : hasDiscount ? 'Waitlist founding rate' : '\u00a0'}
+        {isFree ? 'Free for as long as you like' : item.priceLine || '\u00a0'}
       </span>
     </div>
   );
 }
 
 function CompactValueComparison() {
-  const aiiminMax = 79;
-  const stackMonthly = 1500;
-  const stackPct = 100;
-  const aiiminPct = Math.max(8, Math.round((aiiminMax / stackMonthly) * 100));
-
   return (
-    <div className="value-compare-compact" aria-label="AIIMIN unified Life OS vs fragmented multi-app stack">
-      <div className="value-compare-col value-compare-col--stack">
-        <p className="value-compare-kicker">Fragmented 4-app stack</p>
-        <p className="value-compare-price value-compare-price--muted">~₹1,500<span>/mo</span></p>
-        <div className="value-compare-meter" aria-hidden="true">
-          <div className="value-compare-meter-fill value-compare-meter-fill--stack" style={{ width: `${stackPct}%` }} />
-        </div>
-        <p className="value-compare-apps">Habit app (~₹350) + Expense tracker (~₹400) + Focus timer (~₹300) + Journal (~₹450)</p>
-        <p className="value-compare-subnote" style={{ fontSize: '11px', color: 'var(--color-text-3)', marginTop: '4px' }}>
-          4 separate subscriptions · siloed data · constant app-hopping
-        </p>
-      </div>
-
-      <div className="value-compare-vs" aria-hidden="true">
-        <span className="value-compare-vs-line" />
-        <span className="value-compare-vs-label">vs</span>
-        <span className="value-compare-vs-line" />
-      </div>
-
+    <div className="value-compare-compact" aria-label="AIIMIN plans and prices">
       <div className="value-compare-col value-compare-col--aiimin">
-        <p className="value-compare-kicker">AIIMIN Unified Life OS</p>
-        <p className="value-compare-price">from ₹0<span> · one interconnected graph</span></p>
-        <div className="value-compare-meter" aria-hidden="true">
-          <div className="value-compare-meter-fill value-compare-meter-fill--aiimin" style={{ width: `${aiiminPct}%` }} />
-        </div>
+        <p className="value-compare-kicker">Same prices in the app and on the web</p>
         <div className="value-tier-pills">
-          <span className="value-tier-pill value-tier-pill--explore">Explore ₹0</span>
-          <span className="value-tier-pill value-tier-pill--core">Core ₹29</span>
-          <span className="value-tier-pill value-tier-pill--pro">Pro ₹49*</span>
-          <span className="value-tier-pill value-tier-pill--elite">Elite ₹79*</span>
+          {PRICING.map((p) => (
+            <span key={p.tier} className={`value-tier-pill value-tier-pill--${p.tierAccent}`}>{p.tier} {p.price}</span>
+          ))}
         </div>
-        <p className="value-compare-foot">*Waitlist founding rates · web + mobile · India ≈ Nov 2026 · Americas $0 / $3 / $7 / $16</p>
+        <p className="value-compare-foot">Per month, including GST · yearly plans cost less · cancel anytime</p>
       </div>
     </div>
   );
@@ -85,10 +57,10 @@ export default function WaitlistPricingSection() {
   return (
     <section className="waitlist-section pricing-section" id="pricing">
       <p className="waitlist-section-label">Pricing</p>
-      <h2>Four tiers — each built for a different level of control</h2>
+      <h2>Free for one person. Plans for more.</h2>
       <p className="waitlist-section-copy">
-        Running habits, expenses, focus timers, and journals across separate apps costs ₹1,200–₹1,800/mo and scatters your data.
-        AIIMIN unifies your entire daily rhythm from ₹0 — with Pro locked at ₹49/mo founding rate for waitlist members.
+        Every plan keeps the same promise: bank SMS read on your phone, no ads, no loans, no selling data. Items marked
+        &ldquo;Coming&rdquo; are planned and not included yet.
       </p>
 
       <div className="waitlist-pricing-grid">

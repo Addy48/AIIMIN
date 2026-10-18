@@ -16,7 +16,6 @@ import WaitlistFaqSection from '../components/waitlist/landing/WaitlistFaqSectio
 import WaitlistSecondaryCta from '../components/waitlist/landing/WaitlistSecondaryCta';
 import WaitlistFooter from '../components/waitlist/landing/WaitlistFooter';
 import WaitlistAnnouncementBar from '../components/waitlist/landing/WaitlistAnnouncementBar';
-import WaitlistFeatureMarquee from '../components/waitlist/landing/WaitlistFeatureMarquee';
 import { PAGE_META } from '../components/waitlist/landing/waitlistLandingData';
 import '../styles/waitlistLanding.css';
 import { useAnyPopupOpen } from '../utils/popupQueue';
@@ -34,7 +33,7 @@ function WaitlistLandingContent() {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
     name: 'AIIMIN',
-    description: 'A data-dense personal Life OS for daily accountability, behavioral insights, money tracking, and habit building. Built for ambitious builders, operators, and high performers.',
+    description: "Your day, your money and your family's papers, in one calm place. AIIMIN reads your bank SMS on your phone, keeps your documents ready offline, and only ever compares you with you.",
     url: 'https://aiimin.in',
     applicationCategory: 'ProductivityApplication',
     operatingSystem: 'Web, Android (companion — closed testing)',
@@ -47,7 +46,7 @@ function WaitlistLandingContent() {
     },
     audience: {
       '@type': 'Audience',
-      audienceType: 'Ambitious builders, operators, and high performers',
+      audienceType: 'People in India running a busy life or a household',
     },
     author: { '@type': 'Organization', name: 'AIIMIN', url: 'https://aiimin.in' },
   }), []);
@@ -89,17 +88,17 @@ function WaitlistLandingContent() {
     <div className="waitlist-page" id="top">
       <Helmet>
         <html lang="en" />
-        <title>AIIMIN — Personal Life OS for High Agency Living</title>
+        <title>AIIMIN: your day, your money and your family's papers, in one calm place</title>
         <meta
           name="description"
-          content="AIIMIN is a data-dense personal Life OS for ambitious builders, operators, and high performers. Track habits, money, focus, and mood in one screen. Join the founding waitlist."
+          content="One calm app for your day, your money and your family&apos;s papers. Bank SMS become a clear month on your phone, never uploaded. Free for one person. Join the beta waitlist."
         />
         <link rel="canonical" href={PAGE_META.pageUrl} />
         <meta property="og:type" content="website" />
-        <meta property="og:title" content="AIIMIN — Life OS from ₹0, Pro founding ₹49/mo" />
+        <meta property="og:title" content="AIIMIN: one calm place for your day, your money and your papers" />
         <meta
           property="og:description"
-          content="Track habits, money, focus, and mood in one Life OS. Explore free, Core ₹29/mo, Pro ₹49 founding price, Elite ₹79 for waitlist. High-density execution without app hopping."
+          content="Bank SMS become a clear month on your phone, never uploaded. Tasks, focus, documents and an emergency card for your family. Free for one person; Plus ₹49, Pro ₹99, Family ₹179 a month."
         />
         <meta property="og:url" content={PAGE_META.pageUrl} />
         <meta property="og:image" content={PAGE_META.imageUrl} />
@@ -107,10 +106,10 @@ function WaitlistLandingContent() {
         <meta property="og:image:height" content="630" />
         <meta property="og:locale" content="en_IN" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="AIIMIN — Life OS from ₹0, Pro founding ₹49/mo" />
+        <meta name="twitter:title" content="AIIMIN: one calm place for your day, your money and your papers" />
         <meta
           name="twitter:description"
-          content="Track habits, money, focus, and mood in one Life OS. Explore free, Core ₹29/mo, Pro ₹49 founding price, Elite ₹79 for waitlist. High-density execution without app hopping."
+          content="Bank SMS become a clear month on your phone, never uploaded. Tasks, focus, documents and an emergency card for your family. Free for one person; Plus ₹49, Pro ₹99, Family ₹179 a month."
         />
         <meta name="twitter:image" content={PAGE_META.imageUrl} />
         <script type="application/ld+json">{JSON.stringify(launchStructuredData)}</script>
@@ -125,7 +124,7 @@ function WaitlistLandingContent() {
         onToggleTheme={toggleWaitlistTheme}
       />
 
-      <WaitlistFeatureMarquee />
+      {/* Feature marquee off until rebuilt with v4 features: it advertised v2 modules the app no longer has (master plan §1C). */}
 
       <main className="waitlist-main">
         <section className="waitlist-mobile-only waitlist-mobile-essentials">

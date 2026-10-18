@@ -1,3 +1,4 @@
+import { PLANS } from '../../marketing/plans';
 import React from 'react';
 import LegalLayout, {
     LegalSection as Section,
@@ -32,16 +33,16 @@ const Refunds = () => {
             <Section title="Plans">
                 <Table
                     caption="AIIMIN plans and prices"
-                    head={['Plan', 'List price', 'Founding price', 'Billing']}
-                    rows={[
-                        ['Explore', 'Free', '—', '—'],
-                        ['Core', '₹29 / month', 'Complimentary for waitlist members at launch, for the stated period', 'Monthly'],
-                        ['Pro', '₹59 / month', '₹49 / month', 'Monthly'],
-                        ['Elite', '₹99 / month', '₹79 / month', 'Monthly'],
-                    ]}
+                    head={['Plan', 'Monthly', 'Yearly', 'Billing']}
+                    rows={PLANS.map((p) => [
+                        p.name,
+                        p.monthly === 0 ? 'Free' : `₹${p.monthly.toLocaleString('en-IN')} / month`,
+                        p.yearly === 0 ? '—' : `₹${p.yearly.toLocaleString('en-IN')} / year`,
+                        p.monthly === 0 ? '—' : 'Monthly or yearly',
+                    ])}
                 />
                 <Para>
-                    Prices are in Indian Rupees. Taxes are applied as required and shown at checkout. AIIMIN is a digital
+                    Prices are in Indian Rupees and include GST. Features a plan lists as coming are not part of what you pay for until they ship. AIIMIN is a digital
                     service delivered immediately on payment; there is nothing to ship.
                 </Para>
             </Section>
@@ -101,7 +102,7 @@ const Refunds = () => {
                 <Para>
                     Please talk to us first at{' '}
                     <a href={`mailto:${LEGAL.emails.support}`} style={link}>{LEGAL.emails.support}</a> — it is faster. If a
-                    chargeback is raised, the plan reverts to Explore while we investigate; your data remains intact.
+                    chargeback is raised, the plan reverts to Free while we investigate; your data remains intact.
                 </Para>
             </Section>
         </LegalLayout>

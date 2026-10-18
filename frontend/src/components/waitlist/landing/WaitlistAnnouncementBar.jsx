@@ -3,9 +3,9 @@ import { Sparkle, ShieldCheck, Rocket, Tag } from '@phosphor-icons/react';
 
 const ANNOUNCEMENTS = [
   { badge: 'LAUNCH', text: 'Targeting November 2026', icon: Rocket, accent: '#ff6b35' },
-  { badge: 'FOUNDING RATE', text: 'Pro locked at ₹49/mo for waitlist members', icon: Tag, accent: '#749dc4' },
-  { badge: 'TESTER REWARD', text: '12 months Elite complimentary for active testers', icon: Sparkle, accent: '#10b981' },
-  { badge: 'SECURITY', text: 'StrongBox TEE hardware keystore · Zero ad tracking', icon: ShieldCheck, accent: '#749dc4' },
+  { badge: 'WAITLIST', text: '1 month of Plus free when paid plans start', icon: Tag, accent: '#749dc4' },
+  { badge: 'TESTERS', text: '1 year of Pro free for beta testers', icon: Sparkle, accent: '#10b981' },
+  { badge: 'PRIVATE', text: 'Bank SMS read on your phone, never uploaded', icon: ShieldCheck, accent: '#749dc4' },
   { badge: 'CUTOFF', text: 'Tester registration closes 31 October 2026', icon: Rocket, accent: '#ff6b35' },
 ];
 

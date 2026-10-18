@@ -34,13 +34,13 @@ function buildReferralUrl(code) {
 
 function buildWhatsAppShare(code) {
   const url = buildReferralUrl(code);
-  const text = `I just joined the AIIMIN waitlist — habits, money, focus, and daily intelligence in one unified Life OS. Explore free · Pro founding ₹49/mo · Elite ₹79 for waitlist. ${url}`;
+  const text = `I just joined the AIIMIN beta waitlist: your day, your money and your family's papers in one calm place. It reads bank SMS on the phone and never uploads them. Join with my link and get 1 month of Plus free: ${url}`;
   return `https://wa.me/?text=${encodeURIComponent(text)}`;
 }
 
 function buildTwitterShare(code) {
   const url = buildReferralUrl(code);
-  const text = `I just joined the AIIMIN waitlist — habits, money, focus, and daily intelligence in one unified Life OS. ${url}`;
+  const text = `I just joined the AIIMIN beta waitlist: your day, your money and your family's papers in one calm place. ${url}`;
   return `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
 }
 
@@ -96,9 +96,9 @@ function ConfirmationPanel({
       <div className="confirmation-perks">
         <p className="confirmation-perks-title">Locked in at launch</p>
         <ul className="confirmation-perks-list">
-          <li><SealCheck size={14} weight="duotone" /> Complimentary Core tier</li>
-          <li><SealCheck size={14} weight="duotone" /> Pro at ₹49/mo founding rate</li>
-          <li><SealCheck size={14} weight="duotone" /> Elite at ₹79/mo founding rate</li>
+          <li><SealCheck size={14} weight="duotone" /> 1 month of Plus free when paid plans start</li>
+          <li><SealCheck size={14} weight="duotone" /> Invite 3 friends: 3 months of Plus free</li>
+          <li><SealCheck size={14} weight="duotone" /> Invite 10 friends: 1 year of Pro free</li>
         </ul>
       </div>
 
@@ -355,7 +355,7 @@ export default function WaitlistForm({
           <span className="waitlist-form-badge">Targeting Nov 2026</span>
           <h2 className="waitlist-form-heading">Join the waitlist</h2>
           <p className="waitlist-form-lead">
-            Founding member perks at launch — complimentary Core, Pro at ₹49/mo, Elite at ₹79/mo.
+            Free for one person. Waitlist members get 1 month of Plus free when paid plans start.
           </p>
         </div>
       )}
