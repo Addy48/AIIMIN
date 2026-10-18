@@ -21,8 +21,8 @@ android {
         // `aiimin.*` because `in` is a Kotlin keyword and backticking every file
         // is not craft.
         applicationId = "in.aiimin.app"
-        versionCode = 4
-        versionName = "4.0.0-alpha01"
+        versionCode = 5
+        versionName = "4.0.0-beta01"
 
         ndk {
             abiFilters += listOf("arm64-v8a", "x86_64")
