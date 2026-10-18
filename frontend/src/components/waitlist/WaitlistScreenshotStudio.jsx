@@ -112,7 +112,7 @@ export default function WaitlistScreenshotStudio() {
               <span>Jump to Today, Money, Discipline, Score...</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '11px' }}>
-              <span style={{ color: '#888', fontFamily: 'monospace' }}>BUILD: v2.0.4</span>
+              <span style={{ color: '#888', fontFamily: 'monospace' }}>BUILD: 4.0.0-beta01</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#10b981', fontWeight: 700 }}>
                 <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
                 <span>SERVER LHS: LIVE</span>

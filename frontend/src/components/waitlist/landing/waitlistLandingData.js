@@ -37,8 +37,8 @@ export const ANDROID_APP_STATUS = {
     'Notes Keep-grid · Journal mood-first flow · Offline outbox sync',
     'Direct tester APK drops — rapid iteration during closed device testing',
   ],
-  apkUrl: '/aiimin-v2-debug.apk',
-  apkVersion: 'V2.0.4 · Native Companion · Sep 2026',
+  apkUrl: 'https://github.com/Addy48/AIIMIN/releases/latest/download/aiimin-android.apk',
+  apkVersion: 'Android beta 4.0.0-beta01 · Oct 2026',
   security: 'StrongBox TEE Keystore · Zero-VPN · Zero Analytics / Ad Tracking',
 };
 
@@ -406,7 +406,7 @@ export const FAQS = [
   },
   {
     q: 'Can I download the Android APK right now?',
-    a: 'Yes — if you are an invited closed beta tester or registered waitlist member. The optimized native build (~44.2 MB, Android 8.0+) is available directly from the Android section on this page or via /app. We distribute directly during closed testing to ship rapid improvements without app-store review delays. Public Google Play Store release will follow after closed testing completes.',
+    a: 'Yes. The Android beta (4.0.0-beta01, 32 MB, Android 8.0 or newer) downloads straight from GitHub Releases, from the Android section on this page or from /app. We share it directly during the beta so fixes reach you faster. A Google Play release follows after the beta.',
   },
   {
     q: 'How is my privacy and personal data protected?',
