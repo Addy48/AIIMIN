@@ -344,9 +344,10 @@ fun ScoreScreen(vm: MeViewModel = hiltViewModel()) {
                     Hairline(Modifier.padding(top = 6.dp))
                     Row(Modifier.fillMaxWidth().padding(top = 10.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text(scored.firstOrNull()?.snapshot?.day?.let { Dates.short(it) } ?: "", style = Aiimin.type.caption)
-                        Text("drag along the line", style = Aiimin.type.caption)
                         Text("Today", style = Aiimin.type.caption)
                     }
+                    // Its own line, so the dates never collide with it at large text sizes.
+                    Text("Drag along the line to see a day", style = Aiimin.type.caption, modifier = Modifier.padding(top = 4.dp))
                 } else if (!hidden) {
                     Text("The line appears after a few days.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 16.dp))
                 }

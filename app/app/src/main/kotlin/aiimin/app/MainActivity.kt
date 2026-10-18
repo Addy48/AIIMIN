@@ -64,6 +64,12 @@ class MainActivity : FragmentActivity() {
     private var unlocked by mutableStateOf(false)
     private var backgroundedAt = 0L
 
+    override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+        super.onConfigurationChanged(newConfig)
+        // Folding or unfolding changes the smallest width; re-pick without restarting the screen.
+        requestedOrientation = orientationFor(newConfig.smallestScreenWidthDp)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         val splash = installSplashScreen()
         enableEdgeToEdge(
@@ -71,6 +77,7 @@ class MainActivity : FragmentActivity() {
             navigationBarStyle = androidx.activity.SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT),
         )
         super.onCreate(savedInstanceState)
+        requestedOrientation = orientationFor(resources.configuration.smallestScreenWidthDp)
         AppShortcuts.publish(applicationContext)
         var ready = false
         splash.setKeepOnScreenCondition { !ready }
@@ -261,3 +268,12 @@ private fun Locked(card: aiimin.core.database.PersonEntity?, onUnlock: () -> Uni
         }
     }
 }
+
+/**
+ * Phones stay upright; tablets and unfolded foldables (smallest width 600 dp and up) turn freely.
+ * Decided at runtime so Android 15 doesn't letterbox big screens and Android 16+ (which ignores a
+ * manifest portrait lock on them) behaves the same way.
+ */
+fun orientationFor(smallestWidthDp: Int): Int =
+    if (smallestWidthDp >= 600) android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+    else android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT

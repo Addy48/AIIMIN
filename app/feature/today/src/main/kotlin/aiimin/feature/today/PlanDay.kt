@@ -40,6 +40,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
@@ -178,8 +179,8 @@ fun PlanDayScreen(tomorrow: Boolean, vm: PlanDayViewModel = hiltViewModel()) {
                     val z = ZoneId.systemDefault()
                     val st = java.time.Instant.ofEpochMilli(e.startAt).atZone(z).toLocalTime()
                     Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
-                        // 92 dp and one line: at 64 dp "10:00 AM" broke onto two lines at 1.15× text (audit A-028).
-                        Text(if (e.allDay) "all day" else Dates.clock(st), style = Aiimin.type.body.copy(color = c.textMuted, fontFeatureSettings = "tnum"), maxLines = 1, softWrap = false, modifier = Modifier.width(92.dp))
+                        // At least 92 dp and one line (A-028); grows with large text instead of running into the title.
+                        Text(if (e.allDay) "all day" else Dates.clock(st), style = Aiimin.type.body.copy(color = c.textMuted, fontFeatureSettings = "tnum"), maxLines = 1, softWrap = false, modifier = Modifier.widthIn(min = 92.dp).padding(end = 8.dp))
                         Text(e.title, style = Aiimin.type.body.copy(color = c.text), modifier = Modifier.weight(1f))
                     }
                     Hairline()
@@ -206,7 +207,7 @@ fun PlanDayScreen(tomorrow: Boolean, vm: PlanDayViewModel = hiltViewModel()) {
                             )
                         }
                         if (t.day == null || LocalDate.parse(t.day!!) != u.day) {
-                            Text("Do it ${if (tomorrow) "tomorrow" else "today"}", style = Aiimin.type.label.copy(color = c.accentText, fontSize = 13.sp), modifier = Modifier.clickable { vm.pullTo(t, u.day) }.padding(8.dp))
+                            Text("Do it ${if (tomorrow) "tomorrow" else "today"}", style = Aiimin.type.label.copy(color = c.textMuted, fontSize = 13.sp), modifier = Modifier.clickable { vm.pullTo(t, u.day) }.padding(8.dp))
                         }
                         AppIconButton(
                             if (starred) AppIcons.StarFill else AppIcons.Star, if (starred) "Remove from top three" else "Add to top three",

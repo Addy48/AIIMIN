@@ -452,7 +452,7 @@ private fun NowCard(u: TodayUi, vm: TodayViewModel, hour: Int, light: Boolean, o
                 AppButton("Mark done", { onDone(it.id) }, icon = AppIcons.Check, modifier = Modifier.weight(1f))
                 AppButton("Focus", { nav.open(Route.Focus(taskId = it.id, label = it.title)) }, kind = ButtonKind.SECONDARY)
             } else {
-                AppButton("Start focus on this", { nav.open(Route.Focus(label = it.title)) }, icon = AppIcons.Timer, modifier = Modifier.weight(1f))
+                AppButton("Focus on this", { nav.open(Route.Focus(label = it.title)) }, icon = AppIcons.Timer, modifier = Modifier.weight(1f))
                 AppButton("Open", { nav.open(Route.Calendar) }, kind = ButtonKind.SECONDARY)
             }
         }

@@ -110,6 +110,13 @@ import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDe
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.layout.statusBars
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -254,7 +261,16 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
     }
     CompositionLocalProvider(LocalNavigator provides navigator, LocalToaster provides toaster, aiimin.designsystem.component.LocalSyncUi provides syncUi) {
         Box(Modifier.fillMaxSize().background(c.base)) {
-            Column(Modifier.fillMaxSize()) {
+            // One phone-width column on every device: tablets, unfolded foldables and landscape get it centred
+            // (Android 16+ ignores the portrait lock on large screens), and side insets keep a 3-button nav bar
+            // or a camera cutout from covering content.
+            Column(
+                Modifier.align(Alignment.TopCenter).fillMaxHeight().widthIn(max = CONTENT_MAX_WIDTH).fillMaxWidth()
+                    .windowInsetsPadding(
+                        androidx.compose.foundation.layout.WindowInsets.navigationBars.union(androidx.compose.foundation.layout.WindowInsets.displayCutout)
+                            .only(androidx.compose.foundation.layout.WindowInsetsSides.Horizontal),
+                    ),
+            ) {
                 NavDisplay(
                     backStack = stack,
                     onBack = { navigator.back() },
@@ -444,3 +460,6 @@ private fun SyncSheet(
         }
     }
 }
+
+/** The widest a screen's content gets; wider windows centre it (same as Material's bottom sheets). */
+private val CONTENT_MAX_WIDTH = 640.dp

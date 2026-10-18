@@ -236,10 +236,13 @@ fun Pill(
 }
 
 @Composable
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 fun PillRow(content: @Composable () -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(vertical = 4.dp),
+    // Wraps onto more lines instead of running off a small screen or at large text (device pass, 18 Oct).
+    androidx.compose.foundation.layout.FlowRow(
+        Modifier.fillMaxWidth().padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) { content() }
 }
 

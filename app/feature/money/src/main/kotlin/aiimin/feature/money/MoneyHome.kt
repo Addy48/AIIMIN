@@ -278,7 +278,8 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
         val owed = extras?.balances.orEmpty()
         if (owed.isNotEmpty() && ledger == Ledger.PERSONAL) item {
             Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
-                SectionHeader("Owed", action = "Splits", onAction = { nav.open(Route.Splits) })
+                // The line below opens Splits, and Splits is in Tools: no third link here (audit A-005).
+                SectionHeader("Owed")
                 Text(
                     owed.take(3).joinToString(" · ") { b -> if (b.theyOwe) "${b.name} owes you ${Money.whole(b.netPaise)}" else "You owe ${b.name} ${Money.whole(-b.netPaise)}" },
                     style = Aiimin.type.body, modifier = Modifier.fillMaxWidth().pressable({ nav.open(Route.Splits) }).padding(vertical = 10.dp),
@@ -386,7 +387,9 @@ private fun Headline(s: aiimin.core.data.money.SpendSeries, bar: SpendBar?, plan
                         s.totalPaise <= pace -> "On pace"
                         else -> "${Money.whole(s.totalPaise - pace)} ahead of pace"
                     }
-                    listOf("${Money.whole(remaining.coerceAtLeast(0))} left of ${Money.whole(plan)}", "$daysLeft days to go", word).filter { it.isNotBlank() }.joinToString(" · ")
+                    // Each part stays on one line; the line only breaks between parts, never inside "On pace" (audit A-006).
+                    listOf("${Money.whole(remaining.coerceAtLeast(0))} left of ${Money.whole(plan)}", "$daysLeft days to go", word).filter { it.isNotBlank() }
+                        .joinToString(" · ") { it.replace(' ', '\u00A0') }
                 } else if (monthIsCurrent && ledger == Ledger.PERSONAL) "Set a monthly plan to see your pace" else "${Money.whole(s.usualPaise)} a ${s.unit} on average"
                 Text(sub, style = Aiimin.type.caption.copy(fontSize = 14.sp, lineHeight = 20.sp))
             }

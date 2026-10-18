@@ -213,15 +213,16 @@ fun CalendarScreen(vm: CalendarViewModel = hiltViewModel()) {
         val start = selected.minusDays(selected.dayOfWeek.value.toLong() - 1)
         Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically) {
             AppIconButton(AppIcons.CaretLeft, "Previous week", { vm.select(selected.minusWeeks(1)) }, tint = c.textMuted, size = 36.dp)
-            Row(Modifier.weight(1f), horizontalArrangement = Arrangement.SpaceBetween) {
+            Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                 (0..6).map { start.plusDays(it.toLong()) }.forEach { d ->
                     val sel = d == selected
                     Column(
-                        Modifier.clip(Shapes.row).background(if (sel) c.accent else Color.Transparent).clickable { vm.select(d) }.padding(vertical = 8.dp, horizontal = 8.dp),
+                        // Equal shares of the width, so "18" never splits at display size Largest.
+                        Modifier.weight(1f).clip(Shapes.row).background(if (sel) c.accent else Color.Transparent).clickable { vm.select(d) }.padding(vertical = 8.dp, horizontal = 2.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Text(d.dayOfWeek.getDisplayName(TextStyle.NARROW, Locale.ENGLISH), style = Aiimin.type.caption.copy(color = if (sel) c.onAccent else c.textFaint))
-                        Text(d.dayOfMonth.toString(), style = Aiimin.type.numberSmall.copy(color = if (sel) c.onAccent else c.text))
+                        Text(d.dayOfMonth.toString(), style = Aiimin.type.numberSmall.copy(color = if (sel) c.onAccent else c.text), maxLines = 1, softWrap = false)
                     }
                 }
             }
@@ -381,10 +382,15 @@ fun FocusScreen(route: Route.Focus, vm: FocusViewModel = hiltViewModel()) {
                 Spacer(Modifier.height(24.dp))
                 AppTextField(label, { label = it }, placeholder = "What are you focusing on?", leading = AppIcons.Target)
                 Spacer(Modifier.height(24.dp))
-                Text("%d".format(minutes), style = Aiimin.type.display)
-                Text("minutes", style = Aiimin.type.caption)
-                Spacer(Modifier.height(16.dp))
-                Stepper("$minutes min", { minutes = (minutes - 5).coerceAtLeast(5) }, { minutes = (minutes + 5).coerceAtMost(180) })
+                // One duration, shown once: − and + sit beside the number, presets below (audit A-020).
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    AppIconButton(AppIcons.Minus, "5 minutes less", { minutes = (minutes - 5).coerceAtLeast(5) })
+                    Column(Modifier.padding(horizontal = 12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("%d".format(minutes), style = Aiimin.type.display)
+                        Text("minutes", style = Aiimin.type.caption)
+                    }
+                    AppIconButton(AppIcons.Plus, "5 minutes more", { minutes = (minutes + 5).coerceAtMost(180) })
+                }
                 Spacer(Modifier.height(16.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     listOf(15, 25, 50, 90).forEach { m -> Pill("$m", minutes == m, { minutes = m }) }

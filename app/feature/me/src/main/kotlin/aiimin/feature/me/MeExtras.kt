@@ -255,13 +255,17 @@ private fun PlanBlock(plan: Plan, pp: PlanPrices?, period: Period, current: Bool
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(plan.label, style = Aiimin.type.title.copy(fontSize = 20.sp), modifier = Modifier.weight(1f))
             if (current) Tag("Your plan")
-            if (plan == Plan.FAMILY) Tag("Coming soon")
         }
         Text(plan.promise, style = Aiimin.type.caption.copy(color = c.accentText, fontWeight = FontWeight.SemiBold))
         val price = aiimin.core.data.plan.planPriceLabel(plan, pp?.monthly?.formatted, pp?.yearly?.formatted, pp?.yearlySavingPct, yearly = period == Period.YEARLY)
         Text(price, style = Aiimin.type.headline.copy(fontSize = 18.sp), modifier = Modifier.padding(top = 8.dp))
         Text(plan.hero, style = Aiimin.type.body, modifier = Modifier.padding(top = 6.dp))
         plan.adds.forEach { Text("· $it", style = Aiimin.type.caption.copy(fontSize = 13.sp, lineHeight = 19.sp), modifier = Modifier.padding(top = 3.dp)) }
+        if (plan.coming.isNotEmpty()) {
+            // Planned, shown on purpose, never sold as included today (A-036).
+            Text("COMING", style = Aiimin.type.eyebrow, modifier = Modifier.padding(top = 10.dp))
+            plan.coming.forEach { Text("· $it", style = Aiimin.type.caption.copy(fontSize = 13.sp, lineHeight = 19.sp, color = c.textFaint), modifier = Modifier.padding(top = 3.dp)) }
+        }
     }
 }
 
@@ -287,9 +291,9 @@ private val COMPARE: List<Pair<String, List<Pair<String, List<String>>>>> = list
     ),
     "Vault & family" to listOf(
         "Documents on your phone" to listOf("Unlimited", "Unlimited", "Unlimited", "Unlimited"), "Family profiles" to listOf("2", "6", "6", "6 people"),
-        "Automatic vault backups" to listOf("Manual", "Weekly", "Weekly", "Weekly"), "Trusted people for emergency access" to listOf("1", "1", "3", "Any"),
+        "Automatic vault backups (coming)" to listOf("Manual", "Weekly", "Weekly", "Weekly"), "Trusted people for emergency access (coming)" to listOf("1", "1", "3", "Any"),
     ),
-    "Insight" to listOf("Chart history" to listOf("3 months", "All", "All", "All"), "Patterns, monthly review" to listOf("—", "—", "✓", "✓")),
+    "Insight" to listOf("Chart history" to listOf("3 months", "All", "All", "All"), "Patterns, monthly review (coming)" to listOf("—", "—", "✓", "✓")),
     "Sync" to listOf("Linked browsers" to listOf("1", "4", "4", "4 each")),
 )
 

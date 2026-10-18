@@ -28,43 +28,52 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
 
 /** The v4.1 plans (plan Part 13). Free has no product; the others are Play subscriptions. */
-enum class Plan(val label: String, val productId: String?, val promise: String, val hero: String, val adds: List<String>) {
+enum class Plan(
+    val label: String,
+    val productId: String?,
+    val promise: String,
+    val hero: String,
+    /** What the plan includes today. */
+    val adds: List<String>,
+    /** Planned and shown, but not built yet (owner decision A-036): marked "Coming", never sold as included. */
+    val coming: List<String> = emptyList(),
+) {
     FREE(
         "Free", null, "Your day, your money, your papers", "Everything you need for yourself, forever.",
         listOf(
             "Today, voice capture, tasks, calendar, minimums, focus, Life Score, journal, notes",
-            "Money with bank alerts, review, payee memory, budget, splits with up to 3 people",
+            "Money from your bank SMS: review, payee memory, budget, splits with up to 3 people",
             "Unlimited documents on your phone for you and 2 family profiles",
             "Emergency card, expiry reminders, a printed emergency kit",
             "Private sync with aiimin.in · charts up to 3 months · export anytime",
         ),
+        coming = listOf("1 trusted person for emergency access"),
     ),
     PLUS(
         "Plus", "aiimin_plus", "Your whole history, everywhere",
-        "Every ledger and every month of your history, with your vault backed up to your own storage.",
+        "Every ledger and every month of your history, on your phone and the web.",
         listOf(
             "All-time charts on phone and web",
             "Household and Business ledgers, unlimited splits, receipts on payments",
-            "Document versions and weekly vault backups to your own storage",
             "Up to 6 family profiles · recurring bills calendar · CSV export for your CA",
+            "Up to 4 linked browsers",
         ),
+        coming = listOf("Document versions", "Weekly vault backups to your own storage"),
     ),
     PRO(
         "Pro", "aiimin_pro", "Does the thinking for you", "AIIMIN explains your patterns and writes your reviews.",
-        listOf(
-            "Everything in Plus",
-            "Patterns: what goes with what",
-            "Monthly review as a PDF and weekly review drafts",
-            "Smart categorisation rules · 3 trusted people for emergency access",
+        listOf("Everything in Plus", "Priority support"),
+        coming = listOf(
+            "Patterns: what goes with what", "Monthly review as a PDF", "Weekly review drafts",
+            "Smart categorisation rules", "3 trusted people for emergency access",
         ),
     ),
     FAMILY(
         "Family", "aiimin_family", "Everyone you look after", "Pro for up to 6 people, each with their own private space.",
-        listOf(
+        listOf("Everything in Pro", "Emergency kits for everyone in the family"),
+        coming = listOf(
             "Each member on their own phone, with a private journal and score",
-            "A household vault shared phone to phone",
-            "Emergency kits for everyone and caregiver roles",
-            "A shared household budget and family tasks",
+            "A household vault shared phone to phone", "Caregiver roles", "A shared household budget and family tasks",
         ),
     ),
     ;
