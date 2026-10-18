@@ -9,7 +9,7 @@ const WaitlistFooter = forwardRef(function WaitlistFooter({ isLight, onToggleThe
       <Link to="/brand" className="waitlist-footer-brand" aria-label="Explore AIIMIN brand">
         <Wordmark size={22} color="var(--color-text-1)" />
       </Link>
-      <p className="waitlist-footer-desc">High-density Personal Life OS for ambitious builders, founders, and high performers.</p>
+      <p className="waitlist-footer-desc">Your day, your money and your family's papers, in one calm place.</p>
       
       <div className="waitlist-footer-contact" aria-label="Direct contact channels">
         <a href="mailto:support@aiimin.in" className="waitlist-footer-contact-link" aria-label="Email support">

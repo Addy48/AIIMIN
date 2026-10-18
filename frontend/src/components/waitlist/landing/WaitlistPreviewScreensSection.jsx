@@ -35,9 +35,9 @@ export default function WaitlistPreviewScreensSection() {
   return (
     <section className="waitlist-section waitlist-section-alt waitlist-screens-section" id="screens">
       <p className="waitlist-section-label">Command surfaces</p>
-      <h2>High-density surfaces — zero decorative noise</h2>
+      <h2>Calm screens, one job each</h2>
       <p className="waitlist-section-copy">
-        Explore the primary operating layers: immediate daily execution, multi-dimensional score intelligence, and linked financial provenance.
+        Your day, your money and your papers. Each screen shows what matters now and nothing else.
       </p>
 
       <div className="waitlist-grid waitlist-grid-3" style={{ gap: '24px', alignItems: 'stretch' }}>

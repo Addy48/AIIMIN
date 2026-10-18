@@ -17,7 +17,7 @@ export default function WaitlistAccessTiersSection() {
         <div className="timeline-connector" />
         <div className="timeline-step"><span className="step-number">2</span><span className="step-label">Launch: Onboard Wave</span></div>
         <div className="timeline-connector" />
-        <div className="timeline-step"><span className="step-number">3</span><span className="step-label">Day 1: Full Life OS</span></div>
+        <div className="timeline-step"><span className="step-number">3</span><span className="step-label">Day 1: your first month in AIIMIN</span></div>
       </div>
       <div className="waitlist-tier-compare">
         {ACCESS_PACKAGES.map((pkg, index) => (

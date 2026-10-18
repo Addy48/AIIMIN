@@ -1,5 +1,5 @@
 import { PLANS, REFERRAL, priceLine } from '../plans';
-import { PRICING, ACCESS_PACKAGES, FAQS, TESTIMONIALS, HERO_TRUST_LINE, ANDROID_APP_STATUS } from '../../components/waitlist/landing/waitlistLandingData';
+import { PRICING, ACCESS_PACKAGES, FAQS, TESTIMONIALS, HERO_TRUST_LINE, ANDROID_APP_STATUS, LAUNCH_PHASES } from '../../components/waitlist/landing/waitlistLandingData';
 
 describe('one price list, the same as the app', () => {
   test('four plans with the app prices (Plan.plannedMonthlyInr / plannedYearlyInr)', () => {
@@ -29,10 +29,10 @@ describe('one price list, the same as the app', () => {
 });
 
 describe('public copy only promises what the ladder and the referral plan say', () => {
-  const text = JSON.stringify({ PRICING, ACCESS_PACKAGES, FAQS, HERO_TRUST_LINE, ANDROID_APP_STATUS });
+  const text = JSON.stringify({ PRICING, ACCESS_PACKAGES, FAQS, HERO_TRUST_LINE, ANDROID_APP_STATUS, LAUNCH_PHASES });
 
   test('no old tiers or prices', () => {
-    ['Elite', 'Explore tier', 'Core tier', '₹29', '₹79', '₹59', 'Americas'].forEach((w) => expect(text).not.toContain(w));
+    ['Elite', 'Explore', 'Core tier', '₹29', '₹79', '₹59', 'Americas', 'Life OS', 'high performers', 'founding rate'].forEach((w) => expect(text).not.toContain(w));
   });
 
   test('no unverifiable tester quotes', () => {

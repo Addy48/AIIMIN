@@ -448,7 +448,7 @@ export default function HeroPreviewMock() {
       </div>
 
       <p className="preview-caption" style={{ marginTop: '10px', textAlign: 'center', fontSize: '11.5px', color: 'var(--color-text-3)', lineHeight: '1.5' }}>
-        AIIMIN Desktop Command Center · <strong>Pro tier preview</strong> showing 5D Life Score & correlation insights (Explore tier includes Today board, daily minimums & private journal from ₹0).
+        Sample data. The web view of your AIIMIN account: the same day, money and papers as the app.
       </p>
     </div>
   );

@@ -61,10 +61,10 @@ export default function WaitlistHeroSection({
         <div className="waitlist-desktop-notice" role="note">
           <Laptop size={18} className="waitlist-desktop-notice-icon" aria-hidden="true" />
           <div>
-            <p className="waitlist-desktop-notice-title">Web Life OS + Android companion</p>
+            <p className="waitlist-desktop-notice-title">On the web and on Android</p>
             <p className="waitlist-desktop-notice-copy">
-              Join on your phone. Full Life OS on laptop. Native Android V2 tester preview is live — get the APK at{' '}
-              <a href="/app">/app</a> or in the Android section below.
+              Join on any phone or laptop. The Android app is in closed beta; see{' '}
+              <a href="/app">/app</a> or the Android section below.
             </p>
           </div>
         </div>

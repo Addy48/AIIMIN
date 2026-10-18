@@ -19,7 +19,7 @@ export default function WaitlistLaunchJourney() {
   return (
     <section className="waitlist-section launch-journey-section" id="launch-journey">
       <p className="waitlist-section-label">Launch journey</p>
-      <h2>Four phases — from signup to full Life OS</h2>
+      <h2>From the waitlist to your first month</h2>
       <p className="waitlist-section-copy">
         Each phase has a clear window, what you do, and what unlocks. No half-baked drops.
       </p>
