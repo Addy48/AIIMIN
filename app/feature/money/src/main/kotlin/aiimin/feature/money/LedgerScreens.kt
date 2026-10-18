@@ -633,13 +633,19 @@ fun ExportSheet(money: suspend (YearMonth, Ledger) -> Pair<Int, String>, export:
 // =================================================================== M16 Payee memory
 
 @HiltViewModel
-class PayeeMemoryViewModel @Inject constructor(private val repo: PayeeMemoryRepository) : ViewModel() {
+class PayeeMemoryViewModel @Inject constructor(private val repo: PayeeMemoryRepository, private val money: aiimin.core.data.money.MoneyRepository) : ViewModel() {
     val query = MutableStateFlow("")
-    val rules = combine(repo.rules, query) { r, q -> r.filter { q.isBlank() || it.label.contains(q, true) || it.key.contains(q.lowercase()) || it.category.contains(q, true) } }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+    /** One row per place: a place is remembered under several keys (UPI handle, its name, the bank's name for it). */
+    val rules = combine(repo.rules, query) { r, q ->
+        r.filter { q.isBlank() || it.label.contains(q, true) || it.key.contains(q.lowercase()) || it.category.contains(q, true) }
+            .groupBy { it.label.ifBlank { it.key }.lowercase() }.values.map { g -> g.maxBy { it.hits } to g.map { it.key } }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
+    val categories = money.categories(inbound = false).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    val custom = money.customCategories().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    fun save(r: PayeeRuleEntity) = viewModelScope.launch { repo.save(r) }
-    fun delete(key: String) = viewModelScope.launch { repo.delete(key) }
+    fun save(r: PayeeRuleEntity, keys: List<String>) = viewModelScope.launch { keys.forEach { k -> repo.save(r.copy(key = k)) } }
+    fun delete(keys: List<String>) = viewModelScope.launch { keys.forEach { repo.delete(it) } }
+    fun archive(c: aiimin.core.database.CategoryEntity, archived: Boolean) = viewModelScope.launch { money.archiveCategory(c, archived) }
 }
 
 /** M16 · What AIIMIN has learned about payees. */
@@ -650,9 +656,11 @@ fun PayeeMemoryScreen(vm: PayeeMemoryViewModel = hiltViewModel()) {
     val c = Aiimin.colors
     val list by vm.rules.collectAsStateWithLifecycle()
     val q by vm.query.collectAsStateWithLifecycle()
-    var editing by remember { mutableStateOf<PayeeRuleEntity?>(null) }
+    var editing by remember { mutableStateOf<Pair<PayeeRuleEntity, List<String>>?>(null) }
+    val spendCats by vm.categories.collectAsStateWithLifecycle()
+    val custom by vm.custom.collectAsStateWithLifecycle()
     Column(Modifier.fillMaxSize().background(c.base)) {
-        TopBar("Payee memory", onBack = { nav.back() })
+        TopBar("Places and categories", onBack = { nav.back() })
         Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
             AppTextField(q, { vm.query.value = it }, placeholder = "Search payee or category", leading = AppIcons.Search)
         }
@@ -664,22 +672,34 @@ fun PayeeMemoryScreen(vm: PayeeMemoryViewModel = hiltViewModel()) {
                     style = Aiimin.type.caption, modifier = Modifier.padding(vertical = 16.dp),
                 )
             }
-            items(items, key = { it.key }) { r ->
-                Row(Modifier.fillMaxWidth().pressable({ editing = r }).heightIn(min = 60.dp).padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+            items(items, key = { it.first.key }) { (r, keys) ->
+                Row(Modifier.fillMaxWidth().pressable({ editing = r to keys }).heightIn(min = 60.dp).padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         Text(r.label.ifBlank { r.key.replaceFirstChar { it.uppercase() } }, style = Aiimin.type.bodyStrong)
                         Text(
                             if (r.alwaysAsk) "Always ask" else "→ ${r.category} · ${Ledger.entries.firstOrNull { it.name == r.ledger }?.label ?: r.ledger}" + if (r.hits > 1) " · used ${r.hits} times" else "",
                             style = Aiimin.type.caption,
                         )
+                        aiimin.core.data.money.MerchantMemory.notes(r).takeIf { it.isNotEmpty() }?.let { n ->
+                            Text("Bought: ${n.joinToString(", ")}", style = Aiimin.type.caption, maxLines = 1)
+                        }
                     }
                     Chevron()
                 }
                 Hairline()
             }
+            if (q.isBlank() && custom.isNotEmpty()) {
+                item { SectionHeader("Your categories", Modifier.padding(top = 16.dp)) }
+                items(custom, key = { "cat-" + it.id }) { cat ->
+                    ListRow(
+                        cat.name, subtitle = if (cat.archived) "Archived · hidden from the chips" else if (cat.kind == "in") "Money in" else "Money out",
+                        trailing = { AppButton(if (cat.archived) "Restore" else "Archive", { vm.archive(cat, !cat.archived) }, kind = ButtonKind.GHOST, compact = true) },
+                    )
+                }
+            }
         }
     }
-    editing?.let { r ->
+    editing?.let { (r, keys) ->
         var cat by remember(r.key) { mutableStateOf(r.category) }
         var ledger by remember(r.key) { mutableStateOf(r.ledger) }
         var ask by remember(r.key) { mutableStateOf(r.alwaysAsk) }
@@ -687,14 +707,14 @@ fun PayeeMemoryScreen(vm: PayeeMemoryViewModel = hiltViewModel()) {
         AppSheet({ editing = null }, title = r.label.ifBlank { r.key }) {
             AppTextField(label, { label = it }, label = "Shown as")
             SectionHeader("Category")
-            PillRow { (Categories.SPEND + Categories.INCOME).forEach { k -> Pill(k, cat == k, { cat = k }) } }
+            PillRow { (spendCats + Categories.INCOME + listOf(cat)).distinct().forEach { k -> Pill(k, cat == k, { cat = k }) } }
             SectionHeader("Ledger")
             Segmented(Ledger.entries.map { it.label }, Ledger.entries.indexOfFirst { it.name == ledger }.coerceAtLeast(0), { ledger = Ledger.entries[it].name })
             SwitchRow("Always ask for this payee", ask, { ask = it }, subtitle = "For shops where one payment is groceries and the next is a gift")
             Spacer(Modifier.height(12.dp))
-            AppButton("Save", { vm.save(r.copy(category = cat, ledger = ledger, alwaysAsk = ask, label = label.trim())); editing = null; toaster.show("Saved") }, Modifier.fillMaxWidth())
+            AppButton("Save", { vm.save(r.copy(category = cat, ledger = ledger, alwaysAsk = ask, label = label.trim()), keys); editing = null; toaster.show("Saved") }, Modifier.fillMaxWidth())
             Spacer(Modifier.height(8.dp))
-            AppButton("Forget this payee", { vm.delete(r.key); editing = null; toaster.show("Forgotten") }, Modifier.fillMaxWidth(), kind = ButtonKind.GHOST)
+            AppButton("Forget this payee", { vm.delete(keys); editing = null; toaster.show("Forgotten") }, Modifier.fillMaxWidth(), kind = ButtonKind.GHOST)
         }
     }
 }

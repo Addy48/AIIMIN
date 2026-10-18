@@ -114,6 +114,8 @@ internal fun AddPaymentSheet(
     ledger: Ledger,
     today: LocalDate,
     onDismiss: () -> Unit,
+    spendCategories: List<String> = Categories.SPEND,
+    incomeCategories: List<String> = Categories.INCOME,
     onSave: (Long, String, String, String, Ledger, LocalDate, String) -> Unit,
 ) {
     val c = Aiimin.colors
@@ -143,10 +145,10 @@ internal fun AddPaymentSheet(
         Spacer(Modifier.height(12.dp))
         AppTextField(title, { title = it }, placeholder = if (income) "From (e.g. Salary, Client)" else "Where (e.g. Swiggy, Auto)")
         Spacer(Modifier.height(10.dp))
-        PillRow { (if (income) Categories.INCOME else Categories.SPEND).forEach { k -> Pill(k, cat == k, { cat = k }) } }
+        PillRow { (if (income) incomeCategories else spendCategories).forEach { k -> Pill(k, cat == k, { cat = k }) } }
         PillRow { Ledger.entries.forEach { e -> Pill(e.label, l == e, { l = e }) } }
         ListRow("Date", subtitle = Dates.relative(day, today), leading = { IconTile(AppIcons.Calendar) }, onClick = { pickDay = true })
-        AppTextField(note, { note = it }, placeholder = "Note (optional)")
+        AppTextField(note, { note = it }, placeholder = if (income) "Note (optional)" else "What did you buy? (optional)")
         Spacer(Modifier.height(14.dp))
         val paise = ((amount.toDoubleOrNull() ?: 0.0) * 100).toLong()
         AppButton("Save", { onSave(paise, if (income) "in" else "out", title.ifBlank { cat }, cat, l, day, note) }, Modifier.fillMaxWidth(), enabled = paise > 0)
@@ -190,15 +192,16 @@ fun TxnScreen(id: String, vm: TxnViewModel = hiltViewModel()) {
                 Text((if (txn.direction == "in") "+" else "") + Money.format(txn.amountPaise), style = Aiimin.type.numberLarge.copy(color = if (txn.direction == "in") c.done else c.text))
                 Text("${Dates.long(LocalDate.parse(txn.day))} · ${txn.method}" + if (txn.source != "manual") " · from ${txn.source}" else "", style = Aiimin.type.caption)
                 Spacer(Modifier.height(16.dp))
-                AppTextField(title, { title = it }, label = "Payee")
+                AppTextField(title, { title = it }, label = if (txn.direction == "in") "From" else "Paid to")
                 Spacer(Modifier.height(10.dp))
                 SectionHeader("Category")
-                PillRow { (if (txn.direction == "in") Categories.INCOME else Categories.SPEND).forEach { k -> Pill(k, cat == k, { cat = k }) } }
+                val cats by (if (txn.direction == "in") vm.categoriesIn else vm.categoriesOut).collectAsStateWithLifecycle()
+                PillRow { (cats.ifEmpty { if (txn.direction == "in") Categories.INCOME else Categories.SPEND } + listOf(cat)).distinct().forEach { k -> Pill(k, cat == k, { cat = k }) } }
                 SectionHeader("Ledger")
                 Segmented(Ledger.entries.map { it.label }, Ledger.entries.indexOf(ledger), { ledger = Ledger.entries[it] })
                 Spacer(Modifier.height(10.dp))
                 SwitchRow("Apply to this payee from now on", learn, { learn = it })
-                AppTextField(note, { note = it }, label = "Note", singleLine = false, minLines = 2)
+                AppTextField(note, { note = it }, label = if (txn.direction == "in") "Note" else "What did you buy? (or a note)", singleLine = false, minLines = 2)
                 Spacer(Modifier.height(12.dp))
                 AppButton("Save", { vm.save(txn.copy(title = title, category = cat, ledger = ledger.name, note = note), learn); toaster.show("Saved") }, Modifier.fillMaxWidth())
             }

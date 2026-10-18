@@ -180,7 +180,23 @@ data class PayeeRuleEntity(
     @ColumnInfo(defaultValue = "0") val alwaysAsk: Boolean = false,
     /** Times the rule was used, for sorting M16 (v2). */
     @ColumnInfo(defaultValue = "0") val hits: Int = 0,
+    /** What was bought here lately, newest first, "|"-separated, five at most ("Chocolate|Milk") (v6, plan §3). */
+    @ColumnInfo(defaultValue = "") val lastNotes: String = "",
 )
+
+/** A category the person made ("Pet"), shown next to the built-in ones (v6, plan §3). [kind] is out or in. */
+@Entity(tableName = "categories")
+data class CategoryEntity(
+    @PrimaryKey val id: String,
+    val name: String,
+    val icon: String,
+    val kind: String,
+    @ColumnInfo(defaultValue = "0") val archived: Boolean = false,
+    val createdAt: Long,
+)
+
+/** How often a category was used lately, for ordering chips. */
+data class CategoryUse(val category: String, val n: Int)
 
 /** A bank account, card, wallet or cash (M9/M10, v2). */
 @Entity(tableName = "accounts")

@@ -6,6 +6,8 @@ import aiimin.core.data.util.Dates
 import aiimin.core.data.util.Money
 import aiimin.core.database.TxnDraftEntity
 import aiimin.designsystem.component.AppButton
+import androidx.compose.runtime.produceState
+import aiimin.designsystem.component.AppTextField
 import aiimin.designsystem.component.AppIconButton
 import aiimin.designsystem.component.ButtonKind
 import aiimin.designsystem.component.CheckCircle
@@ -86,6 +88,11 @@ fun MoneyInboxScreen(vm: InboxViewModel = hiltViewModel()) {
     // edits live per card, keyed by id, so a skip keeps what you typed
     val cats = remember { mutableStateOf(mapOf<String, String>()) }
     val remember = remember { mutableStateOf(mapOf<String, Boolean>()) }
+    // Merchant memory (plan §3): the place's name and what was bought, per card.
+    val names = remember { mutableStateOf(mapOf<String, String>()) }
+    val notes = remember { mutableStateOf(mapOf<String, String>()) }
+    val spendCats by vm.categoriesOut.collectAsStateWithLifecycle()
+    val incomeCats by vm.categoriesIn.collectAsStateWithLifecycle()
     Column(Modifier.fillMaxSize().background(c.base)) {
         TopBar(if (pending.isEmpty()) "Review" else "Review · ${pending.size}", onBack = { nav.back() }) {
             AppIconButton(AppIcons.More, "More", { menu = !menu })
@@ -135,10 +142,19 @@ fun MoneyInboxScreen(vm: InboxViewModel = hiltViewModel()) {
             ) {
                 SwipeCard(
                     key = front.id,
-                    onConfirm = { scope.launch { vm.settle(front.id, cats.value[front.id] ?: front.category, Ledger.PERSONAL, front.title, remember.value[front.id] ?: true); toaster.show("Confirmed ${Money.format(front.amountPaise)} · ${front.title}") } },
+                    onConfirm = { scope.launch { val place = names.value[front.id]?.trim()?.ifEmpty { null } ?: front.title; vm.settle(front.id, cats.value[front.id] ?: front.category, Ledger.PERSONAL, place, remember.value[front.id] ?: true, notes.value[front.id]); toaster.show("Confirmed ${Money.format(front.amountPaise)} · $place") } },
                     onSkip = { skipped.add(front.id) },
                 ) {
-                    ReviewCardBody(front, index, pending.size, cats.value[front.id] ?: front.category, { cats.value = cats.value + (front.id to it) }, remember.value[front.id] ?: true, { remember.value = remember.value + (front.id to it) })
+                    val recent by produceState(emptyList<String>(), front.id) { value = vm.recentItems(front) }
+                    ReviewCardBody(
+                        front, index, pending.size,
+                        name = names.value[front.id] ?: front.title, onName = { names.value = names.value + (front.id to it) },
+                        cat = cats.value[front.id] ?: front.category, onCat = { cats.value = cats.value + (front.id to it) },
+                        categories = if (front.direction == "in") incomeCats else spendCats,
+                        onNewCategory = { raw -> scope.launch { vm.addCategory(raw, front.direction == "in")?.let { cats.value = cats.value + (front.id to it) } ?: toaster.show("That category already exists") } },
+                        note = notes.value[front.id].orEmpty(), onNote = { notes.value = notes.value + (front.id to it) }, recent = recent,
+                        rememberIt = remember.value[front.id] ?: true, onRemember = { remember.value = remember.value + (front.id to it) },
+                    )
                 }
             }
             Spacer(Modifier.height(28.dp))
@@ -147,7 +163,7 @@ fun MoneyInboxScreen(vm: InboxViewModel = hiltViewModel()) {
             AppButton("Skip", { skipped.add(front.id) }, Modifier.weight(1f), kind = ButtonKind.SECONDARY)
             AppButton(
                 "Confirm",
-                { scope.launch { vm.settle(front.id, cats.value[front.id] ?: front.category, Ledger.PERSONAL, front.title, remember.value[front.id] ?: true); toaster.show("Confirmed ${Money.format(front.amountPaise)} · ${front.title}") } },
+                { scope.launch { val place = names.value[front.id]?.trim()?.ifEmpty { null } ?: front.title; vm.settle(front.id, cats.value[front.id] ?: front.category, Ledger.PERSONAL, place, remember.value[front.id] ?: true, notes.value[front.id]); toaster.show("Confirmed ${Money.format(front.amountPaise)} · $place") } },
                 Modifier.weight(2f), icon = AppIcons.Check,
             )
         }
@@ -185,7 +201,15 @@ private fun SwipeCard(key: String, onConfirm: () -> Unit, onSkip: () -> Unit, co
 
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
-private fun ReviewCardBody(d: TxnDraftEntity, index: Int, total: Int, cat: String, onCat: (String) -> Unit, rememberIt: Boolean, onRemember: (Boolean) -> Unit) {
+private fun ReviewCardBody(
+    d: TxnDraftEntity, index: Int, total: Int,
+    name: String, onName: (String) -> Unit,
+    cat: String, onCat: (String) -> Unit, categories: List<String>, onNewCategory: (String) -> Unit,
+    note: String, onNote: (String) -> Unit, recent: List<String>,
+    rememberIt: Boolean, onRemember: (Boolean) -> Unit,
+) {
+    var adding by remember(d.id) { mutableStateOf(false) }
+    var newCat by remember(d.id) { mutableStateOf("") }
     val c = Aiimin.colors
     val shape = RoundedCornerShape(16.dp)
     val whenText = Instant.ofEpochMilli(d.detectedAt).atZone(ZoneId.systemDefault()).let { Dates.relative(it.toLocalDate(), java.time.LocalDate.now()) + " " + Dates.clock(it.toLocalTime()) }
@@ -205,9 +229,10 @@ private fun ReviewCardBody(d: TxnDraftEntity, index: Int, total: Int, cat: Strin
             Spacer(Modifier.width(8.dp))
             Text(if (d.direction == "in") "Received" else "Paid", style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(bottom = 6.dp))
         }
+        Spacer(Modifier.height(12.dp))
+        // Name the place once; the next alert from it arrives with this name (plan §3).
+        AppTextField(name, onName, label = if (d.direction == "in") "From" else "Paid to", placeholder = "Shop or person")
         Spacer(Modifier.height(8.dp))
-        Text(d.title, style = Aiimin.type.headline.copy(fontSize = 20.sp, lineHeight = 26.sp))
-        Spacer(Modifier.height(6.dp))
         Text(d.raw, style = Aiimin.type.caption.copy(fontFamily = FontFamily.Monospace, fontSize = 12.sp, lineHeight = 17.sp), maxLines = 3)
         if (d.confidence < 0.75) {
             Spacer(Modifier.height(12.dp))
@@ -217,7 +242,20 @@ private fun ReviewCardBody(d: TxnDraftEntity, index: Int, total: Int, cat: Strin
         Text("CATEGORY", style = Aiimin.type.eyebrow)
         Spacer(Modifier.height(8.dp))
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            (if (d.direction == "in") Categories.INCOME else Categories.SPEND).forEach { k -> Pill(k, cat == k, { onCat(k) }) }
+            (categories.ifEmpty { if (d.direction == "in") Categories.INCOME else Categories.SPEND }).forEach { k -> Pill(k, cat == k, { onCat(k) }) }
+            Pill("New", adding, { adding = !adding }, icon = AppIcons.Plus)
+        }
+        if (adding) Row(Modifier.padding(top = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+            AppTextField(newCat, { newCat = it }, Modifier.weight(1f), placeholder = "Pet, Gym, Chai…")
+            Spacer(Modifier.width(8.dp))
+            AppButton("Add", { onNewCategory(newCat); newCat = ""; adding = false }, compact = true, enabled = newCat.isNotBlank())
+        }
+        if (d.direction != "in") {
+            Spacer(Modifier.height(16.dp))
+            AppTextField(note, onNote, label = "What did you buy?", placeholder = "Optional · chocolate, milk")
+            if (recent.isNotEmpty()) FlowRow(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                recent.forEach { r -> Pill(r, note.equals(r, ignoreCase = true), { onNote(r) }) }
+            }
         }
         Spacer(Modifier.height(16.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
@@ -237,8 +275,8 @@ private fun ReviewCardBody(d: TxnDraftEntity, index: Int, total: Int, cat: Strin
         Spacer(Modifier.height(16.dp))
         Hairline2()
         Row(Modifier.fillMaxWidth().clickable { onRemember(!rememberIt) }.padding(top = 10.dp), verticalAlignment = Alignment.Top) {
-            CheckCircle(rememberIt, { onRemember(!rememberIt) }, "Remember ${d.title}", modifier = Modifier.padding(top = 0.dp))
-            Text("Remember ${d.title} as $cat · applies to past payments", style = Aiimin.type.body.copy(fontSize = 14.sp, lineHeight = 20.sp), modifier = Modifier.padding(top = 12.dp))
+            CheckCircle(rememberIt, { onRemember(!rememberIt) }, "Remember $name", modifier = Modifier.padding(top = 0.dp))
+            Text("Remember ${name.ifBlank { d.title }} as $cat · next time it fills in by itself", style = Aiimin.type.body.copy(fontSize = 14.sp, lineHeight = 20.sp), modifier = Modifier.padding(top = 12.dp))
         }
     }
 }

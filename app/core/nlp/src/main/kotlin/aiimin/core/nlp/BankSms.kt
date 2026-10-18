@@ -28,6 +28,7 @@ object BankSms {
     private val COUNTERPARTY = Regex("""(?:\bto|\bat|\bvpa|\btowards|\bby upi/?)\s+([A-Za-z0-9@._\- ]{3,40}?)(?:\s+on|\s+via|\s+ref|\.(?:\s|$)|,|$)""", I)
     private val REFERENCE = Regex("""(?:ref(?:erence)?\s*(?:no\.?)?|utr)\s*[:\-]?\s*([A-Za-z0-9]{6,})""", I)
     private val ACCOUNT = Regex("""(?:a/c|acct|account|card)\s*(?:no\.?)?\s*[x*]+(\d{3,4})""", I)
+    private val FROM = Regex("""\bfrom\s+(?!a/c|acct|account|ac\b|your\b)(?:vpa\s+)?([A-Za-z0-9@._\-& ]{3,40}?)(?:\s+on\b|\s+via|\s+ref|\.(?:\s|$)|,|$)""", I)
     private val UPI_ID = Regex("""\b([a-z0-9._\-]{2,}@[a-z]{2,})\b""", I)
 
     fun parse(text: String): BankAlert? {
@@ -35,11 +36,13 @@ object BankSms {
         val amount = amt.groupValues[1].replace(",", "").toDoubleOrNull() ?: return null
         val out = OUT.containsMatchIn(text)
         val inc = IN.containsMatchIn(text)
-        val counterparty = COUNTERPARTY.find(text)?.groupValues?.get(1)
+        val inbound = inc && !out
+        // Money in: who sent it ("by NEFT from ACME PVT LTD"); "debited from A/c" is never a payee.
+        val counterparty = (if (inbound) FROM.find(text)?.groupValues?.get(1) else null) ?: COUNTERPARTY.find(text)?.groupValues?.get(1)
         val name = counterparty?.let(::payeeName)?.ifEmpty { null } ?: "Bank transaction"
         return BankAlert(
             amount = kotlin.math.floor(amount + 0.5).toLong(),
-            direction = if (inc && !out) MoneyDirection.IN else MoneyDirection.OUT,
+            direction = if (inbound) MoneyDirection.IN else MoneyDirection.OUT,
             name = name,
             reference = REFERENCE.find(text)?.groupValues?.get(1),
             accountLast4 = ACCOUNT.find(text)?.groupValues?.get(1),
@@ -65,10 +68,26 @@ object BankSms {
      */
     fun payeeName(counterparty: String): String {
         val s = counterparty.trim().replaceFirst(Regex("""^vpa\s+""", I), "").trim()
-        val m = HANDLE.find(s) ?: return tidy(s.replace(Regex("""@.*"""), ""))
+        val m = HANDLE.find(s) ?: return plainName(s.replace(Regex("""@.*"""), ""))
         val label = m.groupValues[2].trim()
         if (label.count { it.isLetter() } >= 3) return tidy(label)
         return fromHandle(m.groupValues[1])
+    }
+
+    /** Consumer numbers, card tails and "A/c" go; known billers get the name people use (audit A-003). */
+    private val NOISE = Regex("""\b(?:consumer|cons|no|number|acct|account|card|ref)\b\.?|a/c|\bx+\d{2,}\b|\b\d{4,}\b""", I)
+    private val BILLERS = linkedMapOf(
+        "msedcl" to "MSEDCL Electricity", "mahadiscom" to "MSEDCL Electricity", "bescom" to "BESCOM Electricity",
+        "tneb" to "TNEB Electricity", "tangedco" to "TNEB Electricity", "bses" to "BSES Electricity",
+        "tatapower" to "Tata Power", "adanielectricity" to "Adani Electricity", "mahanagargas" to "Mahanagar Gas",
+        "igl" to "Indraprastha Gas", "lic" to "LIC",
+    )
+
+    private fun plainName(raw: String): String {
+        val cleaned = raw.replace(NOISE, " ").replace(Regex("""\s+"""), " ").trim().ifEmpty { raw.trim() }
+        val letters = cleaned.lowercase().replace(Regex("""[^a-z]"""), "")
+        BILLERS.entries.firstOrNull { letters.startsWith(it.key) }?.let { return it.value }
+        return tidy(cleaned)
     }
 
     private fun fromHandle(handle: String): String {
@@ -83,7 +102,18 @@ object BankSms {
     }
 
     /** Collapses spaces; all-lower or all-upper words get a capital first letter, mixed case is kept (PVR, McDonald's). */
-    private fun tidy(s: String): String = s.trim().split(Regex("""\s+""")).filter { it.isNotBlank() }.joinToString(" ") { w ->
+    private val ACRONYMS = setOf("PVR", "INOX", "SBI", "HDFC", "ICICI", "LIC", "ATM", "UPI", "KFC", "IRCTC", "BSES", "IKEA", "HP", "BP", "DLF", "NEFT", "IMPS")
+
+    private fun tidy(s: String): String {
+        val words = s.trim().split(Regex("""\s+""")).filter { it.isNotBlank() }
+        // A name shouted in capitals ("ACME PVT LTD") reads as "Acme Pvt Ltd"; real acronyms stay.
+        if (words.size > 1 && s.none { it.isLowerCase() }) {
+            return words.joinToString(" ") { w -> if (w in ACRONYMS) w else w.lowercase().replaceFirstChar { it.uppercase() } }
+        }
+        return tidyMixed(words)
+    }
+
+    private fun tidyMixed(words: List<String>): String = words.joinToString(" ") { w ->
         when {
             w.length <= 4 && w.all { !it.isLetter() || it.isUpperCase() } -> w
             w == w.lowercase() || w == w.uppercase() -> w.lowercase().replaceFirstChar { it.uppercase() }

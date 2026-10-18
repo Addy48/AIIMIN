@@ -470,7 +470,7 @@ fun MoneySettingsScreen(vm: ProfileViewModel = hiltViewModel()) {
             SectionHeader("More")
             ListRow("Bank messages", subtitle = "Bring in past SMS, choose which banks and payments count", leading = { IconTile(AppIcons.ChatText) }, trailing = { Chevron() }, onClick = { nav.open(Route.SmsImport) })
             ListRow("Accounts", subtitle = "Banks, cards, wallets, cash · primary per ledger", leading = { IconTile(AppIcons.Bank) }, trailing = { Chevron() }, onClick = { nav.open(Route.Accounts) })
-            ListRow("Payee memory", subtitle = "What AIIMIN learned about payees", leading = { IconTile(AppIcons.Tag) }, trailing = { Chevron() }, onClick = { nav.open(Route.PayeeMemory) })
+            ListRow("Places and categories", subtitle = "Shops AIIMIN remembers, what you bought, your own categories", leading = { IconTile(AppIcons.Tag) }, trailing = { Chevron() }, onClick = { nav.open(Route.PayeeMemory) })
             ListRow("Recurring and bills", subtitle = "Subscriptions, rent, AutoPay", leading = { IconTile(AppIcons.Repeat) }, trailing = { Chevron() }, onClick = { nav.open(Route.Recurring) })
             ListRow("Splits", subtitle = "Who owes whom", leading = { IconTile(AppIcons.Handshake) }, trailing = { Chevron() }, onClick = { nav.open(Route.Splits) })
             ListRow("Monthly plan", subtitle = "Total, fixed costs and category caps", leading = { IconTile(AppIcons.Target) }, trailing = { Chevron() }, onClick = { nav.open(Route.Budget) })

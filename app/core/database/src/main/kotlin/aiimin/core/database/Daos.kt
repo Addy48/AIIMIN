@@ -244,6 +244,18 @@ interface MoneyDao {
 
     @Upsert suspend fun upsertRule(r: PayeeRuleEntity)
 
+    @Upsert suspend fun upsertCategory(c: CategoryEntity)
+
+    @Query("SELECT * FROM categories ORDER BY name")
+    fun categories(): Flow<List<CategoryEntity>>
+
+    @Query("SELECT * FROM categories ORDER BY name")
+    suspend fun categoriesNow(): List<CategoryEntity>
+
+    /** Category use since [from] (yyyy-MM-dd), for putting the most used chips first. */
+    @Query("SELECT category, COUNT(*) AS n FROM txns WHERE deleted = 0 AND day >= :from GROUP BY category")
+    fun categoryUse(from: String): Flow<List<CategoryUse>>
+
     @Query("SELECT * FROM payee_rules WHERE `key` = :key")
     suspend fun rule(key: String): PayeeRuleEntity?
 

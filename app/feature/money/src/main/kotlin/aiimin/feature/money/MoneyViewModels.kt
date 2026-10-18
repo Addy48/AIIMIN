@@ -89,6 +89,8 @@ class MoneyViewModel @Inject constructor(
         money.add(paise, dir, title, category, ledger, day = day, note = note)
 
     suspend fun capture(text: String) = money.capture(text, "paste")
+    val categoriesOut = money.categories(inbound = false).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    val categoriesIn = money.categories(inbound = true).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
     suspend fun delete(id: String) = money.delete(id)
     fun restore(t: TxnEntity) = viewModelScope.launch { money.restore(t) }
     suspend fun export(): File = money.exportCsv(month.value, ledger.value)
@@ -97,8 +99,12 @@ class MoneyViewModel @Inject constructor(
 @HiltViewModel
 class InboxViewModel @Inject constructor(private val money: MoneyRepository) : ViewModel() {
     val pending = money.pending().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
-    suspend fun settle(id: String, category: String, ledger: Ledger, title: String, learn: Boolean) = money.settle(id, category, ledger, title, learn)
+    suspend fun settle(id: String, category: String, ledger: Ledger, title: String, learn: Boolean, note: String? = null) = money.settle(id, category, ledger, title, learn, note)
     fun dismiss(id: String) = viewModelScope.launch { money.dismiss(id) }
+    val categoriesOut = money.categories(inbound = false).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    val categoriesIn = money.categories(inbound = true).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    suspend fun recentItems(d: aiimin.core.database.TxnDraftEntity) = money.recentItems(d)
+    suspend fun addCategory(raw: String, inbound: Boolean) = money.addCategory(raw, inbound)
 }
 
 @HiltViewModel
@@ -127,6 +133,9 @@ class TxnViewModel @Inject constructor(
         txn.value = money.get(id)
         receiptTitle.value = txn.value?.receiptDocId?.let { vault.get(it)?.title }
     }
+
+    val categoriesOut = money.categories(inbound = false).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    val categoriesIn = money.categories(inbound = true).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     fun save(t: TxnEntity, learn: Boolean) = viewModelScope.launch {
         money.update(t, learn)

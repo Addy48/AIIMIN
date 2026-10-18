@@ -229,7 +229,8 @@ class MoneyRepository @Inject constructor(
 
     suspend fun update(t: TxnEntity, learn: Boolean = false) {
         dao.upsert(t)
-        if (learn) remember(t.title, t.category, t.ledger)
+        // A short single-line note is "what you bought" and joins the place's recent items (plan §3).
+        if (learn) remember(t.title, t.category, t.ledger, t.upiId, t.note.takeIf { it.length <= 40 && '\n' !in it })
         log.log("txn.edit", "txn", t.id, mapOf("learn" to learn))
     }
 
@@ -265,15 +266,14 @@ class MoneyRepository @Inject constructor(
         if (accountIgnores(p.accountLast4, at)) return Capture.NotABankAlert
         // Payee memory: by the UPI handle first (stable), then by the cleaned name.
         val rule = (p.upiId?.let { dao.rule(BankSms.payeeKey(it.substringBefore('@'))) }) ?: dao.rule(BankSms.payeeKey(p.name))
-        // "Always ask" keeps the label but never pre-fills the category.
-        val applied = rule?.takeIf { !it.alwaysAsk }
+        // Merchant memory (plan §3): the learned place and category; "always ask" keeps the name only.
         val inbound = p.direction == MoneyDirection.IN
+        val g = MerchantMemory.guess(rule, p.name, ref != null, if (inbound) "Other income" else BankSms.guessCategory(p.name))
         val draft = TxnDraftEntity(
             id = newId(), detectedAt = at, amountPaise = p.amount * 100,
-            direction = if (inbound) "in" else "out", title = rule?.label?.ifBlank { null } ?: p.name,
-            category = applied?.category ?: if (inbound) "Other income" else BankSms.guessCategory(p.name),
+            direction = if (inbound) "in" else "out", title = g.title, category = g.category,
             reference = ref, account4 = p.accountLast4, upiId = p.upiId, raw = text.take(500), source = source,
-            confidence = if (ref != null && applied != null) 0.95 else if (ref != null) 0.8 else 0.6,
+            confidence = g.confidence,
         )
         dao.upsertDraft(draft)
         log.log("txn.detect", "draft", draft.id, mapOf("src" to source), Tier.A, source)
@@ -281,17 +281,44 @@ class MoneyRepository @Inject constructor(
     }
 
     /** Book a draft; optionally remember the payee's category for next time. */
-    suspend fun settle(draftId: String, category: String, ledger: Ledger, title: String? = null, learn: Boolean = true): String? {
+    suspend fun settle(draftId: String, category: String, ledger: Ledger, title: String? = null, learn: Boolean = true, note: String? = null): String? {
         val d = dao.draft(draftId) ?: return null
-        val name = title ?: d.title
+        val name = title?.trim()?.ifEmpty { null } ?: d.title
         val id = add(
             d.amountPaise, d.direction, name, category, ledger, "UPI",
             Instant.ofEpochMilli(d.detectedAt).atZone(clock.zone).toLocalDate(), d.source, reference = d.reference,
-            account4 = d.account4, upiId = d.upiId, at = d.detectedAt,
+            account4 = d.account4, upiId = d.upiId, at = d.detectedAt, note = note?.trim().orEmpty(),
         )
         dao.upsertDraft(d.copy(status = "settled"))
-        if (learn) remember(name, category, ledger.name, d.upiId)
+        // The place is learned under the bank's own name too, so the next alert finds it either way.
+        if (learn) remember(name, category, ledger.name, d.upiId, note, alsoKey = d.title)
         return id
+    }
+
+    /** What was bought at this draft's place lately ("Chocolate", "Milk"), for one-tap chips. */
+    suspend fun recentItems(d: TxnDraftEntity): List<String> {
+        val rule = d.upiId?.let { dao.rule(BankSms.payeeKey(it.substringBefore('@'))) } ?: dao.rule(BankSms.payeeKey(d.title))
+        return rule?.let(MerchantMemory::notes).orEmpty()
+    }
+
+    /** Built-in and custom categories for chips, most used in the last 90 days first. */
+    fun categories(inbound: Boolean): Flow<List<String>> = combine(
+        dao.categories(), dao.categoryUse(LocalDate.now(clock.zone).minusDays(90).toString()),
+    ) { custom, use ->
+        MerchantMemory.categories(if (inbound) Categories.INCOME else Categories.SPEND, custom.filter { it.kind == if (inbound) "in" else "out" }, use.associate { it.category to it.n })
+    }
+
+    fun customCategories() = dao.categories()
+
+    suspend fun archiveCategory(c: aiimin.core.database.CategoryEntity, archived: Boolean) = dao.upsertCategory(c.copy(archived = archived))
+
+    /** Adds a custom category; returns its name, or null when the name is empty or taken. */
+    suspend fun addCategory(raw: String, inbound: Boolean, icon: String = "Tag"): String? {
+        val existing = Categories.SPEND + Categories.INCOME + dao.categoriesNow().map { it.name }
+        val name = MerchantMemory.newCategoryName(raw, existing) ?: return null
+        dao.upsertCategory(aiimin.core.database.CategoryEntity(newId(), name, icon, if (inbound) "in" else "out", false, System.currentTimeMillis()))
+        log.log("category.add", "category", name)
+        return name
     }
 
     /**
@@ -299,14 +326,10 @@ class MoneyRepository @Inject constructor(
      * handle too, so "9822104471@ybl" and "Sharma Kirana" land on the same rule. Keeps the
      * person's "always ask" choice and counts uses.
      */
-    private suspend fun remember(name: String, category: String, ledger: String, upiId: String? = null) {
-        val keys = listOfNotNull(BankSms.payeeKey(name), upiId?.substringBefore('@')?.let(BankSms::payeeKey)).filter { it.isNotBlank() }.distinct()
-        for (k in keys) {
-            val cur = dao.rule(k)
-            dao.upsertRule(
-                PayeeRuleEntity(k, category, ledger, System.currentTimeMillis(), label = name, alwaysAsk = cur?.alwaysAsk ?: false, hits = (cur?.hits ?: 0) + 1),
-            )
-        }
+    private suspend fun remember(name: String, category: String, ledger: String, upiId: String? = null, note: String? = null, alsoKey: String? = null) {
+        val keys = listOfNotNull(BankSms.payeeKey(name), upiId?.substringBefore('@')?.let(BankSms::payeeKey), alsoKey?.let(BankSms::payeeKey))
+            .filter { it.isNotBlank() }.distinct()
+        for (k in keys) dao.upsertRule(MerchantMemory.learn(dao.rule(k), k, name, category, ledger, note, System.currentTimeMillis()))
     }
 
     private suspend fun accountIgnores(last4: String?, at: Long): Boolean {

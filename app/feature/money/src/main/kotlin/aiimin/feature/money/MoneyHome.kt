@@ -316,7 +316,7 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
                     aiimin.designsystem.component.Tool(AppIcons.ChatText, "Paste a bank SMS") { pasting = true },
                     aiimin.designsystem.component.Tool(AppIcons.ClockCounter, "Past bank messages") { nav.open(Route.SmsImport) },
                     aiimin.designsystem.component.Tool(AppIcons.Export, "Export for CA") { exporting = true },
-                    aiimin.designsystem.component.Tool(AppIcons.Bookmark, "Payee memory") { nav.open(Route.PayeeMemory) },
+                    aiimin.designsystem.component.Tool(AppIcons.Bookmark, "Places and categories") { nav.open(Route.PayeeMemory) },
                     aiimin.designsystem.component.Tool(AppIcons.HandCoins, "Splits") { nav.open(Route.Splits) },
                     aiimin.designsystem.component.Tool(AppIcons.Repeat, "Bills") { nav.open(Route.Recurring) },
                 ),
@@ -331,7 +331,9 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
     }
 
     if (exporting) ExportSheet({ m, l -> vm.exportInfo(m, l) }, { m, l -> vm.exportFor(m, l) }, today, { exporting = false })
-    if (adding) AddPaymentSheet(ledger, today, { adding = false }) { paise, dir, title, cat, l, day, note ->
+    val spendCats by vm.categoriesOut.collectAsStateWithLifecycle()
+    val incomeCats by vm.categoriesIn.collectAsStateWithLifecycle()
+    if (adding) AddPaymentSheet(ledger, today, { adding = false }, spendCats.ifEmpty { aiimin.core.data.money.Categories.SPEND }, incomeCats.ifEmpty { aiimin.core.data.money.Categories.INCOME }) { paise, dir, title, cat, l, day, note ->
         scope.launch {
             vm.add(paise, dir, title, cat, l, day, note)
             toaster.show("Logged ${Money.format(paise)}")
