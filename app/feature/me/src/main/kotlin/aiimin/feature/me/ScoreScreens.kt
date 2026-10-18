@@ -94,6 +94,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun MeScreen(vm: MeViewModel = hiltViewModel()) {
     val nav = LocalNavigator.current
+    val context = androidx.compose.ui.platform.LocalContext.current
     val life by vm.life.collectAsStateWithLifecycle()
     val s by vm.settings.collectAsStateWithLifecycle()
     val session by vm.session.collectAsStateWithLifecycle()
@@ -210,6 +211,10 @@ fun MeScreen(vm: MeViewModel = hiltViewModel()) {
         ))
         meGroup("Support", listOf(
             MeLink(AppIcons.Lifebuoy, "Help and feedback", null) { nav.open(Route.Help) },
+            MeLink(AppIcons.Share, "Tell a friend", "Send them a link to the beta") {
+                val send = android.content.Intent(android.content.Intent.ACTION_SEND).setType("text/plain").putExtra(android.content.Intent.EXTRA_TEXT, inviteText())
+                runCatching { context.startActivity(android.content.Intent.createChooser(send, "Tell a friend about AIIMIN")) }
+            },
             MeLink(AppIcons.Info, "About and legal", null) { nav.open(Route.About) },
         ))
     }
@@ -784,3 +789,8 @@ internal fun withUnit(value: String, unit: String): String = when {
     unit.startsWith("%") || unit.startsWith("/") -> value + unit
     else -> "$value $unit"
 }
+
+/** What "Tell a friend" sends: what AIIMIN is, the privacy promise, where to join. No claims we can't back. */
+internal fun inviteText(): String =
+    "I keep my day, money and family's papers in one calm place with AIIMIN. " +
+        "It reads bank SMS on the phone and never uploads them. No ads, no loans. Join the beta: https://aiimin.in/waitlist"

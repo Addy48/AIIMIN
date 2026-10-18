@@ -587,7 +587,8 @@ fun AboutScreen() {
                     Text("Version ${appVersion(context)} · Score Engine rules 3.0.0", style = Aiimin.type.caption)
                 }
             }
-            Text("No ads, no lending, no selling data.", style = Aiimin.type.body, modifier = Modifier.padding(top = 16.dp))
+            Text("Your day, your money and your family's papers, in one calm place.", style = Aiimin.type.bodyStrong, modifier = Modifier.padding(top = 16.dp))
+            Text("No ads, no lending, no selling data. It only ever compares you with you.", style = Aiimin.type.body, modifier = Modifier.padding(top = 4.dp))
             ListRow("How AIIMIN is running", subtitle = "Background jobs and when each last ran", leading = { IconTile(AppIcons.Pulse) }, trailing = { Chevron() }, onClick = { nav.open(Route.Running) }, modifier = Modifier.padding(top = 12.dp))
             SectionHeader("Legal")
             ListRow("Privacy Policy", leading = { IconTile(AppIcons.ShieldCheck) }, trailing = { Chevron() }, onClick = { open(context, AppContact.PRIVACY) })
