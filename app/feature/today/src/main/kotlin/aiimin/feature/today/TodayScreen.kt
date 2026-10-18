@@ -131,7 +131,7 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
             val status = when {
                 u.dayState?.paused == true -> "Paused today · nothing counts against you"
                 light -> "Light day · just the minimums"
-                u.yesterdayOpen -> "Yesterday stays open until 12:00 · long-press a minimum to file it"
+                u.yesterdayOpen -> "Yesterday open till noon · long-press a minimum"
                 else -> null
             }
             LargeHeader(title = Dates.dayMonth(u.date), overline = status) { RootActions(u.unread) }
@@ -515,7 +515,7 @@ private fun LaterRow(item: FlowItem, onToggle: () -> Unit, onOpen: () -> Unit, o
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            item.time?.let(Dates::clockPlain) ?: if (item.carried > 0) "late" else "today",
+            item.time?.let(Dates::clockPlain) ?: if (item.carried > 0) "late" else "anytime",
             style = if (item.time != null) Aiimin.type.bodyStrong.copy(color = if (item.done) c.textFaint else c.text) else Aiimin.type.caption,
             modifier = Modifier.width(56.dp),
         )

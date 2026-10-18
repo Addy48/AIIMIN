@@ -88,7 +88,7 @@ fun PaymentsScreen(vm: PaymentsViewModel = hiltViewModel()) {
                 (q.isBlank() || t.title.contains(q, true) || t.category.contains(q, true) || t.note.contains(q, true) || (t.account4?.contains(q) == true) || (t.amountPaise / 100).toString().contains(q.trim()))
         }
         Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
-            AppTextField(q, { q = it }, placeholder = "Search payee, category or amount", leading = AppIcons.Search)
+            AppTextField(q, { q = it }, placeholder = "Payee, category or ₹", leading = AppIcons.Search)
             Spacer(Modifier.height(10.dp))
             Segmented(listOf("All", "Spent", "Received"), dir, { dir = it })
             Spacer(Modifier.height(10.dp))
