@@ -4,6 +4,8 @@ import aiimin.core.data.core.DayClock
 import aiimin.core.data.core.EventLogger
 import aiimin.core.data.device.DeviceRepository
 import aiimin.core.data.life.LifeRepository
+import aiimin.core.data.money.BillRepository
+import aiimin.core.data.money.Cadence
 import aiimin.core.data.money.Ledger
 import aiimin.core.data.money.MoneyRepository
 import aiimin.core.data.notes.NoteRepository
@@ -27,6 +29,9 @@ import aiimin.core.engine.Tier
 import aiimin.core.nlp.AiDecision
 import aiimin.core.nlp.AiModule
 import aiimin.core.nlp.AiScope
+import aiimin.core.nlp.CaptureEngine
+import aiimin.core.nlp.Item
+import aiimin.core.nlp.Kind
 import aiimin.core.nlp.Assistant
 import aiimin.core.nlp.Proposal
 import aiimin.core.network.AiiminApi
@@ -51,23 +56,35 @@ sealed class Action {
     abstract val label: String
 
     @Serializable @SerialName("expense")
-    data class Expense(val title: String, val paise: Long, val category: String, val day: String) : Action() {
-        override val label get() = "Expense · ${Money.format(paise)} · $category"
+    data class Expense(val title: String, val paise: Long, val category: String, val day: String, val currency: String = "INR") : Action() {
+        override val label get() = "Expense · ${Money.formatIn(paise, currency)} · $category"
     }
 
     @Serializable @SerialName("income")
-    data class Income(val title: String, val paise: Long, val category: String, val day: String) : Action() {
-        override val label get() = "Income · ${Money.format(paise)}"
+    data class Income(val title: String, val paise: Long, val category: String, val day: String, val currency: String = "INR") : Action() {
+        override val label get() = "Income · ${Money.formatIn(paise, currency)}"
+    }
+
+    /** A bill or subscription that repeats: becomes a confirmed recurring payment, not a one-off expense. */
+    @Serializable @SerialName("recurring")
+    data class Recurring(val title: String, val paise: Long, val cadence: String, val nextDue: String, val currency: String = "INR") : Action() {
+        override val label get() = "Repeats ${cadence.lowercase()} · ${Money.formatIn(paise, currency)}"
+    }
+
+    /** The engine is not sure what this is. Nothing is saved until the person picks a type. */
+    @Serializable @SerialName("choose")
+    data class Choose(val text: String, val reason: String = "") : Action() {
+        override val label get() = "Not sure · choose a type"
     }
 
     @Serializable @SerialName("task")
-    data class Task(val title: String, val day: String, val time: String? = null) : Action() {
-        override val label get() = "Task · " + Dates.relative(LocalDate.parse(day), LocalDate.now()) + (time?.let { " · " + Dates.clock(it) } ?: "")
+    data class Task(val title: String, val day: String, val time: String? = null, val repeat: String? = null) : Action() {
+        override val label get() = "Task · " + Dates.relative(LocalDate.parse(day), LocalDate.now()) + (time?.let { " · " + Dates.clock(it) } ?: "") + (repeat?.let { " · repeats " + it.lowercase() } ?: "")
     }
 
     @Serializable @SerialName("event")
     data class Event(val title: String, val date: String, val time: String, val minutes: Int = 30) : Action() {
-        override val label get() = "Calendar · " + Dates.relative(LocalDate.parse(date), LocalDate.now()) + " · " + Dates.clock(time)
+        override val label get() = "Calendar · " + Dates.relative(LocalDate.parse(date), LocalDate.now()) + if (minutes >= 1440) " · all day" else " · " + Dates.clock(time)
     }
 
     @Serializable @SerialName("note")
@@ -93,6 +110,8 @@ sealed class Action {
     val headline: String get() = when (this) {
         is Expense -> title
         is Income -> title
+        is Recurring -> title
+        is Choose -> text
         is Task -> title
         is Event -> title
         is Note -> title
@@ -118,6 +137,7 @@ class AssistantRepository @Inject constructor(
     private val taskDao: TaskDao,
     private val calendar: CalendarRepository,
     private val money: MoneyRepository,
+    private val bills: BillRepository,
     private val notes: NoteRepository,
     private val minimums: MinimumRepository,
     private val focus: FocusRepository,
@@ -226,8 +246,8 @@ class AssistantRepository @Inject constructor(
     )
 
     private fun toAction(p: Proposal, today: LocalDate): Action? = when (p) {
-        is Proposal.Expense -> Action.Expense(p.title, p.amount * 100, p.category, today.toString())
-        is Proposal.Income -> Action.Income(p.title, p.amount * 100, p.category, today.toString())
+        is Proposal.Expense -> Action.Expense(p.title, p.paise, p.category, today.toString(), p.currency)
+        is Proposal.Income -> Action.Income(p.title, p.paise, p.category, today.toString(), p.currency)
         is Proposal.Task -> Action.Task(p.title, p.day.toString(), p.time24)
         is Proposal.CalendarBlock -> Action.Event(p.title, p.date.toString(), p.time24)
         is Proposal.Note -> Action.Note(p.title, p.body)
@@ -265,14 +285,22 @@ class AssistantRepository @Inject constructor(
     // ------------------------------------------------------------- apply / undo
 
     /** Carry out approved actions; returns what was created (for Undo). */
-    suspend fun execute(list: List<Action>, source: String = "ai"): List<Source> = list.map { a ->
+    suspend fun execute(list: List<Action>, source: String = "ai"): List<Source> = list.mapNotNull { a ->
         when (a) {
-            is Action.Expense -> Source("txn", money.add(a.paise, "out", a.title, a.category, Ledger.PERSONAL, day = LocalDate.parse(a.day), source = source), a.title)
-            is Action.Income -> Source("txn", money.add(a.paise, "in", a.title, a.category, Ledger.PERSONAL, day = LocalDate.parse(a.day), source = source), a.title)
-            is Action.Task -> Source("task", tasks.create(a.title, LocalDate.parse(a.day), a.time, source = source), a.title)
+            // Never save an amount we do not have, or a foreign amount as rupees: it goes in as a note with its own currency.
+            is Action.Expense -> if (a.paise <= 0) null else if (a.currency != "INR") foreignNote("Expense", a.title, a.paise, a.currency) else
+                Source("txn", money.add(a.paise, "out", a.title, a.category, Ledger.PERSONAL, day = LocalDate.parse(a.day), source = source), a.title)
+            is Action.Income -> if (a.paise <= 0) null else if (a.currency != "INR") foreignNote("Income", a.title, a.paise, a.currency) else
+                Source("txn", money.add(a.paise, "in", a.title, a.category, Ledger.PERSONAL, day = LocalDate.parse(a.day), source = source), a.title)
+            is Action.Recurring -> if (a.paise <= 0) null else if (a.currency != "INR") foreignNote("Recurring", a.title, a.paise, a.currency) else
+                Source("bill", bills.add(a.title, a.paise, runCatching { Cadence.valueOf(a.cadence.uppercase()) }.getOrDefault(Cadence.MONTHLY), LocalDate.parse(a.nextDue), false), a.title)
+            is Action.Choose -> null
+            is Action.Task -> Source("task", tasks.create(a.title, LocalDate.parse(a.day), a.time, recurrence = a.repeat, source = source), a.title)
             is Action.Event -> {
-                val start = LocalDate.parse(a.date).atTime(LocalTime.parse(a.time)).atZone(clock.zone).toInstant()
-                Source("event", calendar.create(a.title, start, start.plusSeconds(a.minutes * 60L)), a.title)
+                val date = LocalDate.parse(a.date)
+                val allDay = a.minutes >= 1440
+                val start = (if (allDay) date.atStartOfDay() else date.atTime(LocalTime.parse(a.time))).atZone(clock.zone).toInstant()
+                Source("event", calendar.create(a.title, start, start.plusSeconds(a.minutes * 60L), allDay = allDay), a.title)
             }
             is Action.Note -> Source("note", notes.save(null, a.title, a.body), a.title)
             is Action.TickMinimum -> {
@@ -287,10 +315,17 @@ class AssistantRepository @Inject constructor(
         }
     }
 
+    /** The app stores rupees only (no currency column yet), so a foreign amount is kept as a note, never as a wrong rupee total. */
+    private suspend fun foreignNote(kind: String, title: String, paise: Long, currency: String): Source {
+        val body = "$kind · ${Money.formatIn(paise, currency)} · $title\n(${currency}: not converted to rupees, so it is not in your Money totals)"
+        return Source("note", notes.save(null, "${Money.formatIn(paise, currency)} · $title", body), title)
+    }
+
     /** Reverse what [execute] created. */
     suspend fun revert(created: List<Source>) = created.forEach { s ->
         when (s.type) {
             "txn" -> money.delete(s.id)
+            "bill" -> bills.dismiss(s.id)
             "task" -> tasks.delete(s.id)
             "event" -> calendar.delete(s.id)
             "note" -> notes.delete(s.id)
@@ -304,44 +339,48 @@ class AssistantRepository @Inject constructor(
      * lines split; anything else falls back to the single best guess.
      * Journal and mood lines return empty — the caller opens the journal.
      */
-    /** One spoken line can hold several things: "meeting at 3, buy milk and eggs, spent 200 on auto". */
-    suspend fun preview(text: String): List<Action> {
+    /**
+     * One typed or spoken line → what it would become, nothing saved. [CaptureEngine] splits the line into
+     * clauses and reads each; a clause it is not sure about comes back as [Action.Choose] and waits for a
+     * type from the person ([forced]). Journal and feature words return nothing: the sheet opens them instead.
+     */
+    suspend fun preview(text: String, forced: Kind? = null): List<Action> {
         val t = text.trim()
         if (t.isEmpty()) return emptyList()
-        val parts = clauses(t)
-        if (parts.size <= 1) return previewOne(t)
-        return parts.flatMap { previewOne(it) }.distinctBy { it.label + it.headline }
+        val today = clock.today()
+        val now = java.time.LocalDateTime.of(today, LocalTime.now(clock.zone))
+        val analysis = CaptureEngine.analyze(t, now, defaultCurrency = defaultCurrency(), forced = forced)
+        val ticks = extraActions(t).filterIsInstance<Action.TickMinimum>()
+        val actions = analysis.items.flatMap { toActions(it, today, hasTick = ticks.isNotEmpty()) }
+        return enrich((actions + ticks).distinctBy { it.label + it.headline })
     }
 
-    private fun clauses(t: String): List<String> = Clauses.split(t)
+    private fun defaultCurrency(): String {
+        val loc = java.util.Locale.getDefault()
+        if (loc.country.isBlank() || loc.country == "IN") return "INR"
+        return runCatching { java.util.Currency.getInstance(loc).currencyCode }.getOrDefault("INR")
+    }
 
-    private suspend fun previewOne(t: String): List<Action> {
-        val today = clock.today()
-        Regex("^(?:note|jot down|remember)(?:\\s+that)?\\s+(.+)$", RegexOption.IGNORE_CASE).find(t)?.let { m ->
-            val body = m.groupValues[1].trim().replaceFirstChar { it.uppercase() }
-            return listOf(Action.Note(body.take(60), body))
-        }
-        val proposed = enrich(Assistant.proposalsFrom(t, today).mapNotNull { toAction(it, today) } + extraActions(t))
-        if (proposed.isNotEmpty()) return proposed.distinctBy { it.label + it.headline }
-        val c = aiimin.core.nlp.CaptureParser.parse(t)
-        val day = (if (c.dayWord == "tomorrow") today.plusDays(1) else today)
-        // "meeting at 3 with Arjun" is an event, not a task.
-        val at = Regex("\\bat\\s+(\\d{1,2})(?::(\\d{2}))?\\s*(am|pm)?\\b", RegexOption.IGNORE_CASE).find(t)
-        val eventWord = Regex("\\b(meeting|meet|lunch|dinner|appointment|interview|stand-?up|catch ?up|review|sync)\\b", RegexOption.IGNORE_CASE).containsMatchIn(t)
-        if (eventWord && at != null && c.type != aiimin.core.nlp.CaptureType.EXPENSE) {
-            var h = at.groupValues[1].toInt().coerceIn(0, 23)
-            val m = at.groupValues[2].ifBlank { "0" }.toInt().coerceIn(0, 59)
-            when (at.groupValues[3].lowercase()) { "pm" -> if (h < 12) h += 12; "am" -> if (h == 12) h = 0; else -> if (h in 1..6) h += 12 }
-            val title = t.replace(at.value, "").replace(Regex("\\s+"), " ").trim().replaceFirstChar { it.uppercase() }
-            return listOf(Action.Event(title, day.toString(), "%02d:%02d".format(h, m), 30))
-        }
-        val today0 = today.toString()
-        return when (c.type) {
-            aiimin.core.nlp.CaptureType.EXPENSE -> listOf(Action.Expense(c.label, c.amount * 100, c.category ?: "Other", today0))
-            aiimin.core.nlp.CaptureType.INCOME -> listOf(Action.Income(c.label, c.amount * 100, c.category ?: "Other income", today0))
-            aiimin.core.nlp.CaptureType.TASK, aiimin.core.nlp.CaptureType.HABIT -> listOf(Action.Task(c.label.ifBlank { t }.replaceFirstChar { it.uppercase() }, day.toString(), c.time24))
-            aiimin.core.nlp.CaptureType.JOURNAL -> emptyList()
-            else -> listOf(Action.Note(c.label.ifBlank { t.take(60) }, t))
+    private fun toActions(it: Item, today: LocalDate, hasTick: Boolean): List<Action> {
+        val day = (it.date ?: today).toString()
+        return when (it.kind) {
+            Kind.EXPENSE -> listOf(Action.Expense(it.label, it.paise ?: 0, it.category ?: "Other", day, it.currency))
+            Kind.INCOME -> listOf(Action.Income(it.label, it.paise ?: 0, it.category ?: "Other income", day, it.currency))
+            Kind.TASK -> listOf(Action.Task(it.label.ifBlank { it.raw }.replaceFirstChar { c -> c.uppercase() }, day, it.time24))
+            Kind.EVENT -> listOf(Action.Event(it.label.ifBlank { it.raw }.replaceFirstChar { c -> c.uppercase() }, day, it.time24 ?: "00:00", if (it.time24 == null) 1440 else 30))
+            Kind.NOTE -> listOf(Action.Note(it.label.ifBlank { it.raw.take(40) }, it.raw))
+            Kind.JOURNAL, Kind.FEATURE -> emptyList()
+            Kind.RECURRING -> {
+                val cadence = when (it.recurrence) { "monthly" -> "MONTHLY"; "weekly" -> "WEEKLY"; "yearly" -> "YEARLY"; else -> null }
+                val repeat = when (it.recurrence) { "daily" -> "DAILY"; "weekdays" -> "WEEKDAYS"; "weekly" -> "WEEKLY"; else -> null }
+                if ((it.paise ?: 0) > 0 && cadence != null) listOf(Action.Recurring(it.label, it.paise!!, cadence, day, it.currency))
+                else listOf(Action.Task(it.label.ifBlank { it.raw }.replaceFirstChar { c -> c.uppercase() }, day, it.time24, repeat))
+            }
+            Kind.DOCUMENT -> if (it.date != null) listOf(Action.Task(it.label.ifBlank { it.raw }.replaceFirstChar { c -> c.uppercase() }, day, null))
+                else listOf(Action.Note(it.label.ifBlank { it.raw.take(40) }, it.raw))
+            Kind.MINIMUM -> if (hasTick) emptyList() else listOf(Action.Note(it.label.ifBlank { it.raw.take(40) }, it.raw))
+            Kind.FOCUS -> listOf(Action.StartFocus((it.minutes ?: 25).coerceIn(5, 180), Regex("""\bon\s+(.+)$""", RegexOption.IGNORE_CASE).find(it.raw)?.groupValues?.get(1)?.replaceFirstChar { c -> c.uppercase() } ?: "Focus"))
+            Kind.CHOOSE -> listOf(Action.Choose(it.raw, it.reason))
         }
     }
 

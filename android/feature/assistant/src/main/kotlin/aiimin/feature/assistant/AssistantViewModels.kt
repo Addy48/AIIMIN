@@ -73,11 +73,14 @@ class ChatViewModel @Inject constructor(private val repo: AssistantRepository) :
 @HiltViewModel
 class CaptureViewModel @Inject constructor(private val repo: AssistantRepository, private val log: aiimin.core.data.ai.CaptureLog) : ViewModel() {
     val text = MutableStateFlow("")
-    val preview: StateFlow<List<Action>> = text.debounce(180).mapLatest { repo.preview(it) }
+    /** The type the person picked on the chooser; reset whenever the text changes. */
+    val forced = MutableStateFlow<aiimin.core.nlp.Kind?>(null)
+    val preview: StateFlow<List<Action>> = kotlinx.coroutines.flow.combine(text.debounce(180), forced) { t, f -> t to f }
+        .mapLatest { (t, f) -> repo.preview(t, f) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     suspend fun save(): List<Source> {
-        val list = repo.preview(text.value)
+        val list = repo.preview(text.value, forced.value)
         val created = repo.execute(list, "capture")
         log.record(text.value, created)
         text.value = ""

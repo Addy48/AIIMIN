@@ -168,6 +168,8 @@ class MainActivity : FragmentActivity() {
         }
         // Dev/demo hooks: `--es aiimin_demo load` fills Meera's sample life; `--es aiimin_go money` opens a screen.
         if (intent.getStringExtra("aiimin_demo") == "load") lifecycleScope.launch { runCatching { demo.load() } }
+        // Capture test hook: opens the + sheet with this text (UTF-8 safe, unlike `adb input text`). Nothing is saved.
+        intent.getStringExtra("aiimin_capture")?.let { request = LaunchRequest.Capture(it); return }
         intent.getStringExtra("aiimin_go")?.let { go ->
             request = LaunchRequest.Open(
                 when (go) {

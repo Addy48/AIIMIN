@@ -88,6 +88,8 @@ internal fun iconFor(a: Action): ImageVector = when (a) {
     is Action.TickMinimum -> AppIcons.CheckCircle
     is Action.StartFocus -> AppIcons.Timer
     is Action.FamilyTask -> AppIcons.Users
+    is Action.Recurring -> AppIcons.ArrowUpRight
+    is Action.Choose -> AppIcons.Note
 }
 
 @Composable
@@ -276,7 +278,7 @@ fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, v
     val toaster = LocalToaster.current
     val scope = rememberCoroutineScope()
     var text by remember { mutableStateOf(prefill.orEmpty()) }
-    LaunchedEffect(text) { vm.text.value = text }
+    LaunchedEffect(text) { vm.text.value = text; vm.forced.value = null }
     val preview by vm.preview.collectAsStateWithLifecycle()
     var reviewing by remember { mutableStateOf(false) }
     val keyboard = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
@@ -351,6 +353,10 @@ fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, v
                         }
                     }
                     preview.forEach { a ->
+                        if (a is Action.Choose) {
+                            ChooserCard(a) { vm.forced.value = it }
+                            return@forEach
+                        }
                         Row(
                             Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp)).background(c.surface).border(1.dp, c.border, RoundedCornerShape(10.dp)).padding(horizontal = 16.dp, vertical = 14.dp),
                             verticalAlignment = Alignment.CenterVertically,
@@ -368,6 +374,8 @@ fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, v
                     AppButton("Cancel", onDismiss, Modifier.weight(1f), kind = ButtonKind.SECONDARY)
                     if (text.isBlank() || (preview.isEmpty() && !journalLine)) {
                         AppButton(if (listening) "Stop" else "Speak", ::speak, Modifier.weight(1.5f), icon = AppIcons.Mic)
+                    } else if (preview.any { it is Action.Choose }) {
+                        AppButton("Choose a type first", { toaster.show("Pick what this is, so nothing is filed under the wrong type") }, Modifier.weight(1.5f), enabled = false)
                     } else {
                         AppButton("Done · review", {
                             // Close the keyboard first so it can't cover "Save all" on the review sheet.
@@ -436,6 +444,22 @@ fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, v
     }
 }
 
+/** "I am not sure what this is": five buttons instead of a silent guess. */
+@Composable
+private fun ChooserCard(a: Action.Choose, onPick: (aiimin.core.nlp.Kind) -> Unit) {
+    val c = Aiimin.colors
+    Column(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp)).background(c.surface).border(1.dp, c.border, RoundedCornerShape(10.dp)).padding(horizontal = 16.dp, vertical = 14.dp),
+    ) {
+        Text("Not sure what this is", style = Aiimin.type.bodyStrong)
+        Text("“${a.text.take(60)}”", style = Aiimin.type.caption, maxLines = 1, modifier = Modifier.padding(top = 2.dp))
+        PillRow {
+            listOf("Expense" to aiimin.core.nlp.Kind.EXPENSE, "Task" to aiimin.core.nlp.Kind.TASK, "Event" to aiimin.core.nlp.Kind.EVENT,
+                "Note" to aiimin.core.nlp.Kind.NOTE, "Journal" to aiimin.core.nlp.Kind.JOURNAL).forEach { (label, kind) -> Pill(label, false, { onPick(kind) }) }
+        }
+    }
+}
+
 /** C4 · edit one capture item; the type can change and the fields re-map. */
 @Composable
 private fun CardEditor(start: Action, onDismiss: () -> Unit, onDone: (Action) -> Unit) {
@@ -444,7 +468,8 @@ private fun CardEditor(start: Action, onDismiss: () -> Unit, onDone: (Action) ->
     val today = java.time.LocalDate.now()
     var type by remember { mutableStateOf(typeName(start)) }
     var title by remember { mutableStateOf(start.headline) }
-    var amount by remember { mutableStateOf(((start as? Action.Expense)?.paise ?: (start as? Action.Income)?.paise)?.div(100)?.toString().orEmpty()) }
+    val startCurrency = (start as? Action.Expense)?.currency ?: (start as? Action.Income)?.currency ?: "INR"
+    var amount by remember { mutableStateOf(((start as? Action.Expense)?.paise ?: (start as? Action.Income)?.paise)?.let { plainAmount(it) }.orEmpty()) }
     var category by remember { mutableStateOf((start as? Action.Expense)?.category ?: (start as? Action.Income)?.category ?: "Food") }
     var day by remember {
         mutableStateOf(
@@ -460,7 +485,7 @@ private fun CardEditor(start: Action, onDismiss: () -> Unit, onDone: (Action) ->
     var pickDay by remember { mutableStateOf(false) }
     var pickTime by remember { mutableStateOf(false) }
     val respeak = rememberVoiceInput(onText = { title = it }, onUnavailable = { toaster.show("Speech input isn't available on this phone") })
-    val editable = start !is Action.TickMinimum && start !is Action.StartFocus && start !is Action.FamilyTask
+    val editable = start !is Action.TickMinimum && start !is Action.StartFocus && start !is Action.FamilyTask && start !is Action.Recurring && start !is Action.Choose
     Box(Modifier.fillMaxSize().background(c.scrim).clickable(indication = null, interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }, onClick = onDismiss))
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
         Column(
@@ -483,7 +508,7 @@ private fun CardEditor(start: Action, onDismiss: () -> Unit, onDone: (Action) ->
                 when (type) {
                     "Expense", "Income" -> {
                         Spacer(Modifier.height(10.dp))
-                        AppTextField(amount, { v -> amount = v.filter { it.isDigit() } }, label = "Amount (₹)", keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
+                        AppTextField(amount, { v -> amount = cleanAmount(v) }, label = if (startCurrency == "INR") "Amount (₹)" else "Amount ($startCurrency)", keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal)
                         SectionHeader("Category")
                         PillRow { (if (type == "Expense") aiimin.core.data.money.Categories.SPEND else aiimin.core.data.money.Categories.INCOME).forEach { k -> Pill(k, category == k, { category = k }) } }
                     }
@@ -510,7 +535,7 @@ private fun CardEditor(start: Action, onDismiss: () -> Unit, onDone: (Action) ->
                     }
                 }
             }
-            val paise = (amount.toLongOrNull() ?: 0L) * 100
+            val paise = amountToPaise(amount)
             val ok = title.isNotBlank() && when (type) { "Expense", "Income" -> paise > 0; "Event" -> time != null; else -> true }
             Row(Modifier.fillMaxWidth().padding(vertical = 16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 AppButton("Cancel", onDismiss, Modifier.weight(1f), kind = ButtonKind.SECONDARY)
@@ -518,8 +543,8 @@ private fun CardEditor(start: Action, onDismiss: () -> Unit, onDone: (Action) ->
                     val d = day.toString()
                     onDone(
                         if (!editable) start else when (type) {
-                            "Expense" -> Action.Expense(title.trim(), paise, category, d)
-                            "Income" -> Action.Income(title.trim(), paise, category, d)
+                            "Expense" -> Action.Expense(title.trim(), paise, category, d, startCurrency)
+                            "Income" -> Action.Income(title.trim(), paise, category, d, startCurrency)
                             "Event" -> Action.Event(title.trim(), d, time ?: "09:00", minutes)
                             "Note" -> Action.Note(title.trim(), body)
                             else -> Action.Task(title.trim(), d, time)
@@ -552,27 +577,39 @@ private fun Meter18(active: Boolean, level: Float = 0f) {
     }
 }
 
+/** "1950" paise → "19.5"; whole rupees stay whole. Typing keeps at most two decimals. */
+private fun plainAmount(minor: Long): String = java.math.BigDecimal(minor).movePointLeft(2).stripTrailingZeros().toPlainString()
+private fun cleanAmount(v: String): String {
+    val f = v.filter { it.isDigit() || it == '.' }
+    val dot = f.indexOf('.')
+    return if (dot < 0) f else f.substring(0, dot + 1) + f.substring(dot + 1).replace(".", "").take(2)
+}
+private fun amountToPaise(v: String): Long = v.toBigDecimalOrNull()?.movePointRight(2)?.toLong() ?: 0L
+
 private fun typeName(a: Action) = when (a) {
     is Action.Expense -> "Expense"; is Action.Income -> "Income"; is Action.Task -> "Task"; is Action.Event -> "Event"
+    is Action.Recurring -> "Repeating"; is Action.Choose -> "Choose"
     is Action.Note -> "Note"; is Action.TickMinimum -> "Minimum"; is Action.StartFocus -> "Focus"; is Action.FamilyTask -> "Family task"
 }
 
 private fun captureTitle(a: Action) = when (a) {
-    is Action.Expense -> "${aiimin.core.data.util.Money.format(a.paise)} · ${a.title}"
-    is Action.Income -> "${aiimin.core.data.util.Money.format(a.paise)} · ${a.title}"
+    is Action.Expense -> "${aiimin.core.data.util.Money.formatIn(a.paise, a.currency)} · ${a.title}"
+    is Action.Income -> "${aiimin.core.data.util.Money.formatIn(a.paise, a.currency)} · ${a.title}"
+    is Action.Recurring -> "${aiimin.core.data.util.Money.formatIn(a.paise, a.currency)} · ${a.title} · ${a.cadence.lowercase()}"
     else -> a.headline
 }
 
 private fun captureWhen(a: Action) = when (a) {
-    is Action.Event -> aiimin.core.data.util.Dates.relative(java.time.LocalDate.parse(a.date), java.time.LocalDate.now()) + " " + aiimin.core.data.util.Dates.clock(a.time)
+    is Action.Event -> aiimin.core.data.util.Dates.relative(java.time.LocalDate.parse(a.date), java.time.LocalDate.now()) + (if (a.minutes >= 1440) " all day" else " " + aiimin.core.data.util.Dates.clock(a.time))
     is Action.Expense -> "Expense"; is Action.Income -> "Income"
     else -> typeName(a)
 }
 
 private fun reviewTitle(a: Action) = when (a) {
-    is Action.Expense -> "−${aiimin.core.data.util.Money.format(a.paise)} · ${a.title}"
-    is Action.Income -> "+${aiimin.core.data.util.Money.format(a.paise)} · ${a.title}"
-    is Action.Event -> a.title + " · " + aiimin.core.data.util.Dates.clock(a.time)
+    is Action.Expense -> "−${aiimin.core.data.util.Money.formatIn(a.paise, a.currency)} · ${a.title}"
+    is Action.Income -> "+${aiimin.core.data.util.Money.formatIn(a.paise, a.currency)} · ${a.title}"
+    is Action.Recurring -> "${aiimin.core.data.util.Money.formatIn(a.paise, a.currency)} · ${a.title}"
+    is Action.Event -> a.title + if (a.minutes >= 1440) " · all day" else " · " + aiimin.core.data.util.Dates.clock(a.time)
     else -> a.headline
 }
 
@@ -580,10 +617,12 @@ private fun destination(a: Action): String {
     val today = java.time.LocalDate.now()
     fun part(time: String?): String = time?.let { aiimin.core.data.util.Dates.clock(it) } ?: "anytime"
     return when (a) {
-        is Action.Expense -> "Money › ${a.category}"
-        is Action.Income -> "Money › ${a.category}"
+        is Action.Expense -> if (a.currency == "INR") "Money › ${a.category}" else "Notes › ${a.currency} amount (not in rupee totals)"
+        is Action.Income -> if (a.currency == "INR") "Money › ${a.category}" else "Notes › ${a.currency} amount (not in rupee totals)"
+        is Action.Recurring -> "Money › Bills › repeats ${a.cadence.lowercase()} from " + aiimin.core.data.util.Dates.relative(java.time.LocalDate.parse(a.nextDue), today)
+        is Action.Choose -> ""
         is Action.Task -> aiimin.core.data.util.Dates.relative(java.time.LocalDate.parse(a.day), today) + " › " + part(a.time)
-        is Action.Event -> aiimin.core.data.util.Dates.relative(java.time.LocalDate.parse(a.date), today) + " › Calendar · reminder 10 min before"
+        is Action.Event -> aiimin.core.data.util.Dates.relative(java.time.LocalDate.parse(a.date), today) + (if (a.minutes >= 1440) " › Calendar · all day" else " › Calendar · reminder 10 min before")
         is Action.Note -> "Notes"
         is Action.TickMinimum -> "Today › Minimums"
         is Action.StartFocus -> "Focus · ${a.minutes} min"
