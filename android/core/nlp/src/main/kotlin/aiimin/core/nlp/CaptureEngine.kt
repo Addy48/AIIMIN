@@ -34,7 +34,3 @@ object CaptureEngine {
         forced: Kind? = null,
     ): Analysis = Analysis(listOf(Item(Kind.CHOOSE, raw = text)), text)
 }
-
-object HinglishNormalizer {
-    fun normalize(input: String): String = input
-}
