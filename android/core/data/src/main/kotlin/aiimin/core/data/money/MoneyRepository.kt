@@ -270,7 +270,7 @@ class MoneyRepository @Inject constructor(
         val inbound = p.direction == MoneyDirection.IN
         val g = MerchantMemory.guess(rule, p.name, ref != null, if (inbound) "Other income" else BankSms.guessCategory(p.name))
         val draft = TxnDraftEntity(
-            id = newId(), detectedAt = at, amountPaise = p.amount * 100,
+            id = newId(), detectedAt = at, amountPaise = p.paise,
             direction = if (inbound) "in" else "out", title = g.title, category = g.category,
             reference = ref, account4 = p.accountLast4, upiId = p.upiId, raw = text.take(500), source = source,
             confidence = g.confidence,

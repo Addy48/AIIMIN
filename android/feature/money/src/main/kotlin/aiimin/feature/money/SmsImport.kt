@@ -428,7 +428,7 @@ private fun OneByOne(queue: List<SiftedSms>, vm: SmsImportViewModel, onDone: () 
                 )
                 Spacer(Modifier.height(12.dp))
                 Row(verticalAlignment = Alignment.Bottom) {
-                    Text(Money.format(s.alert.amount * 100), style = Aiimin.type.numberLarge.copy(fontSize = 44.sp, lineHeight = 48.sp))
+                    Text(Money.format(s.alert.paise), style = Aiimin.type.numberLarge.copy(fontSize = 44.sp, lineHeight = 48.sp))
                     Spacer(Modifier.width(8.dp))
                     Text(if (s.alert.direction == MoneyDirection.IN) "Received" else "Paid", style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(bottom = 6.dp))
                 }
