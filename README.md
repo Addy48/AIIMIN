@@ -1,10 +1,8 @@
 <div align="center">
 
 <h1>
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/brand/aiimin-wordmark-dark.svg">
-    <img src="docs/brand/aiimin-wordmark-light.svg" alt="AIIMIN" height="64">
-  </picture>
+  <img src="docs/brand/aiimin-wordmark-light.svg#gh-light-mode-only" alt="AIIMIN" height="64">
+  <img src="docs/brand/aiimin-wordmark-dark.svg#gh-dark-mode-only" alt="AIIMIN" height="64">
 </h1>
 
 **Your day, your money and your family's papers, in one calm place.**
