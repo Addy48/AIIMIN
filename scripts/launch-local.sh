@@ -20,9 +20,9 @@ if [[ ! -d node_modules ]]; then
   npm install
 fi
 
-if [[ ! -d frontend/node_modules ]]; then
-  echo "▸ Installing frontend dependencies..."
-  (cd frontend && npm install)
+if [[ ! -d web/node_modules ]]; then
+  echo "▸ Installing web dependencies..."
+  (cd web && npm install)
 fi
 
 # Open browser once the React dev server responds.

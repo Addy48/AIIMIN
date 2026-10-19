@@ -1,5 +1,5 @@
 /**
- * Server-side XP engine — keep in sync with frontend/src/utils/xpEngine.js
+ * Server-side XP engine — keep in sync with web/src/utils/xpEngine.js
  */
 
 export const RANKS = [

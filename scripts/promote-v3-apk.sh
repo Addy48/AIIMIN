@@ -5,9 +5,9 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-DIST="$ROOT/app/dist"
-RELEASE_APK="$ROOT/app/app/build/outputs/apk/release/app-release.apk"
-DEBUG_APK="$ROOT/app/app/build/outputs/apk/debug/app-debug.apk"
+DIST="$ROOT/android/dist"
+RELEASE_APK="$ROOT/android/app/build/outputs/apk/release/app-release.apk"
+DEBUG_APK="$ROOT/android/app/build/outputs/apk/debug/app-debug.apk"
 
 SRC="${1:-}"
 if [[ -z "$SRC" ]]; then

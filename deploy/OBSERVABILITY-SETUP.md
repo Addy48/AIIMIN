@@ -9,7 +9,7 @@ Optional before waitlist launch. Required before September public launch.
 3. Copy Measurement ID (`G-XXXXXXXXXX`)
 4. Set on **Vercel** (Production):
    - `REACT_APP_GA_MEASUREMENT_ID=G-...`
-5. Local: add to `frontend/.env.production` and run `node scripts/sync-react-env.mjs --force`
+5. Local: add to `web/.env.production` and run `node scripts/sync-react-env.mjs --force`
 6. Redeploy Vercel (auto on push to `main`)
 
 Events already wired: `usePageAnalytics.js`, `waitlist_signup` in `WaitlistForm.jsx`.
@@ -24,9 +24,9 @@ Events already wired: `usePageAnalytics.js`, `waitlist_signup` in `WaitlistForm.
    - `SENTRY_DSN=` (same or server DSN)
 5. Install SDK (when ready):
    ```bash
-   cd frontend && npm install @sentry/react
+   cd web && npm install @sentry/react
    ```
-   Then extend `frontend/src/utils/sentry.js` with `Sentry.init()`.
+   Then extend `web/src/utils/sentry.js` with `Sentry.init()`.
 
 Currently `initSentry()` is a stub — errors are not sent until DSN + package are set.
 

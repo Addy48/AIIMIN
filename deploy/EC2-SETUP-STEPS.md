@@ -51,7 +51,7 @@ curl -s https://api.aiimin.in/api/auth/ok
 
 ## 4. Vercel (frontend — separate from EC2)
 
-Vercel uses `frontend/.env.production` (already has `REACT_APP_API_URL=https://api.aiimin.in/api`).
+Vercel uses `web/.env.production` (already has `REACT_APP_API_URL=https://api.aiimin.in/api`).
 Redeploy Vercel after pushing Better Auth frontend changes.
 
 ## 5. Fresh DB (already done locally — shared Supabase)

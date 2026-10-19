@@ -15,8 +15,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, '..');
 const rootEnvPath = path.join(root, '.env');
 const sources = [
-  path.join(root, 'frontend', '.env.production'),
-  path.join(root, 'frontend', '.env'),
+  path.join(root, 'web', '.env.production'),
+  path.join(root, 'web', '.env'),
 ];
 
 const PREFIXES = ['REACT_APP_', 'SENTRY_DSN'];
@@ -68,7 +68,7 @@ const toCopy = Object.entries(merged).filter(([key]) =>
 );
 
 if (toCopy.length === 0) {
-  console.error('No REACT_APP_* keys found in frontend/.env.production or frontend/.env');
+  console.error('No REACT_APP_* keys found in web/.env.production or web/.env');
   process.exit(1);
 }
 
