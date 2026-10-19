@@ -67,9 +67,11 @@ object CaptureEngine {
     private val JOURNAL_PREFIX = Regex("""^journal\b[\s:\-]*(.*)$""", I)
     private val HABIT_PREFIX = Regex("""^habit\s*[:\-]\s*(.*)$""", I)
     private val MOOD_TEN = Regex("""\b\d{1,2}\s*/\s*10\b""")
-    private val MOOD_N = Regex("""^mood\s+\d{1,2}\b""", I)
+    private val MOOD_N = Regex("""\bmood\s+\d{1,2}\b""", I)
     private val NEGATED_SPEND = Regex("""\b(?:did not|didn'?t|didnt|haven'?t|nothing|no)\s+(?:spend|spent|to log|expense|kharch)\b|\bnothing to log\b""", I)
 
+    private val PAIRS = Regex("""(?:[a-z][a-z' ]*?\s+\d[\d.,]*\s*){2,}""")
+    private val NOT_ITEM = setOf("for", "on", "at", "to", "with", "and", "rs", "rupees", "inr", "usd", "my", "share", "by", "of", "in", "from")
     private val CONNECTOR = Regex("""\s+(?:and then|and|then|aur|phir|also)\s+|\s*;\s*|\s*\n\s*|,\s+""", I)
     private val NOTE_INLINE = Regex("""\s+(?=note\s*:)""", I)
 
@@ -90,6 +92,10 @@ object CaptureEngine {
         // split on note: inline first
         val pre = NOTE_INLINE.split(norm).filter { it.isNotBlank() }
         if (pre.size > 1) return pre.flatMap { splitClauses(it.trim()) }
+        PAIRS.matchEntire(norm.trim())?.let { m ->
+            val parts = Regex("""[a-z][a-z' ]*?\s+\d[\d.,]*""").findAll(norm.trim()).map { it.value.trim() }.toList()
+            if (parts.size >= 2 && parts.all { p -> p.substringBeforeLast(' ').split(' ').let { w -> w.size <= 2 && w.none { x -> x in NOT_ITEM } && w.last() in L.SPEND_NOUNS } }) return parts
+        }
         for (m in CONNECTOR.findAll(norm)) {
             pieces += norm.substring(last, m.range.first); seps += m.value; last = m.range.last + 1
         }
@@ -181,7 +187,8 @@ object CaptureEngine {
         if (Regex("""\b(?:focus|deep work|pomodoro)\b""", I).containsMatchIn(text) && (minutesNum != null || Regex("""\b(?:start|begin)\b""").containsMatchIn(text)))
             return item(Kind.FOCUS, 0.9, "focus", paise = null, minutes = minutesNum)
         val minVerb = lower.any { it in L.MIN_VERBS }
-        if (minVerb && !hasMoneyMarked && (L.MIN_UNIT.containsMatchIn(w.rest) || "done" in lower || Regex("""\bdid (?:my|the)\b""").containsMatchIn(text)) &&
+        val pastActivity = lower.any { it in setOf("walked", "ran", "jogged", "meditated", "slept", "studied", "cycled", "swam", "exercised", "drank") } || ("kiya" in lower && minVerb)
+        if (minVerb && !hasMoneyMarked && (L.MIN_UNIT.containsMatchIn(w.rest) || "done" in lower || pastActivity || Regex("""\bdid (?:my|the)\b""").containsMatchIn(text)) &&
             !(lower.any { it in L.SPEND_VERBS - setOf("kiya", "kiye") }) && !incomeCue
         ) return item(Kind.MINIMUM, 0.85, "activity log", paise = null, minutes = L.MIN_UNIT.find(w.rest)?.value?.let { Regex("""\d+""").find(it)?.value?.toIntOrNull() })
 
@@ -212,7 +219,8 @@ object CaptureEngine {
         // money
         if (m.chosen != null) {
             val noPaise = taskPrefix || Regex("""^(?:remind|need|have|dont|don't)""").containsMatchIn(text)
-            if (noPaise) return item(Kind.TASK, 0.85, "reminder mentioning money", paise = null)
+            if (noPaise) return item(Kind.TASK, 0.85, "reminder mentioning money", paise = null).copy(label = label(c, Kind.TASK, keepMoney = true))
+            if (incomeCue && "udhaar" in lower && "ko" !in lower && "wapas" !in lower) return Item(Kind.CHOOSE, reason = "borrowed or repaid?", raw = c.raw, confidence = 0.3)
             if (paidMe) return item(Kind.INCOME, 0.9, "someone paid me")
             if (incomeCue && !spendVerb) return item(Kind.INCOME, 0.92, "income cue")
             if (incomeCue && spendVerb && !weakVerb) {
@@ -222,7 +230,7 @@ object CaptureEngine {
             if (spendVerb) return item(Kind.EXPENSE, 0.95, "spend verb")
             if (hasMoneyMarked) return item(Kind.EXPENSE, 0.9, "currency marked amount")
             if (spendNoun) return item(Kind.EXPENSE, 0.85, "spend word with an amount")
-            if (weakVerb) return if (dated) item(Kind.TASK, 0.7, "payment reminder", paise = null) else item(Kind.EXPENSE, 0.75, "pay/buy with an amount")
+            if (weakVerb) return if (dated) item(Kind.TASK, 0.7, "payment reminder", paise = null).copy(label = label(c, Kind.TASK, keepMoney = true)) else item(Kind.EXPENSE, 0.75, "pay/buy with an amount")
             if (fuzzyHit(words, L.SPEND_NOUNS) || fuzzyHit(allWords, L.SPEND_VERBS)) return item(Kind.EXPENSE, 0.7, "spend word (typo) with an amount")
             return Item(Kind.CHOOSE, reason = "amount without a clear meaning", raw = c.raw, confidence = 0.3)
         }
@@ -234,7 +242,8 @@ object CaptureEngine {
         if (journal) return item(Kind.JOURNAL, 0.8, "feeling words")
         if (eventNoun && dated) return item(Kind.EVENT, 0.8, "event word with a date")
         // a short thing at a date or time: "kal subah yoga"
-        if (dated && words.isNotEmpty() && words.size <= 5 && words.any { it !in L.LABEL_EDGE }) return item(Kind.TASK, 0.7, "dated line")
+        val sentence = lower.any { it in setOf("was", "were", "is", "am", "are", "been", "had", "tha", "thi", "the") }
+        if (dated && !sentence && words.isNotEmpty() && words.size <= 5 && words.any { it !in L.LABEL_EDGE }) return item(Kind.TASK, 0.7, "dated line")
         return Item(Kind.CHOOSE, reason = "no clear cue", raw = c.raw, confidence = 0.2)
     }
 
@@ -261,8 +270,8 @@ object CaptureEngine {
 
     private fun cap(s: String) = s.trim().replaceFirstChar { it.uppercase() }
 
-    private fun label(c: Ctx, kind: Kind): String {
-        var ws = c.words
+    private fun label(c: Ctx, kind: Kind, keepMoney: Boolean = false): String {
+        var ws = (if (keepMoney) tokens(c.whenInfo.rest) else c.words).map { it.trim('₹', '$', '€', '£', '¥') }.filter { it.isNotEmpty() }
         if (kind == Kind.EXPENSE || kind == Kind.INCOME || kind == Kind.RECURRING) ws = ws.filter { it !in L.LABEL_STOP }
         else ws = ws.filter { it !in setOf("rupees") }
         // task lead-ins

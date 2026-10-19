@@ -31,7 +31,8 @@ internal object WhenParser {
     private val DMY = Regex("""\b(\d{1,2})(?:st|nd|rd|th)?\s+(?:of\s+)?($MONTH)\.?(?:\s+(20\d{2}))?\b""", I)
     private val MDY = Regex("""\b($MONTH)\.?\s+(\d{1,2})(?:st|nd|rd|th)?\b(?!\s*(?::|am\b|pm\b))""", I)
     private val MONTH_YEAR = Regex("""\b($MONTH)\.?\s+(20\d{2})\b""", I)
-    private val ORDINAL_DAY = Regex("""\b(\d{1,2})(?:st|nd|rd|th)\b""", I)
+    private val ORDINAL_DAY = Regex("""\b(\d{1,2})(?:st|nd|rd|th|\s+tarikh)\b""", I)
+    private val ACTIVITY_BEFORE_IN = Regex("""\b(?:ran|run|walked|walk|jogged|cycled|swam|slept|studied|read|meditated|worked|took|lasted|waited|spent)\b""", I)
     private val YEAR_AFTER_CUE = Regex("""\b(?:expiry|expires?|expiring|till|until|tak|by|valid|ends?|in)\s+((?:19|20)\d{2})\b|\b((?:19|20)\d{2})\s+tak\b""", I)
 
     private val EVERY_WEEKDAY = Regex("""\b(?:every|each|har)\s+($WEEKDAY|$WEEKDAY_ABBR)\b""", I)
@@ -88,7 +89,12 @@ internal object WhenParser {
         var relative = false
         var partial = false
 
-        fun blank(m: MatchResult) { t = t.replaceRange(m.range, " ".repeat(m.range.last - m.range.first + 1)) }
+        fun blank(m: MatchResult) {
+            var from = m.range.first
+            // a preposition glued to the phrase goes with it ("at 8pm", "on 3 Nov", "by Friday")
+            Regex("""\b(?:at|on|by|around|before|after|from|till|until)\s+$""", I).find(t.substring(0, from))?.let { from = it.range.first }
+            t = t.replaceRange(from, m.range.last + 1, " ".repeat(m.range.last + 1 - from))
+        }
 
         // --- repeats first: "every Monday" must not also become a one-off date
         EVERY_WEEKDAY.find(t)?.let { m ->
@@ -149,7 +155,7 @@ internal object WhenParser {
             if (m.value.lowercase() == "tonight") dayPartWord = "night"
             blank(m)
         }
-        IN_N.find(t)?.let { m ->
+        IN_N.find(t)?.takeIf { !ACTIVITY_BEFORE_IN.containsMatchIn(t) }?.let { m ->
             val n = m.groupValues[1].toLong()
             val u = m.groupValues[2].lowercase()
             when {
@@ -188,6 +194,7 @@ internal object WhenParser {
                     part == "evening" || part == "afternoon" -> if (h < 12) h + 12 else h
                     part == "night" -> if (h in 5..11) h + 12 else if (h == 12) 0 else h
                     part == "morning" -> if (h == 12) 0 else h
+                    Regex("""\b(?:flight|train|airport|bus)\b""", I).containsMatchIn(t) -> if (h == 12) 12 else h
                     h == 12 -> 12
                     h in 1..7 -> h + 12
                     else -> h

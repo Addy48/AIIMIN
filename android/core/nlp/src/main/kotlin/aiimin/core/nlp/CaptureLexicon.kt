@@ -10,7 +10,7 @@ internal object CaptureLexicon {
     /** A verb that says money left: with a certain amount it makes an expense. */
     val SPEND_VERBS = words(
         """paid spent spend gave give bought cost costs charged charges purchase purchased pd tipped donated lent returned repaid transferred sent split
-        gifted kharch diye diya di liya li liye kiya kiye bheje bheja bhara bhari bhare kharida kharidi dalwaya dalwai uda udaye lagi lagae jama khaya piya udhaar""",
+        gifted kharch bhar diye diya di liya li liye kiya kiye bheje bheja bhara bhari bhare kharida kharidi dalwaya dalwai uda udaye lagi lagae jama khaya piya udhaar""",
     )
     /** Verbs that are only a spend when an amount follows ("buy milk" is a task, "buy 2kg rice 120" an expense). */
     val WEAK_SPEND = words("pay buy order book get")
@@ -36,7 +36,7 @@ internal object CaptureLexicon {
         """call email mail message text whatsapp ping book renew send submit pay order clean fix visit pick drop meet write review plan print charge water cancel buy collect
         return schedule update check remind finish prepare prep organize organise arrange set ask tell take bring get go wash cook make file apply register confirm follow complete
         start practice study read pack sell post upload download install backup change replace repair service wake remember reply respond ship deploy debug draft cleanup fill
-        renewal revise research watch attend join wish thank invite share transfer deposit withdraw recharge""",
+        sign finalize discuss give show renewal revise research watch attend join wish thank invite share transfer deposit withdraw recharge""",
     )
     /** Hindi infinitives: "karna", "jaana hai". */
     val INFINITIVES = words(
@@ -49,7 +49,7 @@ internal object CaptureLexicon {
 
     val EVENT_NOUNS = words(
         """meeting appointment interview flight birthday bday wedding anniversary class webinar standup stand-up party concert match exam lecture session demo presentation
-        trip train bus movie conference seminar workshop ceremony function puja lunch dinner breakfast brunch reunion picnic farewell gathering annual""",
+        holiday diwali holi eid christmas festival chutti trip train bus movie conference seminar workshop ceremony function puja lunch dinner breakfast brunch reunion picnic farewell gathering annual""",
     )
     val EVENT_WITH = Regex("""\b(?:call|lunch|dinner|breakfast|coffee|drinks|catch ?up|meeting|movie|trip|party|sync|brunch|chat) with\b|\b(?:doctor|dentist|clinic|hospital)\s+visit\b""", RegexOption.IGNORE_CASE)
 
@@ -57,7 +57,7 @@ internal object CaptureLexicon {
         """feeling felt feel mood anxious anxiety grateful gratitude tired irritated rough stressed stress happy sad low drained proud lonely angry calm excited nervous worried hopeful
         overwhelmed exhausted thakan thakawat bechain ghabrahat chinta sukoon heavy thaka thaki khush udaas pareshan tension tanav mann dil racing""",
     )
-    val JOURNAL_PHRASES = Regex("""accha laga|bura laga|din bahut accha|aaj ka din|couldn'?t sleep|could not sleep|mind racing|nahi lag raha|mann nahi""", RegexOption.IGNORE_CASE)
+    val JOURNAL_PHRASES = Regex("""(?:good|bad|great|tough|long|rough|nice|lovely|terrible|amazing) day|accha laga|bura laga|din bahut accha|aaj ka din|couldn'?t sleep|could not sleep|mind racing|nahi lag raha|mann nahi""", RegexOption.IGNORE_CASE)
 
     val DOC_NOUNS = words(
         """passport licence license dl insurance puc fastag warranty agreement aadhaar aadhar visa pan lease rc permit certificate membership policy registration lic""",
@@ -81,10 +81,10 @@ internal object CaptureLexicon {
     /** Words dropped from labels anywhere in the phrase. */
     val LABEL_STOP = SPEND_VERBS + INCOME_CUES + words(
         """rupees rs inr usd aud cad eur gbp aed sgd jpy dollar dollars bucks euro euros pound pounds quid dirham dirhams yen only approx approximately around about maine mujhe i
-        paise paisa remind me need have dont forget not""",
+        paise paisa remind me need have dont forget not pi laya bharwaya dalwaya khaya piya kharida""",
     ) - setOf("split", "cost", "costs", "tea", "income", "interest", "bonus", "refund", "salary", "cashback", "gas", "water", "food", "get", "return", "sent", "book", "order", "pay", "buy")
     /** Prepositions and joiners trimmed from the ends of a label. */
-    val LABEL_EDGE = words("for on at to ko ka ki ke pe me se ne of the a an and aur with in by tak hai h ho hoga tha thi ya then phir by per from")
+    val LABEL_EDGE = words("due before after for on at to ko ka ki ke pe me se ne of the a an and aur with in by tak hai h ho hoga tha thi ya then phir by per from")
 
     fun category(words: List<String>, text: String): String? {
         val w = words.toSet()

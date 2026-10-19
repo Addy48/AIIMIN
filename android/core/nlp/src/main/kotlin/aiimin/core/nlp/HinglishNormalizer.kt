@@ -186,7 +186,7 @@ internal object Devanagari {
     /** Roman side of the lexicon, by phonetic key: lets a rule-based spelling snap to the usual one. */
     private val PHONETIC: Map<String, String> by lazy {
         val m = HashMap<String, String>()
-        for (v in LEXICON.values) if (v.length > 2) m.putIfAbsent(phoneticKey(v), v)
+        for (v in LEXICON.values) if (v.length > 2 && v !in NumberWords.words()) m.putIfAbsent(phoneticKey(v), v)
         m
     }
 
@@ -329,6 +329,7 @@ internal object Devanagari {
 दिया diya
 दिए diye
 दी di
+भर bhar
 भरा bhara
 भरी bhari
 भरे bhare
@@ -492,6 +493,11 @@ internal object Devanagari {
 साफ saaf
 डॉक्टर doctor
 अपॉइंटमेंट appointment
+नोट note
+आइडिया idea
+सूची list
+योग yoga
+किया kiya
 # feelings
 मन mann
 दिल dil
@@ -543,6 +549,8 @@ internal object NumberWords {
         "third" to 3, "fourth" to 4, "fifth" to 5, "sixth" to 6, "seventh" to 7, "eighth" to 8, "ninth" to 9, "tenth" to 10, "eleventh" to 11, "twelfth" to 12,
         "thirteenth" to 13, "fourteenth" to 14, "fifteenth" to 15, "sixteenth" to 16, "seventeenth" to 17, "eighteenth" to 18, "nineteenth" to 19, "twentieth" to 20,
     )
+
+    fun words(): Set<String> = UNITS.keys + SCALE.keys + FRACTION.keys + ADJUST.keys
 
     private fun isNum(t: String) = t in UNITS || t in SCALE || t in FRACTION || t in ADJUST
 

@@ -122,7 +122,7 @@ internal object MoneyParser {
             else -> {
                 val sorted = all.sortedByDescending { it.paise }
                 // a small whole number beside a bigger one is a count ("3 books 900")
-                val countLike = sorted.drop(1).all { it.paise % 100 == 0L && it.paise <= 2000 && t.substring(it.end).trimStart().firstOrNull()?.isLetter() == true }
+                val countLike = sorted.drop(1).all { it.paise % 100 == 0L && it.paise <= 900 && t.substring(it.end).trimStart().firstOrNull()?.isLetter() == true }
                 if (countLike) sorted[0] else { unsure = "several amounts"; null }
             }
         }
