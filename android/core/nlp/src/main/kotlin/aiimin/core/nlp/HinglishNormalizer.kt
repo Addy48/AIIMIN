@@ -72,10 +72,13 @@ object HinglishNormalizer {
         alias("sava", "savaa", "sawa")
         alias("saadhe", "sadhe", "saade")
         alias("paune", "poune", "paunay")
-        alias("nahi", "nahin", "nhi", "nai", "nahee")
+        alias("nahi", "nahin", "nhi", "nahee")
         alias("mummy", "mumma", "mamma")
         alias("karna", "krna", "karnaa")
         alias("hai", "hae")
+        alias("shaadi", "shaadee", "shadi", "byah")
+        alias("janamdin", "janmadin", "janmdin")
+        alias("thakan", "thakaan", "thakawat")
     }
 }
 
@@ -498,6 +501,135 @@ internal object Devanagari {
 सूची list
 योग yoga
 किया kiya
+# more everyday words
+शादी shaadi
+जन्मदिन janamdin
+थकान thakan
+बेचैन bechain
+चिंता chinta
+सुकून sukoon
+दिवाली diwali
+होली holi
+ईद eid
+छुट्टी chutti
+त्योहार tyohar
+दौड़ना daudna
+दौड़ी daudi
+पीया पिया piya
+चलना chalna
+चली chali
+टहलना tahalna
+पढ़ाई padhai
+पढ़ा padha
+पढ़े padhe
+सोया soya
+उठा utha
+नहाना nahana
+खाना khana
+पीना pina
+मंदिर mandir
+बाज़ार bazaar
+दुकान dukaan
+ऑफिस office
+दफ्तर daftar
+घंटा ghanta
+सामान saaman
+कमरा kamra
+किराए kiraye
+मकान makaan
+बिल bill
+मरम्मत marammat
+सर्विस service
+पेट्रोल petrol
+गैस gas
+रिचार्ज recharge
+नेटफ्लिक्स netflix
+स्पॉटिफाई spotify
+अमेज़न amazon
+फ्लिपकार्ट flipkart
+स्विगी swiggy
+ज़ोमैटो zomato
+उबर uber
+ओला ola
+मेट्रो metro
+ट्रेन train
+फ्लाइट flight
+होटल hotel
+टिकट ticket
+पासपोर्ट passport
+लाइसेंस licence
+बीमा beema
+पॉलिसी policy
+किस्त kist
+ब्याज byaaj
+लोन loan
+कर्ज karz
+बचत bachat
+बजट budget
+ख़र्च kharch
+कमाई kamai
+मिलना milna
+आना aana
+जाना jaana
+करना karna
+लेना lena
+देना dena
+भेजना bhejna
+बुलाना bulana
+मिलने milne
+देखना dekhna
+देखनी dekhni
+लिखना likhna
+पढ़ना padhna
+सुनना sunna
+खेलना khelna
+रखना rakhna
+बनाना banana
+धोना dhona
+सफाई safai
+पूजा pooja
+सब्ज़ियां sabziyan
+फल phal
+अंडे ande
+रोटी roti
+चावल chawal
+दाल daal
+आटा aata
+तेल tel
+चीनी cheeni
+नमक namak
+पनीर paneer
+मक्खन makkhan
+बिस्किट biscuit
+चॉकलेट chocolate
+आइसक्रीम icecream
+कॉफी coffee
+जूस juice
+खाने khane
+नाश्ते nashte
+रात्रि raat
+सवेरे subah
+भाई bhai
+बहन behen
+पापा papa
+दादी dadi
+नानी nani
+बेटा beta
+बेटी beti
+पत्नी patni
+पति pati
+दोस्तों doston
+आज aaj
+कल kal
+अभी abhi
+फिर phir
+हमेशा hamesha
+रोज roz
+हफ्ते hafte
+मंगल mangal
+बुध budh
+शुक्र shukra
+शनि shani
 # feelings
 मन mann
 दिल dil

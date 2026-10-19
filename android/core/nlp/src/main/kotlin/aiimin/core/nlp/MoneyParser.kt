@@ -30,7 +30,7 @@ internal object MoneyParser {
     private val UNIT_AFTER = Regex(
         """^\s*(?:kgs?|kilos?|grams?|gms?|g|ml|l|ltrs?|litres?|liters?|pages?|pg|mins?|minutes?|hours?|hrs?|km|kms|people|persons?|ppl|pcs|pieces?|items?|days?|months?|years?|weeks?|times|%|percent|ghante|ghanta|din|mahine|saal|reps|glasses|pushups|steps|x)\b""", I,
     )
-    private val CODE_BEFORE = Regex("""\b(?:number|no\.?|num|#|code|pin|room|flat|gate|locker|bus|order|invoice|id|ref|otp|plot|house|apt|apartment|floor|block|tower|seat|coach|platform|gate)\s*$""", I)
+    private val CODE_BEFORE = Regex("""\b(?:number|no\.?|num|#|code|pin|room|flat|gate|locker|bus|order|id|ref|otp|plot|house|apt|apartment|floor|block|tower|seat|coach|platform|gate)\s*$""", I)
     private val INR_BEFORE = Regex("""(?:₹|\brs\.?|\binr|\brupees|\brupee)\s*$""", I)
     private val CUR_BEFORE = Regex("""(₹|\$|€|£|¥|\bus\$|\ba\$|\bc\$|\brs\.?|\binr|\busd|\baud|\bcad|\beur|\bgbp|\baed|\bsgd|\bjpy|\brupees|\brupee|\bdollars?|\beuros?|\bpounds?)\s*$""", I)
     private val CUR_AFTER = Regex("""^\s*(₹|\$|€|£|¥|rs\b\.?|inr\b|usd\b|aud\b|cad\b|eur\b|gbp\b|aed\b|sgd\b|jpy\b|rupees?\b|dollars?\b|bucks\b|euros?\b|pounds?\b|quid\b|dirhams?\b|yen\b|only\b)""", I)

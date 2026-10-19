@@ -77,6 +77,13 @@ class SmsCorpusTest {
             }
             report.append("${r.id},${r.label},$kind,${dir ?: ""},${alert?.amount ?: ""},$verdict\n")
         }
+        val bySender = rows.groupBy { it.sender }
+        val verdictById = report.lines().drop(1).filter { it.isNotBlank() }.associate { it.split(",")[0].toInt() to it.split(",").last() }
+        val perSender = bySender.entries.sortedByDescending { it.value.size }.joinToString("\n") { (k, v) ->
+            val ok = v.count { verdictById[it.id] == "ok" }
+            "$k,${v.size},$ok,${"%.1f".format(100.0 * ok / v.size)}"
+        }
+        File("build/sms-per-sender.csv").writeText("sender,messages,right,percent\n$perSender\n")
         File("build/sms-corpus-results.csv").also { it.parentFile.mkdirs() }.writeText(report.toString())
         println("SMS rows=${rows.size} single-direction payments right $paymentsOk/$paymentsTotal; both-words ${bothTotal} (hand-labelled $bothHand, direction right $bothHandRight); read as OUT $bothRight")
         problems.take(40).forEach { println("SMS PROBLEM $it") }

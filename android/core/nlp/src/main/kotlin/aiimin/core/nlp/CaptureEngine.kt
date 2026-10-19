@@ -80,7 +80,12 @@ object CaptureEngine {
         return w in L.TASK_VERBS || L.TASK_LEAD_PHRASES.any { it.containsMatchIn(s.trim()) }
     }
 
-    private fun hasInfinitive(s: String) = s.split(Regex("""\s+""")).any { it.trim(',', '.') in L.INFINITIVES }
+    private fun hasInfinitive(s: String): Boolean {
+        val ws = s.split(Regex("""\s+""")).map { it.trim(',', '.') }
+        if (ws.any { it in L.INFINITIVES }) return true
+        // any Hindi infinitive followed by "hai" ("movie dekhni hai", "kapde dhone hain")
+        return ws.zipWithNext().any { (a, b) -> a.length > 4 && (a.endsWith("na") || a.endsWith("ni") || a.endsWith("ne")) && b in setOf("hai", "hain", "h") }
+    }
 
     /** "lunch 200 and chai 30, call Ravi at 5": split where the next piece is its own thing (has a number or starts with an action). */
     internal fun splitClauses(norm: String): List<String> {
@@ -189,7 +194,7 @@ object CaptureEngine {
         val minVerb = lower.any { it in L.MIN_VERBS }
         val pastActivity = lower.any { it in setOf("walked", "ran", "jogged", "meditated", "slept", "studied", "cycled", "swam", "exercised", "drank") } || ("kiya" in lower && minVerb)
         if (minVerb && !hasMoneyMarked && (L.MIN_UNIT.containsMatchIn(w.rest) || "done" in lower || pastActivity || Regex("""\bdid (?:my|the)\b""").containsMatchIn(text)) &&
-            !(lower.any { it in L.SPEND_VERBS - setOf("kiya", "kiye") }) && !incomeCue
+            !(lower.any { it in L.SPEND_VERBS - setOf("kiya", "kiye", "piya", "khaya") }) && !incomeCue
         ) return item(Kind.MINIMUM, 0.85, "activity log", paise = null, minutes = L.MIN_UNIT.find(w.rest)?.value?.let { Regex("""\d+""").find(it)?.value?.toIntOrNull() })
 
         // repeat words
@@ -220,6 +225,7 @@ object CaptureEngine {
         if (m.chosen != null) {
             val noPaise = taskPrefix || Regex("""^(?:remind|need|have|dont|don't)""").containsMatchIn(text)
             if (noPaise) return item(Kind.TASK, 0.85, "reminder mentioning money", paise = null).copy(label = label(c, Kind.TASK, keepMoney = true))
+            if ("udhaar" in lower && ("liye" in lower || "liya" in lower) && "ko" !in lower) return Item(Kind.CHOOSE, reason = "borrowed or repaid?", raw = c.raw, confidence = 0.3)
             if (incomeCue && "udhaar" in lower && "ko" !in lower && "wapas" !in lower) return Item(Kind.CHOOSE, reason = "borrowed or repaid?", raw = c.raw, confidence = 0.3)
             if (paidMe) return item(Kind.INCOME, 0.9, "someone paid me")
             if (incomeCue && !spendVerb) return item(Kind.INCOME, 0.92, "income cue")
@@ -278,7 +284,8 @@ object CaptureEngine {
         ws = ws.dropWhile { it in setOf("remind", "me", "to", "need", "have", "dont", "don't", "forget", "mujhe", "please", "i") }
         var list = ws.toMutableList()
         while (list.isNotEmpty() && list.first() in L.LABEL_EDGE) list.removeAt(0)
-        while (list.isNotEmpty() && list.last() in L.LABEL_EDGE) list.removeAt(list.size - 1)
+        while (list.isNotEmpty() && list.last() in L.LABEL_EDGE && !(list.last() == "me" && list.size > 1 && list[list.size - 2] in setOf("call", "text", "message", "email", "ping", "tell", "ask", "give", "send", "show", "remind"))) list.removeAt(list.size - 1)
+        list = list.filterIndexed { i, x -> !(x == "for" && list.getOrNull(i + 1) == "from") }.toMutableList()
         list = list.take(6).toMutableList()
         val s = list.joinToString(" ") { c.caseMap[it] ?: it }
         return cap(s).ifEmpty {

@@ -29,7 +29,7 @@ internal object CaptureLexicon {
         medicine medicines dawai dawa doctor consultation pharmacy hospital test lab dentist checkup
         shopping clothes shirt shirts jeans shoes shoe bag watch phone mobile laptop charger repair gift gifts flowers flower toy toys
         tip tips donation charity temple pooja puja udhaar fine penalty courier delivery shipping amazon flipkart myntra meesho
-        pet vet trip travel booking hostel stay popcorn chemist autorickshaw payment deposit advance down gifted worth""",
+        maintenance society tailor plumber electrician carpenter mechanic invoice pet vet trip travel booking hostel stay popcorn chemist autorickshaw payment deposit advance down gifted worth""",
     )
 
     val TASK_VERBS = words(
@@ -49,7 +49,7 @@ internal object CaptureLexicon {
 
     val EVENT_NOUNS = words(
         """meeting appointment interview flight birthday bday wedding anniversary class webinar standup stand-up party concert match exam lecture session demo presentation
-        holiday diwali holi eid christmas festival chutti trip train bus movie conference seminar workshop ceremony function puja lunch dinner breakfast brunch reunion picnic farewell gathering annual""",
+        holiday diwali holi eid christmas festival chutti trip train bus movie conference seminar workshop ceremony function puja janamdin shaadi lunch dinner breakfast brunch reunion picnic farewell gathering annual""",
     )
     val EVENT_WITH = Regex("""\b(?:call|lunch|dinner|breakfast|coffee|drinks|catch ?up|meeting|movie|trip|party|sync|brunch|chat) with\b|\b(?:doctor|dentist|clinic|hospital)\s+visit\b""", RegexOption.IGNORE_CASE)
 
@@ -65,7 +65,7 @@ internal object CaptureLexicon {
     val DOC_CUES = Regex("""\b(?:expires?|expired|expiry|expiring|renewal|renews|valid(?: till| until)?|due|ends?|ending|hoga)\b""", RegexOption.IGNORE_CASE)
 
     val MIN_VERBS = words(
-        """walked walking walk ran run running jogged cycle cycling chalayi jog swim lifted trained read reading meditated meditation drank slept studied cycled swam did done stretch stretching yoga workout exercised padhe padha padhai chala chale paidal""",
+        """daudi dauda piya walked walking walk ran run running jogged cycle cycling chalayi jog swim lifted trained read reading meditated meditation drank slept studied cycled swam did done stretch stretching yoga workout exercised padhe padha padhai chala chale paidal""",
     )
     val MIN_UNIT = Regex("""\d+(?:\.\d+)?\s*(?:k\b|km\b|min(?:ute)?s?\b|hours?\b|hrs?\b|pages?\b|litres?\b|liters?\b|glasses\b|pushups\b|reps\b|steps\b|ghante\b|minute\b)""", RegexOption.IGNORE_CASE)
 
@@ -81,10 +81,10 @@ internal object CaptureLexicon {
     /** Words dropped from labels anywhere in the phrase. */
     val LABEL_STOP = SPEND_VERBS + INCOME_CUES + words(
         """rupees rs inr usd aud cad eur gbp aed sgd jpy dollar dollars bucks euro euros pound pounds quid dirham dirhams yen only approx approximately around about maine mujhe i
-        paise paisa remind me need have dont forget not pi laya bharwaya dalwaya khaya piya kharida""",
+        paise paisa remind me need have dont forget not credit worth total pi laya bharwaya dalwaya khaya piya kharida""",
     ) - setOf("split", "cost", "costs", "tea", "income", "interest", "bonus", "refund", "salary", "cashback", "gas", "water", "food", "get", "return", "sent", "book", "order", "pay", "buy")
     /** Prepositions and joiners trimmed from the ends of a label. */
-    val LABEL_EDGE = words("due before after for on at to ko ka ki ke pe me se ne of the a an and aur with in by tak hai h ho hoga tha thi ya then phir by per from")
+    val LABEL_EDGE = words("har total worth due before after for on at to ko ka ki ke pe me se ne of the a an and aur with in by tak hai h ho hoga tha thi ya then phir by per from")
 
     fun category(words: List<String>, text: String): String? {
         val w = words.toSet()
