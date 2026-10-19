@@ -1,6 +1,11 @@
 <div align="center">
 
-# AIIMIN
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/brand/aiimin-wordmark-dark.svg">
+    <img src="docs/brand/aiimin-wordmark-light.svg" alt="AIIMIN" height="64">
+  </picture>
+</h1>
 
 **Your day, your money and your family's papers, in one calm place.**
 
@@ -121,7 +126,7 @@ AIIMIN/
 │   ├── architecture/        #   Unified architecture diagram + interactive visualizer
 │   ├── diagrams/            #   Workflow diagrams (.svg/.png) + interactive viewer
 │   ├── reports/             #   Metric inventory, QA report, Life Score overhaul (Aug 2026)
-│   └── brand/logo-designs/  #   Logo concept sheet
+│   └── brand/               #   Wordmark SVGs (light/dark) and the logo concept sheet
 ├── app-v3-legacy/           # Previous Android app, kept for reference; not built or shipped
 ├── .github/workflows/       # CI: Android, web, API deploy
 ├── CHANGELOG.md  CONTRIBUTING.md  SECURITY.md  LICENSE
