@@ -19,7 +19,7 @@ class CaptureCorpusTest {
         return s.filter { it.isNotBlank() }.map { line ->
             val f = line.split("\t")
             val exps = f[6].split("|").map { p ->
-                val x = p.split(":")
+                val x = p.split(";")
                 fun g(i: Int) = x.getOrNull(i)?.ifEmpty { null }
                 Exp(x[0], g(1)?.toLong(), g(2), g(3), g(4), g(5), g(6))
             }
@@ -38,7 +38,7 @@ class CaptureCorpusTest {
             if (e.paise != null && g.paise != e.paise) return "paise ${g.paise} != ${e.paise}"
             if (e.paise == null && e.kind in setOf("note", "journal", "task", "event", "document", "minimum", "focus", "choose") && g.paise != null && e.kind != "document") return "unexpected paise ${g.paise}"
             if (e.cur != null && g.currency != e.cur) return "currency ${g.currency} != ${e.cur}"
-            if (e.day != null && g.date != LocalDate.parse(e.day)) return "date ${g.date} != ${e.day}"
+            if (e.day != null && (g.date ?: TEST_TODAY) != LocalDate.parse(e.day)) return "date ${g.date ?: TEST_TODAY} != ${e.day}"
             if (e.time != null && g.time24 != e.time) return "time ${g.time24} != ${e.time}"
             if (e.rec != null && g.recurrence != e.rec) return "recurrence ${g.recurrence} != ${e.rec}"
         }

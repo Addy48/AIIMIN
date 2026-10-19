@@ -567,6 +567,8 @@ internal object NumberWords {
                 else if (t == "and" && run.isNotEmpty() && j + 1 < words.size && isNum(words[j + 1]) && tails[j - 1].isEmpty()) { j++ }
                 else break
             }
+            // "2 lakh", "5 hazaar": a digit before a scale word keeps the word; the money parser reads the pair
+            if (run.first() in SCALE && words.getOrNull(i - 1)?.firstOrNull()?.isDigit() == true) { out += w + tails[i]; i++; continue }
             val value = eval(run)
             val lone = run.size == 1 && run[0] in UNITS && (UNITS.getValue(run[0]) <= 10)
             val gated = lone && !(words.getOrNull(j) in LONE_NEXT || words.getOrNull(i - 1) in LONE_PREV)
