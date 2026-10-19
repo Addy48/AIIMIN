@@ -110,12 +110,12 @@ describe('MobileLiteAccount Drafting Table Console', () => {
     );
 
     expect(screen.getByText('Android Companion V2')).toBeInTheDocument();
-    expect(screen.getByText('44.2 MB · 120Hz')).toBeInTheDocument();
+    expect(screen.getByText('32 MB · Android 8+')).toBeInTheDocument();
 
-    const downloadLink = screen.getByRole('link', { name: /download latest apk \(44\.2 mb\)/i });
+    const downloadLink = screen.getByRole('link', { name: /download apk \(32 mb\)/i });
     expect(downloadLink).toBeInTheDocument();
-    expect(downloadLink).toHaveAttribute('href', '/aiimin-v2-debug.apk');
-    expect(downloadLink).toHaveAttribute('download', 'aiimin-v2-debug.apk');
+    expect(downloadLink).toHaveAttribute('href', 'https://github.com/Addy48/AIIMIN/releases/latest/download/aiimin-android.apk');
+    expect(downloadLink).toHaveAttribute('download', 'aiimin-android.apk');
 
     expect(screen.getByText('StrongBox TEE')).toBeInTheDocument();
     expect(screen.getByText('120Hz Compose')).toBeInTheDocument();
@@ -130,10 +130,10 @@ describe('MobileLiteAccount Drafting Table Console', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByText('adb install -r aiimin-v2-debug.apk')).toBeInTheDocument();
+    expect(screen.getByText('adb install -r aiimin-android.apk')).toBeInTheDocument();
     const adbCopyBtn = screen.getByRole('button', { name: /copy adb install command/i });
     fireEvent.click(adbCopyBtn);
-    expect(navigator.clipboard.writeText).toHaveBeenCalledWith('adb install -r aiimin-v2-debug.apk');
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith('adb install -r aiimin-android.apk');
   });
 
   it('renders Life Arc trajectory quotation from user profile', async () => {

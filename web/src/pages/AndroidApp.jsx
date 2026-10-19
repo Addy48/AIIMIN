@@ -37,7 +37,7 @@ import Wordmark from '../components/brand/Wordmark';
 import { ArchBracketMark, DARK_PICK } from '../components/brand/archBracketMark';
 import '../styles/appPage.css';
 
-const ADB_COMMAND = 'adb install -r aiimin-v2-debug.apk';
+const ADB_COMMAND = 'adb install -r aiimin-android.apk';
 
 const CORE_CAPABILITIES = [
   {
@@ -68,13 +68,13 @@ const CORE_CAPABILITIES = [
 
 const SPECS = [
   { label: 'Package Identifier', value: 'in.aiimin.app.v3' },
-  { label: 'Release Version', value: '2.0.4-rc (Build 108)' },
+  { label: 'Release Version', value: '4.0.0-beta01 (build 5)' },
   { label: 'Target Platform', value: 'Android 15 (API Level 35 · Vanilla Ice Cream)' },
   { label: 'Minimum Compatibility', value: 'Android 8.0 Oreo (API Level 26)' },
   { label: 'UI Architecture', value: 'Native Kotlin · Jetpack Compose (120Hz V-Sync)' },
   { label: 'Local Storage Engine', value: 'SQLCipher v4.5.4 Encrypted SQLite (Room v2.6)' },
   { label: 'Cryptographic Enclave', value: 'AndroidKeyStore StrongBox · AES-256-GCM' },
-  { label: 'Binary Footprint', value: '44.2 MB (Universal ARM64-v8a / x86_64)' },
+  { label: 'Binary Footprint', value: '32 MB' },
   { label: 'Sync Architecture', value: 'Deterministic Conflict-Free Outbox (CRDT)' },
   { label: 'Third-Party Trackers', value: '0 SDKs · Zero Analytics · Zero Ad Beacons' },
 ];
@@ -83,8 +83,8 @@ const INSTALL_STEPS = [
   {
     step: '01',
     title: 'Download the Verified Binary',
-    desc: 'Download the compiled v2.0.4 APK directly to your Android device from our secure release mirror.',
-    note: 'Universal APK (~44.2 MB) works across modern ARM64 and x86_64 Android devices.',
+    desc: 'Download the 4.0.0-beta01 APK to your Android phone from GitHub Releases.',
+    note: 'One APK (32 MB) for Android 8.0 and newer.',
   },
   {
     step: '02',
@@ -119,7 +119,7 @@ const FAQS = [
   },
   {
     q: 'Which Android versions and device chipsets are supported?',
-    a: 'AIIMIN Android v2.0.4 targets Android 15 (API 35) and supports Android 8.0 (Oreo) and above. The universal APK includes optimized 64-bit native binaries for Qualcomm Snapdragon, Google Tensor, MediaTek Dimensity, and Samsung Exynos chipsets.',
+    a: 'AIIMIN Android 4.0.0-beta01 runs on Android 8.0 (Oreo) and newer. It is tested most on Android 12 and later, on phones, foldables and tablets.',
   },
 ];
 
@@ -424,12 +424,12 @@ export default function AndroidApp() {
           <div className="app-nav-actions">
             <Link to="/waitlist" className="app-nav-ghost">Web OS</Link>
             <a
-              href="/aiimin-v2-debug.apk"
-              download="aiimin-v2-debug.apk"
+              href="https://github.com/Addy48/AIIMIN/releases/latest/download/aiimin-android.apk"
+              download="aiimin-android.apk"
               className="app-nav-btn"
             >
               <DownloadSimple size={13} weight="bold" />
-              <span className="app-nav-btn-long">Get APK (v2.0.4)</span>
+              <span className="app-nav-btn-long">Get APK (beta)</span>
               <span className="app-nav-btn-short">Get APK</span>
             </a>
           </div>
@@ -460,7 +460,7 @@ export default function AndroidApp() {
                 </div>
               </div>
               <div className="cockpit-spec-meta">
-                <span>v2.0.4 · API 35 · 120Hz</span>
+                <span>4.0.0-beta01 · Android 8+</span>
               </div>
 
               {/* 4 Feature Items */}
@@ -498,15 +498,15 @@ export default function AndroidApp() {
             {/* Column 3: Build & Cryptographic Release */}
             <div className="cockpit-card cockpit-card--right">
               <div className="cockpit-build-row">
-                <span className="cockpit-build-tag">BUILD: v2.0.4-release</span>
-                <span className="cockpit-build-size">~44.2 MB (ARM64)</span>
+                <span className="cockpit-build-tag">BUILD: 4.0.0-beta01</span>
+                <span className="cockpit-build-size">32 MB</span>
               </div>
 
               {/* Primary Download CTA */}
               <div className="cockpit-action-group">
                 <a
-                  href="/aiimin-v2-debug.apk"
-                  download="aiimin-v2-debug.apk"
+                  href="https://github.com/Addy48/AIIMIN/releases/latest/download/aiimin-android.apk"
+                  download="aiimin-android.apk"
                   className={`cockpit-download-btn ${downloading ? 'is-loading' : ''}`}
                   onClick={() => {
                     setDownloading(true);
@@ -895,7 +895,7 @@ export default function AndroidApp() {
           <div className="install-download-box">
             <div className="download-box-left">
               <span className="download-box-tag">VERIFIED SECURE COMPANION</span>
-              <h3 className="download-box-title">aiimin-v2-debug.apk (v2.0.4)</h3>
+              <h3 className="download-box-title">aiimin-android.apk (4.0.0-beta01)</h3>
               <div className="download-security-proofs">
                 <span className="security-proof-item">
                   <ShieldCheck size={14} weight="fill" color="#10B981" />
@@ -913,12 +913,12 @@ export default function AndroidApp() {
             </div>
             <div className="download-box-right">
               <a
-                href="/aiimin-v2-debug.apk"
-                download="aiimin-v2-debug.apk"
+                href="https://github.com/Addy48/AIIMIN/releases/latest/download/aiimin-android.apk"
+                download="aiimin-android.apk"
                 className="cockpit-download-btn"
               >
                 <DownloadSimple size={16} weight="bold" />
-                <span>Download APK (44.2 MB)</span>
+                <span>Download APK (32 MB)</span>
               </a>
             </div>
           </div>
@@ -994,17 +994,17 @@ export default function AndroidApp() {
               <span className="cta-card-tag">SOVEREIGN EXECUTION</span>
               <h3 className="cta-card-heading">Ready to run your day with precision?</h3>
               <p className="cta-card-sub">
-                Download the verified v2.0.4 companion APK directly, or join the founding waitlist for our upcoming Google Play Store release.
+                Download the 4.0.0-beta01 APK now, or join the waitlist to hear when AIIMIN reaches Google Play.
               </p>
             </div>
             <div className="cta-card-buttons">
               <a
-                href="/aiimin-v2-debug.apk"
-                download="aiimin-v2-debug.apk"
+                href="https://github.com/Addy48/AIIMIN/releases/latest/download/aiimin-android.apk"
+                download="aiimin-android.apk"
                 className="cockpit-download-btn"
               >
                 <DownloadSimple size={16} weight="bold" />
-                <span>Download APK (44.2 MB)</span>
+                <span>Download APK (32 MB)</span>
               </a>
               <Link to="/waitlist#waitlist-join" className="app-ghost-btn">
                 Join Waitlist Queue
@@ -1055,8 +1055,8 @@ export default function AndroidApp() {
               </div>
             </div>
             <div className="footer-meta-notes">
-              <span>Universal APK · ARM64-v8a + x86_64 · 44.2 MB</span>
-              <span>Target: Android 15 (API 35) · Zero Ad Trackers</span>
+              <span>One APK · Android 8.0+ · 32 MB</span>
+              <span>Runs on Android 8.0+ · No ads</span>
             </div>
           </div>
 
@@ -1093,7 +1093,7 @@ export default function AndroidApp() {
         <div className="footer-bottom-bar">
           <div className="footer-bottom-left">
             <ArchBracketMark size={14} pick={DARK_PICK} />
-            <span>AIIMIN LABS · ANDROID COMPANION V2.0.4 (BUILD 108)</span>
+            <span>AIIMIN · ANDROID 4.0.0-BETA01 (BUILD 5)</span>
           </div>
           <div className="footer-bottom-right">
             <span>PRECISION DRAFTING PALETTE</span>

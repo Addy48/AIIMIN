@@ -28,7 +28,7 @@ import supabase from '../../utils/supabase';
 import '../../styles/mobileCapture.css';
 import '../../styles/mobileLiteAccount.css';
 
-const ADB_COMMAND = 'adb install -r aiimin-v2-debug.apk';
+const ADB_COMMAND = 'adb install -r aiimin-android.apk';
 
 export default function MobileLiteAccount() {
   const { user, signOut } = useAuth();
@@ -163,7 +163,7 @@ export default function MobileLiteAccount() {
               </span>
               <h2 className="mobile-lite-account__card-title">Android Companion V2</h2>
             </div>
-            <span className="mobile-lite-account__apk-version-tag">44.2 MB · 120Hz</span>
+            <span className="mobile-lite-account__apk-version-tag">32 MB · Android 8+</span>
           </div>
 
           <p className="mobile-lite-account__apk-desc">
@@ -173,8 +173,8 @@ export default function MobileLiteAccount() {
           {/* Direct Download Button */}
           <div className="mobile-lite-account__apk-actions">
             <a
-              href="/aiimin-v2-debug.apk"
-              download="aiimin-v2-debug.apk"
+              href="https://github.com/Addy48/AIIMIN/releases/latest/download/aiimin-android.apk"
+              download="aiimin-android.apk"
               className={`mobile-lite-account__download-btn ${downloading ? 'is-loading' : ''}`}
               onClick={() => {
                 setDownloading(true);
@@ -182,7 +182,7 @@ export default function MobileLiteAccount() {
               }}
             >
               <DownloadSimple size={18} weight="bold" />
-              <span>{downloading ? 'Starting Download…' : 'Download Latest APK (44.2 MB)'}</span>
+              <span>{downloading ? 'Starting Download…' : 'Download APK (32 MB)'}</span>
             </a>
 
             <Link to="/app" className="mobile-lite-account__specs-link">

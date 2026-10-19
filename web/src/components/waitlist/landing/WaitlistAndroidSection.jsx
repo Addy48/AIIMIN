@@ -72,7 +72,7 @@ export default function WaitlistAndroidSection() {
                 Native Android V2 · Closed Beta
               </span>
               <span style={{ fontSize: '11px', color: '#94a3b8', fontFamily: 'var(--font-mono)' }}>
-                v2.0.4 · API 35 · 120Hz
+                4.0.0-beta01 · Android 8+
               </span>
             </div>
 
@@ -330,10 +330,10 @@ export default function WaitlistAndroidSection() {
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <span style={{ fontSize: '11px', fontWeight: 800, color: '#38bdf8', fontFamily: 'var(--font-mono)' }}>
-                BUILD: v2.0.4-release
+                BUILD: 4.0.0-beta01
               </span>
               <span style={{ fontSize: '11px', color: '#94a3b8', fontFamily: 'var(--font-mono)' }}>
-                ~44.2 MB (ARM64)
+                32 MB
               </span>
             </div>
 

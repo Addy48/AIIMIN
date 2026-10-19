@@ -471,8 +471,8 @@ const Settings = () => {
 
               <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
                 <a
-                  href="/aiimin-v2-debug.apk"
-                  download="aiimin-v2-debug.apk"
+                  href="https://github.com/Addy48/AIIMIN/releases/latest/download/aiimin-android.apk"
+                  download="aiimin-android.apk"
                   style={{
                     padding: '8px 16px',
                     borderRadius: '10px',
