@@ -16,8 +16,12 @@ A commit or pull request touches one area. Docs-only changes are fine on their o
 
 ## Branches
 
-- `main` is production: every merge publishes aiimin.in and redeploys the API.
-- Work happens on a branch (`feat/…`, `fix/…`, `chore/…`) and reaches `main` through a pull request.
+Two long-lived branches, nothing else:
+
+- `main` is production: every merge publishes aiimin.in and redeploys the API. Nobody commits to it directly; it changes only through a pull request from `dev`.
+- `dev` is where all work happens. Commit here, push here.
+
+A release is one pull request, `dev` into `main`, merged after CI is green. Android builds ship as GitHub Releases (tags like `android-v4.0.0-beta01`), never as branches.
 
 ## Before you commit
 
