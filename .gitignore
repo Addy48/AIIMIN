@@ -14,36 +14,36 @@ Secrets, Keys/**
 .env.production.local
 .env.development.local
 .env.test.local
-frontend/.env
-frontend/.env.local
-frontend/.env.production.local
+web/.env
+web/.env.local
+web/.env.production.local
 backend/.env
 backend/.env.local
 backend/.env.production
 
 # Build outputs
-frontend/build/
+web/build/
 .npm-cache/
 
 # Capacitor / Android local secrets
-frontend/android/local.properties
-frontend/android/.gradle/
-frontend/android/app/build/
-frontend/android/build/
-frontend/android/capacitor-cordova-android-plugins/build/
+web/android/local.properties
+web/android/.gradle/
+web/android/app/build/
+web/android/build/
+web/android/capacitor-cordova-android-plugins/build/
 
 # Native Android App — local build cache and properties
 *.apk
-!frontend/public/aiimin-v2-debug.apk
-frontend/src/assets/icons/
-app/.gradle/
-app/**/build/
-app/local.properties
-app/*.iml
-app/.idea/
-app/.kotlin/
-app/.device-shots/
-app/dist/
+!web/public/aiimin-v2-debug.apk
+web/src/assets/icons/
+android/.gradle/
+android/**/build/
+android/local.properties
+android/*.iml
+android/.idea/
+android/.kotlin/
+android/.device-shots/
+android/dist/
 
 # Local audit artifacts
 laptop-disk-audit-*.html
@@ -116,8 +116,8 @@ render.yaml
 .env*
 !.env.example
 !**/.env.example
-!frontend/.env.production
-!frontend/.env.development
+!web/.env.production
+!web/.env.development
 !**/.env.production.example
 
 # Playwright gate deps
@@ -256,9 +256,47 @@ supabase/.temp/
 !docs/diagrams/*.png
 !docs/diagrams/*.svg
 !docs/architecture/*.png
-!frontend/public/images/**
+!web/public/images/**
 *.tar.gz
 *-E
 .freebuff/
-app/**/bin/
+android/**/bin/
 
+
+# ── Local only: notes, plans and agent/editor tooling stay on the developer's machine ──
+/AGENTS.md
+/CLAUDE.md
+/GEMINI.md
+/PRODUCT.md
+/DESIGN.md
+/docs/knowledge/
+/docs/superpowers/
+/docs/engine/
+/android/docs/superpowers/
+/android/docs/COVERAGE.md
+/outputs/
+/deliverables/
+/visual-previews/
+/logo-designs/
+/dev-gtm-claude-skills/
+/.agents/
+/.claude/
+/.codex/
+/.cursor/
+/.qwen/
+/.freebuff/
+/.superpowers/
+/.work/
+/.vercel/
+/.vscode/*
+!/.vscode/extensions.json
+/mcp.json
+/.mcp.json
+/.mcp.json.example
+/skills-lock.json
+/.claude-skills.json
+/gradlew
+*.pem
+*.tar.gz
+/deploy/LAUNCH-PLAN.md
+/docs/aiimin-*

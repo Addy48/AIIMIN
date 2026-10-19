@@ -2,7 +2,8 @@ import { pool } from '../lib/db.js';
 
 const ESPN = 'https://site.api.espn.com/apis/site/v2/sports';
 const ERGAST = 'https://api.jolpi.ca/ergast/f1';
-const CRICKET_KEY = 'REMOVED_SECRET';
+// CricAPI key from the environment (see .env.example); never hard-code it.
+const CRICKET_KEY = process.env.CRICAPI_KEY || '';
 
 /* ── Fetch with timeout ────────────────────────────────────── */
 const fetchJSON = async (url, timeout = 8000) => {
@@ -263,6 +264,7 @@ const deduplicateMatches = (events) => {
 
 const fetchCricket = async () => {
   try {
+    if (!CRICKET_KEY) throw new Error('CRICAPI_KEY is not set');
     const res = await fetchJSON(`https://api.cricapi.com/v1/cricScore?apikey=${CRICKET_KEY}`);
     if (res.status !== 'success') throw new Error(res.info || 'Cricket API failed');
 

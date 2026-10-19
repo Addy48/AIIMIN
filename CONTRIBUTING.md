@@ -1,84 +1,52 @@
 # Contributing to AIIMIN
 
-Solo-maintained repo. These rules keep the **web Life OS**, **Capacitor shell**, and **native Android app** from entangling.
+AIIMIN is built by a small team. These rules keep the Android app, the website and the API from tangling.
 
----
+## One area per change
 
-## Golden rule
+| Area | Folder | What belongs there |
+|---|---|---|
+| Android app | `android/` | Kotlin, Compose, Room, Gradle |
+| Website and web app | `web/` (except `web/android/`, `web/src/components/mobile/`) | Pages, components, styles |
+| Phone web shell | `web/android/`, `web/src/components/mobile/` | Capacitor WebView shell, `/m` |
+| API | `server/`, `api/` | Routes, services, migrations |
+| Hosting | `deploy/`, `vercel.json`, `.github/workflows/` | Servers, CI |
 
-> **One repo. Three clients. Never mix them in one commit.**
+A commit or pull request touches one area. Docs-only changes are fine on their own.
 
-| Client | Directory | What belongs here |
-|--------|-----------|-------------------|
-| Web Life OS | `frontend/src/` (except `components/mobile/`) | Dashboard, Finance, Lab, Overview, … |
-| Capacitor `/m` | `frontend/android/`, `frontend/src/components/mobile/` | WebView shell, PWA, touch targets |
-| Native Android App | `app/` | Kotlin, Compose, Room, Gradle |
-| Shared API | `server/`, `api/` | Route by namespace — don't bundle unrelated refactors |
+## Branches
 
----
+Two long-lived branches, nothing else:
 
-## Branch strategy
+- `main` is production: every merge publishes aiimin.in and redeploys the API. Nobody commits to it directly; it changes only through a pull request from `dev`.
+- `dev` is where all work happens. Commit here, push here.
 
-```
-main                          ← web + API production (Vercel + EC2)
-feat/mobile-capture-capacitor ← Capacitor + /m (merge when /m ready on prod)
-```
+A release is one pull request, `dev` into `main`, merged after CI is green. Android builds ship as GitHub Releases (tags like `android-v4.0.0-beta01`), never as branches.
 
-Ship order: **website to `main` first** → deploy → native/mobile branches rebase → merge when smoke-tested.
+## Before you commit
 
----
+1. **One area?** If not, split the commit.
+2. **Secrets?** Never commit `.env`, keystores, `*.pem`, `local.properties` or tokens. Run `gitleaks protect --staged --redact`.
+3. **Build output?** Never commit `web/build/`, `android/**/build/` or `.gradle/`.
+4. **Hooks (optional):** `git config core.hooksPath .githooks` strips tool trailers from commit messages.
 
-## Commit checklist
-
-Before `git add`:
-
-1. **Which client?** If more than one, split the commit.
-2. **Vault updated?** Behavior changes need `docs/knowledge/` changelog.
-3. **Secrets?** Never `.env`, keystores, `*.pem`, `local.properties`.
-4. **Build artifacts?** Never `frontend/build/`, `app/**/build/`, `.gradle/`.
-5. **Attribution?** No Co-authored-by tool trailers; no “developed with X” in docs.
-6. **Hooks (optional):** `bash scripts/setup-git-hooks.sh` — strips tool trailers from commit messages.
-
----
-
-## Commit message format
+## Commit messages
 
 ```
-<type>(<scope>): <imperative summary>
+<area>: <what changed, in plain words>
 ```
-
-Types: `feat`, `fix`, `refactor`, `docs`, `chore`, `build`, `test`
 
 Examples:
 
 ```
-feat(api): add mobile sync batch endpoint
-feat(native): biometric gate on cold start
-feat(frontend): overview week signals widget
-docs(vault): monorepo client boundaries
+Android: bank SMS filters and past-message import
+Website: Android download points at the GitHub release
+Server: read the CricAPI key from CRICAPI_KEY
 ```
 
----
+## Pull requests
 
-## PR expectations
-
-1. Scope = one client (or docs-only).
-2. `npm run build` in `frontend/` passes for web changes.
-3. `./gradlew :app:assembleDebug` passes for native changes.
-4. Link vault note or changelog entry.
-
----
-
-## Design locks
-
-- Palette: dark `#1a1a1a`, cards `#2d2d2d`, accent `#ff6b35` — see `docs/knowledge/08_DESIGN/Palette.md`
-- Navbar: logo → `/brand`, wordmark → `/overview` (split targets)
-- Phone web `/m`: capture only (not the native app ceiling)
-- No auth/schema changes without explicit owner approval
-
----
-
-## Deep docs
-
-- Architecture: `docs/knowledge/02_ARCHITECTURE/Monorepo.md`
-- Agent entry: `AGENTS.md` → `docs/knowledge/00_HOME.md`
+1. One area, with a short "what" and "why".
+2. Web changes: `cd web && npm run build` and the Jest suite pass.
+3. Android changes: `cd android && ./gradlew :app:assembleDebug testDebugUnitTest` passes.
+4. No auth or database schema changes without the owner's approval.

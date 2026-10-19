@@ -2,7 +2,7 @@ import puppeteer from 'puppeteer-core';
 import fs from 'fs';
 import path from 'path';
 
-const SCREENSHOT_DIR = path.resolve(process.cwd(), 'frontend/public/assets/screenshots');
+const SCREENSHOT_DIR = path.resolve(process.cwd(), 'web/public/assets/screenshots');
 
 if (!fs.existsSync(SCREENSHOT_DIR)) {
   fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
@@ -45,7 +45,7 @@ async function run() {
         });
         console.log(`✓ Successfully captured ${item.filename}`);
         if (item.filename === 'hero-command-center.png') {
-          const heroPublicPath = path.resolve(process.cwd(), 'frontend/public/images/aiimin_dashboard_hero.png');
+          const heroPublicPath = path.resolve(process.cwd(), 'web/public/images/aiimin_dashboard_hero.png');
           fs.copyFileSync(outPath, heroPublicPath);
           console.log(`✓ Copied hero screenshot to ${heroPublicPath}`);
         }

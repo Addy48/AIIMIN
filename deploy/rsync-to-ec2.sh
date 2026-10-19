@@ -8,8 +8,8 @@ REMOTE_DIR="/home/ubuntu/AIIMIN"
 
 rsync -avz --delete \
   --exclude node_modules \
-  --exclude frontend/node_modules \
-  --exclude frontend/build \
+  --exclude web/node_modules \
+  --exclude web/build \
   --exclude .git \
   --exclude .env \
   --exclude '*.pem' \

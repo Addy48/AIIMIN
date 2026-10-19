@@ -25,8 +25,8 @@ function loadEnvLayer(filePath) {
 
 function loadFrontendReactEnv() {
   const sources = [
-    path.join(root, 'frontend', '.env.production'),
-    path.join(root, 'frontend', '.env'),
+    path.join(root, 'web', '.env.production'),
+    path.join(root, 'web', '.env'),
   ];
   for (const filePath of sources) {
     if (!fs.existsSync(filePath)) continue;
@@ -273,7 +273,7 @@ async function main() {
   console.log(`Frontend: ${FRONTEND_URL}`);
 
   checkEnv(EC2_REQUIRED, 'EC2 env (root .env)');
-  checkEnv(VERCEL_REQUIRED, 'Frontend env (root .env + frontend/.env*)');
+  checkEnv(VERCEL_REQUIRED, 'Frontend env (root .env + web/.env*)');
 
   console.log('\n## Optional env');
   for (const key of OPTIONAL) {
@@ -292,7 +292,7 @@ async function main() {
   if (missingReact.length > 0) {
     console.log('\n## Fix missing frontend env locally');
     console.log('  Run: node scripts/sync-react-env.mjs');
-    console.log('  Or copy frontend/.env.production → add REACT_APP_* to root .env');
+    console.log('  Or copy web/.env.production → add REACT_APP_* to root .env');
   }
 
   console.log('\n## Manual steps still required');

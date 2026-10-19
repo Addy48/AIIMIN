@@ -25,7 +25,7 @@ fi
 
 # 2. Frontend build
 echo "Building frontend..."
-if (cd frontend && npm run build >/tmp/aiimin-verify-build.log 2>&1); then
+if (cd web && npm run build >/tmp/aiimin-verify-build.log 2>&1); then
   pass "frontend npm run build"
 else
   fail "frontend build failed (see /tmp/aiimin-verify-build.log)"
@@ -67,7 +67,7 @@ else
 fi
 
 # 5. Tracked build artifacts check
-if git ls-files 'app/**/build/**' 'frontend/android/**/build/**' 2>/dev/null | grep -q .; then
+if git ls-files 'android/**/build/**' 'web/android/**/build/**' 2>/dev/null | grep -q .; then
   fail "Build artifacts still tracked in git"
 else
   pass "No tracked android build/ dirs"

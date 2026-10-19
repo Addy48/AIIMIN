@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Window ground before Compose draws (light theme only). -->
+    <color name="industry_bg">#F5F3EE</color>
+    <!-- Launcher ground for the light AIIMIN mark. -->
+    <color name="launcher_bg">#FFFFFF</color>
+</resources>

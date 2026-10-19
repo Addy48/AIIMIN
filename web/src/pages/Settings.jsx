@@ -1,0 +1,607 @@
+import React, { useState, useCallback } from 'react';
+import { useAuth } from '../hooks/useAuth';
+import { useThemeContext } from '../context/ThemeContext';
+import { apiDelete, apiPatch, apiPost } from '../utils/api';
+import toast from '../utils/toast';
+import { useMockData } from '../providers/MockDataProvider';
+import { exportUserData } from '../utils/exportUserData';
+import {
+  User, Palette, Bell, Shield, Database, Activity,
+  Globe, Lock, ChevronRight, Check, X, Edit2,
+  Download, Trash2, Eye, EyeOff, Smartphone
+} from 'lucide-react';
+import PageHeader from '../components/layout/PageHeader';
+
+
+
+// ── Section wrapper ──────────────────────────────────────────────────────────
+const Section = ({ icon: Icon, title, children, accent }) => (
+  <div style={{
+    background: 'var(--color-surface)',
+    border: '1px solid var(--color-border)',
+    borderRadius: '24px',
+    overflow: 'hidden',
+  }}>
+    <div style={{
+      padding: '20px 24px',
+      borderBottom: '1px solid var(--color-border)',
+      display: 'flex', alignItems: 'center', gap: '12px',
+      background: 'var(--color-elevated)',
+    }}>
+      <div style={{
+        width: '36px', height: '36px', borderRadius: '10px',
+        background: `${accent || 'var(--color-accent)'}18`,
+        color: accent || 'var(--color-accent)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <Icon size={18} />
+      </div>
+      <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-text-1)', letterSpacing: '-0.01em' }}>{title}</div>
+    </div>
+    <div style={{ padding: '24px' }}>{children}</div>
+  </div>
+);
+
+// ── Row inside a section ─────────────────────────────────────────────────────
+const Row = ({ label, desc, control, danger }) => (
+  <div style={{
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    padding: '14px 0', borderBottom: '1px solid var(--color-border)',
+    gap: '16px',
+  }}>
+    <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{ fontSize: '14px', fontWeight: 700, color: danger ? '#ef4444' : 'var(--color-text-1)', marginBottom: '2px' }}>{label}</div>
+      {desc && <div style={{ fontSize: '12px', color: 'var(--color-text-3)', lineHeight: 1.4 }}>{desc}</div>}
+    </div>
+    <div style={{ flexShrink: 0 }}>{control}</div>
+  </div>
+);
+
+const TogglePill = ({ checked, onChange }) => (
+  <button onClick={() => onChange(!checked)} style={{
+    width: '46px', height: '26px', borderRadius: '13px',
+    background: checked ? 'var(--color-accent)' : 'var(--color-border)',
+    border: 'none', cursor: 'pointer', position: 'relative',
+    transition: 'background 0.2s',
+  }}>
+    <div style={{
+      width: '20px', height: '20px', borderRadius: '50%', background: '#fff',
+      position: 'absolute', top: '3px',
+      left: checked ? '23px' : '3px',
+      transition: 'left 0.2s',
+      boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
+    }} />
+  </button>
+);
+
+// ── Stat mini card ───────────────────────────────────────────────────────────
+const StatMini = ({ icon, value, label, color }) => (
+  <div style={{
+    background: 'var(--color-elevated)', borderRadius: '16px', padding: '16px',
+    display: 'flex', flexDirection: 'column', gap: '6px',
+    border: '1px solid var(--color-border)',
+  }}>
+    <div style={{ fontSize: '20px' }}>{icon}</div>
+    <div style={{ fontSize: '22px', fontWeight: 900, color: color || 'var(--color-text-1)', letterSpacing: '-0.02em' }}>{value}</div>
+    <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-text-3)' }}>{label}</div>
+  </div>
+);
+
+const THEMES = [
+  { id: 'normal', label: 'Normal', colors: ['#FAFAF9', '#1A1A1A', '#1E5C3A'], dark: false },
+  { id: 'dark', label: 'Dark', colors: ['#0A0A0A', '#EDEDED', '#22C55E'], dark: true },
+  { id: 'notion', label: 'Notion', colors: ['#FFFFFF', '#37352F', '#EBEBEA'], dark: false },
+  { id: 'internet', label: 'Internet', colors: ['#0A0D10', '#00F0FF', '#161B22'], dark: true },
+];
+
+/**
+ * Settings/Account Page — Full featured with profile, themes, stats, integrations, privacy.
+ */
+const Settings = () => {
+  const { user, session } = useAuth();
+  const hasGoogle = Boolean(
+    user?.provider === 'google' ||
+    user?.app_metadata?.provider === 'google' ||
+    user?.user_metadata?.provider === 'google' ||
+    user?.identities?.some((id) => id.provider === 'google')
+  );
+  const authMethod = user?.email ? (hasGoogle ? 'Google OAuth' : 'Email account') : '—';
+  const { theme, setTheme } = useThemeContext();
+  const [notifReminders, setNotifReminders] = useState(() => localStorage.getItem('aiimin_notif_reminders') === 'true');
+  const [notifInsights, setNotifInsights] = useState(() => localStorage.getItem('aiimin_notif_insights') === 'true');
+  const [notifSports, setNotifSports] = useState(() => localStorage.getItem('aiimin_notif_sports') === 'true');
+  const { isUsingMock, mockData } = useMockData() || {};
+
+  // Password change
+  const [newPwd, setNewPwd] = useState('');
+  const [confirmPwd, setConfirmPwd] = useState('');
+  const [showPwd, setShowPwd] = useState(false);
+  const [pwdLoading, setPwdLoading] = useState(false);
+
+  // Username editing
+  const [editingName, setEditingName] = useState(false);
+  const [nameVal, setNameVal] = useState((user?.user_metadata?.username || user?.email?.split('@')[0] || 'User').toUpperCase());
+
+  // Account stats (simulated from localStorage + session)
+  const focusMins = parseInt(localStorage.getItem('aiimin_focus_mins') || '0', 10);
+  const focusSessions = parseInt(localStorage.getItem('aiimin_focus_today') || '0', 10);
+
+  const joinedDate = user?.created_at ? new Date(user.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
+  const daysSinceJoin = user?.created_at ? Math.floor((Date.now() - new Date(user.created_at)) / 86400000) : 0;
+
+  const devEmail = process.env.REACT_APP_DEV_EMAIL;
+  const isAdmin = !!(devEmail && user?.email === devEmail);
+
+  const saveAndSet = (key, setter) => (val) => {
+    setter(val);
+    localStorage.setItem(key, String(val));
+  };
+
+  const handleExport = useCallback(async () => {
+    const tid = toast.loading('Exporting data...');
+    try {
+      await exportUserData(session, isUsingMock, mockData);
+      toast.update(tid, 'Downloaded JSON ✓', 'success');
+    } catch {
+      toast.update(tid, 'Export failed', 'error');
+    }
+  }, [session, isUsingMock, mockData]);
+
+    const handleNameSave = useCallback(async () => {
+        const trimmed = nameVal.trim();
+        if (!trimmed) {
+            toast.error('Name cannot be empty.');
+            return;
+        }
+        const tid = toast.loading('Saving…');
+        try {
+            await apiPatch('/account/profile', { full_name: trimmed });
+            toast.update(tid, 'Display name updated', 'success');
+            setEditingName(false);
+        } catch (err) {
+            toast.update(tid, err?.message || 'Could not update name', 'error');
+        }
+    }, [nameVal]);
+  const handleDeleteAllData = useCallback(async () => {
+    if (!window.confirm('This will wipe all your tracked data but KEEP your account. Proceed?')) return;
+    const input = window.prompt('Type "WIPE ALL DATA" to confirm:');
+    if (input !== 'WIPE ALL DATA') { toast.error('Deletion cancelled.'); return; }
+    const tid = toast.loading('Deleting all data...');
+    try {
+      await apiPost('/account/wipe-life-data', { confirm: 'WIPE ALL DATA' });
+      try {
+        const keep = /^(aiimin_theme|aiimin-theme|theme|better-auth)/i;
+        const toRemove = [];
+        for (let i = 0; i < localStorage.length; i += 1) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith('aiimin_') && !keep.test(key)) toRemove.push(key);
+        }
+        toRemove.forEach((key) => localStorage.removeItem(key));
+      } catch { /* ignore */ }
+      toast.update(tid, 'All data deleted', 'success');
+      setTimeout(() => window.location.reload(), 1200);
+    } catch (err) {
+      toast.update(tid, 'Failed: ' + (err?.message || 'unknown'), 'error');
+    }
+  }, []);
+
+  const handleDeleteAccount = useCallback(async () => {
+    if (!window.confirm('This will PERMANENTLY delete everything. Proceed?')) return;
+    const input = window.prompt(`Type "delete ${user.email}" to confirm:`);
+    if (input !== `delete ${user.email}`) { toast.error('Cancelled.'); return; }
+    const tid = toast.loading('Deleting account...');
+    try {
+      await apiDelete('/account', { confirm: 'DELETE' }, { session });
+      toast.update(tid, 'Account deleted', 'success');
+      setTimeout(() => window.location.reload(), 1000);
+    } catch {
+      toast.update(tid, 'Delete failed', 'error');
+    }
+  }, [session, user]);
+
+  if (!user) return null;
+
+  return (
+    <div className="page-container">
+      {/* Header */}
+      <PageHeader 
+        title={nameVal}
+        subtitle="Account Settings"
+        rightContent={
+          <div style={{
+            width: '64px', height: '64px', borderRadius: '20px',
+            background: 'linear-gradient(135deg, var(--color-accent), #059669)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '28px', fontWeight: 900, color: '#fff',
+            flexShrink: 0,
+            boxShadow: 'var(--shadow-md)'
+          }}>
+            {(nameVal?.[0] || 'A').toUpperCase()}
+          </div>
+        }
+      />
+
+      {/* Account Stats */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px', marginBottom: '28px' }}>
+        <StatMini icon="📅" value={joinedDate.split(' ')[2] || '2026'} label="Member Since" color="var(--color-accent)" />
+        <StatMini icon="⚡" value={`${daysSinceJoin}d`} label="Days Active" color="#F59E0B" />
+        <StatMini icon="🎯" value={`${focusMins}m`} label="Focus Time" color="#3B82F6" />
+        <StatMini icon="🔥" value={focusSessions} label="Sessions" color="#EF4444" />
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+
+        {/* ── Profile ─────────────────────────────────────────────────────── */}
+        <Section icon={User} title="Profile" accent="#10B981">
+          <Row
+            label="Display Name"
+            desc="Your name shown across the dashboard"
+            control={
+              editingName ? (
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <input value={nameVal} onChange={e => setNameVal(e.target.value.toUpperCase().replace(/[^A-Z0-9_.-]/g, '').slice(0, 20))} autoFocus
+                    style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--color-accent)', background: 'var(--color-elevated)', color: 'var(--color-text-1)', fontSize: '13px', outline: 'none', fontFamily: 'inherit', width: '160px' }}
+                    onKeyDown={e => e.key === 'Enter' && handleNameSave()}
+                  />
+                  <button onClick={handleNameSave} style={{ padding: '6px 12px', borderRadius: '8px', background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 700 }}>Save</button>
+                  <button onClick={() => setEditingName(false)} style={{ padding: '6px', borderRadius: '8px', background: 'var(--color-elevated)', border: '1px solid var(--color-border)', cursor: 'pointer', color: 'var(--color-text-3)' }}><X size={14} /></button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-2)' }}>{nameVal}</span>
+                  <button onClick={() => setEditingName(true)} style={{ padding: '6px 12px', borderRadius: '8px', background: 'var(--color-elevated)', border: '1px solid var(--color-border)', cursor: 'pointer', color: 'var(--color-text-2)', fontSize: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <Edit2 size={12} /> Edit
+                  </button>
+                </div>
+              )
+            }
+          />
+          <Row
+            label="Email"
+            desc="Your account email address"
+            control={<span style={{ fontSize: '13px', color: 'var(--color-text-3)', fontWeight: 600 }}>{user.email}</span>}
+          />
+          <Row
+            label="Connected Account"
+            desc={hasGoogle ? 'Signed in via Google OAuth — no password needed' : 'Signed in with username and password'}
+            control={
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {hasGoogle ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', borderRadius: '99px', background: 'rgba(66,133,244,0.10)', border: '1px solid rgba(66,133,244,0.2)' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                    </svg>
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#4285F4' }}>Google Connected</span>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', borderRadius: '99px', background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.2)' }}>
+                    <User size={12} color="#10B981" />
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#10B981' }}>{user.username || user.email}</span>
+                  </div>
+                )}
+              </div>
+            }
+          />
+          <Row
+            label="Sign-in Method"
+            desc="How you authenticate to AIIMIN"
+            control={
+              <span style={{ padding: '4px 10px', borderRadius: '99px', fontSize: '11px', fontWeight: 700, background: 'var(--color-elevated)', color: 'var(--color-text-2)', border: '1px solid var(--color-border)' }}>
+                {authMethod}
+              </span>
+            }
+          />
+          <Row
+            label="Account Type"
+            desc={isAdmin ? 'Full admin access to all system controls' : 'Personal account with full feature access'}
+            control={
+              <span style={{ padding: '4px 10px', borderRadius: '99px', fontSize: '11px', fontWeight: 800, background: isAdmin ? 'rgba(245,158,11,0.15)' : 'rgba(16,185,129,0.12)', color: isAdmin ? '#F59E0B' : 'var(--color-accent)' }}>
+                {isAdmin ? '⚡ Admin' : '✓ Member'}
+              </span>
+            }
+          />
+          <Row
+            label="Guided Introduction"
+            desc="Eight-stop Life OS tour — Today, capture, discipline, focus, Reports. Starts without a page reload."
+            control={
+              <button
+                type="button"
+                onClick={() => {
+                  // Never clear opt-out — invite must not return after Not now.
+                  if (typeof window.startProductTour === 'function') {
+                    window.startProductTour();
+                    toast.success('Tour started');
+                  } else {
+                    window.dispatchEvent(new CustomEvent('aiimin:start-tour'));
+                    toast.success('Starting tour…');
+                    setTimeout(() => {
+                      if (typeof window.startProductTour === 'function') window.startProductTour();
+                      else toast.error('Open any app page first, then try again');
+                    }, 200);
+                  }
+                }}
+                style={{
+                  padding: '10px 16px',
+                  minHeight: 40,
+                  borderRadius: 10,
+                  background: 'color-mix(in srgb, var(--color-accent) 14%, transparent)',
+                  color: 'var(--color-accent)',
+                  border: '1px solid var(--color-accent)',
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
+                Start product tour
+              </button>
+            }
+          />
+          <div style={{ marginTop: '16px', padding: '14px 16px', borderRadius: '12px', background: 'var(--color-elevated)', border: '1px solid var(--color-border)' }}>
+            <p style={{ fontSize: '12px', color: 'var(--color-text-3)', lineHeight: 1.6, margin: 0 }}>
+              To update your password, email, or linked accounts, click your <strong style={{ color: 'var(--color-text-2)' }}>profile avatar</strong> in the navigation bar.
+            </p>
+          </div>
+        </Section>
+
+        {/* ── Appearance ──────────────────────────────────────────────────── */}
+        <Section icon={Palette} title="Appearance" accent="#8B5CF6">
+          <div style={{ fontSize: '12px', color: 'var(--color-text-3)', marginBottom: '16px' }}>
+            Choose a theme. Applied instantly across the entire dashboard.
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+            {THEMES.map(t => (
+              <button key={t.id} onClick={() => setTheme(t.id)} style={{
+                border: `2px solid ${theme === t.id ? 'var(--color-accent)' : 'var(--color-border)'}`,
+                borderRadius: '16px', padding: '14px', cursor: 'pointer',
+                background: theme === t.id ? 'var(--color-accent-dim)' : 'var(--color-elevated)',
+                transition: 'all 0.2s', position: 'relative', overflow: 'hidden',
+                display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'flex-start',
+              }}>
+                {/* Color swatches */}
+                <div style={{ display: 'flex', gap: '5px' }}>
+                  {t.colors.map((c, ci) => (
+                    <div key={ci} style={{ width: '18px', height: '18px', borderRadius: '50%', background: c, border: '1px solid rgba(0,0,0,0.15)' }} />
+                  ))}
+                </div>
+                <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--color-text-1)', textAlign: 'left' }}>{t.label}</div>
+                {theme === t.id && (
+                  <div style={{ position: 'absolute', top: '8px', right: '8px', width: '18px', height: '18px', borderRadius: '50%', background: 'var(--color-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Check size={11} color="#fff" />
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+        </Section>
+
+        {/* ── Notifications ────────────────────────────────────────────────── */}
+        <Section icon={Bell} title="Notifications" accent="#F59E0B">
+          <Row
+            label="Daily Reminders"
+            desc="Morning check-in prompts and evening reflection nudges"
+            control={<TogglePill checked={notifReminders} onChange={saveAndSet('aiimin_notif_reminders', setNotifReminders)} />}
+          />
+          <Row
+            label="Weekly Insight Digest"
+            desc="Summary of behavioral patterns delivered Sunday evening"
+            control={<TogglePill checked={notifInsights} onChange={saveAndSet('aiimin_notif_insights', setNotifInsights)} />}
+          />
+          <Row
+            label="Sports Score Alerts"
+            desc="Get notified when live matches update for your tracked sports"
+            control={<TogglePill checked={notifSports} onChange={saveAndSet('aiimin_notif_sports', setNotifSports)} />}
+          />
+        </Section>
+
+        {/* ── Integrations ─────────────────────────────────────────────────── */}
+        <Section icon={Globe} title="Integrations" accent="#3B82F6">
+          {[
+            {
+              icon: '📅',
+              name: 'Google Calendar',
+              desc: 'Sync your events and deadlines from Google Calendar',
+              status: 'Connect via Calendar page → Connect Google',
+              color: '#3B82F6',
+              action: null,
+            },
+            {
+              icon: '🏏',
+              name: 'ESPN Sports Data',
+              desc: 'Live cricket, football, F1, and basketball scores',
+              status: 'Active',
+              color: '#10B981',
+              active: true,
+            },
+            {
+              icon: '🗄️',
+              name: 'Supabase PostgreSQL',
+              desc: 'All data stored securely in your personal database',
+              status: 'Connected',
+              color: '#10B981',
+              active: true,
+            },
+            {
+              icon: '☁️',
+              name: 'Vercel Functions',
+              desc: 'Serverless backend for all API calls',
+              status: 'Production · Active',
+              color: '#F59E0B',
+              active: true,
+            },
+          ].map((int, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 0', borderBottom: '1px solid var(--color-border)' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: `${int.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', flexShrink: 0 }}>
+                {int.icon}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-text-1)' }}>{int.name}</div>
+                <div style={{ fontSize: '12px', color: 'var(--color-text-3)', marginTop: '2px' }}>{int.desc}</div>
+              </div>
+              <span style={{
+                fontSize: '11px', fontWeight: 700, padding: '4px 10px', borderRadius: '99px',
+                background: int.active ? 'rgba(16,185,129,0.12)' : 'var(--color-elevated)',
+                color: int.active ? '#10B981' : 'var(--color-text-3)',
+                border: `1px solid ${int.active ? 'rgba(16,185,129,0.2)' : 'var(--color-border)'}`,
+                whiteSpace: 'nowrap',
+              }}>
+                {int.status}
+              </span>
+            </div>
+          ))}
+        </Section>
+
+        {/* ── Android Companion ────────────────────────────────────────────── */}
+        <Section icon={Smartphone} title="Android Companion" accent="#FF6B35">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+              <div>
+                <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--color-text-1)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  Native Android V2 Companion
+                  <span style={{ fontSize: '10px', fontWeight: 800, padding: '2px 8px', borderRadius: '99px', background: 'rgba(255,107,53,0.14)', color: '#FF6B35', border: '1px solid rgba(255,107,53,0.3)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    V2 Live · Closed Testing
+                  </span>
+                </div>
+                <div style={{ fontSize: '12px', color: 'var(--color-text-3)', marginTop: '4px', maxWidth: '540px', lineHeight: 1.5 }}>
+                  Companion app for Today, Discipline Engine, urge logging with encrypted local vault, screen-time tracking, and app blocking.
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <a
+                  href="https://github.com/Addy48/AIIMIN/releases/latest/download/aiimin-android.apk"
+                  download="aiimin-android.apk"
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: '10px',
+                    background: '#FF6B35',
+                    color: '#fff',
+                    textDecoration: 'none',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 4px 12px rgba(255,107,53,0.35)',
+                  }}
+                >
+                  <Download size={14} /> Download V2 APK
+                </a>
+                <a
+                  href="/app"
+                  style={{
+                    padding: '8px 14px',
+                    borderRadius: '10px',
+                    background: 'var(--color-elevated)',
+                    color: 'var(--color-text-2)',
+                    textDecoration: 'none',
+                    border: '1px solid var(--color-border)',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                  }}
+                >
+                  App Status Page <ChevronRight size={12} />
+                </a>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px', paddingTop: '8px' }}>
+              {[
+                { label: 'Discipline Engine', desc: 'Screen, food, urge logs in AES-GCM local vault' },
+                { label: 'App Blocking', desc: 'Accessibility-service enforcement without VPN' },
+                { label: 'Screen Time', desc: 'UsageStatsManager authoritative totals' },
+                { label: 'Outbox Sync', desc: 'Coarse sync (privacy_mode=local_detail_v1)' },
+              ].map((f, fi) => (
+                <div key={fi} style={{ padding: '10px 12px', borderRadius: '10px', background: 'var(--color-elevated)', border: '1px solid var(--color-border)' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-1)' }}>✓ {f.label}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-3)', marginTop: '2px' }}>{f.desc}</div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ padding: '10px 14px', borderRadius: '8px', background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)', fontSize: '11.5px', color: 'var(--color-text-2)', display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <span style={{ color: '#F59E0B', fontWeight: 800 }}>Note:</span>
+              <span>This is a direct tester build (~27 MB, Android 8.0+). Enable <strong>Install unknown apps</strong> in Android Settings. Play Store listing follows tester verification.</span>
+            </div>
+          </div>
+        </Section>
+
+        {/* ── Data & Reports ───────────────────────────────────────────────── */}
+        <Section icon={Database} title="Data & Reports" accent="#10B981">
+          <Row
+            label="Export All Data"
+            desc="Download a complete JSON backup of your logs, finances, sessions, and settings"
+            control={
+              <button onClick={handleExport} style={{ padding: '8px 16px', borderRadius: '10px', background: 'rgba(16,185,129,0.12)', color: '#10B981', border: '1px solid rgba(16,185,129,0.2)', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Download size={13} /> Export
+              </button>
+            }
+          />
+          <Row
+            label="View Analytics Report"
+            desc="Behavioral analysis, spending trends, focus patterns, and quarterly reviews"
+            control={
+              <button onClick={() => window.dispatchEvent(new CustomEvent('aiimin:goto', { detail: '/analytics' }))} style={{ padding: '8px 16px', borderRadius: '10px', background: 'var(--color-elevated)', color: 'var(--color-text-2)', border: '1px solid var(--color-border)', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Activity size={13} /> Reports <ChevronRight size={12} />
+              </button>
+            }
+          />
+        </Section>
+
+        {/* ── Security & Privacy ───────────────────────────────────────────── */}
+        <Section icon={Shield} title="Security & Privacy" accent="#EF4444">
+          <div style={{ padding: '14px', background: 'rgba(16,185,129,0.06)', borderRadius: '12px', border: '1px solid rgba(16,185,129,0.15)', marginBottom: '16px', display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', flexShrink: 0 }} />
+            <div style={{ fontSize: '13px', color: 'var(--color-text-2)' }}>
+              <strong style={{ color: 'var(--color-text-1)' }}>Your data is secure.</strong> All traffic is encrypted (HTTPS/TLS). Passwords are hashed by Supabase Auth and never stored in plaintext.
+            </div>
+          </div>
+          <Row
+            label="Wipe All Tracked Data"
+            desc="Deletes logs, finance, sessions, habits — keeps your account intact"
+            danger
+            control={
+              <button onClick={handleDeleteAllData} style={{ padding: '8px 14px', borderRadius: '10px', background: 'rgba(239,68,68,0.08)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Trash2 size={13} /> Wipe Data
+              </button>
+            }
+          />
+          <div style={{ paddingTop: '4px' }}>
+            <Row
+              label="Delete Account"
+              desc="Permanently removes your account and all associated data. This cannot be undone."
+              danger
+              control={
+                <button onClick={handleDeleteAccount} style={{ padding: '8px 14px', borderRadius: '10px', background: 'rgba(239,68,68,0.12)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <X size={13} /> Delete Account
+                </button>
+              }
+            />
+          </div>
+        </Section>
+
+        {/* ── System Info ─────────────────────────────────────────────────── */}
+        <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '16px', padding: '20px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+          {[
+            { label: 'App Version', value: 'AIIMIN v3.1' },
+            { label: 'Backend', value: 'Vercel · Hono' },
+            { label: 'Database', value: 'Supabase PostgreSQL' },
+          ].map((info, i) => (
+            <div key={i} style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-text-3)', marginBottom: '4px' }}>{info.label}</div>
+              <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-2)' }}>{info.value}</div>
+            </div>
+          ))}
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
+export default Settings;

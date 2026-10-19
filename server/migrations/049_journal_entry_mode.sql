@@ -1,7 +1,7 @@
 -- 049: journal_entries — one entry per (user, date, MODE), not one per (user, date).
 --
 -- Why: the app models a journal entry per mode (write / free_write / cbt / www /
--- morning / weekly) — findEntryForDate() in frontend/src/components/journal/journalUtils.js
+-- morning / weekly) — findEntryForDate() in web/src/components/journal/journalUtils.js
 -- keys on date AND mode. The table only carried UNIQUE (user_id, date), so writing a
 -- second mode on the same day raised a duplicate-key 500.
 --

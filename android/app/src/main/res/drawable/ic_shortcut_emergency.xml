@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Launcher shortcut icon: FirstAid (Phosphor, MIT) on a circle, per Android's shortcut icon guidelines. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="256"
+    android:viewportHeight="256">
+    <path
+        android:fillColor="#F2EFE9"
+        android:pathData="M128,0a128,128 0,1 1,0 256a128,128 0,1 1,0 -256z" />
+    <group
+        android:translateX="72"
+        android:translateY="72"
+        android:scaleX="0.4375"
+        android:scaleY="0.4375">
+        <path
+            android:fillColor="#1A1A1A"
+            android:pathData="M216,56H176V48a24,24,0,0,0-24-24H104A24,24,0,0,0,80,48v8H40A16,16,0,0,0,24,72V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V72A16,16,0,0,0,216,56ZM96,48a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96ZM216,200H40V72H216V200Zm-56-64a8,8,0,0,1-8,8H136v16a8,8,0,0,1-16,0V144H104a8,8,0,0,1,0-16h16V112a8,8,0,0,1,16,0v16h16A8,8,0,0,1,160,136Z" />
+    </group>
+</vector>

@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 import pg from 'pg';
 
-dotenv.config({ path: '/Users/aaditya/Desktop/DASHBOARD PROJECT/.env' });
+dotenv.config({ path: '/Users/aaditya/Desktop/aiimin/01-repo/.env' });
 
 const { Pool } = pg;
 const pool = new Pool({

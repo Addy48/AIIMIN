@@ -58,7 +58,7 @@ OWNER_COGNITO_SUBS=<your-sub-after-first-login>
 
 - [ ] `server/lib/cognitoJwt.js` — verify access tokens
 - [ ] `server/middleware/auth.js` — Cognito first, Supabase fallback
-- [ ] `frontend/src/context/CognitoAuthContext.jsx` — replace Supabase session
+- [ ] `web/src/context/CognitoAuthContext.jsx` — replace Supabase session
 - [ ] `Login.jsx` — Hosted UI or Amplify sign-in
 - [ ] `AuthCallback.jsx` — exchange code for tokens
 
