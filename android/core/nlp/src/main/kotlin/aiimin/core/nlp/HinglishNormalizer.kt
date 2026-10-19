@@ -538,6 +538,7 @@ internal object NumberWords {
     private val LONE_NEXT = setOf("baje", "am", "pm", "rupees", "rs", "dollars", "dollar", "euros", "euro", "pounds", "pound", "usd", "inr", "aud", "gbp", "eur", "aed",
         "minutes", "minute", "min", "mins", "ghante", "hours", "hour", "hrs", "pages", "litres", "litre", "lakh", "k", "o'clock")
     private val LONE_PREV = setOf("at", "past", "to", "till", "by", "around", "about", "for", "rs", "rupees", "paid", "spent", "gave", "mood", "focus", "pomodoro", "kharch")
+    private val CLOCK_PREV = setOf("at", "past", "to", "till", "by", "baje")
     private val ORDINAL = mapOf(
         "third" to 3, "fourth" to 4, "fifth" to 5, "sixth" to 6, "seventh" to 7, "eighth" to 8, "ninth" to 9, "tenth" to 10, "eleventh" to 11, "twelfth" to 12,
         "thirteenth" to 13, "fourteenth" to 14, "fifteenth" to 15, "sixteenth" to 16, "seventeenth" to 17, "eighteenth" to 18, "nineteenth" to 19, "twentieth" to 20,
@@ -569,7 +570,7 @@ internal object NumberWords {
             }
             // "2 lakh", "5 hazaar": a digit before a scale word keeps the word; the money parser reads the pair
             if (run.first() in SCALE && words.getOrNull(i - 1)?.firstOrNull()?.isDigit() == true) { out += w + tails[i]; i++; continue }
-            val value = eval(run)
+            val value = eval(run, clockSlot = words.getOrNull(i - 1) in CLOCK_PREV)
             val lone = run.size == 1 && run[0] in UNITS && (UNITS.getValue(run[0]) <= 10)
             val gated = lone && !(words.getOrNull(j) in LONE_NEXT || words.getOrNull(i - 1) in LONE_PREV)
             if (value == null || gated) {
@@ -588,7 +589,7 @@ internal object NumberWords {
         return out.joinToString(" ")
     }
 
-    private fun eval(run: List<String>): BigDecimal? {
+    private fun eval(run: List<String>, clockSlot: Boolean = false): BigDecimal? {
         var total = BigDecimal.ZERO
         var cur = BigDecimal.ZERO
         var adjust = BigDecimal.ZERO
@@ -602,7 +603,13 @@ internal object NumberWords {
                     val v = BigDecimal(UNITS.getValue(t)) + adjust
                     adjust = BigDecimal.ZERO
                     val prev = run.getOrNull(idx - 1)
-                    if (prev != null && prev in UNITS && cur.signum() != 0 && cur.remainder(BigDecimal(100)).signum() != 0 && !(UNITS.getValue(prev) >= 20 && UNITS.getValue(t) < 10)) return null
+                    if (prev != null && prev in UNITS && cur.signum() != 0 && cur.remainder(BigDecimal(100)).signum() != 0 && !(UNITS.getValue(prev) >= 20 && UNITS.getValue(t) < 10)) {
+                        // "two fifty" is 250 in money talk but 2:50 after "at": the caller decides by what comes before the run
+                        if (clockSlot || run.size != 2 || UNITS.getValue(prev) !in 1..99 || UNITS.getValue(t) < 10) return null
+                        cur = cur * BigDecimal(100) + v
+                        seen = true
+                        continue
+                    }
                     cur += v; seen = true
                 }
                 t in SCALE -> {

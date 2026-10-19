@@ -39,8 +39,8 @@ internal object WhenParser {
     private val EVERY_ALT = Regex("""\bevery\s+(?:alternate|other)\s+day\b""", I)
     private val MONTHLY = Regex("""\b(?:every|each|per)\s+month\b|\bmonthly\b|\bhar\s+mahine\b|\bmahine\s+ke\b""", I)
     private val WEEKLY = Regex("""\b(?:every|each)\s+week\b|\bweekly\b|\bhar\s+hafte\b""", I)
-    private val DAILY = Regex("""\b(?:every\s*day|each\s+day|daily|rozana|roz|har\s+din)\b""", I)
-    private val YEARLY = Regex("""\b(?:every\s+year|yearly|annually|annual|har\s+saal)\b""", I)
+    private val DAILY = Regex("""\b(?:every\s*day|each\s+day|daily|rozana|roz|har\s+din|every\s+(?:morning|evening|night|afternoon)|har\s+(?:subah|shaam|raat))\b""", I)
+    private val YEARLY = Regex("""\b(?:every\s+year|yearly|annually|har\s+saal)\b""", I)
 
     private val DAY_AFTER = Regex("""\bday after tomorrow\b""", I)
     private val PARSO = Regex("""\b(parso|narso)\b""", I)

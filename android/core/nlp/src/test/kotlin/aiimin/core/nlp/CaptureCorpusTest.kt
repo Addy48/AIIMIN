@@ -14,8 +14,8 @@ class CaptureCorpusTest {
     private data class Exp(val kind: String, val paise: Long?, val cur: String?, val day: String?, val time: String?, val rec: String?, val label: String?)
     private data class Row(val id: Int, val cat: String, val lang: String, val text: String, val twin: String, val exp: List<Exp>)
 
-    private fun load(): List<Row> {
-        val s = javaClass.getResourceAsStream("/capture_corpus_500.tsv")!!.bufferedReader(Charsets.UTF_8).readLines()
+    private fun load(file: String = "/capture_corpus_500.tsv"): List<Row> {
+        val s = javaClass.getResourceAsStream(file)!!.bufferedReader(Charsets.UTF_8).readLines()
         return s.filter { it.isNotBlank() }.map { line ->
             val f = line.split("\t")
             val exps = f[6].split("|").map { p ->
@@ -75,5 +75,19 @@ class CaptureCorpusTest {
         assertThat(wrongAmount.map { "#${it.first.id} ${it.first.text}: ${it.second}" }).isEmpty()
         val failing = results.filter { it.second != null }
         assertThat(failing.map { "#${it.first.id} [${it.first.cat}] ${it.first.text}: ${it.second}" }.take(60)).isEmpty()
+    }
+
+    /** Phrases written after the 500-set without looking at the word lists: the honest generalisation check. */
+    @Test fun `hold-out phrases`() {
+        val rows = load("/capture_holdout.tsv")
+        val results = rows.map { it to check(it) }
+        File("build/capture-holdout-results.csv").writeText("id,category,pass,why,text\n" + results.joinToString("\n") { (r, why) ->
+            "${r.id},${r.cat},${if (why == null) 1 else 0},\"${(why ?: "").replace("\"", "'")}\",\"${r.text.replace("\"", "'")}\""
+        })
+        println("HOLDOUT OVERALL ${results.count { it.second == null }}/${results.size}")
+        results.groupBy { it.first.cat }.toSortedMap().forEach { (c, v) -> println("HOLDOUT %-22s %3d/%3d".format(c, v.count { it.second == null }, v.size)) }
+        val wrongAmount = results.filter { (_, why) -> why != null && why.startsWith("paise") }
+        println("HOLDOUT wrong amounts: " + wrongAmount.joinToString { "#${it.first.id} ${it.first.text}: ${it.second}" })
+        assertThat(results.count { it.second == null }.toDouble() / results.size).isAtLeast(0.5)
     }
 }

@@ -142,7 +142,7 @@ object CaptureEngine {
         if (NEGATED_SPEND.containsMatchIn(clause)) return noteItem(clause, raw, caseMap, "nothing spent")
 
         val wordsAll = tokens(clause)
-        val pastCue = wordsAll.any { it in L.SPEND_VERBS || it in setOf("khaya", "piya", "kiya", "kiye", "liya") }
+        val pastCue = wordsAll.any { it in L.SPEND_VERBS || it in setOf("khaya", "piya", "pi", "thi", "tha", "gaya", "kiya", "kiye", "liya") }
         val w = WhenParser.parse(clause, now, past = pastCue)
         val money = MoneyParser.scan(w.rest, cur)
         val ctx = Ctx(clause, w, money, tokens(money.rest), raw, caseMap)
@@ -199,6 +199,7 @@ object CaptureEngine {
 
         // who owes whom is not an expense until the person says which way it goes
         if (Regex("""\b(?:owes?|owed|owing)\b""", I).containsMatchIn(text) && m.chosen != null) return Item(Kind.CHOOSE, reason = "who owes whom", raw = c.raw, confidence = 0.3)
+        val paidMe = Regex("""\b(?:paid|pays|gave|sent|transferred|bheje|diye)\s+me\b""", I).containsMatchIn(text)
         val neAgent = Regex("""\b(?!maine\b)\w+ ne\b""", I).containsMatchIn(text) && Regex("""\b(?:bheje|bheja|diye|diya|di|liye|liya|de)\b""").containsMatchIn(text)
         if (neAgent && m.chosen != null) {
             return if ("udhaar" in lower) Item(Kind.CHOOSE, reason = "borrowed or repaid?", raw = c.raw, confidence = 0.3)
@@ -212,6 +213,7 @@ object CaptureEngine {
         if (m.chosen != null) {
             val noPaise = taskPrefix || Regex("""^(?:remind|need|have|dont|don't)""").containsMatchIn(text)
             if (noPaise) return item(Kind.TASK, 0.85, "reminder mentioning money", paise = null)
+            if (paidMe) return item(Kind.INCOME, 0.9, "someone paid me")
             if (incomeCue && !spendVerb) return item(Kind.INCOME, 0.92, "income cue")
             if (incomeCue && spendVerb && !weakVerb) {
                 // "received 3000 for rent paid": decided by the word nearest the amount; keep simple: income words win

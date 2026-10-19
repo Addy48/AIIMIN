@@ -122,7 +122,8 @@ internal object MoneyParser {
             else -> {
                 val sorted = all.sortedByDescending { it.paise }
                 // a small whole number beside a bigger one is a count ("3 books 900")
-                if (sorted.drop(1).all { it.paise % 100 == 0L && it.paise <= 2000 }) sorted[0] else { unsure = "several amounts"; null }
+                val countLike = sorted.drop(1).all { it.paise % 100 == 0L && it.paise <= 2000 && t.substring(it.end).trimStart().firstOrNull()?.isLetter() == true }
+                if (countLike) sorted[0] else { unsure = "several amounts"; null }
             }
         }
         val rest = if (chosen != null) (t.substring(0, chosen.start) + " " + t.substring(chosen.end)) else t

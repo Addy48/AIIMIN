@@ -10,7 +10,7 @@ internal object CaptureLexicon {
     /** A verb that says money left: with a certain amount it makes an expense. */
     val SPEND_VERBS = words(
         """paid spent spend gave give bought cost costs charged charges purchase purchased pd tipped donated lent returned repaid transferred sent split
-        kharch diye diya di liya li liye kiya kiye bheje bheja bhara bhari bhare kharida kharidi dalwaya dalwai uda udaye lagi lagae jama khaya piya udhaar""",
+        gifted kharch diye diya di liya li liye kiya kiye bheje bheja bhara bhari bhare kharida kharidi dalwaya dalwai uda udaye lagi lagae jama khaya piya udhaar""",
     )
     /** Verbs that are only a spend when an amount follows ("buy milk" is a task, "buy 2kg rice 120" an expense). */
     val WEAK_SPEND = words("pay buy order book get")
@@ -29,7 +29,7 @@ internal object CaptureLexicon {
         medicine medicines dawai dawa doctor consultation pharmacy hospital test lab dentist checkup
         shopping clothes shirt shirts jeans shoes shoe bag watch phone mobile laptop charger repair gift gifts flowers flower toy toys
         tip tips donation charity temple pooja puja udhaar fine penalty courier delivery shipping amazon flipkart myntra meesho
-        pet vet trip travel booking hostel stay popcorn""",
+        pet vet trip travel booking hostel stay popcorn chemist autorickshaw payment deposit advance down gifted worth""",
     )
 
     val TASK_VERBS = words(
@@ -49,13 +49,13 @@ internal object CaptureLexicon {
 
     val EVENT_NOUNS = words(
         """meeting appointment interview flight birthday bday wedding anniversary class webinar standup stand-up party concert match exam lecture session demo presentation
-        trip train bus movie conference seminar workshop ceremony function puja""",
+        trip train bus movie conference seminar workshop ceremony function puja lunch dinner breakfast brunch reunion picnic farewell gathering annual""",
     )
     val EVENT_WITH = Regex("""\b(?:call|lunch|dinner|breakfast|coffee|drinks|catch ?up|meeting|movie|trip|party|sync|brunch|chat) with\b|\b(?:doctor|dentist|clinic|hospital)\s+visit\b""", RegexOption.IGNORE_CASE)
 
     val JOURNAL_WORDS = words(
         """feeling felt feel mood anxious anxiety grateful gratitude tired irritated rough stressed stress happy sad low drained proud lonely angry calm excited nervous worried hopeful
-        overwhelmed exhausted thaka thaki khush udaas pareshan tension tanav mann dil racing""",
+        overwhelmed exhausted thakan thakawat bechain ghabrahat chinta sukoon heavy thaka thaki khush udaas pareshan tension tanav mann dil racing""",
     )
     val JOURNAL_PHRASES = Regex("""accha laga|bura laga|din bahut accha|aaj ka din|couldn'?t sleep|could not sleep|mind racing|nahi lag raha|mann nahi""", RegexOption.IGNORE_CASE)
 
@@ -65,7 +65,7 @@ internal object CaptureLexicon {
     val DOC_CUES = Regex("""\b(?:expires?|expired|expiry|expiring|renewal|renews|valid(?: till| until)?|due|ends?|ending|hoga)\b""", RegexOption.IGNORE_CASE)
 
     val MIN_VERBS = words(
-        """walked walking walk ran run running jogged read reading meditated meditation drank slept studied cycled swam did done stretch stretching yoga workout exercised padhe padha padhai chala chale paidal""",
+        """walked walking walk ran run running jogged cycle cycling chalayi jog swim lifted trained read reading meditated meditation drank slept studied cycled swam did done stretch stretching yoga workout exercised padhe padha padhai chala chale paidal""",
     )
     val MIN_UNIT = Regex("""\d+(?:\.\d+)?\s*(?:k\b|km\b|min(?:ute)?s?\b|hours?\b|hrs?\b|pages?\b|litres?\b|liters?\b|glasses\b|pushups\b|reps\b|steps\b|ghante\b|minute\b)""", RegexOption.IGNORE_CASE)
 
