@@ -172,7 +172,9 @@ fun PaceChart(
                     val chipW = l.size.width + padX * 2
                     val chipH = l.size.height + 6 * g.dp1
                     val lx = (g.x(si) - chipW / 2f).coerceIn(0f, g.w - chipW)
-                    val ly = barTop - g.barZone * 0.6f - chipH
+                    // D-006: the chip never sits on the running-total line; it moves above it, or below it when there is no room.
+                    val under = (0 until e).filter { g.x(it) in lx - 4 * g.dp1..lx + chipW + 4 * g.dp1 }.map { g.y(data.cumulative[it]) }
+                    val ly = spikeChipTop(barTop - g.barZone * 0.6f - chipH, chipH, under.minOrNull(), under.maxOrNull(), 5 * g.dp1, barTop - 3 * g.dp1)
                     drawLine(c.borderStrong, Offset(g.x(si), ly + chipH), Offset(g.x(si), barTop - 3 * g.dp1), strokeWidth = g.dp1)
                     chip(Offset(lx, ly), Size(chipW, chipH), c.surface, c.border, g.dp1)
                     drawText(l, topLeft = Offset(lx + padX, ly + 3 * g.dp1))
@@ -210,6 +212,20 @@ private class PaceGeometry(val data: PaceChartData, val w: Float, h: Float, dens
     fun x(i: Int) = (i + 0.5f) / n * w
     fun y(v: Double) = base - (v / vmax * plotH).toFloat()
     fun barTop(i: Int) = base - (data.daily[i] / dayMax * barZone).toFloat().coerceAtLeast(2 * dp1)
+}
+
+/**
+ * Where the spike label's chip goes (D-006): [preferred] unless it overlaps the line between [lineTop] and
+ * [lineBottom] (canvas y, top is 0); then above the line, or below it when the top has no room. Never below [floor].
+ */
+internal fun spikeChipTop(preferred: Float, chipH: Float, lineTop: Float?, lineBottom: Float?, gap: Float, floor: Float): Float {
+    if (lineTop == null || lineBottom == null) return preferred
+    val clear = preferred + chipH + gap <= lineTop || preferred - gap >= lineBottom
+    if (clear) return preferred
+    val above = lineTop - gap - chipH
+    if (above >= 0f) return above
+    val below = lineBottom + gap
+    return if (below + chipH <= floor) below else preferred.coerceAtLeast(0f)
 }
 
 private fun DrawScope.chip(at: Offset, size: Size, fill: Color, stroke: Color, dp1: Float) {

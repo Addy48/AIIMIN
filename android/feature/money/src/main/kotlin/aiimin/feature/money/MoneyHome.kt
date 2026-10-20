@@ -1,5 +1,8 @@
 package aiimin.feature.money
 
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+
 import aiimin.core.data.money.payeeLabel
 import aiimin.designsystem.theme.Motion
 import aiimin.designsystem.component.PaceChartData
@@ -109,6 +112,7 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
     var adding by remember { mutableStateOf(false) }
     var pasting by remember { mutableStateOf(false) }
     var exporting by remember { mutableStateOf(false) }
+    var picking by remember { mutableStateOf(false) }
     val extras by vm.extras.collectAsStateWithLifecycle()
     val found by vm.found.collectAsStateWithLifecycle()
     androidx.lifecycle.compose.LifecycleResumeEffect(Unit) { vm.refreshFoundNow(); onPauseOrDispose { } }
@@ -117,13 +121,14 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
     val quiet by vm.quietAccounts.collectAsStateWithLifecycle()
     val c = Aiimin.colors
     LaunchedEffect(range, ledger, offset) { selection.value = null }
+    val shownLedgers = Ledger.entries.filter { it == Ledger.PERSONAL || it.name in (prefs?.ledgersOn ?: emptySet()) }
 
     LazyColumn(Modifier.fillMaxSize().background(c.base), contentPadding = PaddingValues(bottom = 32.dp)) {
-        item { LargeHeader("Money") { RootActions(unread) } }
+        // 4.4: one small "Personal ▾" in the header instead of a second pill bar.
         item {
-            Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
-                val shownLedgers = Ledger.entries.filter { it == Ledger.PERSONAL || it.name in (prefs?.ledgersOn ?: emptySet()) }
-                if (shownLedgers.size > 1) Segmented(shownLedgers.map { it.label }, shownLedgers.indexOf(ledger).coerceAtLeast(0), { vm.ledger.value = shownLedgers[it] })
+            LargeHeader("Money") {
+                if (shownLedgers.size > 1) LedgerPicker(ledger) { picking = true }
+                RootActions(unread)
             }
         }
         val s = series
@@ -138,10 +143,8 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
             val bar = selected?.let { s.bars.getOrNull(it) }
             Column(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 22.dp)) {
                 Headline(s, bar, d.budget?.totalPaise, d.remaining, ledger, monthIsCurrent, d.paceLine, today)
-                Spacer(Modifier.height(16.dp))
-                Segmented(MoneyRange.entries.map { it.label }, MoneyRange.entries.indexOf(range), { vm.setRange(MoneyRange.entries[it]) })
-                Spacer(Modifier.height(14.dp))
-                if (!(s.range == MoneyRange.D) && s.range != MoneyRange.Y || true) PeriodNav(s, offset, onPage = { vm.page(it) })
+                Spacer(Modifier.height(12.dp))
+                PeriodNav(s, offset, onPage = { vm.page(it) })
                 val plan = d.budget?.totalPaise?.takeIf { it > 0 && ledger == Ledger.PERSONAL }
                 if (s.range == MoneyRange.M) {
                     // The month as one climbing line against the even pace to plan (plan Phase 20).
@@ -174,6 +177,24 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
                         tint = Aiimin.colors.moneyGold,
                     )
                 }
+                // 4.4: range tabs under the chart (Copilot and Monarch).
+                Spacer(Modifier.height(12.dp))
+                Segmented(MoneyRange.entries.map { it.label }, MoneyRange.entries.indexOf(range), { vm.setRange(MoneyRange.entries[it]) })
+            }
+        }
+        // 4.4: one "Needs you" row; the list itself is the Review screen.
+        if (d.pending.isNotEmpty()) item(key = "needs") {
+            Row(
+                Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 18.dp).fillMaxWidth().clip(Shapes.row).background(c.surface)
+                    .pressable({ nav.open(Route.MoneyInbox) }).heightIn(min = 64.dp).padding(horizontal = 16.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text("Needs you · ${d.pending.size} to review", style = Aiimin.type.bodyStrong)
+                    Text("From bank alerts on this phone. Nothing is booked until you look.", style = Aiimin.type.caption)
+                }
+                Spacer(Modifier.width(8.dp))
+                Icon(AppIcons.CaretRight, null, tint = c.textFaint, modifier = Modifier.size(16.dp))
             }
         }
         // Owner, 20 Oct: an account a bank message named that is not added yet; one at a time, newest first.
@@ -185,26 +206,7 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
                 )
             }
         }
-        // accounts (M1 item 6): wrapping chips; tap filters the payments below
-        val accts = extras?.accounts.orEmpty().filter { it.ledger == ledger.name || it.type == "CASH" }
-        if (accts.isNotEmpty()) item {
-            Column(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 18.dp)) {
-                androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    accts.forEach { a ->
-                        val label = a.name + (a.last4?.let { " ••$it" } ?: "") + if (a.primary) " · Primary" else ""
-                        // D-006: the quiet-alerts mark sits inside the chip, after its label, not on its border.
-                        aiimin.designsystem.component.Pill(
-                            label + if (a.id in quiet) " · no alerts" else "", accountFilter == a.id,
-                            { vm.accountFilter.value = if (accountFilter == a.id) null else a.id },
-                        )
-                    }
-                    // Same 48 dp row height as the chips, text centred in it.
-                    Box(Modifier.heightIn(min = 48.dp).clip(Shapes.small).pressable({ nav.open(Route.Accounts) }).padding(horizontal = 6.dp), contentAlignment = Alignment.Center) {
-                        Text("Manage", style = Aiimin.type.label.copy(color = c.link, fontSize = 14.sp))
-                    }
-                }
-            }
-        }
+        // 4.4: accounts live in Money settings now; the payments below are not filtered by account here.
         // payments for the selection; follows the finger once it rests, not on every bar it crosses
         item {
             val settled by remember(s) { snapshotFlow { selection.value }.debounce(140) }.collectAsState(selection.value)
@@ -214,8 +216,7 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
                 s.range == MoneyRange.D -> s.bars.flatMap { it.txns }.sortedByDescending { it.at }
                 else -> s.bars.flatMap { it.txns }.sortedByDescending { it.amountPaise }
             }
-            val filtered = accountFilter?.let { id -> all.filter { vm.accountOf(it) == id } } ?: all
-            val list = if (bar == null && s.range != MoneyRange.D) filtered.take(5) else filtered
+            val list = if (bar == null && s.range != MoneyRange.D) all.take(5) else all
             val title = when {
                 bar != null -> "Payments · ${bar.label}"
                 s.range == MoneyRange.D -> "Today's payments"
@@ -229,26 +230,6 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
                 list.forEach { t ->
                     PaymentRow(t, t.id == biggest) { nav.open(Route.Txn(t.id)) }
                     Hairline()
-                }
-            }
-        }
-        // floating above: detected, not booked
-        if (d.pending.isNotEmpty()) {
-            item {
-                Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
-                    SectionHeader("Not booked yet · ${d.pending.size}", action = "Review", onAction = { nav.open(Route.MoneyInbox) })
-                    Text("Read from bank alerts on this phone. Nothing is booked until you look.", style = Aiimin.type.caption)
-                    Spacer(Modifier.height(6.dp))
-                    d.pending.take(2).forEach { p ->
-                        Row(Modifier.fillMaxWidth().pressable({ nav.open(Route.MoneyInbox) }).heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Column(Modifier.weight(1f)) {
-                                Text(p.title, style = Aiimin.type.bodyStrong)
-                                Text(listOfNotNull(p.account4?.let { "••$it" }, Dates.clock(java.time.Instant.ofEpochMilli(p.detectedAt).atZone(java.time.ZoneId.systemDefault()).toLocalTime()), "${p.category}?").joinToString(" · "), style = Aiimin.type.caption)
-                            }
-                            Text((if (p.direction == "in") "+" else "−") + Money.format(p.amountPaise).removePrefix("−"), style = Aiimin.type.bodyStrong)
-                        }
-                        Hairline()
-                    }
                 }
             }
         }
@@ -333,9 +314,10 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
                     aiimin.designsystem.component.Tool(AppIcons.ChatText, "Paste a bank SMS") { pasting = true },
                     aiimin.designsystem.component.Tool(AppIcons.ClockCounter, "Past bank messages", opens = Route.SmsImport) { nav.open(Route.SmsImport) },
                     aiimin.designsystem.component.Tool(AppIcons.Export, "Export for CA") { exporting = true },
-                    aiimin.designsystem.component.Tool(AppIcons.Bookmark, "Places and categories", opens = Route.PayeeMemory) { nav.open(Route.PayeeMemory) },
+                    aiimin.designsystem.component.Tool(AppIcons.Bookmark, "Places and rules", opens = Route.PayeeMemory) { nav.open(Route.PayeeMemory) },
                     aiimin.designsystem.component.Tool(AppIcons.HandCoins, "Splits", opens = Route.Splits) { nav.open(Route.Splits) },
                     aiimin.designsystem.component.Tool(AppIcons.Repeat, "Bills", opens = Route.Recurring) { nav.open(Route.Recurring) },
+                    aiimin.designsystem.component.Tool(AppIcons.Gear, "Money settings", opens = Route.MoneySettings) { nav.open(Route.MoneySettings) },
                 ),
                 Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 8.dp),
             )
@@ -347,6 +329,16 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
         }
     }
 
+    if (picking) AppSheet({ picking = false }, title = "Ledger") {
+        shownLedgers.forEach { l ->
+            aiimin.designsystem.component.ListRow(
+                l.label, subtitle = when (l) { Ledger.PERSONAL -> "Your own money"; Ledger.HOUSEHOLD -> "Shared at home"; Ledger.BUSINESS -> "Kept apart, never in your Life Score" },
+                trailing = { if (l == ledger) Icon(AppIcons.Check, "Selected", tint = c.text, modifier = Modifier.size(18.dp)) },
+                onClick = { vm.ledger.value = l; picking = false },
+            )
+        }
+        aiimin.designsystem.component.ListRow("Ledgers in Money settings", trailing = { aiimin.designsystem.component.Chevron() }, onClick = { picking = false; nav.open(Route.MoneySettings) })
+    }
     if (exporting) ExportSheet({ m, l -> vm.exportInfo(m, l) }, { m, l -> vm.exportFor(m, l) }, today, { exporting = false })
     val spendCats by vm.categoriesOut.collectAsStateWithLifecycle()
     val incomeCats by vm.categoriesIn.collectAsStateWithLifecycle()
@@ -364,14 +356,32 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
             Spacer(Modifier.height(12.dp))
             AppButton("Read it", {
                 scope.launch {
-                    when (vm.capture(text)) {
-                        is MoneyRepository.Capture.Added -> { toaster.show("Added to your review inbox"); pasting = false; nav.open(Route.MoneyInbox) }
+                    when (val it = vm.capture(text)) {
+                        is MoneyRepository.Capture.Added -> {
+                            pasting = false
+                            val by = it.filedBy
+                            if (by != null) toaster.show("Booked by your rule “$by”") else { toaster.show("Added to your review inbox"); nav.open(Route.MoneyInbox) }
+                        }
                         MoneyRepository.Capture.Duplicate -> toaster.show("Already captured (same reference)")
                         MoneyRepository.Capture.NotABankAlert -> toaster.show("No amount found. Is this a bank alert?")
                     }
                 }
             }, Modifier.fillMaxWidth(), enabled = text.isNotBlank())
         }
+    }
+}
+
+/** "Personal ▾": the ledger shown, as one small header control (4.4). */
+@Composable
+private fun LedgerPicker(ledger: Ledger, onClick: () -> Unit) {
+    Row(
+        Modifier.heightIn(min = 48.dp).clip(Shapes.small).pressable(onClick).padding(horizontal = 8.dp)
+            .semantics(mergeDescendants = true) { contentDescription = "Ledger: ${ledger.label}. Change" },
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(ledger.label, style = Aiimin.type.label.copy(fontSize = 15.sp))
+        Spacer(Modifier.width(4.dp))
+        Icon(AppIcons.CaretDown, null, tint = Aiimin.colors.textMuted, modifier = Modifier.size(14.dp))
     }
 }
 

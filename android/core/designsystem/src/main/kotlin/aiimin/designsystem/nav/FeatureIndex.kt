@@ -66,7 +66,7 @@ object FeatureIndex {
         f("Bank and cash accounts", "Where your money sits", Route.Accounts, { AppIcons.Bank }, "accounts", "bank", "cash", "wallets"),
         f("Splits", "Who owes whom", Route.Splits, { AppIcons.HandCoins }, "split", "owe", "lent", "borrowed", "settle up"),
         f("Bills and subscriptions", "What's due next", Route.Recurring, { AppIcons.Repeat }, "bills", "recurring", "subscriptions", "emi", "rent"),
-        f("Places and categories", "Shops AIIMIN remembers and your own categories", Route.PayeeMemory, { AppIcons.Bookmark }, "payee memory", "payees", "merchants", "places", "rules", "categories", "new category"),
+        f("Places and rules", "Your rules, shops AIIMIN remembers, your own categories", Route.PayeeMemory, { AppIcons.Bookmark }, "payee memory", "payees", "merchants", "places", "rules", "smart rules", "new rule", "categories", "new category"),
         f("Money settings", "Ledgers, bank messages, payee memory", Route.MoneySettings, { AppIcons.Coins }, "ledgers", "currency", "sms import"),
         f("Past bank messages", "Bring in SMS one by one, by month or a whole year", Route.SmsImport, { AppIcons.ChatText }, "sms", "import", "bank sms", "old messages", "parse", "filter"),
 

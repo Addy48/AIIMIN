@@ -645,7 +645,18 @@ fun ExportSheet(money: suspend (YearMonth, Ledger) -> Pair<Int, String>, export:
 // =================================================================== M16 Payee memory
 
 @HiltViewModel
-class PayeeMemoryViewModel @Inject constructor(private val repo: PayeeMemoryRepository, private val money: aiimin.core.data.money.MoneyRepository) : ViewModel() {
+class PayeeMemoryViewModel @Inject constructor(
+    private val repo: PayeeMemoryRepository,
+    private val money: aiimin.core.data.money.MoneyRepository,
+    accountsRepo: AccountRepository,
+) : ViewModel() {
+    /** Smart rules (Phase 2), in the order they run. */
+    val moneyRules = money.moneyRules().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    val accounts = accountsRepo.accounts.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    fun saveRule(r: aiimin.core.database.MoneyRuleEntity) = viewModelScope.launch { money.saveRule(r) }
+    fun deleteRule(id: String) = viewModelScope.launch { money.deleteRule(id) }
+    fun moveRule(id: String, up: Boolean) = viewModelScope.launch { money.moveRule(id, up) }
+    fun makeRule(place: PayeeRuleEntity) = viewModelScope.launch { money.makeRule(place) }
     val query = MutableStateFlow("")
     /** One row per place: a place is remembered under several keys (UPI handle, its name, the bank's name for it). */
     val rules = combine(repo.rules, query) { r, q ->
@@ -671,13 +682,21 @@ fun PayeeMemoryScreen(vm: PayeeMemoryViewModel = hiltViewModel()) {
     var editing by remember { mutableStateOf<Pair<PayeeRuleEntity, List<String>>?>(null) }
     val spendCats by vm.categories.collectAsStateWithLifecycle()
     val custom by vm.custom.collectAsStateWithLifecycle()
+    val moneyRules by vm.moneyRules.collectAsStateWithLifecycle()
+    val accounts by vm.accounts.collectAsStateWithLifecycle()
+    var ruleSheet by remember { mutableStateOf(false) }
+    var ruleEditing by remember { mutableStateOf<aiimin.core.database.MoneyRuleEntity?>(null) }
     Column(Modifier.fillMaxSize().background(c.base)) {
-        TopBar("Places and categories", onBack = { nav.back() })
+        TopBar("Places and rules", onBack = { nav.back() })
         Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
             AppTextField(q, { vm.query.value = it }, placeholder = "Search payee or category", leading = AppIcons.Search)
         }
         val items = list ?: return@Column
         LazyColumn(contentPadding = PaddingValues(start = Aiimin.space.gutter, end = Aiimin.space.gutter, bottom = 40.dp)) {
+            if (q.isBlank()) item(key = "rules") {
+                RulesBlock(moneyRules, onNew = { ruleEditing = null; ruleSheet = true }, onOpen = { ruleEditing = it; ruleSheet = true }, onMove = { r, up -> vm.moveRule(r.id, up) })
+                SectionHeader("Places AIIMIN remembers", Modifier.padding(top = 8.dp))
+            }
             if (items.isEmpty()) item {
                 Text(
                     if (q.isBlank()) "Nothing learned yet. When you confirm a payment and keep \"Remember\" on, the payee's category lands here." else "No payee matches.",
@@ -726,8 +745,19 @@ fun PayeeMemoryScreen(vm: PayeeMemoryViewModel = hiltViewModel()) {
             SwitchRow("Always ask for this payee", ask, { ask = it }, subtitle = "For shops where one payment is groceries and the next is a gift")
             Spacer(Modifier.height(12.dp))
             AppButton("Save", { vm.save(r.copy(category = cat, ledger = ledger, alwaysAsk = ask, label = label.trim()), keys); editing = null; toaster.show("Saved") }, Modifier.fillMaxWidth())
+            // Phase 2: any remembered place can become a rule that books it without asking.
+            if (!ask && !aiimin.core.data.money.SmartRules.covers(moneyRules, r)) {
+                Spacer(Modifier.height(8.dp))
+                AppButton("Make this a rule", { vm.makeRule(r.copy(category = cat, ledger = ledger, label = label.trim())); editing = null; toaster.show("Rule made") }, Modifier.fillMaxWidth(), kind = ButtonKind.SECONDARY)
+            }
             Spacer(Modifier.height(8.dp))
             AppButton("Forget this payee", { vm.delete(keys); editing = null; toaster.show("Forgotten") }, Modifier.fillMaxWidth(), kind = ButtonKind.GHOST)
         }
     }
+    if (ruleSheet) RuleSheet(
+        ruleEditing, spendCats, accounts,
+        onDismiss = { ruleSheet = false },
+        onSave = { vm.saveRule(it); ruleSheet = false; toaster.show(if (ruleEditing == null) "Rule saved · new alerts follow it" else "Rule saved") },
+        onDelete = ruleEditing?.let { r -> { vm.deleteRule(r.id); ruleSheet = false; toaster.show("Rule deleted") } },
+    )
 }

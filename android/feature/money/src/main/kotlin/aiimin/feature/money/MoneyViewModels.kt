@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -109,9 +110,24 @@ class MoneyViewModel @Inject constructor(
 }
 
 @HiltViewModel
-class InboxViewModel @Inject constructor(private val money: MoneyRepository) : ViewModel() {
+class InboxViewModel @Inject constructor(private val money: MoneyRepository, settings: aiimin.core.data.settings.SettingsStore) : ViewModel() {
     val pending = money.pending().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
-    suspend fun settle(id: String, category: String, ledger: Ledger, title: String, learn: Boolean, note: String? = null) = money.settle(id, category, ledger, title, learn, note)
+    /** Personal plus the ledgers turned on in Money settings, for the per-payment picker (4.4). */
+    val ledgers = settings.settings.map { s -> Ledger.entries.filter { it == Ledger.PERSONAL || it.name in s.ledgersOn } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), listOf(Ledger.PERSONAL))
+    /** A place filed the same way three times by hand: "Make this a rule?" (Phase 2). */
+    val offer = MutableStateFlow<aiimin.core.database.PayeeRuleEntity?>(null)
+
+    init { viewModelScope.launch { runCatching { money.resortPending() } } }
+
+    suspend fun settle(id: String, category: String, ledger: Ledger, title: String, learn: Boolean, note: String? = null, upiId: String? = null): String? {
+        val txn = money.settle(id, category, ledger, title, learn, note)
+        if (learn && offer.value == null) offer.value = money.ruleOffer(title, upiId)
+        return txn
+    }
+
+    fun makeRule(place: aiimin.core.database.PayeeRuleEntity) = viewModelScope.launch { offer.value = null; money.makeRule(place) }
+    fun notNow(place: aiimin.core.database.PayeeRuleEntity) = viewModelScope.launch { offer.value = null; money.dismissRuleOffer(place) }
     fun dismiss(id: String) = viewModelScope.launch { money.dismiss(id) }
     val categoriesOut = money.categories(inbound = false).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
     val categoriesIn = money.categories(inbound = true).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
