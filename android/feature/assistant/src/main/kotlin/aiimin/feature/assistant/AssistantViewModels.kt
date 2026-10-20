@@ -71,7 +71,11 @@ class ChatViewModel @Inject constructor(private val repo: AssistantRepository) :
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 @HiltViewModel
-class CaptureViewModel @Inject constructor(private val repo: AssistantRepository, private val log: aiimin.core.data.ai.CaptureLog) : ViewModel() {
+class CaptureViewModel @Inject constructor(
+    private val repo: AssistantRepository,
+    private val log: aiimin.core.data.ai.CaptureLog,
+    private val settings: aiimin.core.data.settings.SettingsStore,
+) : ViewModel() {
     val text = MutableStateFlow("")
     /** The type the person picked on the chooser; reset whenever the text changes. */
     val forced = MutableStateFlow<aiimin.core.nlp.Kind?>(null)
@@ -91,6 +95,8 @@ class CaptureViewModel @Inject constructor(private val repo: AssistantRepository
     suspend fun saveActions(list: List<Action>): List<Source> {
         val created = repo.execute(list, "capture")
         log.record(text.value, created)
+        // First-week ladder: "Say one capture" is done (PRD 1.2).
+        if (created.isNotEmpty() && !settings.current().firstCaptureDone) settings.update { it.copy(firstCaptureDone = true) }
         text.value = ""
         return created
     }

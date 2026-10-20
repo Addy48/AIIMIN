@@ -18,17 +18,23 @@ object AppShortcuts {
 
     data class Spec(val id: String, val short: String, val long: String, @DrawableRes val icon: Int)
 
+    /** PRD Part 17.4: New note, Pour, Emergency card, Add expense. */
     val specs = listOf(
-        Spec("capture", "Capture", "Capture anything", R.drawable.ic_shortcut_capture),
-        Spec("review", "Review pay", "Review bank payments", R.drawable.ic_shortcut_review),
+        Spec("note", "New note", "Write a new note", R.drawable.ic_shortcut_note),
+        Spec("pour", "Pour", "Write privately", R.drawable.ic_shortcut_pour),
         Spec("emergency", "Emergency", "My emergency card", R.drawable.ic_shortcut_emergency),
-        Spec("phoneday", "Phone day", "Screen time today", R.drawable.ic_shortcut_phoneday),
+        Spec("expense", "Expense", "Add an expense", R.drawable.ic_shortcut_expense),
     )
 
     fun requestFor(id: String?): LaunchRequest? = when (id) {
+        "note" -> LaunchRequest.Open(Route.Note(null))
+        // Pour is built in B7b; until then its shortcut opens the private writer.
+        "pour" -> LaunchRequest.Open(Route.JournalWrite())
+        "emergency" -> LaunchRequest.Open(Route.EmergencyCard("me"))
+        "expense" -> LaunchRequest.Capture("", type = "expense")
+        // Older pinned shortcuts keep working.
         "capture" -> LaunchRequest.Capture("")
         "review" -> LaunchRequest.Open(Route.MoneyInbox)
-        "emergency" -> LaunchRequest.Open(Route.EmergencyCard("me"))
         "phoneday" -> LaunchRequest.Open(Route.PhoneDay)
         else -> null
     }

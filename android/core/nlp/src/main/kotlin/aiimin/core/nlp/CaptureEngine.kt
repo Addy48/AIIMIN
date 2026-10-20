@@ -309,12 +309,17 @@ object CaptureEngine {
 
     // ------------------------------------------------------------------ small helpers
 
-    /** Original spelling of words the person capitalised (names), so labels read "Call Ravi" not "Call ravi". */
+    /**
+     * Original spelling of words the person capitalised: names ("Call Ravi", not "Call ravi") and acronyms of
+     * 2 to 6 letters ("Call CA", "HDFC EMI").
+     */
     private fun caseMapOf(raw: String): Map<String, String> {
         val m = HashMap<String, String>()
         for (t in raw.split(Regex("""\s+"""))) {
             val w = t.trim(',', '.', '!', '?', ':', ';')
-            if (w.length > 1 && w.first().isUpperCase() && w.drop(1).any { it.isLowerCase() }) m[w.lowercase()] = w
+            val name = w.length > 1 && w.first().isUpperCase() && w.drop(1).any { it.isLowerCase() }
+            val acronym = w.length in 2..6 && w.all { it.isLetter() && it.isUpperCase() }
+            if (name || acronym) m[w.lowercase()] = w
         }
         return m
     }

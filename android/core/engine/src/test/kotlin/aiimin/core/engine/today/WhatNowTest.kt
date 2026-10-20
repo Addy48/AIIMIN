@@ -53,6 +53,11 @@ class WhatNowTest {
         assertEquals("Standup · now", WhatNowText.line(l, clock24 = false))
     }
 
+    @Test fun `2 says whether it is an event or a timed task`() {
+        assertTrue(WhatNow.pick(input(timed = listOf(Timed("e", "Standup", at(10, 30), null, true)))).isEvent)
+        assertFalse(WhatNow.pick(input(timed = listOf(Timed("t", "Send draft", at(10, 30), null, false)))).isEvent)
+    }
+
     @Test fun `2 ties go to the earliest start`() {
         val l = WhatNow.pick(input(timed = listOf(Timed("a", "B", at(11), null, false), Timed("b", "A", at(10, 30), null, false))))
         assertEquals("b", l.targetId)

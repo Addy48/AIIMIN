@@ -104,8 +104,8 @@ interface AppNavigator {
     fun open(route: Route)
     fun back()
     fun tab(tab: Tab)
-    /** Open the global capture sheet (＋), optionally pre-filled. */
-    fun capture(prefill: String? = null, voice: Boolean = false)
+    /** Open the global capture sheet (＋), optionally pre-filled or with a quick type picked ("expense"). */
+    fun capture(prefill: String? = null, voice: Boolean = false, type: String? = null)
 }
 
 val LocalNavigator = staticCompositionLocalOf<AppNavigator> { error("No navigator") }

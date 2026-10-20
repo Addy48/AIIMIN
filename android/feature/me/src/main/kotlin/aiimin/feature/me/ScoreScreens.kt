@@ -106,7 +106,7 @@ fun MeScreen(vm: MeViewModel = hiltViewModel()) {
     val r = life?.readout
     val name = settings.name.ifBlank { "You" }
     LazyColumn(Modifier.fillMaxSize().background(c.base), contentPadding = PaddingValues(bottom = 120.dp)) {
-        item { LargeHeader("Me") { RootActions(0) } }
+        item { LargeHeader("You") { RootActions(0) } }
         // Search row: every feature and setting is one search away (findability plan §2.3.5).
         item {
             Row(

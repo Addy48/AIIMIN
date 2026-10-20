@@ -78,7 +78,7 @@ object FeatureIndex {
         f("Backups", "Keep a copy of your vault", Route.VaultBackup, { AppIcons.CloudArrowUp }, "backup", "export", "restore", "copy"),
 
         // Account and settings
-        f("Me", "You, your plan and settings", Route.Me, { AppIcons.UserCircle }, "profile", "you"),
+        f("You", "Your progress, things and settings", Route.Me, { AppIcons.UserCircle }, "profile", "you"),
         f("Search", "Find anything", Route.Search, { AppIcons.Search }, "find", "look up"),
         f("Settings", "Every setting in one place", Route.Settings, { AppIcons.Gear }, "preferences", "options"),
         f("Account and sync", "Sign in, profile, what syncs", Route.Account, { AppIcons.Key }, "pin", "password", "sign in", "login", "os-id", "osid", "account"),

@@ -1,5 +1,10 @@
 package aiimin.feature.assistant
 
+import androidx.compose.ui.graphics.graphicsLayer
+import aiimin.designsystem.component.enterStagger
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import aiimin.designsystem.component.IconButtonInset
 import aiimin.designsystem.component.bleed
 import aiimin.designsystem.theme.LocalReduceMotion
@@ -273,19 +278,22 @@ private fun Composer(value: String, onChange: (String) -> Unit, onSend: () -> Un
 // ------------------------------------------------------------------ ＋ capture sheet
 
 /**
- * Capture (spec §5): a full-screen composer you can speak or type into. Recognised items appear as
- * small rows while you talk; "Done · review" opens the sheet where each item can be dropped before
- * anything is saved. Everything saved here can be undone from the snackbar.
+ * The "+" capture sheet (PRD Part 3 §1.2b, motion 26.5): type-first. It rises from the bar with the keyboard
+ * already open, a mic beside the field, live chips under it ("₹240 · Food · Expense") that can be tapped to
+ * change, six quick types, up to three suggestions, and one Save. Parsing is on the phone; nothing is sent.
+ * Typing a feature's name ("vault") offers to open it. Everything saved can be undone from the toast.
  */
 @Composable
-fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, vm: CaptureViewModel = hiltViewModel()) {
+fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, initialType: String? = null, vm: CaptureViewModel = hiltViewModel()) {
     val nav = LocalNavigator.current
     val toaster = LocalToaster.current
     val scope = rememberCoroutineScope()
+    val reduce = aiimin.designsystem.theme.LocalReduceMotion.current
     var text by remember { mutableStateOf(prefill.orEmpty()) }
-    LaunchedEffect(text) { vm.text.value = text; vm.forced.value = null }
+    val forced by vm.forced.collectAsStateWithLifecycle()
+    LaunchedEffect(text) { vm.text.value = text }
+    LaunchedEffect(initialType) { quickKind(initialType)?.let { vm.forced.value = it } }
     val preview by vm.preview.collectAsStateWithLifecycle()
-    var reviewing by remember { mutableStateOf(false) }
     val keyboard = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
     val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
     var listening by remember { mutableStateOf(false) }
@@ -304,150 +312,181 @@ fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, v
         onListening = { listening = it; if (!it) level = 0f },
     )
     fun speak() { listening = true; voice() }
-    LaunchedEffect(Unit) { if (startVoice) speak() else runCatching { focus.requestFocus() } }
+    // 26.5: the sheet rises on the emphasised token and the field takes focus 120 ms in, so the keyboard
+    // doesn't jump the sheet mid-rise; reduce motion fades instead.
+    val rise = remember { androidx.compose.animation.core.Animatable(if (reduce) 1f else 0f) }
+    val leave = remember { androidx.compose.animation.core.Animatable(0f) }
+    LaunchedEffect(Unit) {
+        if (startVoice) speak()
+        launch { rise.animateTo(1f, aiimin.designsystem.theme.Motion.fade(reduce, aiimin.designsystem.theme.Motion.emphasised())) }
+        kotlinx.coroutines.delay(120)
+        if (!startVoice) runCatching { focus.requestFocus(); keyboard?.show() }
+    }
     LaunchedEffect(preview) { dropped = emptySet(); edits = emptyMap() }
-    // Typing a feature's name ("budget", "open emergency card") offers to go there instead of saving it.
-    val goTo = remember(text) { aiimin.designsystem.nav.FeatureIndex.navigationMatches(text) }
+    val goTo = remember(text) { aiimin.designsystem.nav.FeatureIndex.navigationMatches(text).take(3) }
     val journalLine = text.isNotBlank() && preview.isEmpty() && goTo.isEmpty()
     val items = preview.mapIndexed { i, a -> edits[i] ?: a }
-    val kept = items.filterIndexed { i, _ -> i !in dropped }
+    val kept = items.filterIndexed { i, a -> i !in dropped && a !is Action.Choose }
+    val unsure = items.any { it is Action.Choose }
+
+    fun close(after: () -> Unit = {}) {
+        keyboard?.hide(); focusManager.clearFocus()
+        scope.launch {
+            // On save the sheet shrinks toward the bar (exit token), then closes.
+            leave.animateTo(1f, aiimin.designsystem.theme.Motion.fade(reduce, aiimin.designsystem.theme.Motion.exit()))
+            onDismiss(); after()
+        }
+    }
+    fun save() = scope.launch {
+        val created = vm.saveActions(kept)
+        close {
+            if (created.isNotEmpty()) toaster.undo(if (created.size == 1) "Saved." else "Saved ${created.size}.") { vm.revert(created) }
+        }
+    }
 
     androidx.compose.ui.window.Dialog(
-        onDismissRequest = { if (reviewing) reviewing = false else onDismiss() },
+        onDismissRequest = { if (editing != null) editing = null else close() },
         properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
     ) {
-        Box(Modifier.fillMaxSize().background(c.base)) {
-            Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().imePadding().padding(horizontal = Aiimin.space.gutter)) {
-                Row(Modifier.fillMaxWidth().padding(top = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Box(Modifier.clip(RoundedCornerShape(8.dp)).background(c.raised).padding(horizontal = 14.dp, vertical = 10.dp)) {
-                        Text("English (India) · on this phone", style = Aiimin.type.label.copy(fontSize = 14.sp))
+        Box(Modifier.fillMaxSize()) {
+            Box(
+                Modifier.fillMaxSize().graphicsLayer { alpha = rise.value * (1f - leave.value) }.background(c.scrim)
+                    .clickable(indication = null, interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }) { close() },
+            )
+            Column(
+                Modifier.align(Alignment.BottomCenter).fillMaxWidth()
+                    .graphicsLayer {
+                        val r = rise.value
+                        translationY = if (reduce) 0f else (1f - r) * size.height + leave.value * size.height * 0.35f
+                        alpha = if (reduce) r * (1f - leave.value) else 1f - leave.value
+                        val shrink = 1f - 0.12f * leave.value
+                        scaleX = shrink; scaleY = shrink
+                        transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0.5f, 1f)
                     }
-                    Spacer(Modifier.weight(1f))
-                    // D-044: the close mark ends on the page margin.
-                    AppIconButton(AppIcons.Close, "Close", onDismiss, modifier = Modifier.bleed(end = IconButtonInset))
-                }
-                Text(
-                    if (listening) "Listening. Say anything; it files itself." else "Type or tap the mic. Say anything; it files itself.",
-                    style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(top = 28.dp),
-                )
-                Box(Modifier.fillMaxWidth().padding(top = 14.dp)) {
-                    // The example hides as soon as you speak, so heard words never sit on top of it.
-                    if (text.isEmpty() && !(listening && heard.isNotBlank())) Text("Spent 240 on lunch, call Ravi at 5…", style = Aiimin.type.title.copy(fontSize = 29.sp, lineHeight = 38.sp, color = c.textFaint, fontWeight = androidx.compose.ui.text.font.FontWeight.Medium))
-                    if (listening && heard.isNotBlank()) Text(
-                        (if (text.isBlank()) "" else "$text ") + heard,
-                        style = Aiimin.type.title.copy(fontSize = 29.sp, lineHeight = 38.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Medium),
-                    ) else BasicTextField(
-                        text, { text = it },
-                        textStyle = Aiimin.type.title.copy(fontSize = 29.sp, lineHeight = 38.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Medium),
-                        cursorBrush = SolidColor(c.accent), maxLines = 6,
-                        modifier = Modifier.fillMaxWidth().focusRequester(focus),
+                    .clip(RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp)).background(c.sheet)
+                    .clickable(indication = null, interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }) {}
+                    .navigationBarsPadding().imePadding().padding(horizontal = Aiimin.space.gutter).padding(top = 10.dp, bottom = 12.dp),
+            ) {
+                Box(Modifier.align(Alignment.CenterHorizontally).size(width = 38.dp, height = 4.dp).clip(RoundedCornerShape(2.dp)).background(c.borderStrong))
+                Spacer(Modifier.height(14.dp))
+                // Field with the mic beside it.
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Box(Modifier.weight(1f).clip(Shapes.row).background(c.raised).border(1.dp, c.border, Shapes.row).heightIn(min = 52.dp).padding(horizontal = 14.dp, vertical = 14.dp)) {
+                        val shown = if (listening && heard.isNotBlank()) (if (text.isBlank()) "" else "$text ") + heard else null
+                        if (text.isEmpty() && shown == null) Text(
+                            if (listening) "Listening…" else "Spent 240 on lunch, call Ravi at 5",
+                            style = Aiimin.type.body.copy(color = c.textFaint, fontSize = 17.sp), maxLines = 1, overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.padding(start = 3.dp),
+                        )
+                        if (shown != null) Text(shown, style = Aiimin.type.body.copy(fontSize = 17.sp))
+                        else BasicTextField(
+                            text, { text = it; vm.forced.value = null },
+                            textStyle = Aiimin.type.body.copy(fontSize = 17.sp, color = c.text), cursorBrush = SolidColor(c.text), maxLines = 5,
+                            modifier = Modifier.fillMaxWidth().focusRequester(focus).semantics { contentDescription = "Capture" },
+                        )
+                    }
+                    Spacer(Modifier.width(8.dp))
+                    AppIconButton(
+                        AppIcons.Mic, if (listening) "Stop listening" else "Speak", { if (listening) listening = false else speak() },
+                        tint = if (listening) c.onAccent else c.text, background = if (listening) c.accent else c.raised, size = 52.dp,
                     )
                 }
-                Spacer(Modifier.height(28.dp))
-                Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                if (listening) Meter18(true, level)
+                // Six quick types (1.2b); picking one files the text as that type.
+                Spacer(Modifier.height(10.dp))
+                androidx.compose.foundation.lazy.LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(QUICK_TYPES.size) { i ->
+                        val (label, key) = QUICK_TYPES[i]
+                        val kind = quickKind(key)
+                        Pill(label, forced == kind && kind != null, {
+                            if (key == "document") close { nav.go(Route.Vault) } else vm.forced.value = if (forced == kind) null else kind
+                        }, icon = quickIcon(key))
+                    }
+                }
+                // Live chips; tap one to change it.
+                if (items.isNotEmpty()) {
+                    Spacer(Modifier.height(10.dp))
+                    @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+                    androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        items.forEachIndexed { i, a ->
+                            if (i in dropped || a is Action.Choose) return@forEachIndexed
+                            Row(
+                                Modifier.enterStagger(i).clip(Shapes.control).background(c.surface).border(1.dp, c.borderStrong, Shapes.control)
+                                    .clickable(onClickLabel = "Change") { editing = i }.heightIn(min = 44.dp).padding(horizontal = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Icon(iconFor(a), null, tint = c.text, modifier = Modifier.size(16.dp))
+                                Spacer(Modifier.width(6.dp))
+                                Text(chipText(a), style = Aiimin.type.label.copy(fontSize = 14.sp), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            }
+                        }
+                    }
+                }
+                items.filterIsInstance<Action.Choose>().firstOrNull()?.let { a ->
+                    Spacer(Modifier.height(10.dp))
+                    ChooserCard(a) { vm.forced.value = it }
+                }
+                // Up to three suggestions: features named in the text.
+                if (goTo.isNotEmpty()) {
+                    Spacer(Modifier.height(6.dp))
                     goTo.forEach { f ->
                         Row(
-                            Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp)).background(c.raised)
-                                .clickable { keyboard?.hide(); focusManager.clearFocus(); onDismiss(); nav.go(f.route) }
-                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                            Modifier.fillMaxWidth().clip(Shapes.row).clickable { close { nav.go(f.route) } }.heightIn(min = 48.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Icon(f.icon, null, tint = c.text, modifier = Modifier.size(22.dp))
-                            Spacer(Modifier.width(14.dp))
-                            Text("Go to ${f.title}", style = Aiimin.type.body.copy(color = c.text, fontSize = 16.sp), maxLines = 1, modifier = Modifier.weight(1f))
-                            Icon(AppIcons.ArrowRight, null, tint = c.textMuted, modifier = Modifier.size(18.dp))
+                            Icon(f.icon, null, tint = c.text, modifier = Modifier.size(20.dp))
+                            Spacer(Modifier.width(12.dp))
+                            Text("Open ${f.title}", style = Aiimin.type.body, maxLines = 1, modifier = Modifier.weight(1f))
+                            Icon(AppIcons.ArrowRight, null, tint = c.textMuted, modifier = Modifier.size(16.dp))
                         }
-                    }
-                    preview.forEach { a ->
-                        if (a is Action.Choose) {
-                            ChooserCard(a) { vm.forced.value = it }
-                            return@forEach
-                        }
-                        Row(
-                            Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp)).background(c.surface).border(1.dp, c.border, RoundedCornerShape(10.dp)).padding(horizontal = 16.dp, vertical = 14.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Icon(iconFor(a), null, tint = c.text, modifier = Modifier.size(22.dp))
-                            Spacer(Modifier.width(14.dp))
-                            Text(captureTitle(a), style = Aiimin.type.body.copy(color = c.text, fontSize = 16.sp), maxLines = 1, modifier = Modifier.weight(1f))
-                            Text(captureWhen(a), style = Aiimin.type.caption.copy(fontSize = 13.sp), maxLines = 1)
-                        }
-                    }
-                    if (journalLine) Text("Sounds like a journal line. It will open the journal, which stays private.", style = Aiimin.type.caption)
-                }
-                Meter18(listening, level)
-                Row(Modifier.fillMaxWidth().padding(vertical = 16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    AppButton("Cancel", onDismiss, Modifier.weight(1f), kind = ButtonKind.SECONDARY)
-                    if (text.isBlank() || (preview.isEmpty() && !journalLine)) {
-                        AppButton(if (listening) "Stop" else "Speak", ::speak, Modifier.weight(1.5f), icon = AppIcons.Mic)
-                    } else if (preview.any { it is Action.Choose }) {
-                        AppButton("Choose a type first", { toaster.show("Pick what this is, so nothing is filed under the wrong type") }, Modifier.weight(1.5f), enabled = false)
-                    } else {
-                        AppButton("Done · review", {
-                            // Close the keyboard first so it can't cover "Save all" on the review sheet.
-                            keyboard?.hide(); focusManager.clearFocus()
-                            if (journalLine) { onDismiss(); nav.open(Route.JournalWrite()) } else reviewing = true
-                        }, Modifier.weight(1.5f))
                     }
                 }
-            }
-            if (reviewing) {
-                Box(Modifier.fillMaxSize().background(c.scrim).clickable(indication = null, interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }) { reviewing = false })
-                LaunchedEffect(Unit) { keyboard?.hide() }
-                Column(
-                    // imePadding: if the keyboard is still up, the sheet sits above it, so Save is never covered.
-                    Modifier.align(Alignment.BottomCenter).imePadding().fillMaxWidth().fillMaxHeight(0.82f)
-                        .clip(RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp)).background(c.surface)
-                        .navigationBarsPadding().padding(horizontal = Aiimin.space.gutter),
-                ) {
-                    Box(Modifier.padding(top = 12.dp).align(Alignment.CenterHorizontally).size(36.dp, 4.dp).clip(RoundedCornerShape(2.dp)).background(c.border))
-                    Row(Modifier.fillMaxWidth().padding(top = 24.dp, bottom = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Text(if (kept.size == 1) "1 thing to save" else "${kept.size} things to save", style = Aiimin.type.title, modifier = Modifier.weight(1f))
-                        Text("nothing saved yet", style = Aiimin.type.caption)
-                    }
-                    Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        items.forEachIndexed { i, a ->
-                            if (i in dropped) return@forEachIndexed
-                            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(c.paper).border(1.dp, c.border, RoundedCornerShape(12.dp)).clickable { editing = i }.padding(16.dp)) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Row(Modifier.clip(RoundedCornerShape(6.dp)).background(c.raised).padding(horizontal = 10.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                                        Icon(iconFor(a), null, tint = c.text, modifier = Modifier.size(16.dp))
-                                        Spacer(Modifier.width(6.dp))
-                                        Text(typeName(a), style = Aiimin.type.label.copy(fontSize = 13.sp))
-                                    }
-                                    Spacer(Modifier.weight(1f))
-                                    AppIconButton(AppIcons.Close, "Remove", { dropped = dropped + i })
-                                }
-                                Text(reviewTitle(a), style = Aiimin.type.headline.copy(fontSize = 18.sp), modifier = Modifier.padding(top = 10.dp))
-                                Row(Modifier.padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(AppIcons.ArrowBendDownRight, null, tint = c.textMuted, modifier = Modifier.size(16.dp))
-                                    Spacer(Modifier.width(8.dp))
-                                    Text(destination(a), style = Aiimin.type.body.copy(color = c.textMuted, fontSize = 14.sp), modifier = Modifier.weight(1f))
-                                    Text(if (i in edits) "Edited" else "Edit", style = Aiimin.type.label.copy(color = c.link, fontSize = 13.sp))
-                                }
-                            }
-                        }
-                        if (kept.isEmpty()) Text("Nothing left to save.", style = Aiimin.type.caption)
-                    }
-                    Row(Modifier.fillMaxWidth().padding(vertical = 16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        AppButton("Add more", { reviewing = false; speak() }, Modifier.weight(1f), kind = ButtonKind.SECONDARY, icon = AppIcons.Mic)
-                        AppButton(if (kept.size > 1) "Save all ${kept.size}" else "Save", {
-                            scope.launch {
-                                val created = vm.saveActions(kept)
-                                onDismiss()
-                                if (created.isNotEmpty()) toaster.undo(
-                                    if (created.size == 1) "Saved “${created.first().label}”" else "Saved ${created.size} items",
-                                ) { vm.revert(created) }
-                            }
-                        }, Modifier.weight(2f), enabled = kept.isNotEmpty())
-                    }
-                }
+                if (journalLine && forced == null) Text("Sounds like a private line. Save opens Pour, which stays on this phone.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp))
+                Spacer(Modifier.height(12.dp))
+                AppButton(
+                    when {
+                        unsure -> "Pick a type first"
+                        journalLine && forced == null -> "Write it in Pour"
+                        kept.size > 1 -> "Save ${kept.size}"
+                        else -> "Save"
+                    },
+                    {
+                        if (journalLine && forced == null) close { nav.open(Route.JournalWrite()) } else save()
+                    },
+                    Modifier.fillMaxWidth(),
+                    enabled = !unsure && (kept.isNotEmpty() || (journalLine && forced == null)),
+                )
             }
             editing?.let { i ->
-                items.getOrNull(i)?.let { a -> CardEditor(a, onDismiss = { editing = null }) { e -> edits = edits + (i to e); editing = null } }
+                items.getOrNull(i)?.let { a ->
+                    CardEditor(a, onDismiss = { editing = null }, onRemove = { dropped = dropped + i; editing = null }) { e -> edits = edits + (i to e); editing = null }
+                }
             }
         }
     }
+}
+
+/** The six quick types under the field (1.2b). */
+private val QUICK_TYPES = listOf("Task" to "task", "Expense" to "expense", "Note" to "note", "Event" to "event", "Journal" to "journal", "Document" to "document")
+
+private fun quickKind(key: String?): aiimin.core.nlp.Kind? = when (key) {
+    "task" -> aiimin.core.nlp.Kind.TASK; "expense" -> aiimin.core.nlp.Kind.EXPENSE; "note" -> aiimin.core.nlp.Kind.NOTE
+    "event" -> aiimin.core.nlp.Kind.EVENT; "journal" -> aiimin.core.nlp.Kind.JOURNAL; else -> null
+}
+
+private fun quickIcon(key: String): ImageVector = when (key) {
+    "task" -> AppIcons.CheckSquare; "expense" -> AppIcons.Wallet; "note" -> AppIcons.Note; "event" -> AppIcons.Calendar
+    "journal" -> AppIcons.BookOpen; else -> AppIcons.FileText
+}
+
+/** "₹240 · Food · Expense", "Call CA · Tomorrow 4:30 PM" (1.2b chips). */
+internal fun chipText(a: Action): String = when (a) {
+    is Action.Expense -> "${aiimin.core.data.util.Money.formatIn(a.paise, a.currency)} · ${a.category} · Expense"
+    is Action.Income -> "${aiimin.core.data.util.Money.formatIn(a.paise, a.currency)} · ${a.category} · Income"
+    is Action.Recurring -> "${aiimin.core.data.util.Money.formatIn(a.paise, a.currency)} · ${a.title} · ${a.cadence.lowercase()}"
+    is Action.Task -> listOfNotNull(a.title, aiimin.core.data.util.Dates.relative(java.time.LocalDate.parse(a.day), java.time.LocalDate.now()) + (a.time?.let { " " + aiimin.core.data.util.Dates.clock(it) } ?: "")).joinToString(" · ")
+    is Action.Event -> a.title + " · " + aiimin.core.data.util.Dates.relative(java.time.LocalDate.parse(a.date), java.time.LocalDate.now()) + (if (a.minutes >= 1440) " all day" else " " + aiimin.core.data.util.Dates.clock(a.time))
+    else -> a.headline + " · " + typeName(a)
 }
 
 /** "I am not sure what this is": five buttons instead of a silent guess. */
@@ -468,7 +507,7 @@ private fun ChooserCard(a: Action.Choose, onPick: (aiimin.core.nlp.Kind) -> Unit
 
 /** C4 · edit one capture item; the type can change and the fields re-map. */
 @Composable
-private fun CardEditor(start: Action, onDismiss: () -> Unit, onDone: (Action) -> Unit) {
+private fun CardEditor(start: Action, onDismiss: () -> Unit, onRemove: (() -> Unit)? = null, onDone: (Action) -> Unit) {
     val c = Aiimin.colors
     val toaster = LocalToaster.current
     val today = java.time.LocalDate.now()
@@ -544,7 +583,7 @@ private fun CardEditor(start: Action, onDismiss: () -> Unit, onDone: (Action) ->
             val paise = amountToPaise(amount)
             val ok = title.isNotBlank() && when (type) { "Expense", "Income" -> paise > 0; "Event" -> time != null; else -> true }
             Row(Modifier.fillMaxWidth().padding(vertical = 16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                AppButton("Cancel", onDismiss, Modifier.weight(1f), kind = ButtonKind.SECONDARY)
+                AppButton(if (onRemove != null) "Remove" else "Cancel", onRemove ?: onDismiss, Modifier.weight(1f), kind = ButtonKind.SECONDARY)
                 AppButton("Done", {
                     val d = day.toString()
                     onDone(

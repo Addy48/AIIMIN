@@ -49,6 +49,21 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.map
+import aiimin.core.engine.today.BillDue
+import aiimin.core.engine.today.DayEndDecision
+import aiimin.core.engine.today.DayEndLearner
+import aiimin.core.engine.today.DayEndMode
+import aiimin.core.engine.today.FirstWeek
+import aiimin.core.engine.today.FocusNow
+import aiimin.core.engine.today.NowInput
+import aiimin.core.engine.today.NowKind
+import aiimin.core.engine.today.NowLine
+import aiimin.core.engine.today.OpenTask
+import aiimin.core.engine.today.QuickDoors
+import aiimin.core.engine.today.SetupStep
+import aiimin.core.engine.today.Timed
+import aiimin.core.engine.today.WhatNow
 
 enum class FlowKind { TASK, EVENT, EXPIRY }
 
@@ -87,6 +102,17 @@ data class TodayUi(
     val hideXp: Boolean,
     val pinned: NoteEntity? = null,
     val glance: List<GlanceLine> = emptyList(),
+    /** PRD 1.2: the one "What now?" line (fixed order, offline). */
+    val whatNow: NowLine = NowLine(NowKind.CLEAR),
+    val dayEnd: LocalTime = LocalTime.of(22, 0),
+    /** First-week ladder (days 1 to 7, until all five are done), or null. */
+    val setup: List<Pair<SetupStep, Boolean>>? = null,
+    /** Quick doors (Part 17): route keys, four of them. */
+    val doors: List<String> = emptyList(),
+    /** A learned day-end hour to offer ("Your evenings seem to start near …"), or null. */
+    val dayEndSuggest: LocalTime? = null,
+    val hasBudget: Boolean = false,
+    val hasNote: Boolean = false,
 ) {
     val tasksOpen get() = flow.values.flatten().count { it.kind == FlowKind.TASK && !it.done }
 }
@@ -103,11 +129,12 @@ class TodayViewModel @Inject constructor(
     private val device: DeviceRepository,
     private val pulse: Pulse,
     activity: ActivityRepository,
-    vault: VaultRepository,
+    private val vault: VaultRepository,
     private val settingsStore: SettingsStore,
     notes: NoteRepository,
     money: aiimin.core.data.money.MoneyRepository,
     journal: aiimin.core.data.notes.JournalRepository,
+    bills: aiimin.core.data.money.BillRepository,
 ) : ViewModel() {
 
     /** What the phone can measure right now; refreshed on every resume so a grant shows at once. */
@@ -141,7 +168,7 @@ class TodayViewModel @Inject constructor(
 
     private val yesterdayOpen = MutableStateFlow(false)
 
-    val ui: StateFlow<TodayUi?> = clock.todayFlow.distinctUntilChanged().flatMapLatest { day ->
+    private val base: kotlinx.coroutines.flow.Flow<TodayUi> = clock.todayFlow.distinctUntilChanged().flatMapLatest { day ->
         val plan = combine(
             tasks.forDay(day),
             flow { emitAll(calendar.forDay(day)) },
@@ -158,7 +185,7 @@ class TodayViewModel @Inject constructor(
             money.pending(),
             journal.entries,
             notes.all(),
-        ) { m, pending, entries, ns -> GlanceIn(m.spent, pending.size, entries.any { it.day == day }, ns) }
+        ) { m, pending, entries, ns -> GlanceIn(m.spent, pending.size, entries.any { it.day == day }, ns, m.budget != null) }
         combine(plan, ambient, settingsStore.settings, yesterdayOpen, glanceIn) { p, a, s, y, g ->
             val ns = g.notes
             val items = buildFlow(day, p.tasks, p.events)
@@ -168,6 +195,7 @@ class TodayViewModel @Inject constructor(
                 unread = a.unread, focus = a.focus, activity = a.activity,
                 expiringTitle = p.expiring?.title, expiringId = p.expiring?.id, yesterdayOpen = y,
                 hideScore = s.hideScore, hideXp = s.hideXp, pinned = ns.firstOrNull { it.pinned && !it.deleted },
+                hasBudget = g.budgetSet, hasNote = ns.any { !it.deleted },
                 glance = atAGlance(
                     day, g.spent, g.toReview,
                     p.expiring?.let { d -> d.expires?.let { runCatching { java.time.LocalDate.parse(it) }.getOrNull() }?.let { GlanceDoc(d.id, d.title, it) } },
@@ -175,7 +203,98 @@ class TodayViewModel @Inject constructor(
                 ),
             )
         }
+    }
+
+    /** Bills due today (rule 3), documents saved (first-week step) and the learned day end. */
+    private val billsToday = bills.comingUp(0)
+    private val hasDoc = vault.visible.map { it.isNotEmpty() }
+    private val dayEndOffer = MutableStateFlow<LocalTime?>(null)
+    private var landmarkSession: LocalDate? = null
+
+    val ui: StateFlow<TodayUi?> = combine(base, billsToday, hasDoc, clock.tick, combine(settingsStore.settings, access, dayEndOffer) { s, a, o -> Triple(s, a, o) }) { b, billList, doc, nowMs, (s, acc, offer) ->
+        val now = Instant.ofEpochMilli(nowMs).atZone(zone)
+        val time = now.toLocalTime()
+        val dayEnd = LocalTime.of((s.dayEndMin / 60) % 24, s.dayEndMin % 60)
+        val items = b.flow.values.flatten()
+        val landmark = (b.date.dayOfWeek == java.time.DayOfWeek.MONDAY || b.date.dayOfMonth == 1) &&
+            (s.landmarkShownOn != b.date.toString() || landmarkSession == b.date)
+        if (landmark && landmarkSession != b.date) {
+            landmarkSession = b.date
+            viewModelScope.launch { settingsStore.update { it.copy(landmarkShownOn = b.date.toString()) } }
+        }
+        val hidden = s.whatNowHidden?.takeIf { it.substringBefore('|') == b.date.toString() }?.substringAfter('|')
+            ?.split(',')?.mapNotNull { k -> runCatching { NowKind.valueOf(k) }.getOrNull() }?.toSet().orEmpty()
+        val input = NowInput(
+            date = b.date, time = time,
+            focus = b.focus?.let { f -> FocusNow(f.label, (f.plannedMin - f.elapsedMs(nowMs) / 60_000).toInt().coerceAtLeast(0)) },
+            timed = items.filter { !it.done && it.time != null && it.kind != FlowKind.EXPIRY }.map { Timed(it.id, it.title, it.time!!, it.end, it.kind == FlowKind.EVENT) },
+            bills = billList.filter { it.nextDue == b.date.toString() }.map { BillDue(it.id, it.title, it.amountPaise) },
+            dayEnd = dayEnd,
+            wrappedUp = b.dayState?.closedAt != null,
+            landmarkDue = landmark,
+            minimumsLeft = b.minimums.filter { it.planned && !it.done }.map { it.minimum.name },
+            tasks = items.filter { it.kind == FlowKind.TASK && !it.done }.mapIndexed { i, t -> OpenTask(t.id, t.title, t.priority, t.time, i.toLong()) },
+            hidden = hidden,
+            skips = s.whatNowSkips.mapNotNull { (k, v) -> runCatching { NowKind.valueOf(k) to v }.getOrNull() }.toMap(),
+            raahiOn = true,
+        )
+        val install = s.installDay?.let { runCatching { LocalDate.parse(it) }.getOrNull() } ?: b.date
+        val done = buildSet {
+            if (acc?.usage == true) add(SetupStep.SCREEN_TIME)
+            if (b.minimums.isNotEmpty()) add(SetupStep.MINIMUM)
+            if (s.firstCaptureDone) add(SetupStep.CAPTURE)
+            if (doc) add(SetupStep.DOCUMENT)
+            if (b.hasBudget) add(SetupStep.BUDGET)
+        }
+        b.copy(
+            whatNow = WhatNow.pick(input),
+            dayEnd = dayEnd,
+            setup = if (FirstWeek.show(install, b.date, done)) FirstWeek.steps().map { it to (it in done) } else null,
+            doors = QuickDoors.pick(install, b.date, s.featureOpens, s.pinnedDoors, b.hasNote),
+            dayEndSuggest = offer,
+        )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    /** "Not now": hidden until midnight; the third skip of a kind drops it one step (PRD 1.2). */
+    fun notNow(kind: NowKind) = viewModelScope.launch {
+        val day = clock.today().toString()
+        settingsStore.update { st ->
+            val kinds = st.whatNowHidden?.takeIf { it.substringBefore('|') == day }?.substringAfter('|')?.split(',')?.filter { it.isNotBlank() }.orEmpty()
+            st.copy(
+                whatNowHidden = day + "|" + (kinds + kind.name).distinct().joinToString(","),
+                whatNowSkips = st.whatNowSkips + (kind.name to ((st.whatNowSkips[kind.name] ?: 0) + 1)),
+            )
+        }
+    }
+
+    /** The learned day-end card: "Yes" starts gentle adjusting; "Keep" asks again in a week. */
+    fun acceptDayEnd(t: LocalTime) = viewModelScope.launch {
+        val d = clock.today().toString()
+        settingsStore.update { it.copy(dayEndMin = t.hour * 60 + t.minute, dayEndMode = DayEndMode.LEARNING.name, dayEndChangedOn = d) }
+        dayEndOffer.value = null
+    }
+    fun keepDayEnd() = viewModelScope.launch {
+        val d = clock.today().toString()
+        settingsStore.update { it.copy(dayEndAskedOn = d) }
+        dayEndOffer.value = null
+    }
+
+    private suspend fun learnDayEnd() {
+        val s = settingsStore.current()
+        val today = clock.today()
+        val nights = runCatching { device.nightStarts(7, today, zone) }.getOrDefault(emptyList())
+        val current = LocalTime.of((s.dayEndMin / 60) % 24, s.dayEndMin % 60)
+        val mode = runCatching { DayEndMode.valueOf(s.dayEndMode) }.getOrDefault(DayEndMode.SET)
+        val usageOn = runCatching { device.access().usage }.getOrDefault(false)
+        when (val d = DayEndLearner.next(nights, current, mode, s.dayEndChangedOn?.let(LocalDate::parse), today, usageOn)) {
+            is DayEndDecision.Apply -> settingsStore.update { it.copy(dayEndMin = d.dayEnd.hour * 60 + d.dayEnd.minute, dayEndChangedOn = today.toString()) }
+            is DayEndDecision.Suggest -> {
+                val asked = s.dayEndAskedOn?.let(LocalDate::parse)
+                if (asked == null || ChronoUnit.DAYS.between(asked, today) >= 7) dayEndOffer.value = d.dayEnd
+            }
+            DayEndDecision.None -> Unit
+        }
+    }
 
     private data class Plan(
         val tasks: List<TaskEntity>,
@@ -185,7 +304,7 @@ class TodayViewModel @Inject constructor(
         val expiring: aiimin.core.database.DocEntity?,
     )
 
-    private data class GlanceIn(val spent: Long, val toReview: Int, val journalToday: Boolean, val notes: List<NoteEntity>)
+    private data class GlanceIn(val spent: Long, val toReview: Int, val journalToday: Boolean, val notes: List<NoteEntity>, val budgetSet: Boolean)
 
     private data class Ambient(val life: LifeView?, val device: DeviceDayEntity?, val unread: Int, val focus: ActiveFocus?, val activity: List<ActivityLine>)
 
@@ -193,6 +312,10 @@ class TodayViewModel @Inject constructor(
         viewModelScope.launch {
             days.ensureToday()
             yesterdayOpen.value = days.yesterdayOpen()
+            val d = clock.today().toString()
+            if (settingsStore.current().installDay == null) settingsStore.update { it.copy(installDay = d) }
+            refreshAccess()
+            learnDayEnd()
         }
     }
 

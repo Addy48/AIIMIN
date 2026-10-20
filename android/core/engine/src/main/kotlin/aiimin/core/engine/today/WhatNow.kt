@@ -54,6 +54,8 @@ data class NowLine(
     val month: Boolean = false,
     val dayEnd: LocalTime? = null,
     val raahiOn: Boolean = true,
+    /** For SOON: an event (open the calendar) or a timed task (mark it done). */
+    val isEvent: Boolean = false,
 )
 
 object WhatNow {
@@ -101,7 +103,7 @@ object WhatNow {
         val pick = i.timed.filter { happening(it) || upcoming(it) }
             .sortedWith(compareByDescending<Timed> { happening(it) }.thenBy { it.start }.thenByDescending { it.isEvent }.thenBy { it.title })
             .firstOrNull() ?: return null
-        return NowLine(NowKind.SOON, pick.id, pick.title, at = pick.start, happeningNow = happening(pick))
+        return NowLine(NowKind.SOON, pick.id, pick.title, at = pick.start, happeningNow = happening(pick), isEvent = pick.isEvent)
     }
 
     /** After the day-end hour, until 4 AM (a late day end runs past midnight). */

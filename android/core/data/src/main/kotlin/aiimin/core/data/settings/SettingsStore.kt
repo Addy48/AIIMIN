@@ -71,6 +71,25 @@ data class AppSettings(
     val dismissedAccounts: Set<String> = emptySet(),
     /** The day (ISO) the full opening last played; later cold starts that day get the short one (Part 26.2). */
     val lastBootDay: String? = null,
+    /** The first day this install opened (first-week card, Quick doors learning). */
+    val installDay: String? = null,
+    /** Day-end hour in minutes after midnight (PRD 1.2): drives "Wrap up" and the Evening section only. */
+    val dayEndMin: Int = 22 * 60,
+    /** SET (from onboarding), LEARNING (after "Yes" on the card), PINNED (edited by hand). */
+    val dayEndMode: String = "SET",
+    val dayEndChangedOn: String? = null,
+    /** The day the learned day-end card was last answered "Keep"; asked again after 7 days. */
+    val dayEndAskedOn: String? = null,
+    /** "What now?" kinds skipped (three drop a kind one step) and kinds hidden today (day|KIND,KIND). */
+    val whatNowSkips: Map<String, Int> = emptyMap(),
+    val whatNowHidden: String? = null,
+    /** The day the Monday / 1st "Plan your week/month" line was shown, so it shows once. */
+    val landmarkShownOn: String? = null,
+    /** Opens per screen (route key) for the Quick doors, and doors pinned by hand. On the phone only. */
+    val featureOpens: Map<String, Int> = emptyMap(),
+    val pinnedDoors: List<String> = emptyList(),
+    /** First-week ladder: a capture has been saved at least once. */
+    val firstCaptureDone: Boolean = false,
     val cashWallet: Boolean = true,
     val lifeScoreSharedWith: Set<String> = emptySet(),
     val stepCounterState: String? = null,
@@ -159,6 +178,17 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         val banks = stringPreferencesKey("banks")
         val dismissedAccounts = stringSetPreferencesKey("dismissed_accounts")
         val lastBootDay = stringPreferencesKey("last_boot_day")
+        val installDay = stringPreferencesKey("install_day")
+        val dayEndMin = intPreferencesKey("day_end_min")
+        val dayEndMode = stringPreferencesKey("day_end_mode")
+        val dayEndChangedOn = stringPreferencesKey("day_end_changed_on")
+        val dayEndAskedOn = stringPreferencesKey("day_end_asked_on")
+        val whatNowSkips = stringPreferencesKey("what_now_skips")
+        val whatNowHidden = stringPreferencesKey("what_now_hidden")
+        val landmarkShownOn = stringPreferencesKey("landmark_shown_on")
+        val featureOpens = stringPreferencesKey("feature_opens")
+        val pinnedDoors = stringPreferencesKey("pinned_doors")
+        val firstCaptureDone = booleanPreferencesKey("first_capture_done")
         val cashWallet = booleanPreferencesKey("cash_wallet")
         val scoreShare = stringSetPreferencesKey("score_share")
         val stepCounter = stringPreferencesKey("step_counter")
@@ -215,6 +245,17 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         banks = p[K.banks]?.split("|")?.filter { it.isNotBlank() }.orEmpty(),
         dismissedAccounts = p[K.dismissedAccounts] ?: emptySet(),
         lastBootDay = p[K.lastBootDay],
+        installDay = p[K.installDay],
+        dayEndMin = p[K.dayEndMin] ?: 22 * 60,
+        dayEndMode = p[K.dayEndMode] ?: "SET",
+        dayEndChangedOn = p[K.dayEndChangedOn],
+        dayEndAskedOn = p[K.dayEndAskedOn],
+        whatNowSkips = decodeCounts(p[K.whatNowSkips]),
+        whatNowHidden = p[K.whatNowHidden],
+        landmarkShownOn = p[K.landmarkShownOn],
+        featureOpens = decodeCounts(p[K.featureOpens]),
+        pinnedDoors = p[K.pinnedDoors]?.split("|")?.filter { it.isNotBlank() }.orEmpty(),
+        firstCaptureDone = p[K.firstCaptureDone] ?: false,
         cashWallet = p[K.cashWallet] ?: true,
         lifeScoreSharedWith = p[K.scoreShare] ?: emptySet(),
         stepCounterState = p[K.stepCounter],
@@ -273,6 +314,17 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
             p[K.banks] = s.banks.joinToString("|")
             p[K.dismissedAccounts] = s.dismissedAccounts
             s.lastBootDay?.let { p[K.lastBootDay] = it } ?: p.remove(K.lastBootDay)
+            s.installDay?.let { p[K.installDay] = it } ?: p.remove(K.installDay)
+            p[K.dayEndMin] = s.dayEndMin
+            p[K.dayEndMode] = s.dayEndMode
+            s.dayEndChangedOn?.let { p[K.dayEndChangedOn] = it } ?: p.remove(K.dayEndChangedOn)
+            s.dayEndAskedOn?.let { p[K.dayEndAskedOn] = it } ?: p.remove(K.dayEndAskedOn)
+            p[K.whatNowSkips] = encodeCounts(s.whatNowSkips)
+            s.whatNowHidden?.let { p[K.whatNowHidden] = it } ?: p.remove(K.whatNowHidden)
+            s.landmarkShownOn?.let { p[K.landmarkShownOn] = it } ?: p.remove(K.landmarkShownOn)
+            p[K.featureOpens] = encodeCounts(s.featureOpens)
+            p[K.pinnedDoors] = s.pinnedDoors.joinToString("|")
+            p[K.firstCaptureDone] = s.firstCaptureDone
             p[K.cashWallet] = s.cashWallet
             p[K.scoreShare] = s.lifeScoreSharedWith
             s.stepCounterState?.let { p[K.stepCounter] = it } ?: p.remove(K.stepCounter)
@@ -310,3 +362,9 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         return id
     }
 }
+
+/** "a:3|b:1" <-> map; tolerant of junk so a bad value never breaks settings. */
+internal fun decodeCounts(raw: String?): Map<String, Int> =
+    raw?.split("|")?.mapNotNull { e -> e.substringBefore(':').takeIf { it.isNotBlank() }?.let { k -> e.substringAfter(':', "").toIntOrNull()?.let { k to it } } }?.toMap().orEmpty()
+
+internal fun encodeCounts(m: Map<String, Int>): String = m.entries.joinToString("|") { "${it.key}:${it.value}" }

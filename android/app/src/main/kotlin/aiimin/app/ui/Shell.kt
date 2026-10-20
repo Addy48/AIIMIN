@@ -146,6 +146,12 @@ class ShellViewModel @Inject constructor(
     val lastSyncAt = settings.settings.map { it.lastSyncAt }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
     val signedIn = auth.session.map { it.signedIn }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
+    /** Quick doors learn from what is opened (Part 17); counts stay on the phone. */
+    fun countOpen(route: Route) = viewModelScope.launch {
+        val key = route::class.simpleName.orEmpty().lowercase()
+        if (key.isNotBlank()) settings.update { it.copy(featureOpens = it.featureOpens + (key to ((it.featureOpens[key] ?: 0) + 1))) }
+    }
+
     fun afterSignIn() = viewModelScope.launch { sync.refreshState(); merge.value = sync.previewMerge().also { if (it?.webHasData != true) sync.sync() } }
     suspend fun planReplace() = sync.planReplace()
     fun mergeChoose(choice: aiimin.feature.onboarding.MergeChoice) = viewModelScope.launch {
@@ -180,7 +186,7 @@ private fun Tab.root(): Route = when (this) {
 /** Pending launch request from a notification or a share. */
 sealed interface LaunchRequest {
     data class Open(val route: Route) : LaunchRequest
-    data class Capture(val text: String) : LaunchRequest
+    data class Capture(val text: String, val type: String? = null) : LaunchRequest
 }
 
 @Composable
@@ -189,7 +195,7 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
     val context = LocalContext.current
     val stack = remember { mutableStateListOf<Route>(Route.Today) }
     var tabSwitch by remember { mutableStateOf(false) }
-    var capture by remember { mutableStateOf<Pair<String?, Boolean>?>(null) }
+    var capture by remember { mutableStateOf<Triple<String?, Boolean, String?>?>(null) }
     val toaster = remember { Toaster() }
     val focus by vm.focus.collectAsStateWithLifecycle()
     val unread by vm.unread.collectAsStateWithLifecycle()
@@ -207,6 +213,7 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
             override fun open(route: Route) {
                 tabSwitch = false
                 if (stack.lastOrNull() != route) stack.add(route)
+                vm.countOpen(route)
             }
 
             override fun back() {
@@ -222,8 +229,8 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
                 stack.add(root)
             }
 
-            override fun capture(prefill: String?, voice: Boolean) {
-                capture = prefill to voice
+            override fun capture(prefill: String?, voice: Boolean, type: String?) {
+                capture = Triple(prefill, voice, type)
             }
         }
     }
@@ -232,7 +239,7 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
     LaunchedEffect(request) {
         when (request) {
             is LaunchRequest.Open -> navigator.open(request.route)
-            is LaunchRequest.Capture -> navigator.capture(request.text)
+            is LaunchRequest.Capture -> navigator.capture(request.text, type = request.type)
             null -> return@LaunchedEffect
         }
         onRequestHandled()
@@ -414,7 +421,8 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
                             DockItem("Today", AppIcons.CalendarCheck, top == Route.Today, { navigator.tab(Tab.TODAY) }, iconFill = AppIcons.CalendarCheckFill),
                             DockItem("Money", AppIcons.Wallet, top == Route.Money, { navigator.tab(Tab.MONEY) }, iconFill = AppIcons.WalletFill, count = reviewCount),
                             DockItem("Vault", AppIcons.Archive, top == Route.Vault, { navigator.tab(Tab.VAULT) }, iconFill = AppIcons.ArchiveFill, badge = expiringSoon),
-                            DockItem("Me", AppIcons.UserCircle, top == Route.Me, { navigator.tab(Tab.ME) }, iconFill = AppIcons.UserCircleFill),
+                            // Part 17.1: "Me" is renamed "You".
+                            DockItem("You", AppIcons.UserCircle, top == Route.Me, { navigator.tab(Tab.ME) }, iconFill = AppIcons.UserCircleFill),
                         ),
                         onPlus = { navigator.capture() },
                         onPlusLong = { navigator.capture(voice = true) },
@@ -435,7 +443,7 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
                     .background(c.base.copy(alpha = 0.96f)),
             )
         }
-        capture?.let { (prefill, voice) -> CaptureSheet(prefill, voice, onDismiss = { capture = null }) }
+        capture?.let { (prefill, voice, type) -> CaptureSheet(prefill, voice, onDismiss = { capture = null }, initialType = type) }
         merge?.takeIf { it.webHasData }?.let { aiimin.feature.onboarding.MergeSheet(it, { vm.planReplace() }) { choice -> vm.mergeChoose(choice) } }
         if (syncSheet) SyncSheet(syncState, signedIn, syncing, lastSyncAt, onSync = { vm.syncNow() }, onOpenAccount = { syncSheet = false; navigator.open(Route.Account) }, onDismiss = { syncSheet = false })
     }

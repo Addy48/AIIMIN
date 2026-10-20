@@ -100,6 +100,7 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
     val ui by vm.ui.collectAsStateWithLifecycle()
     val nav = LocalNavigator.current
     val toaster = LocalToaster.current
+    val context = androidx.compose.ui.platform.LocalContext.current
     val scope = rememberCoroutineScope()
     var minimumSheet by remember { mutableStateOf<MinimumToday?>(null) }
     var earlierOpen by remember { mutableStateOf(false) }
@@ -130,7 +131,29 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
     val light = u.dayState?.light == true
     val lowBattery = u.life?.battery?.state != BatteryState.OK
 
+    var yesterdayOpenList by remember { mutableStateOf(false) }
     LazyColumn(Modifier.fillMaxSize().background(Aiimin.colors.base), contentPadding = PaddingValues(bottom = 32.dp)) {
+        fun row(it: FlowItem, i: Int) = item(key = "l" + it.kind.name + it.id) {
+            LaterRow(
+                it,
+                modifier = if (i >= 0) Modifier.enterStagger(i) else Modifier,
+                onToggle = { toggleTask(it.id) },
+                onOpen = {
+                    when (it.kind) {
+                        FlowKind.TASK -> nav.open(Route.Task(it.id))
+                        FlowKind.EXPIRY -> nav.open(Route.Doc(it.id))
+                        FlowKind.EVENT -> nav.open(Route.Calendar)
+                    }
+                },
+                onLong = {
+                    if (it.kind == FlowKind.TASK) scope.launch {
+                        val t = vm.deleteTask(it.id) ?: return@launch
+                        toaster.undo("Task removed") { vm.restoreTask(t) }
+                    }
+                },
+            )
+            Hairline(Modifier.padding(horizontal = Aiimin.space.gutter))
+        }
         item {
             val status = when {
                 u.dayState?.paused == true -> "Paused today · nothing counts against you"
@@ -165,86 +188,46 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
                         greeting()
                     }
                 }
-                Spacer(Modifier.height(16.dp))
-                DayHorizon(
-                    nowMinute = now.hour * 60 + now.minute,
-                    ticks = later.filter { it.time != null }.map { HorizonTick(it.time!!.hour * 60 + it.time.minute, Dates.clockPlain(it.time)) },
-                    horizon = Horizons.at(hour, Aiimin.colors.isDark),
-                )
             }
         }
-        item { NowCard(u, vm, hour, light, onDone = { toggleTask(it) }, modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 22.dp)) }
+        // PRD 1.2: one "What now?" line, then the stat line (owner, 20 Oct), the slim arc and the Quick doors (Part 17).
+        item {
+            WhatNowCard(
+                u.whatNow,
+                onDone = { toggleTask(it) },
+                onKeepMinimum = { name -> u.minimums.firstOrNull { it.minimum.name == name && !it.done }?.let { m -> scope.launch { vm.toggleMinimum(m.minimum.id) } } },
+                onNotNow = { vm.notNow(it) },
+                modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 20.dp),
+            )
+        }
+        u.dayEndSuggest?.let { t ->
+            item { DayEndCard(t, u.dayEnd, onYes = { vm.acceptDayEnd(t) }, onKeep = { vm.keepDayEnd() }, modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 12.dp)) }
+        }
         item { StatLine(u, Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 14.dp, bottom = 4.dp)) }
+        item {
+            DayHorizon(
+                nowMinute = now.hour * 60 + now.minute,
+                ticks = later.filter { it.time != null }.map { HorizonTick(it.time!!.hour * 60 + it.time.minute, Dates.clockPlain(it.time)) },
+                horizon = Horizons.at(hour, Aiimin.colors.isDark),
+                modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 8.dp),
+            )
+        }
+        u.setup?.let { steps ->
+            item {
+                FirstWeekCard(steps, onStep = { step ->
+                    when (step) {
+                        aiimin.core.engine.today.SetupStep.SCREEN_TIME -> runCatching { context.startActivity(vm.usageSettings()) }
+                        aiimin.core.engine.today.SetupStep.MINIMUM -> nav.open(Route.Minimums)
+                        aiimin.core.engine.today.SetupStep.CAPTURE -> nav.capture()
+                        aiimin.core.engine.today.SetupStep.DOCUMENT -> nav.tab(aiimin.designsystem.nav.Tab.VAULT)
+                        aiimin.core.engine.today.SetupStep.BUDGET -> nav.open(Route.Budget)
+                    }
+                }, modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 16.dp))
+            }
+        }
+        item { QuickDoorsRow(u.doors, Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 16.dp)) }
         item { PhoneDataCard(vm, Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 12.dp)) }
         item { KeepAliveCard(vm, Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 12.dp)) }
-
-        // ---- Later today
-        item {
-            Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
-                SectionHeader(if (light) "Hidden for today" else "Later today", action = "All tasks", onAction = { nav.open(Route.Upcoming) })
-            }
-        }
-        if (light) {
-            item {
-                Text(
-                    "${later.count { it.kind == FlowKind.TASK }} tasks are tucked away. Turn off light day to see them.",
-                    style = Aiimin.type.caption,
-                    modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(bottom = 6.dp),
-                )
-            }
-        } else {
-            if (later.isEmpty()) {
-                item { Text("Nothing left on the plan. The rest of today is yours.", style = Aiimin.type.caption, modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(vertical = 8.dp)) }
-            }
-            later.forEachIndexed { i, it ->
-                item(key = "l" + it.kind.name + it.id) {
-                    LaterRow(
-                        it,
-                        modifier = Modifier.enterStagger(i),
-                        onToggle = { toggleTask(it.id) },
-                        onOpen = {
-                            when (it.kind) {
-                                FlowKind.TASK -> nav.open(Route.Task(it.id))
-                                FlowKind.EXPIRY -> nav.open(Route.Doc(it.id))
-                                FlowKind.EVENT -> nav.open(Route.Calendar)
-                            }
-                        },
-                        onLong = {
-                            if (it.kind == FlowKind.TASK) scope.launch {
-                                val t = vm.deleteTask(it.id) ?: return@launch
-                                toaster.undo("Task removed") { vm.restoreTask(t) }
-                            }
-                        },
-                    )
-                    Hairline(Modifier.padding(horizontal = Aiimin.space.gutter))
-                }
-            }
-            if (earlier.isNotEmpty()) {
-                item(key = "earlier") {
-                    Row(
-                        Modifier.fillMaxWidth().clickable { earlierOpen = !earlierOpen }.padding(horizontal = Aiimin.space.gutter).heightIn(min = 52.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        val done = earlier.count { it.done }
-                        val open = earlier.size - done
-                        Text(
-                            "Earlier today · $done done" + if (open > 0) ", $open open" else "",
-                            style = Aiimin.type.body.copy(color = Aiimin.colors.textMuted),
-                            modifier = Modifier.weight(1f),
-                        )
-                        Icon(if (earlierOpen) AppIcons.CaretUp else AppIcons.CaretDown, null, tint = Aiimin.colors.textFaint, modifier = Modifier.size(16.dp))
-                    }
-                    Hairline(Modifier.padding(horizontal = Aiimin.space.gutter))
-                }
-                if (earlierOpen) earlier.forEach { it ->
-                    item(key = "e" + it.kind.name + it.id) {
-                        LaterRow(it, onToggle = { toggleTask(it.id) }, onOpen = { if (it.kind == FlowKind.TASK) nav.open(Route.Task(it.id)) }, onLong = {})
-                        Hairline(Modifier.padding(horizontal = Aiimin.space.gutter))
-                    }
-                }
-            }
-            item { QuickAdd(u.date, vm, Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 10.dp)) }
-        }
 
         // ---- Minimums
         item {
@@ -279,6 +262,74 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
         if (lowBattery && u.minimums.isNotEmpty()) {
             item { Text("Low battery: tiny versions count double today.", style = Aiimin.type.caption, modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 8.dp)) }
         }
+        // ---- Today list (PRD 1.2): one list, an Evening section, and "From yesterday · N" folded at the top.
+        item {
+            Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
+                SectionHeader(if (light) "Hidden for today" else "Today", action = "All tasks", onAction = { nav.open(Route.Upcoming) })
+            }
+        }
+        if (light) {
+            item {
+                Text(
+                    "${later.count { it.kind == FlowKind.TASK }} tasks are tucked away. Turn off light day to see them.",
+                    style = Aiimin.type.caption,
+                    modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(bottom = 6.dp),
+                )
+            }
+        } else {
+            val evening = aiimin.core.engine.today.WhatNow.eveningStart(u.dayEnd)
+            val carried = later.filter { it.carried > 0 }
+            val fresh = later.filter { it.carried == 0 }
+            val dayItems = fresh.filter { it.part != aiimin.core.data.plan.DayPart.EVENING && (it.time == null || it.time.isBefore(evening)) }
+            val eveningItems = fresh.filter { it !in dayItems }
+            if (later.isEmpty()) {
+                item { Text("Nothing left on the plan. The rest of today is yours.", style = Aiimin.type.caption, modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(vertical = 8.dp)) }
+            }
+            if (carried.isNotEmpty()) {
+                item(key = "carried") {
+                    Row(
+                        Modifier.fillMaxWidth().clickable { yesterdayOpenList = !yesterdayOpenList }.padding(horizontal = Aiimin.space.gutter).heightIn(min = 52.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text("From yesterday · ${carried.size}", style = Aiimin.type.body.copy(color = Aiimin.colors.textMuted), modifier = Modifier.weight(1f))
+                        Icon(if (yesterdayOpenList) AppIcons.CaretUp else AppIcons.CaretDown, null, tint = Aiimin.colors.textFaint, modifier = Modifier.size(16.dp))
+                    }
+                    Hairline(Modifier.padding(horizontal = Aiimin.space.gutter))
+                }
+                if (yesterdayOpenList) carried.forEach { row(it, -1) }
+            }
+            dayItems.forEachIndexed { i, it -> row(it, i) }
+            if (eveningItems.isNotEmpty()) {
+                item(key = "evening") { Column(Modifier.padding(horizontal = Aiimin.space.gutter)) { SectionHeader("Evening") } }
+                eveningItems.forEachIndexed { i, it -> row(it, dayItems.size + i) }
+            }
+            if (earlier.isNotEmpty()) {
+                item(key = "earlier") {
+                    Row(
+                        Modifier.fillMaxWidth().clickable { earlierOpen = !earlierOpen }.padding(horizontal = Aiimin.space.gutter).heightIn(min = 52.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        val done = earlier.count { it.done }
+                        val open = earlier.size - done
+                        Text(
+                            "Earlier today · $done done" + if (open > 0) ", $open open" else "",
+                            style = Aiimin.type.body.copy(color = Aiimin.colors.textMuted),
+                            modifier = Modifier.weight(1f),
+                        )
+                        Icon(if (earlierOpen) AppIcons.CaretUp else AppIcons.CaretDown, null, tint = Aiimin.colors.textFaint, modifier = Modifier.size(16.dp))
+                    }
+                    Hairline(Modifier.padding(horizontal = Aiimin.space.gutter))
+                }
+                if (earlierOpen) earlier.forEach { it ->
+                    item(key = "e" + it.kind.name + it.id) {
+                        LaterRow(it, onToggle = { toggleTask(it.id) }, onOpen = { if (it.kind == FlowKind.TASK) nav.open(Route.Task(it.id)) }, onLong = {})
+                        Hairline(Modifier.padding(horizontal = Aiimin.space.gutter))
+                    }
+                }
+            }
+            item { QuickAdd(u.date, vm, Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 10.dp)) }
+        }
+
         // ---- Pinned note
         u.pinned?.let { n ->
             item {
@@ -291,9 +342,8 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
                 }
             }
         }
-        // ---- Body of the day
-        item { BatteryStreakLine(u, Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 22.dp)) }
-        item { PhoneBody(u, Modifier.padding(horizontal = Aiimin.space.gutter)) }
+        // ---- Body of the day (streak and battery live in You, PRD 1.2)
+        item { PhoneBody(u, Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 14.dp)) }
         // At a glance: Money review, Vault and Journal one tap from Today (findability audit, plan §2.3.3).
         if (u.glance.isNotEmpty()) {
             item {
@@ -312,20 +362,6 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
                             Spacer(Modifier.width(12.dp))
                             Text(g.text, style = Aiimin.type.body, modifier = Modifier.weight(1f), maxLines = 2, overflow = TextOverflow.Ellipsis)
                             Icon(AppIcons.CaretRight, null, tint = Aiimin.colors.textMuted, modifier = Modifier.size(16.dp))
-                        }
-                    }
-                }
-            }
-        }
-        if (u.activity.isNotEmpty()) {
-            item {
-                Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
-                    SectionHeader("Recent", action = "See all", onAction = { nav.open(Route.Activity) })
-                    u.activity.take(3).forEach { a ->
-                        Row(Modifier.fillMaxWidth().heightIn(min = 44.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Text(a.text, style = Aiimin.type.body.copy(color = Aiimin.colors.textMuted), modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                            Spacer(Modifier.width(10.dp))
-                            Text(ago(a.at), style = Aiimin.type.caption)
                         }
                     }
                 }
@@ -400,78 +436,6 @@ private fun TodaySkeleton() {
         Skeleton(Modifier.fillMaxWidth().height(84.dp))
         Spacer(Modifier.height(22.dp))
         Skeleton(Modifier.fillMaxWidth().height(150.dp))
-    }
-}
-
-/** The only card on Today. Evening swaps in the wrap-up. */
-@Composable
-private fun NowCard(u: TodayUi, vm: TodayViewModel, hour: Int, light: Boolean, onDone: (String) -> Unit, modifier: Modifier) {
-    val nav = LocalNavigator.current
-    val c = Aiimin.colors
-    val card: @Composable (@Composable () -> Unit) -> Unit = { content ->
-        Column(modifier.fillMaxWidth().clip(Shapes.card).background(c.surface).border(1.dp, c.border, Shapes.card).padding(18.dp)) { content() }
-    }
-    val n = u.now
-    if (hour >= 18 && !light) {
-        card {
-            Text("WRAP UP THE DAY", style = Aiimin.type.eyebrow.copy(color = c.textMuted))
-            Spacer(Modifier.height(10.dp))
-            val kept = u.minimums.count { it.done }
-            Text("$kept of ${u.minimums.size} minimums kept. Close the day kindly.", style = Aiimin.type.cardTitle)
-            Spacer(Modifier.height(4.dp))
-            Text("A minute to say how it went, and name tomorrow's first task.", style = Aiimin.type.caption.copy(fontSize = 14.sp, lineHeight = 20.sp))
-            Spacer(Modifier.height(16.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                AppButton("Debrief", { nav.open(Route.Debrief) }, modifier = Modifier.weight(1f))
-                AppButton("Plan tomorrow", { nav.open(Route.PlanDay(tomorrow = true)) }, kind = ButtonKind.SECONDARY, modifier = Modifier.weight(1f))
-            }
-        }
-        return
-    }
-    if (n == null) {
-        card {
-            Text("NOTHING SCHEDULED RIGHT NOW", style = Aiimin.type.eyebrow.copy(color = c.textMuted))
-            Spacer(Modifier.height(10.dp))
-            Text("Pick one thing?", style = Aiimin.type.cardTitle)
-            Spacer(Modifier.height(4.dp))
-            Text("Nothing on the calendar for a while. Plan the rest of the day, or just start a focus session.", style = Aiimin.type.caption.copy(fontSize = 14.sp, lineHeight = 20.sp))
-            Spacer(Modifier.height(16.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                AppButton("Plan my day", { nav.open(Route.PlanDay()) }, modifier = Modifier.weight(1f))
-                AppButton("Start focus", { nav.open(Route.Focus()) }, kind = ButtonKind.SECONDARY, modifier = Modifier.weight(1f))
-            }
-        }
-        return
-    }
-    val it = n.item
-    card {
-        val eyebrow = when {
-            n.isNow -> "NOW"
-            it.time != null -> {
-                val m = vm.minutesUntil(it.time)
-                if (m <= 0) "NEXT" else "NEXT · IN ${if (m < 60) "$m MIN" else "${m / 60} H ${m % 60} MIN"}"
-            }
-            else -> "UP NEXT"
-        }
-        Text(eyebrow, style = Aiimin.type.eyebrow.copy(color = c.textMuted))
-        Column(Modifier.pressable({ if (it.kind == FlowKind.TASK) nav.open(Route.Task(it.id)) else nav.open(Route.Calendar) })) {
-            Spacer(Modifier.height(10.dp))
-            Text(it.title, style = Aiimin.type.cardTitle, maxLines = 2, overflow = TextOverflow.Ellipsis)
-            val time = listOfNotNull(it.time?.let(Dates::clock), it.end?.let { e -> "– " + Dates.clock(e) }).joinToString(" ")
-            val meta = listOfNotNull(time.ifBlank { null }, it.subtitle).joinToString(" · ")
-            if (meta.isNotBlank()) Text(meta, style = Aiimin.type.caption.copy(fontSize = 14.sp, lineHeight = 20.sp), modifier = Modifier.padding(top = 4.dp))
-        }
-        Spacer(Modifier.height(16.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
-            if (it.kind == FlowKind.TASK) {
-                AppButton("Mark done", { onDone(it.id) }, icon = AppIcons.Check, modifier = Modifier.weight(1f))
-                AppButton("Focus", { nav.open(Route.Focus(taskId = it.id, label = it.title)) }, kind = ButtonKind.SECONDARY)
-            } else {
-                AppButton("Focus on this", { nav.open(Route.Focus(label = it.title)) }, icon = AppIcons.Timer, modifier = Modifier.weight(1f))
-                AppButton("Open", { nav.open(Route.Calendar) }, kind = ButtonKind.SECONDARY)
-            }
-        }
-        if (n.moreToday > 0) Text("+${n.moreToday} more today", style = Aiimin.type.caption.copy(fontSize = 14.sp), modifier = Modifier.padding(top = 12.dp))
     }
 }
 
@@ -615,37 +579,6 @@ private fun QuickAdd(day: java.time.LocalDate, vm: TodayViewModel, modifier: Mod
     }
 }
 
-@Composable
-private fun BatteryStreakLine(u: TodayUi, modifier: Modifier) {
-    val nav = LocalNavigator.current
-    val c = Aiimin.colors
-    val b = u.life?.battery ?: return
-    val streak = u.life.readout.streak.current
-    Column(modifier) {
-        Hairline()
-        Row(Modifier.fillMaxWidth().clickable { nav.open(Route.Battery) }.heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
-            BatteryMeter(b.value / 100f, low = b.state != BatteryState.OK)
-            Spacer(Modifier.width(12.dp))
-            Text(
-                if (b.state == BatteryState.COMEBACK) "Comeback ${b.comebackDays} of 3" else "${b.value}",
-                style = Aiimin.type.bodyStrong,
-            )
-            Text(" · ${u.life.settings.batteryMode.name.lowercase().replaceFirstChar { it.uppercase() }}", style = Aiimin.type.body.copy(color = c.textMuted), maxLines = 1)
-            Spacer(Modifier.weight(1f))
-            if (streak > 0) {
-                Icon(AppIcons.CheckSquare, null, tint = c.text, modifier = Modifier.size(15.dp))
-                Spacer(Modifier.width(4.dp))
-                // Days kept in a row: a plain count, never called a streak (PRD 13.2); one line, right plural (A-039).
-                Text("$streak ${if (streak == 1) "day" else "days"}", style = Aiimin.type.caption.copy(color = c.textMuted, fontSize = 13.sp), maxLines = 1, softWrap = false, modifier = Modifier.semantics { contentDescription = "$streak ${if (streak == 1) "day" else "days"} kept in a row" })
-            }
-            Spacer(Modifier.width(6.dp))
-            Icon(AppIcons.CaretRight, null, tint = c.textFaint, modifier = Modifier.size(16.dp))
-        }
-        Hairline()
-    }
-}
-
-/** Ten flat segments, ink when filled. No pills, no gradients. */
 @Composable
 internal fun BatteryMeter(fraction: Float, low: Boolean, segments: Int = 10, modifier: Modifier = Modifier) {
     val c = Aiimin.colors

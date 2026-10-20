@@ -183,6 +183,28 @@ class UsageReader @Inject constructor(@ApplicationContext private val context: C
         return true
     }
 
+    /** Screen on (true) and off (false) moments between [from] and [to], for the learned day end (PRD 1.2). */
+    suspend fun screenEvents(from: Instant, to: Instant): List<Pair<Long, Boolean>> = withContext(Dispatchers.IO) {
+        if (!hasAccess()) return@withContext emptyList()
+        val out = ArrayList<Pair<Long, Boolean>>(512)
+        var cursor = from.toEpochMilli()
+        val end = minOf(to.toEpochMilli(), System.currentTimeMillis())
+        while (cursor < end) {
+            val sliceEnd = minOf(cursor + SLICE_MS, end)
+            val it = usm.queryEvents(cursor, sliceEnd)
+            val ev = UsageEvents.Event()
+            while (it.hasNextEvent()) {
+                it.getNextEvent(ev)
+                when (ev.eventType) {
+                    UsageEvents.Event.SCREEN_INTERACTIVE -> out += ev.timeStamp to true
+                    UsageEvents.Event.SCREEN_NON_INTERACTIVE -> out += ev.timeStamp to false
+                }
+            }
+            cursor = sliceEnd
+        }
+        out
+    }
+
     private fun kindOf(type: Int): UsageTimeline.Kind? = when (type) {
         UsageEvents.Event.ACTIVITY_RESUMED -> UsageTimeline.Kind.RESUMED
         UsageEvents.Event.ACTIVITY_PAUSED -> UsageTimeline.Kind.PAUSED

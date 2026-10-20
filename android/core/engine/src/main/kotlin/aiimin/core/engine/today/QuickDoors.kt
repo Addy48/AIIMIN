@@ -9,14 +9,15 @@ import java.time.temporal.ChronoUnit
  * first. Nothing already in the bar or the "+" sheet ever appears. Counts stay on the phone.
  */
 object QuickDoors {
-    val DEFAULTS = listOf("pour", "focus", "calendar", "plan")
-    /** The bar (Today, Money, +, Vault, You) and the "+" sheet's types. */
-    val EXCLUDED = setOf("today", "money", "vault", "me", "you", "task", "expense", "note", "event", "document", "capture")
+    /** Keys are route names in lower case: Pour (the private writer, "journalwrite" until B7b), Focus, Calendar, Plan my day. */
+    val DEFAULTS = listOf("journalwrite", "focus", "calendar", "planday")
+    /** The bar (Today, Money, +, Vault, You), the "+" sheet's types and single items (a task, a note, a document). */
+    val EXCLUDED = setOf("today", "money", "vault", "me", "you", "task", "expense", "note", "event", "doc", "document", "capture", "search", "notifications")
     const val SLOTS = 4
     const val LEARN_AFTER_DAYS = 7L
 
     fun pick(installDay: LocalDate, today: LocalDate, opens: Map<String, Int>, pinned: List<String>, hasNote: Boolean): List<String> {
-        val base = if (hasNote) listOf("pour", "focus", "calendar", "notes") else DEFAULTS
+        val base = if (hasNote) DEFAULTS.dropLast(1) + "notes" else DEFAULTS
         val learned = if (ChronoUnit.DAYS.between(installDay, today) >= LEARN_AFTER_DAYS) {
             opens.filterKeys { it !in EXCLUDED && opens[it]!! > 0 }.entries.sortedWith(compareByDescending<Map.Entry<String, Int>> { it.value }.thenBy { it.key }).map { it.key }
         } else emptyList()
