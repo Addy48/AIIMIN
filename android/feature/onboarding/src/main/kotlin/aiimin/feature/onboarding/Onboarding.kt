@@ -165,7 +165,7 @@ fun OnboardingScreen(onDone: () -> Unit, vm: OnboardingViewModel = hiltViewModel
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp)) {
                 when (p) {
                     0 -> HelloPage()
-                    1 -> AboutYouPage(d, { n -> vm.update { it.copy(name = n) } }, { dob -> vm.update { it.copy(dob = dob.toString()) } }, { code -> vm.update { it.copy(country = code) } })
+                    1 -> AboutYouPage(d, { n -> vm.update { it.copy(name = n) } }, { dob -> vm.update { it.copy(dob = dob.toString(), ageOk = false) } }, { code -> vm.update { it.copy(country = code) } })
                     2 -> YourDayPage(d, { m -> vm.update { it.copy(wakeMin = m) } }, { m -> vm.update { it.copy(sleepMin = m) } })
                     4 -> {
                         LaunchedEffect(Unit) { if (!d.minsTouched && d.mins.isEmpty()) vm.update { it.copy(mins = listOf(FIRST_MIN)) } }
@@ -196,7 +196,7 @@ fun OnboardingScreen(onDone: () -> Unit, vm: OnboardingViewModel = hiltViewModel
                         under18 = AgeBand.eighteenth(dob).takeIf { !dob.isAfter(LocalDate.now()) }
                         vm.forget()
                         overlay = Overlay.UNDER_AGE
-                    } else next()
+                    } else { vm.update { it.copy(ageOk = true) }; next() }
                 }, Modifier.fillMaxWidth(), enabled = d.dob != null && d.name.isNotBlank())
                 3 -> AppButton(if (d.firstWin != null) "Continue" else "Skip for now", {
                     // Notifications are asked at the first useful moment, after the first capture (1.6).

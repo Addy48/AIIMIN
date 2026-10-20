@@ -181,8 +181,8 @@ class NotificationRepository @Inject constructor(
         val notif = NotificationCompat.Builder(context, if (n.priority >= 2) CH_HIGH else CH_DEFAULT)
             // PRD 1.1 and 20.4: money and document notices are signed AIIMIN (its mark, no character); the rest
             // speak as Raahi, with its face as the large icon unless Raahi is Off.
-            .setSmallIcon(if (signedAiimin(n.ruleKey)) R.drawable.ic_stat_aiimin else R.drawable.ic_stat_raahi)
-            .apply { if (raahiArt && !signedAiimin(n.ruleKey)) setLargeIcon(android.graphics.BitmapFactory.decodeResource(context.resources, R.drawable.raahi_notif_large)) }
+            .setSmallIcon(if (signedAiimin(n.ruleKey, n.route)) R.drawable.ic_stat_aiimin else R.drawable.ic_stat_raahi)
+            .apply { if (raahiArt && !signedAiimin(n.ruleKey, n.route)) setLargeIcon(android.graphics.BitmapFactory.decodeResource(context.resources, R.drawable.raahi_notif_large)) }
             .setContentTitle(n.title)
             .setContentText(n.body)
             .setStyle(NotificationCompat.BigTextStyle().bigText(n.body))
@@ -214,7 +214,8 @@ class NotificationRepository @Inject constructor(
  * old "review:42" week keys, D-045); keys without a date or week are their own family.
  */
 /** Notices about money, documents and backups are signed AIIMIN, never Raahi (PRD 1.1, 20.5). */
-fun signedAiimin(ruleKey: String): Boolean = ruleKey.substringBefore(':') in setOf("doc", "backup", "bill", "budget", "inbox")
+fun signedAiimin(ruleKey: String, route: String? = null): Boolean =
+    route in setOf("money", "bills", "vault", "doc", "backup") || ruleKey.substringBefore(':') in setOf("doc", "backup", "bill", "budget", "inbox", "smsyear")
 
 internal fun family(ruleKey: String): String {
     val last = ruleKey.substringAfterLast(':', "")

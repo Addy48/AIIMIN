@@ -47,12 +47,17 @@ data class Draft(
     val firstWin: String? = null,
     /** FULL, QUIET (default) or OFF, chosen on screen 6 and applied live. */
     val raahiMode: String = "QUIET",
+    /** Screen 1 passed the age check. Until then the name and date of birth stay in memory only. */
+    val ageOk: Boolean = false,
 ) {
+    /** What may be written to the phone: before the age check, nothing typed on screen 1 (Part 23). */
+    fun storable(): Draft = if (ageOk) this else copy(name = "", dob = null)
+
     val dobDate: LocalDate? get() = dob?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
 
     fun toJson(): String = JSONObject().apply {
         put("v", 2); put("step", step); put("helloOpen", helloOpen); put("name", name); put("dob", dob); put("country", country)
-        put("wake", wakeMin); put("sleep", sleepMin); put("minsTouched", minsTouched); put("firstWin", firstWin); put("raahi", raahiMode)
+        put("wake", wakeMin); put("sleep", sleepMin); put("minsTouched", minsTouched); put("firstWin", firstWin); put("raahi", raahiMode); put("ageOk", ageOk)
         put("mins", JSONArray(mins.map { JSONObject().put("t", it.title).put("y", it.tiny) }))
     }.toString()
 
@@ -69,7 +74,7 @@ data class Draft(
                 name = o.optString("name"), dob = str("dob"), country = o.optString("country", "IN"),
                 wakeMin = o.optInt("wake", 7 * 60), sleepMin = o.optInt("sleep", 23 * 60),
                 mins = o.optJSONArray("mins")?.let { a -> (0 until a.length()).map { MinPick(a.getJSONObject(it).getString("t"), a.getJSONObject(it).optString("y")) } }.orEmpty().take(3),
-                minsTouched = o.optBoolean("minsTouched"), firstWin = str("firstWin"), raahiMode = o.optString("raahi", "QUIET"),
+                minsTouched = o.optBoolean("minsTouched"), firstWin = str("firstWin"), raahiMode = o.optString("raahi", "QUIET"), ageOk = o.optBoolean("ageOk", o.optInt("v") != 2),
             )
         }.getOrNull()
     }
@@ -114,14 +119,14 @@ class OnboardingViewModel @Inject constructor(
 
     fun update(change: (Draft) -> Draft) {
         _draft.update(change)
-        prefs.edit().putString("d", _draft.value.toJson()).apply()
+        prefs.edit().putString("d", _draft.value.storable().toJson()).apply()
     }
 
     fun go(step: Int) = update { it.copy(step = step.coerceIn(0, Draft.LAST)) }
 
     /** Under 18: nothing is kept, not even the name (Part 23). */
     fun forget() {
-        prefs.edit().clear().apply()
+        prefs.edit().clear().commit()
         _draft.value = Draft()
     }
 

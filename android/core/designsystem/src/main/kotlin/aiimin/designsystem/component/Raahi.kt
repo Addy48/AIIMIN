@@ -76,6 +76,8 @@ fun Raahi(
     modifier: Modifier = Modifier,
     motion: RaahiMotion? = null,
     description: String? = null,
+    /** A motion granted once (Today's Mini): with a key it plays a single time per process, never on recomposition. */
+    motionKey: Long? = null,
 ) {
     val mode = LocalRaahiMode.current
     if (!RaahiRules.showsArt(mode)) return
@@ -88,8 +90,8 @@ fun Raahi(
         t.animateFloat(0f, 1f, infiniteRepeatable(Motion.ambient(ms), RepeatMode.Reverse), label = "breathe").value
     } else 0f
     val played = remember { Animatable(1f) }
-    LaunchedEffect(motion) {
-        if (motion == null || reduce) { played.snapTo(1f); return@LaunchedEffect }
+    LaunchedEffect(motion, motionKey) {
+        if (motion == null || reduce || (motionKey != null && !RaahiPlayed.claim(motionKey))) { played.snapTo(1f); return@LaunchedEffect }
         played.snapTo(0f)
         played.animateTo(1f, if (motion == RaahiMotion.WAVE) Motion.emphasised() else Motion.standard())
     }
@@ -124,6 +126,12 @@ fun Raahi(
             )
         }
     }
+}
+
+/** Motions already played in this process, by key, so scrolling, tabs or rotation never replay them. */
+internal object RaahiPlayed {
+    private val keys = mutableSetOf<Long>()
+    @Synchronized fun claim(key: Long): Boolean = keys.add(key)
 }
 
 /** A scene (sunset, lantern) at card or hero width; nothing when Raahi is Off. */
