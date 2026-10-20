@@ -1,5 +1,7 @@
 package aiimin.feature.assistant
 
+import aiimin.designsystem.theme.LocalReduceMotion
+import aiimin.designsystem.theme.Motion
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -135,7 +137,7 @@ fun AssistantScreen(route: Route.Assistant, vm: ChatViewModel = hiltViewModel())
                 }
             }
             items(messages, key = { it.id }) { m ->
-                AnimatedVisibility(true, enter = fadeIn(tween(200)) + slideInVertically(tween(220)) { it / 6 }) {
+                AnimatedVisibility(true, enter = if (LocalReduceMotion.current) fadeIn(Motion.reducedFade()) else fadeIn(Motion.standard()) + slideInVertically(Motion.standard()) { it / 6 }) {
                     if (m.role == "user") UserBubble(m.text) else AssistantMessage(m, vm, onSource = { s -> openSource(nav, s) }, onFollow = { f ->
                         if (f == "Open AI settings") nav.open(Route.AiSettings) else vm.send(f)
                     }, onApply = {
@@ -562,12 +564,12 @@ private fun CardEditor(start: Action, onDismiss: () -> Unit, onDone: (Action) ->
     )
 }
 
-/** 18 ink bars; they only move while the phone is actually listening. */
+/** 18 ink bars; they only move while the phone is actually listening (the one recording loop, Part 26.5). */
 @Composable
 private fun Meter18(active: Boolean, level: Float = 0f) {
     val c = Aiimin.colors
     val t = androidx.compose.animation.core.rememberInfiniteTransition(label = "level")
-    val phase by t.animateFloat(0f, 6.2832f, androidx.compose.animation.core.infiniteRepeatable(androidx.compose.animation.core.tween(1400, easing = androidx.compose.animation.core.LinearEasing)), label = "p")
+    val phase by t.animateFloat(0f, 6.2832f, androidx.compose.animation.core.infiniteRepeatable(androidx.compose.animation.core.tween(Motion.AMBIENT_MIN, easing = androidx.compose.animation.core.LinearEasing)), label = "p")
     Row(Modifier.fillMaxWidth().height(56.dp), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
         repeat(18) { i ->
             // Follows the real microphone level; the gentle wave only shapes it across the bars.

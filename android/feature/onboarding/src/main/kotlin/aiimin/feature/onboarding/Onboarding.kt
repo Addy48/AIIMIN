@@ -1,5 +1,6 @@
 package aiimin.feature.onboarding
 
+import aiimin.designsystem.theme.LocalReduceMotion
 import aiimin.core.data.sync.MergePreview
 import aiimin.core.sensing.HealthAvailability
 import aiimin.designsystem.component.AppButton
@@ -157,12 +158,14 @@ fun OnboardingScreen(onDone: () -> Unit, vm: OnboardingViewModel = hiltViewModel
                 next()
             }.padding(12.dp))
         }
+        val reduce = LocalReduceMotion.current
         AnimatedContent(
             d.step,
             transitionSpec = {
                 val fwd = targetState > initialState
-                (slideInHorizontally(tween(Motion.SLOW, easing = Motion.enter)) { if (fwd) it / 5 else -it / 5 } + fadeIn(tween(Motion.BASE)))
-                    .togetherWith(slideOutHorizontally(tween(Motion.BASE, easing = Motion.exit)) { if (fwd) -it / 5 else it / 5 } + fadeOut(tween(Motion.FAST)))
+                if (reduce) fadeIn(Motion.reducedFade()).togetherWith(fadeOut(Motion.reducedFade()))
+                else (slideInHorizontally(Motion.standard()) { if (fwd) it / 5 else -it / 5 } + fadeIn(Motion.standard()))
+                    .togetherWith(slideOutHorizontally(Motion.exit()) { if (fwd) -it / 5 else it / 5 } + fadeOut(Motion.exit()))
             },
             label = "onboarding", modifier = Modifier.weight(1f),
         ) { step ->

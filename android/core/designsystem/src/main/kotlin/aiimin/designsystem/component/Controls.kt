@@ -1,5 +1,6 @@
 package aiimin.designsystem.component
 
+import aiimin.designsystem.theme.LocalReduceMotion
 import androidx.compose.foundation.selection.toggleable
 
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,7 +11,6 @@ import aiimin.designsystem.icon.AppIcons
 import aiimin.designsystem.theme.Aiimin
 import aiimin.designsystem.theme.Motion
 import aiimin.designsystem.theme.Shapes
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -157,8 +157,8 @@ fun CheckCircle(
 ) {
     val c = Aiimin.colors
     val haptics = LocalHapticFeedback.current
-    val fill by animateColorAsState(if (checked) color else Color.Transparent, tween(Motion.FAST), label = "fill")
-    val tick by animateFloatAsState(if (checked) 1f else 0f, tween(150, easing = Motion.enter), label = "tick")
+    val fill = if (checked) color else Color.Transparent
+    val tick by animateFloatAsState(if (checked) 1f else 0f, Motion.move(LocalReduceMotion.current, Motion.quick()), label = "tick")
     val shape = RoundedCornerShape(6.dp)
     Box(
         modifier
@@ -193,7 +193,7 @@ fun CheckCircle(
 /** Title that strikes through when done (Things-style). */
 @Composable
 fun DoneText(text: String, done: Boolean, style: TextStyle = Aiimin.type.bodyStrong, modifier: Modifier = Modifier, maxLines: Int = 2) {
-    val color by animateColorAsState(if (done) Aiimin.colors.textFaint else style.color, tween(Motion.BASE), label = "doneText")
+    val color = if (done) Aiimin.colors.textFaint else style.color
     Text(
         text,
         style = style.copy(color = color, textDecoration = if (done) TextDecoration.LineThrough else null),
@@ -215,8 +215,8 @@ fun Pill(
 ) {
     val c = Aiimin.colors
     val onInk = c.onInk
-    val bg by animateColorAsState(if (selected) c.text else Color.Transparent, tween(Motion.FAST), label = "pillBg")
-    val fg by animateColorAsState(if (selected) onInk else c.text, tween(Motion.FAST), label = "pillFg")
+    val bg = if (selected) c.text else Color.Transparent
+    val fg = if (selected) onInk else c.text
     val chip = RoundedCornerShape(6.dp)
     Row(
         modifier
@@ -258,7 +258,7 @@ fun Segmented(options: List<String>, selected: Int, onSelect: (Int) -> Unit, mod
         modifier.fillMaxWidth().height(40.dp).clip(Shapes.control).background(c.segmentTrack).padding(3.dp),
     ) {
         val w = maxWidth / options.size
-        val x by animateDpAsState(w * selected, spring(dampingRatio = 0.85f, stiffness = 400f), label = "thumb")
+        val x by animateDpAsState(w * selected, Motion.move(LocalReduceMotion.current, Motion.springSoft()), label = "thumb")
         Box(
             Modifier.offset(x = x).width(w).fillMaxHeight()
                 .shadow(1.dp, inner, ambientColor = c.shadowKey, spotColor = c.shadowKey)
@@ -346,8 +346,8 @@ fun SwitchRow(title: String, checked: Boolean, onChange: (Boolean) -> Unit, subt
         leading = icon?.let { { IconTile(it) } },
         onClick = null,
         trailing = {
-            val x by animateDpAsState(if (checked) 16.dp else 0.dp, tween(Motion.FAST, easing = Motion.enter), label = "knob")
-            val track by animateColorAsState(if (checked) c.text else c.borderStrong, tween(Motion.FAST), label = "track")
+            val x by animateDpAsState(if (checked) 16.dp else 0.dp, Motion.move(LocalReduceMotion.current, Motion.quick()), label = "knob")
+            val track = if (checked) c.text else c.borderStrong
             Box(
                 Modifier.width(46.dp).height(28.dp).clip(Shapes.control).background(track).padding(3.dp),
             ) {

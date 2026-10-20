@@ -1,5 +1,7 @@
 package aiimin.feature.today
 
+import aiimin.designsystem.theme.LocalReduceMotion
+import aiimin.designsystem.theme.Motion
 import aiimin.core.data.day.DayRepository
 import aiimin.core.data.plan.DayPart
 import aiimin.core.data.util.Dates
@@ -339,7 +341,7 @@ fun FocusScreen(route: Route.Focus, vm: FocusViewModel = hiltViewModel()) {
                 val elapsed = a.elapsedMs(now)
                 val planned = a.plannedMin * 60_000L
                 val remaining = planned - elapsed
-                val p by animateFloatAsState((elapsed.toFloat() / planned).coerceIn(0f, 1f), tween(900), label = "focus")
+                val p by animateFloatAsState((elapsed.toFloat() / planned).coerceIn(0f, 1f), Motion.move(LocalReduceMotion.current, Motion.emphasised()), label = "focus")
                 Spacer(Modifier.height(24.dp))
                 Text(a.label, style = Aiimin.type.headline, textAlign = TextAlign.Center)
                 Spacer(Modifier.height(24.dp))

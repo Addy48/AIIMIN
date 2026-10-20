@@ -1,5 +1,7 @@
 package aiimin.designsystem.component
 
+import aiimin.designsystem.theme.LocalReduceMotion
+import aiimin.designsystem.theme.Motion
 import androidx.compose.foundation.shape.RoundedCornerShape
 import aiimin.designsystem.icon.AppIcons
 import aiimin.designsystem.theme.Aiimin
@@ -50,13 +52,13 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 
-/** Gentle press feedback used by every tappable surface (scale 0.98, 120 ms). */
+/** Press feedback used by every tappable surface (Part 26.5 `tap`: 0.97 scale, 90 ms; none with reduce motion). */
 @Composable
 fun Modifier.pressable(onClick: (() -> Unit)?, role: Role = Role.Button, onClickLabel: String? = null): Modifier {
     if (onClick == null) return this
     val source = remember { MutableInteractionSource() }
     val pressed by source.collectIsPressedAsState()
-    val s by animateFloatAsState(if (pressed) 0.98f else 1f, tween(120), label = "press")
+    val s by animateFloatAsState(if (pressed && !LocalReduceMotion.current) Motion.PRESS_SCALE else 1f, Motion.tap(), label = "press")
     return this
         .scale(s)
         .clickable(interactionSource = source, indication = null, role = role, onClickLabel = onClickLabel, onClick = onClick)

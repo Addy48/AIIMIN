@@ -32,7 +32,6 @@ import aiimin.designsystem.theme.Aiimin
 import aiimin.designsystem.theme.Horizons
 import aiimin.designsystem.theme.Motion
 import aiimin.designsystem.theme.Shapes
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -207,7 +206,7 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
             if (earlier.isNotEmpty()) {
                 item(key = "earlier") {
                     Row(
-                        Modifier.fillMaxWidth().clickable { earlierOpen = !earlierOpen }.padding(horizontal = Aiimin.space.gutter).heightIn(min = 52.dp).animateContentSize(),
+                        Modifier.fillMaxWidth().clickable { earlierOpen = !earlierOpen }.padding(horizontal = Aiimin.space.gutter).heightIn(min = 52.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         val done = earlier.count { it.done }
@@ -504,7 +503,6 @@ private fun LaterRow(item: FlowItem, onToggle: () -> Unit, onOpen: () -> Unit, o
     Row(
         Modifier
             .fillMaxWidth()
-            .animateContentSize(tween(Motion.BASE))
             .combinedClickable(onClick = onOpen, onLongClick = onLong, onLongClickLabel = "Remove")
             // Spec T1: time | title | tag, no checkbox. Done lives on the task itself; screen readers get it as an action.
             .semantics {

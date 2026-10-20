@@ -16,7 +16,6 @@ import aiimin.designsystem.component.SwitchRow
 import aiimin.designsystem.component.rememberVoiceInput
 import aiimin.designsystem.icon.AppIcons
 import aiimin.designsystem.theme.Aiimin
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -216,7 +215,7 @@ fun BatteryPage(d: Draft, onPick: (BatteryMode) -> Unit) {
         Column(
             Modifier.fillMaxWidth().padding(vertical = 4.dp).clip(RoundedCornerShape(12.dp)).background(if (on) c.surface else c.base)
                 .border(if (on) 1.5.dp else 1.dp, if (on) c.text else c.border, RoundedCornerShape(12.dp))
-                .clickable { onPick(mode) }.padding(16.dp).animateContentSize(),
+                .clickable { onPick(mode) }.padding(16.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(title, style = Aiimin.type.headline, modifier = Modifier.weight(1f))

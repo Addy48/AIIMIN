@@ -1,5 +1,7 @@
 package aiimin.designsystem.component
 
+import aiimin.designsystem.theme.LocalReduceMotion
+import androidx.compose.animation.core.StartOffset
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.layout.offset
@@ -147,7 +149,7 @@ fun Dock(items: List<DockItem>, onPlus: () -> Unit, onPlusLong: () -> Unit, modi
             Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
                 val source = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
                 val pressed by source.collectIsPressedAsState()
-                val sc by androidx.compose.animation.core.animateFloatAsState(if (pressed) 0.94f else 1f, tween(120), label = "plus")
+                val sc by androidx.compose.animation.core.animateFloatAsState(if (pressed && !LocalReduceMotion.current) Motion.PRESS_SCALE else 1f, Motion.tap(), label = "plus")
                 Box(
                     Modifier
                         .size(56.dp)
@@ -273,10 +275,11 @@ class Toaster {
 fun ToastHost(toaster: Toaster, modifier: Modifier = Modifier) {
     val c = Aiimin.colors
     val t = toaster.current
+    val reduce = LocalReduceMotion.current
     AnimatedVisibility(
         visible = t != null,
-        enter = slideInVertically(tween(Motion.BASE, easing = Motion.enter)) { it / 2 } + fadeIn(tween(Motion.FAST)),
-        exit = slideOutVertically(tween(Motion.FAST, easing = Motion.exit)) { it / 2 } + fadeOut(tween(Motion.FAST)),
+        enter = if (reduce) fadeIn(Motion.reducedFade()) else slideInVertically(Motion.standard()) { it / 2 } + fadeIn(Motion.quick()),
+        exit = if (reduce) fadeOut(Motion.reducedFade()) else slideOutVertically(Motion.exit()) { it / 2 } + fadeOut(Motion.exit()),
         modifier = modifier,
     ) {
         val toast = t ?: return@AnimatedVisibility
@@ -307,7 +310,12 @@ fun ToastHost(toaster: Toaster, modifier: Modifier = Modifier) {
                 }
             }
             if (toast.action != null) {
-                Box(Modifier.fillMaxWidth(progress.value).height(2.dp).background(c.onInkAccent))
+                // The undo window drains as a scale, not a width change (Part 26.5: transform and opacity only).
+                Box(
+                    Modifier.fillMaxWidth().height(2.dp)
+                        .graphicsLayer { scaleX = progress.value; transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0f, 0.5f) }
+                        .background(c.onInkAccent),
+                )
             }
         }
     }
@@ -332,31 +340,34 @@ fun EmptyState(icon: ImageVector, title: String, body: String, modifier: Modifie
 }
 
 /**
- * Content-shaped shimmer block. Invisible for the first 300 ms, then fades in: most loads finish
- * sooner, and a grey flash before real content reads as slower than a blank moment.
+ * Content-shaped placeholder block. Invisible for the first 300 ms, then fades in once: most loads finish
+ * sooner, and a grey flash before real content reads as slower than a blank moment. No shimmer loop (Part 26.5).
  */
 @Composable
 fun Skeleton(modifier: Modifier) {
     val c = Aiimin.colors
-    val t = rememberInfiniteTransition(label = "sk")
-    val a by t.animateFloat(0.55f, 1f, infiniteRepeatable(tween(1200), RepeatMode.Reverse), label = "skA")
     val shown = remember { Animatable(0f) }
+    val reduce = LocalReduceMotion.current
     LaunchedEffect(Unit) {
         delay(300)
-        shown.animateTo(1f, tween(200))
+        shown.animateTo(1f, Motion.fade(reduce, Motion.standard()))
     }
-    Box(modifier.graphicsLayer { alpha = a * shown.value }.clip(Shapes.small).background(c.raised))
+    Box(modifier.graphicsLayer { alpha = shown.value }.clip(Shapes.small).background(c.raised))
 }
 
-/** Three dots that breathe while the assistant works. */
+/**
+ * Three dots that breathe slowly while Raahi works (the stand-in for Raahi's thinking loop, Part 20.3,
+ * on the ambient token). Reduce motion: still dots.
+ */
 @Composable
 fun ThinkingDots() {
     val c = Aiimin.colors
+    val reduce = LocalReduceMotion.current
     val t = rememberInfiniteTransition(label = "dots")
-    Row(horizontalArrangement = Arrangement.spacedBy(5.dp), modifier = Modifier.padding(8.dp)) {
+    Row(horizontalArrangement = Arrangement.spacedBy(5.dp), modifier = Modifier.padding(8.dp).semantics { contentDescription = "Thinking" }) {
         repeat(3) { i ->
-            val a by t.animateFloat(0.25f, 1f, infiniteRepeatable(tween(600, delayMillis = i * 150), RepeatMode.Reverse), label = "d$i")
-            Box(Modifier.size(6.dp).graphicsLayer { alpha = a }.clip(CircleShape).background(c.textMuted))
+            val a by t.animateFloat(0.3f, 1f, infiniteRepeatable(Motion.ambient(), RepeatMode.Reverse, StartOffset(i * Motion.STAGGER * 10)), label = "d$i")
+            Box(Modifier.size(6.dp).graphicsLayer { alpha = if (reduce) 0.7f else a }.clip(CircleShape).background(c.textMuted))
         }
     }
 }

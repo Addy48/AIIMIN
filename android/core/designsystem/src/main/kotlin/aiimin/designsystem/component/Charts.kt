@@ -1,5 +1,6 @@
 package aiimin.designsystem.component
 
+import aiimin.designsystem.theme.LocalReduceMotion
 import aiimin.designsystem.theme.Aiimin
 import aiimin.designsystem.theme.Motion
 import aiimin.designsystem.theme.Shapes
@@ -52,9 +53,10 @@ data class RingSpec(val progress: Float, val color: Color, val label: String)
 @Composable
 fun Rings(rings: List<RingSpec>, modifier: Modifier = Modifier, size: Dp = 132.dp, stroke: Dp = 12.dp, gap: Dp = 4.dp) {
     val track = Aiimin.colors.raised
+    val reduce = LocalReduceMotion.current
     val anim = rings.map { r ->
         val a = remember { Animatable(0f) }
-        LaunchedEffect(r.progress) { a.animateTo(r.progress.coerceIn(0f, 2f), tween(900, easing = Motion.enter)) }
+        LaunchedEffect(r.progress) { a.animateTo(r.progress.coerceIn(0f, 2f), Motion.move(reduce, Motion.emphasised())) }
         a.value
     }
     Canvas(
@@ -81,7 +83,8 @@ fun Rings(rings: List<RingSpec>, modifier: Modifier = Modifier, size: Dp = 132.d
 @Composable
 fun ScoreArc(value: Float?, modifier: Modifier = Modifier, size: Dp = 200.dp, color: Color = Aiimin.colors.accent) {
     val track = Aiimin.colors.raised
-    val p by animateFloatAsState(((value ?: 0f) / 100f).coerceIn(0f, 1f), tween(1100, easing = Motion.enter), label = "arc")
+    val reduce = LocalReduceMotion.current
+    val p by animateFloatAsState(((value ?: 0f) / 100f).coerceIn(0f, 1f), Motion.move(LocalReduceMotion.current, Motion.emphasised()), label = "arc")
     Canvas(modifier.size(size)) {
         val sw = 14.dp.toPx()
         val inset = sw / 2
@@ -107,7 +110,7 @@ fun Bars(
 ) {
     val c = Aiimin.colors
     val peak = max(values.maxOrNull() ?: 0f, 0.0001f)
-    val grow by animateFloatAsState(1f, tween(700, easing = Motion.enter), label = "grow")
+    val grow by animateFloatAsState(1f, Motion.move(LocalReduceMotion.current, Motion.emphasised()), label = "grow")
     Column(modifier.semantics { contentDescription = description }) {
         Canvas(Modifier.fillMaxWidth().height(height)) {
             val n = values.size.coerceAtLeast(1)
@@ -186,7 +189,7 @@ fun Sparkline(
 /** Thin progress bar with a rounded fill. */
 @Composable
 fun Meter(progress: Float, modifier: Modifier = Modifier, color: Color = Aiimin.colors.accent, height: Dp = 6.dp, overColor: Color = Aiimin.colors.danger) {
-    val p by animateFloatAsState(progress.coerceIn(0f, 1f), tween(600, easing = Motion.enter), label = "meter")
+    val p by animateFloatAsState(progress.coerceIn(0f, 1f), Motion.move(LocalReduceMotion.current, Motion.emphasised()), label = "meter")
     Box(modifier.fillMaxWidth().height(height).clip(Shapes.pill).background(Aiimin.colors.raised)) {
         Box(Modifier.fillMaxHeight().fillMaxWidth(p).clip(Shapes.pill).background(if (progress > 1f) overColor else color))
     }
@@ -195,7 +198,7 @@ fun Meter(progress: Float, modifier: Modifier = Modifier, color: Color = Aiimin.
 /** Number that counts to its new value (score, totals, XP). */
 @Composable
 fun CountingNumber(value: Int, style: TextStyle, modifier: Modifier = Modifier, format: (Int) -> String = { it.toString() }) {
-    val v by animateIntAsState(value, tween(700, easing = Motion.enter), label = "count")
+    val v by animateIntAsState(value, Motion.move(LocalReduceMotion.current, Motion.emphasised()), label = "count")
     Text(format(v), style = style, modifier = modifier)
 }
 

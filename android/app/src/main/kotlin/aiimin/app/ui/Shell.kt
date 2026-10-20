@@ -1,5 +1,6 @@
 package aiimin.app.ui
 
+import aiimin.designsystem.theme.LocalReduceMotion
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxWidth
 import aiimin.app.FocusDoneWorker
@@ -246,6 +247,7 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
     }
 
     val top = stack.last()
+    val reduce = LocalReduceMotion.current
     BackHandler(enabled = stack.size == 1 && top != Route.Today) { navigator.tab(Tab.TODAY) }
 
     val syncUi = remember(syncState) {
@@ -276,20 +278,24 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
                     onBack = { navigator.back() },
                     modifier = Modifier.weight(1f),
                     entryDecorators = listOf(rememberSaveableStateHolderNavEntryDecorator(), rememberViewModelStoreNavEntryDecorator()),
+                    // Part 26.5: push = standard, back = exit (faster), tabs cross-fade; reduce motion = 200 ms fade.
                     transitionSpec = {
-                        if (tabSwitch) {
-                            fadeIn(tween(Motion.FAST + 30)).togetherWith(fadeOut(tween(Motion.FAST)))
-                        } else {
-                            slideInHorizontally(tween(280, easing = Motion.enter)) { it }
-                                .togetherWith(slideOutHorizontally(tween(280, easing = Motion.enter)) { -it / 3 } + fadeOut(tween(280), targetAlpha = 0.6f))
+                        when {
+                            reduce -> fadeIn(Motion.reducedFade()).togetherWith(fadeOut(Motion.reducedFade()))
+                            tabSwitch -> fadeIn(Motion.quick()).togetherWith(fadeOut(Motion.tap()))
+                            else -> slideInHorizontally(Motion.standard()) { it }
+                                .togetherWith(slideOutHorizontally(Motion.standard()) { -it / 3 } + fadeOut(Motion.standard(), targetAlpha = 0.6f))
                         }
                     },
                     popTransitionSpec = {
-                        (slideInHorizontally(tween(260, easing = Motion.enter)) { -it / 3 } + fadeIn(tween(260), initialAlpha = 0.6f))
-                            .togetherWith(slideOutHorizontally(tween(240, easing = Motion.exit)) { it })
+                        if (reduce) fadeIn(Motion.reducedFade()).togetherWith(fadeOut(Motion.reducedFade()))
+                        else (slideInHorizontally(Motion.standard()) { -it / 3 } + fadeIn(Motion.standard(), initialAlpha = 0.6f))
+                            .togetherWith(slideOutHorizontally(Motion.exit()) { it })
                     },
                     predictivePopTransitionSpec = {
-                        (slideInHorizontally { -it / 3 } + fadeIn(initialAlpha = 0.6f)).togetherWith(slideOutHorizontally { it })
+                        if (reduce) fadeIn(Motion.reducedFade()).togetherWith(fadeOut(Motion.reducedFade()))
+                        else (slideInHorizontally(Motion.standard()) { -it / 3 } + fadeIn(Motion.standard(), initialAlpha = 0.6f))
+                            .togetherWith(slideOutHorizontally(Motion.exit()) { it })
                     },
                     entryProvider = entryProvider {
                         entry<Route.Today> { TodayScreen() }
@@ -371,8 +377,8 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
                 )
                 AnimatedVisibility(
                     visible = top in ROOTS,
-                    enter = slideInVertically(tween(Motion.BASE, easing = Motion.enter)) { it } + fadeIn(tween(Motion.FAST)),
-                    exit = slideOutVertically(tween(Motion.FAST, easing = Motion.exit)) { it } + fadeOut(tween(Motion.FAST)),
+                    enter = if (reduce) fadeIn(Motion.reducedFade()) else slideInVertically(Motion.standard()) { it } + fadeIn(Motion.quick()),
+                    exit = if (reduce) fadeOut(Motion.reducedFade()) else slideOutVertically(Motion.exit()) { it } + fadeOut(Motion.exit()),
                 ) {
                     Dock(
                         items = listOf(

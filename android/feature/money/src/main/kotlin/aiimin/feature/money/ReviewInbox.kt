@@ -187,13 +187,13 @@ private fun SwipeCard(key: String, onConfirm: () -> Unit, onSkip: () -> Unit, co
                     onDragEnd = {
                         scope.launch {
                             when {
-                                x.value > threshold -> { x.animateTo(fly, tween(220, easing = Motion.enter)); onConfirm() }
-                                x.value < -threshold -> { x.animateTo(-fly, tween(220, easing = Motion.enter)); onSkip() }
-                                else -> x.animateTo(0f, tween(220, easing = Motion.enter))
+                                x.value > threshold -> { x.animateTo(fly, Motion.exit()); onConfirm() }
+                                x.value < -threshold -> { x.animateTo(-fly, Motion.exit()); onSkip() }
+                                else -> x.animateTo(0f, Motion.springSoft())
                             }
                         }
                     },
-                    onDragCancel = { scope.launch { x.animateTo(0f, tween(180)) } },
+                    onDragCancel = { scope.launch { x.animateTo(0f, Motion.springSoft()) } },
                 ) { change, drag -> change.consume(); scope.launch { x.snapTo(x.value + drag) } }
             },
     ) { content() }

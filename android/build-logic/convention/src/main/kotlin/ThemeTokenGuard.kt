@@ -11,6 +11,7 @@ import org.gradle.api.tasks.TaskAction
 
 /**
  * PRD Part 29: colours come only from `Palette.kt` and fonts only from `Type.kt`.
+ * PRD Part 26.5: durations and curves come only from `Motion.kt`; only transform and opacity animate.
  * Runs before `preBuild` (the release command skips lint, so a lint rule would never fail it).
  */
 @CacheableTask
@@ -25,29 +26,39 @@ abstract class ThemeTokenGuard : DefaultTask() {
     @TaskAction
     fun scan() {
         val hits = sources.files
-            .filter { it.isFile && it.extension == "kt" && it.name !in ALLOWED }
+            .filter { it.isFile && it.extension == "kt" }
             .sortedBy { it.path }
             .flatMap { file ->
+                val rules = RULES.filter { file.name !in it.allowedIn }
                 file.readLines().mapIndexedNotNull { i, line ->
                     val code = line.substringBefore("//")
-                    if (FORBIDDEN.any { it.containsMatchIn(code) }) "${file.path}:${i + 1}: ${line.trim()}" else null
+                    rules.firstOrNull { it.pattern.containsMatchIn(code) }?.let { "${file.path}:${i + 1}: [${it.why}] ${line.trim()}" }
                 }
             }
         report.get().asFile.writeText(hits.joinToString("\n"))
         if (hits.isNotEmpty()) {
             throw GradleException(
-                "Theme tokens only (PRD Part 29): ${hits.size} raw colour or system font use(s) outside Palette.kt/Type.kt:\n" +
+                "Design tokens only (PRD Parts 26.5 and 29): ${hits.size} use(s) outside Palette.kt / Type.kt / Motion.kt:\n" +
                     hits.joinToString("\n"),
             )
         }
     }
 
+    data class Rule(val why: String, val pattern: Regex, val allowedIn: Set<String>)
+
     companion object {
-        val ALLOWED = setOf("Palette.kt", "Type.kt")
-        val FORBIDDEN = listOf(
-            Regex("""\bColor\(0x"""),
-            Regex("""\bColor\.(Black|White|Red|Gray|Grey|Blue|Green|Yellow|Cyan|Magenta|DarkGray|LightGray)\b"""),
-            Regex("""\bFontFamily\.(Serif|SansSerif|Monospace|Cursive|Default)\b"""),
+        private val COLOUR = setOf("Palette.kt")
+        private val FONT = setOf("Type.kt", "Palette.kt")
+        // BootMark.kt keeps its own timings until B1b replaces it with the Part 26 opening screen.
+        private val MOTION = setOf("Motion.kt", "BootMark.kt")
+        val RULES = listOf(
+            Rule("raw colour", Regex("""\bColor\(0x"""), COLOUR),
+            Rule("named colour", Regex("""\bColor\.(Black|White|Red|Gray|Grey|Blue|Green|Yellow|Cyan|Magenta|DarkGray|LightGray)\b"""), COLOUR),
+            Rule("system font", Regex("""\bFontFamily\.(Serif|SansSerif|Monospace|Cursive|Default)\b"""), FONT),
+            Rule("raw duration", Regex("""\btween\(\s*\d"""), MOTION),
+            Rule("raw spring", Regex("""\bspring\(\s*(dampingRatio|stiffness)"""), MOTION),
+            Rule("colour animation", Regex("""\banimateColorAsState\b"""), MOTION),
+            Rule("size animation", Regex("""\banimateContentSize\b"""), MOTION),
         )
     }
 }

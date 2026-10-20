@@ -1,5 +1,6 @@
 package aiimin.feature.money
 
+import aiimin.designsystem.theme.Motion
 import aiimin.designsystem.component.PaceChartData
 import aiimin.designsystem.component.PaceChart
 import aiimin.core.data.money.MoneyChartMath
@@ -33,7 +34,6 @@ import aiimin.designsystem.theme.Aiimin
 import aiimin.designsystem.theme.Shapes
 import android.content.Intent
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -205,7 +205,7 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
                 s.range == MoneyRange.M -> "Biggest in ${YearMonth.from(today).month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)}"
                 else -> "Biggest payments"
             }
-            Column(Modifier.padding(horizontal = Aiimin.space.gutter).animateContentSize(tween(200))) {
+            Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
                 SectionHeader(title, action = if (bar == null) "All payments" else null, onAction = { nav.open(Route.Payments) })
                 if (list.isEmpty()) Text(if (bar?.future == true) "Nothing yet." else "No payments here.", style = Aiimin.type.caption, modifier = Modifier.padding(vertical = 6.dp))
                 val biggest = if (bar == null && s.range != MoneyRange.D) list.firstOrNull()?.id else null
@@ -367,7 +367,7 @@ private fun Headline(s: aiimin.core.data.money.SpendSeries, bar: SpendBar?, plan
     Column(Modifier.heightIn(min = 100.dp)) {
         AnimatedContent(
             targetState = HeadlineState(bar?.label ?: s.title, bar?.paise ?: s.totalPaise, bar == null, bar?.future == true),
-            transitionSpec = { fadeIn(tween(120)) togetherWith fadeOut(tween(90)) },
+            transitionSpec = { fadeIn(Motion.quick()) togetherWith fadeOut(Motion.tap()) },
             label = "headline",
         ) { (label, paise, overall, future) ->
             Column {

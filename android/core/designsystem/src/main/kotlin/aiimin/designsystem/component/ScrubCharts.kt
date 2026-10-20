@@ -1,7 +1,8 @@
 package aiimin.designsystem.component
 
+import aiimin.designsystem.theme.LocalReduceMotion
+import aiimin.designsystem.theme.Motion
 import aiimin.designsystem.theme.Aiimin
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -75,16 +76,17 @@ internal fun ScrubBarChartCanvas(
     val axis = Aiimin.type.axis
     val haptics = LocalHapticFeedback.current
     val grow = remember { Animatable(0f) }
+    val reduce = LocalReduceMotion.current
     LaunchedEffect(points) {
         grow.snapTo(0f)
-        grow.animateTo(1f, tween(200, easing = aiimin.designsystem.theme.Motion.enter))
+        grow.animateTo(1f, Motion.move(reduce, Motion.quick()))
     }
     val currentSelected = rememberUpdatedState(selected)
     val currentPoints = rememberUpdatedState(points)
     val barCount = points.size.coerceAtLeast(1)
     fun indexAt(x: Float, width: Float): Int = ((x / width) * barCount).toInt().coerceIn(0, barCount - 1)
 
-    val colorSel by animateColorAsState(c.accent, tween(120), label = "selBar")
+    val colorSel = c.accent
     Canvas(
         modifier
             .fillMaxWidth()
@@ -231,9 +233,10 @@ fun ScrubLineChart(
     val axis = Aiimin.type.axis
     val haptics = LocalHapticFeedback.current
     val draw = remember { Animatable(0f) }
+    val reduce = LocalReduceMotion.current
     LaunchedEffect(points.size, points.firstOrNull()?.value) {
         draw.snapTo(0f)
-        draw.animateTo(1f, tween(700, easing = aiimin.designsystem.theme.Motion.enter))
+        draw.animateTo(1f, Motion.move(reduce, Motion.emphasised()))
     }
     val currentSelected = rememberUpdatedState(selected)
     val n = points.size.coerceAtLeast(1)

@@ -1,7 +1,6 @@
 package aiimin.designsystem.theme
 
-import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.foundation.isSystemInDarkTheme
+import android.provider.Settings
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
@@ -13,6 +12,7 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
@@ -30,8 +30,8 @@ data class Spacing(
     val xl: Dp = 20.dp,
     val xxl: Dp = 24.dp,
     val xxxl: Dp = 32.dp,
-    /** Side gutter of every screen. */
-    val gutter: Dp = 20.dp,
+    /** Side margin of every screen (PRD 8 dp grid, 16 dp margins; R6 S1). */
+    val gutter: Dp = 16.dp,
 )
 
 object Shapes {
@@ -45,17 +45,6 @@ object Shapes {
     val sheet = RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp)
 }
 
-/** Motion: short, ease-out on enter, ease-in on exit (plan Part 2 §9). */
-object Motion {
-    val enter = CubicBezierEasing(0.23f, 1f, 0.32f, 1f)
-    val exit = CubicBezierEasing(0.7f, 0f, 0.84f, 0f)
-    val drawer = CubicBezierEasing(0.32f, 0.72f, 0f, 1f)
-    val standard = CubicBezierEasing(0.2f, 0f, 0f, 1f)
-    const val FAST = 150
-    const val BASE = 220
-    const val SLOW = 300
-}
-
 val LocalSpacing = staticCompositionLocalOf { Spacing() }
 
 object Aiimin {
@@ -67,13 +56,16 @@ object Aiimin {
         @Composable @ReadOnlyComposable get() = LocalSpacing.current
 }
 
+/** System text size times the in-app size, kept inside 0.85x to 2.0x (Part 18: 2.0x must not clip). */
+fun clampFontScale(system: Float, inApp: Float): Float = (system * inApp).coerceIn(0.85f, 2.0f)
+
+/**
+ * Light theme only (PRD 1.1): [mode] is kept for old call sites and ignored; the dark palette is dormant.
+ * [reduceMotion] is the in-app setting; Android's "Remove animations" turns it on as well.
+ */
 @Composable
-fun AiiminTheme(mode: ThemeMode = ThemeMode.SYSTEM, textScale: Float = 1f, content: @Composable () -> Unit) {
-    val dark = when (mode) {
-        ThemeMode.SYSTEM -> isSystemInDarkTheme()
-        ThemeMode.LIGHT -> false
-        ThemeMode.DARK -> true
-    }
+fun AiiminTheme(mode: ThemeMode = ThemeMode.LIGHT, textScale: Float = 1f, reduceMotion: Boolean = false, content: @Composable () -> Unit) {
+    val dark = false
     val p = if (dark) DarkPalette else LightPalette
     val scheme = if (dark) {
         darkColorScheme(
@@ -95,13 +87,18 @@ fun AiiminTheme(mode: ThemeMode = ThemeMode.SYSTEM, textScale: Float = 1f, conte
     val type = appType(p)
     // The design is drawn at 390 dp wide. Narrow phones scale everything down a little and wide ones up a little,
     // so a 320 dp phone doesn't wrap every line and a 450 dp one doesn't look sparse. The person's own font size
-    // setting is kept (up to 1.6x); the layouts have no fixed heights on text rows.
+    // setting is kept (up to 2.0x); the layouts have no fixed heights on text rows.
     val base = LocalDensity.current
     val widthDp = LocalConfiguration.current.screenWidthDp.toFloat()
     val fit = if (widthDp <= 0f) 1f else (widthDp / 390f).coerceIn(0.92f, 1.1f)
     // The in-app text size (Appearance) multiplies the system one; the result stays inside the tested range.
-    val density = remember(base.density, base.fontScale, fit, textScale) { Density(base.density * fit, (base.fontScale * textScale).coerceIn(0.85f, 1.6f)) }
-    CompositionLocalProvider(LocalDensity provides density, LocalPalette provides p, LocalType provides type, LocalSpacing provides Spacing()) {
+    val density = remember(base.density, base.fontScale, fit, textScale) { Density(base.density * fit, clampFontScale(base.fontScale, textScale)) }
+    val resolver = LocalContext.current.contentResolver
+    val systemOff = remember(resolver) { Settings.Global.getFloat(resolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f }
+    CompositionLocalProvider(
+        LocalDensity provides density, LocalPalette provides p, LocalType provides type, LocalSpacing provides Spacing(),
+        LocalReduceMotion provides (reduceMotion || systemOff),
+    ) {
         MaterialTheme(colorScheme = scheme, typography = type.material, content = content)
     }
 }

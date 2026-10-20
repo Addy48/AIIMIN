@@ -90,7 +90,7 @@ class MainActivity : FragmentActivity() {
             val s by settings.settings.collectAsStateWithLifecycle(initialValue = null)
             val st = s
             // Light is the only designed theme right now (handoff: dark comes later; don't invert).
-            AiiminTheme(ThemeMode.LIGHT, textScale = st?.textScale ?: 1f) {
+            AiiminTheme(ThemeMode.LIGHT, textScale = st?.textScale ?: 1f, reduceMotion = st?.reduceMotion ?: false) {
                 if (st == null) return@AiiminTheme
                 LaunchedEffect(Unit) { ready = true }
                 // On tablets and unfolded foldables the app stays a phone-width column in the middle.

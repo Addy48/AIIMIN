@@ -1,5 +1,6 @@
 package aiimin.designsystem.component
 
+import aiimin.designsystem.theme.LocalReduceMotion
 import aiimin.designsystem.theme.Aiimin
 import aiimin.designsystem.theme.Motion
 import androidx.compose.animation.core.Animatable
@@ -98,14 +99,15 @@ fun PaceChart(
     val axis = Aiimin.type.axis
     val haptics = LocalHapticFeedback.current
     val draw = remember { Animatable(0f) }
-    // Today ripples three times after the line draws in, then rests (no endless redraws).
+    // Today pulses once after the line draws in, then rests (Part 26.5: nothing loops).
     val pulse = remember { Animatable(1f) }
+    val reduce = LocalReduceMotion.current
     LaunchedEffect(data.daily, data.cumulative) {
         draw.snapTo(0f)
-        draw.animateTo(1f, tween(650, easing = Motion.enter))
-        repeat(3) {
+        draw.animateTo(1f, Motion.move(reduce, Motion.emphasised()))
+        if (!reduce) {
             pulse.snapTo(0f)
-            pulse.animateTo(1f, tween(1800, easing = Motion.standard))
+            pulse.animateTo(1f, Motion.ambient())
         }
     }
     val n = data.daily.size.coerceAtLeast(1)
