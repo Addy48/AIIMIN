@@ -89,6 +89,7 @@ object FeatureIndex {
         f("Linked devices", "Browsers and phones on your account", Route.LinkedDevices, { AppIcons.Devices }, "devices", "sessions", "logout other", "browsers"),
         f("Phone data", "What the phone measures for you", Route.Sensors, { AppIcons.Pulse }, "sensors", "permissions", "health connect", "usage access"),
         f("Assistant and voice", "What it may read, recent captures", Route.AiSettings, { AppIcons.Mic }, "ai settings", "voice", "microphone"),
+        f("Notification settings", "How many, which kinds, lock screen", Route.NotifySettings, { AppIcons.Bell }, "notification settings", "nudges", "quiet", "lock screen", "playful"),
         f("Raahi", "How chatty Raahi is: Full, Quiet or Off", Route.RaahiSettings, { AppIcons.ChatCircleText }, "raahi", "companion", "chatty", "greeting", "character"),
         f("About Raahi", "Who Raahi is and what it can see", Route.AboutRaahi, { AppIcons.Info }, "about raahi", "ai", "who is raahi"),
         f("Appearance", "Text size, motion", Route.Appearance, { AppIcons.TextAa }, "theme", "font size", "text size", "dark mode", "motion"),

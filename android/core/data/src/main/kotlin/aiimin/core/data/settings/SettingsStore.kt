@@ -107,6 +107,17 @@ data class AppSettings(
     /** The day a greeting last showed, and the day the name was last used in one (at most once a day). */
     val greetedOn: String? = null,
     val nameGreetedOn: String? = null,
+    /** Notifications (PRD 2.1): nudge ceiling (2 to 6), Playful wording, lock-screen details, the optional groups. */
+    val notifyCeiling: Int = 4,
+    val playful: Boolean = false,
+    val lockDetails: Boolean = false,
+    val notifyBillsDocs: Boolean = true,
+    val notifyBrief: Boolean = true,
+    val notifyWrapUp: Boolean = true,
+    val notifyNudges: Boolean = true,
+    /** Categories stopped from "Stop these?" (in-app only), and categories already asked. */
+    val stoppedCategories: Set<String> = emptySet(),
+    val stopAnswered: Set<String> = emptySet(),
     val cashWallet: Boolean = true,
     val lifeScoreSharedWith: Set<String> = emptySet(),
     val stepCounterState: String? = null,
@@ -217,6 +228,15 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         val lastOpenDay = stringPreferencesKey("last_open_day")
         val greetedOn = stringPreferencesKey("greeted_on")
         val nameGreetedOn = stringPreferencesKey("name_greeted_on")
+        val notifyCeiling = intPreferencesKey("notify_ceiling")
+        val playful = booleanPreferencesKey("playful")
+        val lockDetails = booleanPreferencesKey("lock_details")
+        val notifyBillsDocs = booleanPreferencesKey("notify_bills_docs")
+        val notifyBrief = booleanPreferencesKey("notify_brief")
+        val notifyWrapUp = booleanPreferencesKey("notify_wrapup")
+        val notifyNudges = booleanPreferencesKey("notify_nudges")
+        val stoppedCategories = stringSetPreferencesKey("stopped_categories")
+        val stopAnswered = stringSetPreferencesKey("stop_answered")
         val cashWallet = booleanPreferencesKey("cash_wallet")
         val scoreShare = stringSetPreferencesKey("score_share")
         val stepCounter = stringPreferencesKey("step_counter")
@@ -293,6 +313,15 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         lastOpenDay = p[K.lastOpenDay],
         greetedOn = p[K.greetedOn],
         nameGreetedOn = p[K.nameGreetedOn],
+        notifyCeiling = (p[K.notifyCeiling] ?: 4).coerceIn(2, 6),
+        playful = p[K.playful] ?: false,
+        lockDetails = p[K.lockDetails] ?: false,
+        notifyBillsDocs = p[K.notifyBillsDocs] ?: true,
+        notifyBrief = p[K.notifyBrief] ?: true,
+        notifyWrapUp = p[K.notifyWrapUp] ?: true,
+        notifyNudges = p[K.notifyNudges] ?: true,
+        stoppedCategories = p[K.stoppedCategories] ?: emptySet(),
+        stopAnswered = p[K.stopAnswered] ?: emptySet(),
         cashWallet = p[K.cashWallet] ?: true,
         lifeScoreSharedWith = p[K.scoreShare] ?: emptySet(),
         stepCounterState = p[K.stepCounter],
@@ -372,6 +401,15 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
             s.lastOpenDay?.let { p[K.lastOpenDay] = it } ?: p.remove(K.lastOpenDay)
             s.greetedOn?.let { p[K.greetedOn] = it } ?: p.remove(K.greetedOn)
             s.nameGreetedOn?.let { p[K.nameGreetedOn] = it } ?: p.remove(K.nameGreetedOn)
+            p[K.notifyCeiling] = s.notifyCeiling.coerceIn(2, 6)
+            p[K.playful] = s.playful
+            p[K.lockDetails] = s.lockDetails
+            p[K.notifyBillsDocs] = s.notifyBillsDocs
+            p[K.notifyBrief] = s.notifyBrief
+            p[K.notifyWrapUp] = s.notifyWrapUp
+            p[K.notifyNudges] = s.notifyNudges
+            p[K.stoppedCategories] = s.stoppedCategories
+            p[K.stopAnswered] = s.stopAnswered
             p[K.cashWallet] = s.cashWallet
             p[K.scoreShare] = s.lifeScoreSharedWith
             s.stepCounterState?.let { p[K.stepCounter] = it } ?: p.remove(K.stepCounter)

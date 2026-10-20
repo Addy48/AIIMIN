@@ -4,6 +4,10 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Reminders and events at their minute (PRD 2.1). Reminders and the calendar are core to AIIMIN, so it uses
+         USE_EXACT_ALARM (granted at install, Android 13+); Android 12 asks for SCHEDULE_EXACT_ALARM instead. -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
     <!-- In-app speech capture (no system dialog). -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -121,6 +125,10 @@
                 <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
             </intent-filter>
         </activity-alias>
+
+        <!-- Notification engine v2: the exact alarm for the next due notice, and actions from the shade. -->
+        <receiver android:name=".notify.NotifyAlarmReceiver" android:exported="false" />
+        <receiver android:name=".notify.NotifyActionReceiver" android:exported="false" />
 
         <!-- Opt-in payment alerts via notification access (works without SMS). -->
         <receiver

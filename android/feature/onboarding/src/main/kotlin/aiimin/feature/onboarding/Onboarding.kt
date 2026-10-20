@@ -173,7 +173,10 @@ fun OnboardingScreen(onDone: () -> Unit, vm: OnboardingViewModel = hiltViewModel
                     }
                     6 -> TryCapturePage(d.firstWin, vm::preview, vm::saveWin) { label -> vm.update { it.copy(firstWin = label) } }
                     8 -> BankSmsPage(smsGranted)
-                    10 -> ChattinessPage(RaahiMode.of(d.raahiMode)) { m -> vm.update { it.copy(raahiMode = m.name) } }
+                    10 -> {
+                        val st by vm.prefs2.collectAsStateWithLifecycle(null)
+                        ChattinessPage(RaahiMode.of(d.raahiMode), { m -> vm.update { it.copy(raahiMode = m.name) } }, st?.playful == true) { v -> vm.saveSetting { it.copy(playful = v) } }
+                    }
                     else -> DonePage(d, shrink.value)
                 }
                 Spacer(Modifier.height(24.dp))
@@ -221,11 +224,21 @@ fun OnboardingScreen(onDone: () -> Unit, vm: OnboardingViewModel = hiltViewModel
         }
     }
     }
-    if (askNotify) ConsentSheet(
-        ConsentText.NOTIFICATIONS,
-        onAllow = { askNotify = false; if (Build.VERSION.SDK_INT >= 33) notify.launch(Manifest.permission.POST_NOTIFICATIONS) else next() },
-        onNotNow = { askNotify = false; next() },
-    )
+    val notifyPrefs by vm.prefs2.collectAsStateWithLifecycle(null)
+    // Part 23's text, then the groups to pick (PRD 2.1 "Permission"), then Android's prompt. Shown once the
+    // settings are read, so the sheet opens at its full height.
+    if (askNotify && notifyPrefs != null) {
+        val st = notifyPrefs
+        aiimin.designsystem.component.AppSheet({ askNotify = false; next() }) {
+            aiimin.designsystem.component.ConsentBody(
+                ConsentText.NOTIFICATIONS,
+                onAllow = { askNotify = false; if (Build.VERSION.SDK_INT >= 33) notify.launch(Manifest.permission.POST_NOTIFICATIONS) else next() },
+                onNotNow = { askNotify = false; next() },
+                modifier = Modifier.verticalScroll(rememberScrollState()).padding(bottom = 16.dp),
+                extra = { st?.let { s -> NotifyGroups(s.notifyBillsDocs, s.notifyBrief, s.notifyWrapUp, s.notifyNudges) { change -> vm.saveSetting(change) } } },
+            )
+        }
+    }
 }
 
 /** SIM country, then network country, then the phone's region; null when none is known. */

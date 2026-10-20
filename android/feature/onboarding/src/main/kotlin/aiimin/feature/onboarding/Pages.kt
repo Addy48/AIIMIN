@@ -318,10 +318,24 @@ fun BankSmsPage(granted: Boolean) {
 // ------------------------------------------------------------------ 6 Chattiness
 
 @Composable
-fun ChattinessPage(mode: RaahiMode, onPick: (RaahiMode) -> Unit) {
+fun ChattinessPage(mode: RaahiMode, onPick: (RaahiMode) -> Unit, playful: Boolean, onPlayful: (Boolean) -> Unit) {
     RaahiSays(RaahiPose.IDLE, "How much should I talk? Quiet is my default.")
     RaahiModePicker(mode, onPick)
     Text("No sound in any mode. Change it any time in Settings › Raahi.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 12.dp))
+    // PRD 2.1: the Playful switch is offered here; money, documents and safety stay plain.
+    Spacer(Modifier.height(16.dp))
+    aiimin.designsystem.component.SwitchRow("Playful lines", playful, onPlayful, subtitle = "A little wit on small nudges. Money, documents and safety stay plain.")
+}
+
+/** The notification groups on the onboarding sheet (PRD 2.1); reminders are always on. */
+@Composable
+internal fun NotifyGroups(billsDocs: Boolean, brief: Boolean, wrapUp: Boolean, nudges: Boolean, save: ((aiimin.core.data.settings.AppSettings) -> aiimin.core.data.settings.AppSettings) -> Unit) {
+    Text("Your reminders always arrive. Pick the rest:", style = Aiimin.type.bodyStrong, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
+    aiimin.designsystem.component.SwitchRow("Bills and documents", billsDocs, { v -> save { it.copy(notifyBillsDocs = v) } })
+    aiimin.designsystem.component.SwitchRow("Morning brief", brief, { v -> save { it.copy(notifyBrief = v) } })
+    aiimin.designsystem.component.SwitchRow("Evening wrap-up", wrapUp, { v -> save { it.copy(notifyWrapUp = v) } })
+    aiimin.designsystem.component.SwitchRow("Nudges", nudges, { v -> save { it.copy(notifyNudges = v) } }, subtitle = "One a day to start")
+    Spacer(Modifier.height(12.dp))
 }
 
 // ------------------------------------------------------------------ 7 Done

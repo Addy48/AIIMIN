@@ -130,6 +130,10 @@ class OnboardingViewModel @Inject constructor(
         _draft.value = Draft()
     }
 
+    /** The notification groups and the Playful switch (PRD 2.1), chosen on screens 4 and 6 after the age check. */
+    val prefs2 = settings.settings
+    fun saveSetting(change: (aiimin.core.data.settings.AppSettings) -> aiimin.core.data.settings.AppSettings) { viewModelScope.launch { settings.update(change) } }
+
     fun smsGranted(): Boolean = androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.READ_SMS) == android.content.pm.PackageManager.PERMISSION_GRANTED
     fun notificationsGranted(): Boolean = android.os.Build.VERSION.SDK_INT < 33 ||
         androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) == android.content.pm.PackageManager.PERMISSION_GRANTED

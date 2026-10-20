@@ -169,6 +169,7 @@ class TodayViewModel @Inject constructor(
     activity: ActivityRepository,
     private val vault: VaultRepository,
     private val settingsStore: SettingsStore,
+    private val notifications: aiimin.core.data.notify.NotificationRepository,
     notes: NoteRepository,
     money: aiimin.core.data.money.MoneyRepository,
     journal: aiimin.core.data.notes.JournalRepository,
@@ -391,6 +392,10 @@ class TodayViewModel @Inject constructor(
             )
         }
     }
+
+    /** "Stop these?" (PRD 2.1): a kind of nudge left unopened three times. */
+    val stopAsk: StateFlow<aiimin.core.engine.notify.Category?> = notifications.stopAsk.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    fun answerStop(c: aiimin.core.engine.notify.Category, stop: Boolean) = viewModelScope.launch { notifications.answerStop(c, stop) }
 
     /** "Not now": hidden until midnight; the third skip of a kind drops it one step (PRD 1.2). */
     fun notNow(kind: NowKind) = viewModelScope.launch {

@@ -372,6 +372,7 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
                         entry<Route.Language> { aiimin.feature.me.LanguageScreen() }
                         entry<Route.Help> { aiimin.feature.me.HelpScreen() }
                         entry<Route.About> { aiimin.feature.me.AboutScreen() }
+                        entry<Route.NotifySettings> { aiimin.feature.me.NotifySettingsScreen() }
                         entry<Route.RaahiSettings> { aiimin.feature.me.RaahiSettingsScreen() }
                         entry<Route.AboutRaahi> { aiimin.feature.me.AboutRaahiScreen() }
                         entry<Route.Running> { aiimin.feature.me.RunningScreen() }

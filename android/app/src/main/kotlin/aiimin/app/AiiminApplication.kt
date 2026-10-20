@@ -115,18 +115,8 @@ class FocusDoneWorker(context: Context, params: WorkerParameters) : CoroutineWor
     override suspend fun doWork(): Result {
         val label = inputData.getString("label") ?: "Focus"
         val minutes = inputData.getInt("minutes", 25)
-        val launch = applicationContext.packageManager.getLaunchIntentForPackage(applicationContext.packageName)?.apply {
-            putExtra(NotificationRepository.EXTRA_ROUTE, "focus")
-        }
-        val pi = launch?.let { android.app.PendingIntent.getActivity(applicationContext, 77, it, android.app.PendingIntent.FLAG_IMMUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT) }
-        val n = NotificationCompat.Builder(applicationContext, NotificationRepository.CH_HIGH)
-            .setSmallIcon(aiimin.core.data.R.drawable.ic_stat_raahi)
-            .setContentTitle("$minutes minutes done")
-            .setContentText("$label — finish the session to keep the minutes.")
-            .setContentIntent(pi)
-            .setAutoCancel(true)
-            .build()
-        runCatching { NotificationManagerCompat.from(applicationContext).notify(7001, n) }
+        // Through the engine: the focus channel, Raahi's face, quiet hours and the Playful setting (PRD 2.1).
+        runCatching { EntryPointAccessors.fromApplication(applicationContext, aiimin.app.notify.NotifyDeps::class.java).notifications().focusDone(label, minutes) }
         return Result.success()
     }
 

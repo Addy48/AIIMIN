@@ -94,7 +94,7 @@ fun SettingsScreen(vm: MeViewModel = hiltViewModel()) {
                 SettingsLink(AppIcons.Star, "Plan", "Free, Plus, Pro, Family") { nav.open(Route.Plans) }
                 SettingsLink(AppIcons.Devices, "Linked devices", "Browsers and phones on your account") { nav.open(Route.LinkedDevices) }
                 SectionHeader("App")
-                SettingsLink(AppIcons.Bell, "Notifications", "Inbox and what AIIMIN tells you") { nav.open(Route.Notifications) }
+                SettingsLink(AppIcons.Bell, "Notifications", "How many, which kinds, lock screen") { nav.open(Route.NotifySettings) }
                 SettingsLink(AppIcons.Footprints, "Phone data", "Screen time, steps, sleep, work apps") { nav.open(Route.Sensors) }
                 SettingsLink(AppIcons.Wallet, "Money", "Ledgers, accounts, bank messages, payee memory") { nav.open(Route.MoneySettings) }
                 SettingsLink(AppIcons.ChatCircleText, "Assistant and voice", "What it may read, recent captures") { nav.open(Route.AiSettings) }
@@ -133,7 +133,7 @@ fun SettingsScreen(vm: MeViewModel = hiltViewModel()) {
             }
             item {
                 SectionHeader("Notifications")
-                SwitchRow("Quiet hours", st.quiet.enabled, { v -> vm.update { it.copy(quiet = it.quiet.copy(enabled = v)) } }, subtitle = "Holds back low and medium alerts. Important ones still come through.")
+                SwitchRow("Quiet hours", st.quiet.enabled, { v -> vm.update { it.copy(quiet = it.quiet.copy(enabled = v)) } }, subtitle = "Nudges wait for the morning. Your reminders still arrive, without sound; safety alerts always ring.")
                 if (st.quiet.enabled) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         ListRow("From", subtitle = Dates.clock(LocalTime.of(st.quiet.fromMin / 60, st.quiet.fromMin % 60)), modifier = Modifier.weight(1f), onClick = { quietPick = "from" })

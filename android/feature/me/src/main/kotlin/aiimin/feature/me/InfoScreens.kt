@@ -101,10 +101,14 @@ fun ActivityScreen(vm: ActivityViewModel = hiltViewModel()) {
 fun NotificationsScreen(vm: NotificationsViewModel = hiltViewModel()) {
     val nav = LocalNavigator.current
     val all by vm.all.collectAsStateWithLifecycle()
+    val stopAsk by vm.stopAsk.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) { vm.markRead() }
     val zone = ZoneId.systemDefault()
     Column(Modifier.fillMaxSize().background(Aiimin.colors.base)) {
-        TopBar("Notifications", onBack = { nav.back() })
+        TopBar("Notifications", onBack = { nav.back() }, actions = { AppIconButton(AppIcons.Gear, "Notification settings", { nav.open(Route.NotifySettings) }) })
+        stopAsk?.let { cat ->
+            aiimin.designsystem.component.StopTheseCard(cat.label, onStop = { vm.answerStop(cat, true) }, onKeep = { vm.answerStop(cat, false) }, modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 8.dp))
+        }
         if (all.isEmpty()) {
             EmptyState(raahi = aiimin.core.engine.raahi.RaahiPose.SLEEPING, icon = AppIcons.Bell, title = "All quiet", body = "Alerts come from real things: an expiring document, an event about to start, minimums left in the evening.")
             return@Column

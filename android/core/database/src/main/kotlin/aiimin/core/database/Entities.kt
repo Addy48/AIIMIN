@@ -422,6 +422,27 @@ data class NotificationEntity(
     val dismissed: Boolean = false,
 )
 
+/**
+ * What the notification engine did with one key (PRD 2.1): posted, kept in the inbox or folded into the evening
+ * wrap-up, and whether the person opened or dismissed it. On the phone only; it drives the nudge budget,
+ * "Stop these?" and the learned timing.
+ */
+@Entity(tableName = "notify_log", indices = [Index("day")])
+data class NotifyLogEntity(
+    @PrimaryKey val key: String,
+    val rule: String,
+    val category: String,
+    val kind: String,
+    /** POST · IN_APP · DIGEST */
+    val delivery: String,
+    val day: String,
+    val shownAt: Long,
+    val shownMinute: Int,
+    val openedAt: Long? = null,
+    val openedMinute: Int? = null,
+    val dismissedAt: Long? = null,
+)
+
 /** What the phone measured for one logical day. Re-measured, never typed. */
 @Entity(tableName = "device_days")
 data class DeviceDayEntity(

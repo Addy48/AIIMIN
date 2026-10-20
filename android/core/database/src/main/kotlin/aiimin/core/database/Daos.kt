@@ -450,6 +450,27 @@ interface NotificationDao {
 
     @Query("UPDATE notifications SET dismissed = 1 WHERE id IN (:ids)")
     suspend fun dismissAll(ids: List<String>)
+
+    @Query("SELECT * FROM notifications WHERE ruleKey = :key LIMIT 1")
+    suspend fun byKey(key: String): NotificationEntity?
+
+    @Query("SELECT ruleKey FROM notifications WHERE ruleKey IN (:keys)")
+    suspend fun existingKeys(keys: List<String>): List<String>
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun log(l: NotifyLogEntity): Long
+
+    @Query("UPDATE notify_log SET openedAt = :at, openedMinute = :minute WHERE `key` = :key AND openedAt IS NULL")
+    suspend fun opened(key: String, at: Long, minute: Int)
+
+    @Query("UPDATE notify_log SET dismissedAt = :at WHERE `key` = :key AND dismissedAt IS NULL AND openedAt IS NULL")
+    suspend fun dismissedLog(key: String, at: Long)
+
+    @Query("SELECT * FROM notify_log WHERE day >= :from ORDER BY shownAt")
+    suspend fun logSince(from: String): List<NotifyLogEntity>
+
+    @Query("SELECT * FROM notify_log WHERE day >= :from ORDER BY shownAt")
+    fun logSinceFlow(from: String): Flow<List<NotifyLogEntity>>
 }
 
 @Dao

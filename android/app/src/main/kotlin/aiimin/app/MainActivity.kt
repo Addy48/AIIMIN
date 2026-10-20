@@ -59,6 +59,7 @@ class MainActivity : FragmentActivity() {
     @Inject lateinit var money: MoneyRepository
     @Inject lateinit var vault: VaultRepository
     @Inject lateinit var familyDao: aiimin.core.database.FamilyDao
+    @Inject lateinit var notifications: NotificationRepository
 
     private var request by mutableStateOf<LaunchRequest?>(null)
     private var unlocked by mutableStateOf(false)
@@ -194,7 +195,7 @@ class MainActivity : FragmentActivity() {
                     "debrief" -> Route.Debrief; "goals" -> Route.Goals; "weekly" -> Route.WeeklyReview; "why" -> Route.WhyScore; "patterns" -> Route.Patterns
                     "payments" -> Route.Payments; "category" -> Route.Category("Transport"); "emergency" -> Route.EmergencyCard("me")
                     "profile" -> Route.EditProfile; "plans" -> Route.Plans; "subscription" -> Route.Subscription; "devices" -> Route.LinkedDevices
-                    "moneysettings" -> Route.MoneySettings; "smsimport" -> Route.SmsImport; "appearance" -> Route.Appearance; "raahi" -> Route.RaahiSettings; "aboutraahi" -> Route.AboutRaahi; "language" -> Route.Language; "help" -> Route.Help; "about" -> Route.About; "running" -> Route.Running
+                    "moneysettings" -> Route.MoneySettings; "smsimport" -> Route.SmsImport; "appearance" -> Route.Appearance; "raahi" -> Route.RaahiSettings; "notifysettings" -> Route.NotifySettings; "aboutraahi" -> Route.AboutRaahi; "language" -> Route.Language; "help" -> Route.Help; "about" -> Route.About; "running" -> Route.Running
                     "captures" -> Route.RecentCaptures; "moodyear" -> Route.MoodYear; "backups" -> Route.VaultBackup; "kits" -> Route.EmergencyKits
                     "accounts" -> Route.Accounts; "splits" -> Route.Splits; "recurring" -> Route.Recurring; "payees" -> Route.PayeeMemory
                     "sync" -> Route.SyncSettings; "conflicts" -> Route.Conflicts; "trash" -> Route.Trash; "account" -> Route.Account; "privacy" -> Route.Privacy
@@ -205,6 +206,8 @@ class MainActivity : FragmentActivity() {
         }
         intent.getStringExtra(NotificationRepository.EXTRA_ROUTE)?.let { route ->
             val arg = intent.getStringExtra(NotificationRepository.EXTRA_ARG)
+            // An open from a notification is what the budget and the learned timing read (PRD 2.1).
+            intent.getStringExtra(NotificationRepository.EXTRA_KEY)?.let { key -> lifecycleScope.launch { notifications.opened(key) } }
             request = LaunchRequest.Open(
                 when (route) {
                     "doc" -> arg?.let { Route.Doc(it) } ?: Route.Vault
@@ -214,6 +217,7 @@ class MainActivity : FragmentActivity() {
                     "score" -> Route.Score
                     "focus" -> Route.Focus()
                     "journal" -> Route.JournalWrite()
+                    "notifications" -> Route.Notifications
                     else -> Route.Today
                 },
             )

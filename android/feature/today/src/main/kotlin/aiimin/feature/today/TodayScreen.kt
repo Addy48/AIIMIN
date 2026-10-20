@@ -100,6 +100,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
     val ui by vm.ui.collectAsStateWithLifecycle()
+    val stopAsk by vm.stopAsk.collectAsStateWithLifecycle()
     val nav = LocalNavigator.current
     val toaster = LocalToaster.current
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -217,6 +218,9 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
         }
         u.dayEndSuggest?.let { t ->
             item { DayEndCard(t, u.dayEnd, onYes = { vm.acceptDayEnd(t) }, onKeep = { vm.keepDayEnd() }, modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 12.dp)) }
+        }
+        stopAsk?.let { cat ->
+            item { aiimin.designsystem.component.StopTheseCard(cat.label, onStop = { vm.answerStop(cat, true) }, onKeep = { vm.answerStop(cat, false) }, modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 12.dp)) }
         }
         item { StatLine(u, Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 14.dp, bottom = 4.dp)) }
         item {
