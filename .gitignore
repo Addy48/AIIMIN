@@ -253,6 +253,8 @@ dev-gtm-claude-skills/**
 # Supabase temp & QA screenshots
 supabase/.temp/
 *.png
+# App resources (notification icons) ship in the APK and must be tracked.
+!android/**/src/main/res/**/*.png
 !docs/diagrams/*.png
 !docs/diagrams/*.svg
 !docs/architecture/*.png
