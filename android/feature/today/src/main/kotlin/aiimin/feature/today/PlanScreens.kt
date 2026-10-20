@@ -469,7 +469,7 @@ fun MinimumsScreen(vm: MinimumsViewModel = hiltViewModel()) {
                 val paused = state?.paused == true
                 ListRow(
                     if (paused) "Today is paused" else "Pause today",
-                    subtitle = if (paused) "Score, streak and battery are neutral today. Tap to resume." else "Sick, travelling, a festival. Up to 14 days a quarter; illness can extend.",
+                    subtitle = if (paused) "Score, kept days and battery are neutral today. Tap to resume." else "Sick, travelling, a festival. Up to 14 days a quarter; illness can extend.",
                     leading = { IconTile(AppIcons.Pause) }, maxSubtitleLines = 3,
                     onClick = { if (paused) scope.launch { vm.pause(false, null) } else pausing = true },
                 )
@@ -502,7 +502,7 @@ fun MinimumsScreen(vm: MinimumsViewModel = hiltViewModel()) {
         }
     }
     if (pausing) {
-        AppSheet({ pausing = false }, title = "Pause today", subtitle = "Nothing is lost. The day is neutral for your score, streak and battery.") {
+        AppSheet({ pausing = false }, title = "Pause today", subtitle = "Nothing is lost. The day is neutral for your score, kept days and battery.") {
             listOf("sick" to "Unwell", "travel" to "Travelling", "festival" to "Festival or family event", "illness" to "Longer illness (extends the limit)").forEach { (k, l) ->
                 ListRow(l, onClick = {
                     scope.launch {

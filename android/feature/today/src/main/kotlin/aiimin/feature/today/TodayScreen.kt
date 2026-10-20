@@ -633,10 +633,10 @@ private fun BatteryStreakLine(u: TodayUi, modifier: Modifier) {
             Text(" · ${u.life.settings.batteryMode.name.lowercase().replaceFirstChar { it.uppercase() }}", style = Aiimin.type.body.copy(color = c.textMuted), maxLines = 1)
             Spacer(Modifier.weight(1f))
             if (streak > 0) {
-                Icon(AppIcons.Flame, null, tint = c.text, modifier = Modifier.size(15.dp))
+                Icon(AppIcons.CheckSquare, null, tint = c.text, modifier = Modifier.size(15.dp))
                 Spacer(Modifier.width(4.dp))
-                // The flame already says "streak"; one line, right plural (audit A-039).
-                Text("$streak ${if (streak == 1) "day" else "days"}", style = Aiimin.type.caption.copy(color = c.textMuted, fontSize = 13.sp), maxLines = 1, softWrap = false, modifier = Modifier.semantics { contentDescription = "Streak $streak ${if (streak == 1) "day" else "days"}" })
+                // Days kept in a row: a plain count, never called a streak (PRD 13.2); one line, right plural (A-039).
+                Text("$streak ${if (streak == 1) "day" else "days"}", style = Aiimin.type.caption.copy(color = c.textMuted, fontSize = 13.sp), maxLines = 1, softWrap = false, modifier = Modifier.semantics { contentDescription = "$streak ${if (streak == 1) "day" else "days"} kept in a row" })
             }
             Spacer(Modifier.width(6.dp))
             Icon(AppIcons.CaretRight, null, tint = c.textFaint, modifier = Modifier.size(16.dp))
@@ -724,7 +724,7 @@ private fun KeepAliveCard(vm: TodayViewModel, modifier: Modifier) {
     val shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp)
     Column(modifier.fillMaxWidth().clip(shape).background(c.surface).border(1.dp, c.border, shape).padding(16.dp)) {
         Text("Your phone is pausing AIIMIN in the background", style = Aiimin.type.headline)
-        Text("So screen time, steps and reminders fall behind until you open the app. $text", style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp))
+        Text("So screen time, steps and reminders pause until you open the app. $text", style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp))
         // Primary action full width; the two quiet ones share a row. Fits any phone width and text size.
         AppButton("Open App info", { runCatching { context.startActivity(vm.appDetails()) } }, Modifier.fillMaxWidth().padding(top = 14.dp))
         Row(Modifier.fillMaxWidth().padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {

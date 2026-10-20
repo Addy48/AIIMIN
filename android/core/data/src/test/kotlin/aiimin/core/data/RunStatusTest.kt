@@ -19,7 +19,7 @@ class RunStatusTest {
     @Test fun `failures are counted`() {
         val s = RunStatus.of(Job.SYNC, PulseRunEntity("SYNC", lastRunAt = now, lastOkAt = null, fails = 3), now)
         assertThat(s.healthy).isFalse()
-        assertThat(s.line).isEqualTo("Failed 3 times · last worked never")
+        assertThat(s.line).isEqualTo("Didn't finish 3 times · last worked never")
     }
 
     @Test fun `a killed worker shows up as stale`() {

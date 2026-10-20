@@ -113,7 +113,7 @@ fun SettingsScreen(vm: MeViewModel = hiltViewModel()) {
                     } + " · late entries can be filed to yesterday until noon",
                     leading = { IconTile(AppIcons.MoonStars) }, maxSubtitleLines = 2, onClick = { dayMode = true },
                 )
-                ListRow("Late-night screen time starts", subtitle = "Phone use after this counts as late", leading = { IconTile(AppIcons.Moon) })
+                ListRow("Late-night screen time starts", subtitle = "Phone use after this counts as late-night use", leading = { IconTile(AppIcons.Moon) })
                 Row(Modifier.padding(start = 52.dp, bottom = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     listOf(22 to "10 PM", 23 to "11 PM", 0 to "Midnight").forEach { (h, label) -> Pill(label, st.lateHour == h, { vm.update { it.copy(lateHour = h) } }) }
                 }

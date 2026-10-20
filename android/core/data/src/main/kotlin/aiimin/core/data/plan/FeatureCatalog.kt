@@ -28,7 +28,7 @@ enum class Feature(
 ) {
     DAY_CORE("Today, tasks, calendar, focus, minimums, journal, notes", FeatureGroup.DAY, Access.Yes, Access.Yes, Access.Yes, Access.Yes, shipped = true),
     VOICE_CAPTURE("Voice capture", FeatureGroup.DAY, Access.Yes, Access.Yes, Access.Yes, Access.Yes, shipped = true),
-    LIFE_SCORE("Life Score, streak, battery", FeatureGroup.INSIGHT, Access.Yes, Access.Yes, Access.Yes, Access.Yes, shipped = true),
+    LIFE_SCORE("Life Score, kept days, battery", FeatureGroup.INSIGHT, Access.Yes, Access.Yes, Access.Yes, Access.Yes, shipped = true),
     CHART_HISTORY("Chart history", FeatureGroup.INSIGHT, Access.Months(3), Access.Yes, Access.Yes, Access.Yes, shipped = true, heroFor = setOf(Plan.PLUS)),
     PATTERNS("Patterns: what goes with what", FeatureGroup.INSIGHT, Access.No, Access.No, Access.Yes, Access.Yes, shipped = false, heroFor = setOf(Plan.PRO)),
     MONTHLY_REVIEW("Monthly review PDF", FeatureGroup.INSIGHT, Access.No, Access.No, Access.Yes, Access.Yes, shipped = false, heroFor = setOf(Plan.PRO)),

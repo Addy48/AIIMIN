@@ -31,9 +31,12 @@ abstract class ThemeTokenGuard : DefaultTask() {
             .flatMap { file ->
                 val path = file.invariantSeparatorsPath
                 val rules = RULES.filter { r -> r.allowedIn.none { path.endsWith(it) } }
+                val copyChecked = COPY_EXEMPT.none { path.contains(it) }
                 file.readLines().mapIndexedNotNull { i, line ->
                     val code = codeOf(line)
+                    val t = line.trimStart()
                     rules.firstOrNull { it.pattern.containsMatchIn(code) }?.let { "${file.path}:${i + 1}: [${it.why}] ${line.trim()}" }
+                        ?: if (copyChecked && !t.startsWith("*") && !t.startsWith("/*") && guiltIn(code)) "${file.path}:${i + 1}: [guilt word, PRD 13.2] ${line.trim()}" else null
                 }
             }
         report.get().asFile.writeText(hits.joinToString("\n"))
@@ -65,6 +68,42 @@ abstract class ThemeTokenGuard : DefaultTask() {
             Rule("colour animation", Regex("""\banimateColorAsState\b"""), MOTION),
             Rule("size animation", Regex("""\banimateContentSize\b"""), MOTION),
         )
+
+        // PRD 13.2 / 8.3: no guilt words in anything a person reads. Parser vocabularies and wire names are not copy.
+        private val COPY_EXEMPT = listOf("/core/nlp/", "/core/network/", "/core/database/")
+        private val GUILT = Regex("""\b(miss|missed|misses|streaks?|overdue|behind|fail|failed|fails|forgot|don't break)\b""", RegexOption.IGNORE_CASE)
+        private val TIME_OF_DAY = Regex("""\blate[- ]night|\bit's late\b|\blate entries\b""", RegexOption.IGNORE_CASE)
+        private val LATENESS = Regex("""\b(late|lateness)\b""", RegexOption.IGNORE_CASE)
+        private val LITERAL = Regex(""""((?:[^"\\]|\\.)*)"""")
+        private val TEMPLATE = Regex("""\$\{[^}]*\}|\$[A-Za-z_]\w*""")
+
+        /** True when a string literal on the line (templates removed) contains a guilt word. */
+        fun guiltIn(code: String): Boolean = LITERAL.findAll(stripTemplates(code)).any { m ->
+            val text = TEMPLATE.replace(m.groupValues[1], " ")
+            // A space-less lowercase literal is a key, regex or wire name ("streak:", "failed"), not copy.
+            if (!text.trim().contains(' ') && text.none { it.isUpperCase() }) return@any false
+            GUILT.containsMatchIn(text) || LATENESS.containsMatchIn(TIME_OF_DAY.replace(text, " "))
+        }
+
+        /** Removes `${...}` template expressions (which may hold their own quotes), keeping the quotes around them. */
+        fun stripTemplates(code: String): String {
+            val out = StringBuilder()
+            var i = 0
+            while (i < code.length) {
+                if (code[i] == '$' && i + 1 < code.length && code[i + 1] == '{') {
+                    var depth = 1
+                    i += 2
+                    while (i < code.length && depth > 0) {
+                        if (code[i] == '{') depth++ else if (code[i] == '}') depth--
+                        i++
+                    }
+                    out.append(' ')
+                } else {
+                    out.append(code[i]); i++
+                }
+            }
+            return out.toString()
+        }
 
         /** The line without its // comment; a "//" inside a string ("https://…") is kept. */
         fun codeOf(line: String): String {

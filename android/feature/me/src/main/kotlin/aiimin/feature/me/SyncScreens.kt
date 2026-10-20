@@ -175,7 +175,7 @@ fun SyncSettingsScreen(vm: SyncSettingsViewModel = hiltViewModel()) {
                             !signedIn -> "Sign in to aiimin.in to keep a copy on the website."
                             state is SyncState.Attention -> (state as SyncState.Attention).message
                             state is SyncState.Offline -> "Changes are saved here and go when you're back online."
-                            retry != null -> "Last try failed. Next try at " + clockFmt.format(Instant.ofEpochMilli(retry).atZone(ZoneId.systemDefault()))
+                            retry != null -> "Last try didn't go through. Next try at " + clockFmt.format(Instant.ofEpochMilli(retry).atZone(ZoneId.systemDefault()))
                             else -> syncedAgo(st.lastSyncAt)
                         },
                         style = Aiimin.type.caption.copy(fontSize = 13.5.sp),
@@ -214,7 +214,7 @@ fun SyncSettingsScreen(vm: SyncSettingsViewModel = hiltViewModel()) {
             SectionHeader("When")
             SwitchRow("Only on Wi-Fi", st.syncWifiOnly, { vm.wifiOnly(it) }, subtitle = "Background sync waits for Wi-Fi. Sync now always works.", icon = AppIcons.WifiHigh)
             Text(
-                "Sync runs when you open AIIMIN, every half hour in the background, and as soon as the network comes back. If a try fails, the next one waits a little longer each time, up to 30 minutes.",
+                "Sync runs when you open AIIMIN, every half hour in the background, and as soon as the network comes back. If a try doesn't go through, the next one waits a little longer each time, up to 30 minutes.",
                 style = Aiimin.type.caption.copy(fontSize = 13.sp, lineHeight = 19.sp), modifier = Modifier.padding(top = 6.dp),
             )
 

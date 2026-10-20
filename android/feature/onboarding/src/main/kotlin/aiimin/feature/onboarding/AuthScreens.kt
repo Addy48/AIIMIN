@@ -138,7 +138,7 @@ fun AuthFlow(
                     PinInput(pin, { pin = it; error = null }, autoFocus = false)
                     ErrorLine(error)
                     Spacer(Modifier.height(8.dp))
-                    Text("Forgot your PIN?", style = Aiimin.type.label.copy(color = c.link), modifier = Modifier.clickable { mode = AuthMode.FORGOT; error = null }.padding(vertical = 10.dp))
+                    Text("Can't remember your PIN?", style = Aiimin.type.label.copy(color = c.link), modifier = Modifier.clickable { mode = AuthMode.FORGOT; error = null }.padding(vertical = 10.dp))
                 }
                 AuthMode.SIGN_UP -> {
                     Text("Create your aiimin.in account", style = Aiimin.type.title.copy(fontSize = 28.sp, lineHeight = 34.sp))

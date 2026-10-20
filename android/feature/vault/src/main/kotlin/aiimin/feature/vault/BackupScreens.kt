@@ -105,7 +105,7 @@ class VaultBackupViewModel @Inject constructor(
 
     fun backup(pass: String) = viewModelScope.launch {
         busy.value = "Encrypting and writing your backup…"
-        message.value = runCatching { "Backed up · " + repo.backupNow(pass.toCharArray()) }.getOrElse { it.message ?: "Backup failed" }
+        message.value = runCatching { "Backed up · " + repo.backupNow(pass.toCharArray()) }.getOrElse { it.message ?: "Backup didn't finish" }
         busy.value = null
         refresh()
     }

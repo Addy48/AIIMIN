@@ -522,7 +522,7 @@ class AssistantRepository @Inject constructor(
             val down = r.contributors.filter { it.points < 0 }.takeLast(2)
             if (up.isNotEmpty()) append(" Lifting it: " + up.joinToString { "${name(it.signal, v)} +${it.points}" } + ".")
             if (down.isNotEmpty()) append(" Holding it back: " + down.joinToString { "${name(it.signal, v)} ${it.points}" } + ".")
-            append(" Battery ${r.battery.value}%, streak ${r.streak.current} days.")
+            append(" Battery ${r.battery.value}%, ${r.streak.current} ${if (r.streak.current == 1) "day" else "days"} kept in a row.")
         }
         return Reply(text, sources = listOf(Source("score", "score", "Life Score")), saw = listOf("Your own history (never compared with anyone)"), followups = listOf("What would move it today?"))
     }

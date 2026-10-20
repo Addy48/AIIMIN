@@ -207,9 +207,9 @@ fun BatteryPage(d: Draft, onPick: (BatteryMode) -> Unit) {
     val c = Aiimin.colors
     Headline("How firm should it be?", "The battery shows how this week is going. You can change the mode once a week.")
     listOf(
-        Triple(BatteryMode.GENTLE, "Gentle", "Misses cost little, the first each week is free, and it never drops below 10. Most people should start here."),
-        Triple(BatteryMode.STANDARD, "Standard", "Misses cost more. At zero, a three-day comeback restores it. Nothing is ever deleted."),
-        Triple(BatteryMode.HARDCORE, "Hardcore", "No free misses, no freezes, no repairs. Misses cost more. For people who want it to bite."),
+        Triple(BatteryMode.GENTLE, "Gentle", "Unkept days cost little, one each week is free, and it never drops below 10. Most people start here."),
+        Triple(BatteryMode.STANDARD, "Standard", "Unkept days cost more. At zero, a three-day comeback restores it. Nothing is ever deleted."),
+        Triple(BatteryMode.HARDCORE, "Hardcore", "No free days, no freezes, no repairs. Unkept days cost the most. For people who want it firm."),
     ).forEach { (mode, title, body) ->
         val on = d.battery_ == mode
         Column(

@@ -213,7 +213,7 @@ fun SmsImportScreen(vm: SmsImportViewModel = hiltViewModel()) {
             Text(filter.summary(), style = Aiimin.type.bodyStrong)
             if (editing) FilterEditor(filter, banks, accounts, vm::setFilter)
             Text(
-                "Always skipped: OTPs, offers, collect requests, failed payments, statements and balance updates.",
+                "Always skipped: OTPs, offers, collect requests, payments that didn't go through, statements and balance updates.",
                 style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp),
             )
 

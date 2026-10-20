@@ -493,7 +493,7 @@ fun AppearanceScreen(vm: ProfileViewModel = hiltViewModel()) {
         TopBar("Appearance", onBack = { nav.back() })
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Aiimin.space.gutter)) {
             SectionHeader("Theme")
-            ListRow("Light", subtitle = "Paper background all day. A dark theme is being designed and isn't available yet.", leading = { IconTile(AppIcons.Sun) }, maxSubtitleLines = 2)
+            ListRow("Light", subtitle = "Paper background all day.", leading = { IconTile(AppIcons.Sun) }, maxSubtitleLines = 2)
             SectionHeader("Text size")
             Text("On top of your phone's own text size.", style = Aiimin.type.caption)
             PillRow { listOf(0.9f to "Smaller", 1f to "Default", 1.15f to "Larger", 1.3f to "Largest").forEach { (v, l) -> Pill(l, kotlin.math.abs(st.textScale - v) < 0.01f, { vm.save { it.copy(textScale = v) } }) } }
@@ -519,7 +519,7 @@ fun LanguageScreen(vm: ProfileViewModel = hiltViewModel()) {
         TopBar("Language and region", onBack = { nav.back() })
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Aiimin.space.gutter)) {
             SectionHeader("App language")
-            ListRow("English (India)", subtitle = "Hindi is coming later", leading = { IconTile(AppIcons.Translate) })
+            ListRow("English (India)", subtitle = "You can speak or type in Hindi or Hinglish too", leading = { IconTile(AppIcons.Translate) })
             SectionHeader("Voice")
             PillRow { listOf("en-IN" to "English (India)", "hi-IN" to "हिन्दी", "auto" to "Auto").forEach { (k, l) -> Pill(l, st.voiceLanguage == k, { vm.save { it.copy(voiceLanguage = k) } }) } }
             Text("What capture listens for. Auto follows your phone's language.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 4.dp))

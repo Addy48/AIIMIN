@@ -57,6 +57,9 @@ class NotificationRepository @Inject constructor(
     suspend fun dismiss(id: String) = dao.dismiss(id)
 
     suspend fun run() {
+        // Older rows kept the old wording (streaks, "Rough patch"); they read like new ones now (PRD 13.2, C-001).
+        dao.reword("battery:", "A lighter day", "Today your minimums are the tiny versions, and each counts double.")
+        dao.rewordBody("streak:", minimumsNudgeBody(2))
         collapseRepeats()
         val today = clock.today()
         val now = LocalTime.now(clock.zone)
@@ -108,11 +111,11 @@ class NotificationRepository @Inject constructor(
             val m = view.today.minimums
             val left = m.planned - m.kept
             if (left > 0 && !view.today.paused) {
-                emit("streak:$today", "$left minimum${if (left == 1) "" else "s"} left today", streakNudgeBody(left, view.readout.streak.current), "today", null, 2)
+                emit("streak:$today", "$left minimum${if (left == 1) "" else "s"} left today", minimumsNudgeBody(left), "today", null, 2)
             }
         }
         if (view?.battery?.state == BatteryState.LOW) {
-            emit("battery:$today", "Rough patch — let's restart small", "Today your minimums are the tiny versions, and each counts double.", "today", null, 1)
+            emit("battery:$today", "A lighter day", "Today your minimums are the tiny versions, and each counts double.", "today", null, 1)
         }
 
         // Budget pace on the personal ledger.
@@ -209,8 +212,6 @@ internal fun family(ruleKey: String): String {
     return if (periodic) ruleKey.substringBeforeLast(':') + ":" else ruleKey
 }
 
-/** The evening minimums reminder's second line; a zero streak is an invitation, not "your 0-day streak". */
-fun streakNudgeBody(left: Int, streak: Int): String {
-    val them = if (left == 1) "it" else "them"
-    return if (streak <= 0) "Keep $them today to start a streak." else "Keep $them and your $streak-day streak carries on."
-}
+/** The evening minimums reminder's second line (PRD 13.2: no streaks, no guilt; C-001). */
+fun minimumsNudgeBody(left: Int): String =
+    if (left == 1) "Keep it if you can. The tiny version counts." else "Keep them if you can. The tiny versions count."

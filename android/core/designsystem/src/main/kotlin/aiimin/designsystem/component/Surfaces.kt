@@ -251,7 +251,7 @@ fun EvidenceDot(tier: Char, modifier: Modifier = Modifier, size: Dp = 10.dp) {
     val ink = c.text
     val bg = c.base
     val d = size
-    androidx.compose.foundation.Canvas(modifier.size(d + 8.dp).semantics { contentDescription = when (tier) { 'A' -> "Measured"; 'B' -> "Backed by proof"; 'C' -> "Your tap"; else -> "Late or unsure" } }) {
+    androidx.compose.foundation.Canvas(modifier.size(d + 8.dp).semantics { contentDescription = when (tier) { 'A' -> "Measured"; 'B' -> "Backed by proof"; 'C' -> "Your tap"; else -> "Added later or unsure" } }) {
         val cx = this.size.width / 2f
         val cy = this.size.height / 2f
         val r = d.toPx() / 2f

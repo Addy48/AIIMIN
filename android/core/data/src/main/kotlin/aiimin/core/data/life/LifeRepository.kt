@@ -116,7 +116,7 @@ class LifeRepository @Inject constructor(
                 it.copy(values = it.values + (Signals.FOCUS to f + 25), evidence = it.evidence + (Signals.FOCUS to Tier.A))
             }
             if ((today.value(Signals.JOURNAL) ?: 0.0) < 1.0) {
-                gain("Journal 40 words", NudgeAction.JOURNAL) {
+                gain("Write in the journal", NudgeAction.JOURNAL) {
                     it.copy(values = it.values + (Signals.JOURNAL to 1.0), evidence = it.evidence + (Signals.JOURNAL to Tier.B))
                 }
             }

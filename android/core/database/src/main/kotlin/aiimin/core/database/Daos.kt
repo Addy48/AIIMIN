@@ -426,6 +426,13 @@ interface NotificationDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertIfNew(n: NotificationEntity): Long
 
+    /** Rewrites stored notifications of one kind to today's wording (copy pass B2). */
+    @Query("UPDATE notifications SET title = :title, body = :body WHERE ruleKey LIKE :prefix || '%' AND (title != :title OR body != :body)")
+    suspend fun reword(prefix: String, title: String, body: String): Int
+
+    @Query("UPDATE notifications SET body = :body WHERE ruleKey LIKE :prefix || '%' AND body LIKE '%streak%'")
+    suspend fun rewordBody(prefix: String, body: String): Int
+
     @Query("SELECT * FROM notifications WHERE dismissed = 0 ORDER BY at DESC LIMIT 100")
     fun all(): Flow<List<NotificationEntity>>
 

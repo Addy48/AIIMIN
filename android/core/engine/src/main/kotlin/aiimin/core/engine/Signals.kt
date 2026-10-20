@@ -88,7 +88,7 @@ object Signals {
         SignalDef(FAMILY, "Family commitments kept", "%", "people", Tier.C, "Family tasks assigned to you that were due"),
         SignalDef(SLEEP, "Sleep", "min", "body", Tier.A, "Health Connect sleep for the night you woke from"),
         SignalDef(SLEEP_REGULARITY, "Sleep regularity", "/100", "body", Tier.A, "How steady your sleep midpoint is across the last 7 nights"),
-        SignalDef(LATE_SCREEN, "Late-night screen time", "min", "mind", Tier.A, "Phone use after your late hour (23:00 by default)"),
+        SignalDef(LATE_SCREEN, "Late-night screen time", "min", "mind", Tier.A, "Phone use after your wind-down hour (23:00 by default)"),
         SignalDef(UNLOCKS, "Phone unlocks", "count", "mind", Tier.A, "Times the phone was unlocked"),
     ).associateBy { it.key }
 }

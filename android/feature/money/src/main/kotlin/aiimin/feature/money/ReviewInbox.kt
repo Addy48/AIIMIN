@@ -121,7 +121,7 @@ fun MoneyInboxScreen(vm: InboxViewModel = hiltViewModel()) {
                 Spacer(Modifier.height(18.dp))
                 Text("All caught up", style = Aiimin.type.cardTitle)
                 Spacer(Modifier.height(6.dp))
-                Text("New bank alerts land here as they arrive. Missed some? Bring in this month's messages, or start from an earlier month.", style = Aiimin.type.caption.copy(fontSize = 14.sp), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                Text("New bank alerts land here as they arrive. Want older ones? Bring in this month's messages, or start from an earlier month.", style = Aiimin.type.caption.copy(fontSize = 14.sp), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                 Spacer(Modifier.height(24.dp))
                 AppButton("Bring in past messages", { nav.open(Route.SmsImport) }, compact = true)
                 Spacer(Modifier.height(8.dp))

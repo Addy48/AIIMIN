@@ -162,7 +162,8 @@ fun MeScreen(vm: MeViewModel = hiltViewModel()) {
                 }
                 Hairline()
                 Row(Modifier.fillMaxWidth().padding(vertical = 18.dp)) {
-                    MeStat("${r?.streak?.current ?: 0} days", "streak", Modifier.weight(1f))
+                    // C-003: kept days, never a "0 days streak" tile.
+                    MeStat("${r?.streak?.totalKept ?: 0}", if ((r?.streak?.totalKept ?: 0) == 1) "day kept" else "days kept", Modifier.weight(1f))
                     MeStat("${r?.battery?.value ?: 0}", "battery · ${r?.battery?.mode?.name?.lowercase()?.replaceFirstChar(Char::uppercase) ?: "Gentle"}", Modifier.weight(1f))
                     if (!settings.hideXp) MeStat("%,d".format(settings.xp.xp), "XP · level ${settings.xp.level}", Modifier.weight(1f))
                 }
@@ -430,7 +431,7 @@ private fun MarkDot(m: StreakMark) {
         StreakMark.FROZEN -> c.domains[4] to "Freeze"
         StreakMark.REPAIRED -> c.violet to "Repaired"
         StreakMark.PAUSED -> c.textFaint to "Paused"
-        StreakMark.MISSED -> c.raised to "Missed"
+        StreakMark.MISSED -> c.raised to "Not kept"
     }
     // At least 78 dp, never a broken word: "Repaire / d" at 1.3× text (audit A-044).
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.widthIn(min = 78.dp)) {
@@ -748,9 +749,9 @@ fun BatteryScreen(vm: MeViewModel = hiltViewModel()) {
                 Spacer(Modifier.height(8.dp))
                 Text(
                     when (b.state) {
-                        BatteryState.OK -> "Kept minimums charge it; a kept day adds a bonus. Your first miss each week is free."
-                        BatteryState.LOW -> "Low battery — minimums shrink to their tiny versions, tiny ones count double, and misses cost half. The lower it is, the easier it climbs."
-                        BatteryState.COMEBACK -> "A rough patch, so let's restart small: keep any one minimum on 3 days and the battery returns to 40%. Nothing is deleted."
+                        BatteryState.OK -> "Kept minimums charge it; a kept day adds a bonus. One unkept day each week is free."
+                        BatteryState.LOW -> "Low battery: minimums shrink to their tiny versions, tiny ones count double, and unkept ones cost half. The lower it is, the easier it climbs."
+                        BatteryState.COMEBACK -> "A lighter stretch: keep any one minimum on 3 days and the battery returns to 40%. Nothing is deleted."
                     },
                     style = Aiimin.type.body,
                 )
@@ -770,24 +771,24 @@ fun BatteryScreen(vm: MeViewModel = hiltViewModel()) {
                 Spacer(Modifier.height(10.dp))
                 Panel {
                     val rows = when (mode) {
-                        BatteryMode.GENTLE -> listOf("Misses cost 2, at most 6 a day", "No zero state", "Two rest days a week plus pause", "Unlimited streak repair")
-                        BatteryMode.STANDARD -> listOf("Misses cost 3, at most 10 a day", "At zero, a 3-day comeback", "One rest day a week plus pause", "One repair per break")
-                        BatteryMode.HARDCORE -> listOf("Misses cost 5, at most 20 a day", "No free weekly miss, no freezes", "Declared illness only", "No streak repair")
+                        BatteryMode.GENTLE -> listOf("An unkept minimum costs 2, at most 6 a day", "No zero state", "Two rest days a week plus pause", "Unlimited repairs")
+                        BatteryMode.STANDARD -> listOf("An unkept minimum costs 3, at most 10 a day", "At zero, a 3-day comeback", "One rest day a week plus pause", "One repair per break")
+                        BatteryMode.HARDCORE -> listOf("An unkept minimum costs 5, at most 20 a day", "No free day, no freezes", "Declared illness only", "No repairs")
                     }
                     aiimin.designsystem.component.BulletList(rows, style = Aiimin.type.body)
                 }
                 Text("Mode can change once every 7 days. If things get rough, the app will offer Gentle — it never switches for you.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp))
             }
             item {
-                SectionHeader("Streak")
+                SectionHeader("Kept days")
                 val st = l!!.readout.streak
                 Row(horizontalArrangement = Arrangement.SpaceEvenly, modifier = Modifier.fillMaxWidth()) {
-                    MiniFigure("${st.current}", "current")
-                    MiniFigure("${st.longest}", "longest")
+                    MiniFigure("${st.current}", "in a row")
+                    MiniFigure("${st.longest}", "longest run")
                     MiniFigure("${st.totalKept}", "days kept")
                     MiniFigure("${st.freezesBanked}", "freezes")
                 }
-                Text("A freeze is earned every 7 kept days (bank up to 2). Never sold. Two missed days in a row can't both be covered.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp))
+                Text("A freeze is earned every 7 kept days (bank up to 2). Never sold. One freeze covers one day off.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp))
             }
         }
     }
