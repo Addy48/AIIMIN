@@ -169,48 +169,37 @@ fun MeScreen(vm: MeViewModel = hiltViewModel()) {
                 }
             }
         }
-        meGroup("Workspace", listOf(
-            MeLink(AppIcons.Note, "Notes", if (noteCount == 0) null else "$noteCount ${if (noteCount == 1) "note" else "notes"}${if (pinned > 0) " · $pinned pinned" else ""}") { nav.open(Route.Notes) },
-            MeLink(AppIcons.BookOpen, "Journal", "Private · encrypted on this phone") { nav.open(Route.Journal) },
-            MeLink(AppIcons.Calendar, "Calendar", "$events ${if (events == 1) "event" else "events"} this week") { nav.open(Route.Calendar) },
-            MeLink(AppIcons.Flag, "Goals", null) { nav.open(Route.Goals) },
+        // Part 17.3: "You" is four short groups. Features live in Progress and Your things; Settings hold settings.
+        meGroup("Progress", listOf(
+            MeLink(AppIcons.Pulse, "Why this score", "Day by day, what moved it") { nav.open(Route.WhyScore) },
+            MeLink(AppIcons.Sparkle, "Patterns", "What goes with what") { nav.open(Route.Patterns) },
             MeLink(AppIcons.ListChecks, "Weekly review", "Sundays, or any time") { nav.open(Route.WeeklyReview) },
-            MeLink(AppIcons.Timer, "Focus", null) { nav.open(Route.Focus()) },
-            MeLink(AppIcons.ListChecks, "Daily minimums", null) { nav.open(Route.Minimums) },
-            MeLink(AppIcons.Flag, "Upcoming tasks", null) { nav.open(Route.Upcoming) },
-            MeLink(AppIcons.ChatCircleText, "Assistant", "Ask or tell AIIMIN anything") { nav.open(Route.Assistant()) },
-        ))
-        meGroup("Insights", listOf(
+            MeLink(AppIcons.Flag, "Goals", null) { nav.open(Route.Goals) },
             MeLink(AppIcons.Sliders, "What counts for you", "Intentions, targets, weights") { nav.open(Route.Signals) },
             MeLink(AppIcons.BatteryHigh, "Discipline battery", r?.battery?.let { "${it.value}% · ${it.mode.name.lowercase().replaceFirstChar(Char::uppercase)}" }) { nav.open(Route.Battery) },
-            MeLink(AppIcons.Pulse, "Why this score", "Day by day, what moved it") { nav.open(Route.WhyScore) },
             MeLink(AppIcons.Phone, "Phone day", "Screen time and unlocks") { nav.open(Route.PhoneDay) },
             MeLink(AppIcons.Footprints, "Body", "Steps, sleep, heart rate") { nav.open(Route.Body) },
-            MeLink(AppIcons.Sparkle, "Patterns", "What goes with what") { nav.open(Route.Patterns) },
             MeLink(AppIcons.ClockCounter, "Activity", "Everything you did, from the log") { nav.open(Route.Activity) },
         ))
-        meGroup("Family & papers", listOf(
+        meGroup("Your things", listOf(
+            MeLink(AppIcons.Note, "Notes", if (noteCount == 0) null else "$noteCount ${if (noteCount == 1) "note" else "notes"}${if (pinned > 0) " · $pinned pinned" else ""}") { nav.open(Route.Notes) },
+            // Pour (Part 12) grows out of the journal in B7b; the private writing lives here until then.
+            MeLink(AppIcons.Drop, "Pour", "Private writing · on this phone") { nav.open(Route.Journal) },
+            MeLink(AppIcons.Calendar, "Calendar", "$events ${if (events == 1) "event" else "events"} this week") { nav.open(Route.Calendar) },
+            MeLink(AppIcons.FileText, "Documents", "Your vault") { nav.tab(aiimin.designsystem.nav.Tab.VAULT) },
+            MeLink(AppIcons.Timer, "Focus", null) { nav.open(Route.Focus()) },
+            MeLink(AppIcons.CheckSquare, "Daily minimums", null) { nav.open(Route.Minimums) },
+            MeLink(AppIcons.ListChecks, "Upcoming tasks", null) { nav.open(Route.Upcoming) },
             MeLink(AppIcons.FirstAid, "My emergency card", "Blood group, allergies, contacts") { nav.open(Route.EmergencyCard("me")) },
             MeLink(AppIcons.Users, "Family", "People and their papers") { nav.open(Route.Family) },
-            MeLink(AppIcons.CloudArrowUp, "Backups", "Keep a copy of your vault") { nav.open(Route.VaultBackup) },
-            MeLink(AppIcons.FirstAidKit, "Emergency kits", "What to grab when it matters") { nav.open(Route.EmergencyKits) },
-        ))
-        meGroup("Account", listOf(
-            MeLink(AppIcons.CloudCheck, "Account and sync", if (session?.signedIn == true) "Synced with aiimin.in" else "Only on this phone") { nav.open(Route.Account) },
-            MeLink(AppIcons.Devices, "Linked devices", "Browsers and phones on your account") { nav.open(Route.LinkedDevices) },
-            MeLink(AppIcons.Star, "Plan", plan.label + if (plan == aiimin.core.data.plan.Plan.FREE) " · see what plans add" else "") { nav.open(if (plan == aiimin.core.data.plan.Plan.FREE) Route.Plans else Route.Subscription) },
+            MeLink(AppIcons.ChatCircleText, "Assistant", "Ask or tell Raahi anything") { nav.open(Route.Assistant()) },
         ))
         meGroup("Settings", listOf(
-            MeLink(AppIcons.Moon, "My day, notifications and privacy", if (settings.dayMode == aiimin.core.engine.DayMode.Midnight) "Day ends at midnight" else "Day ends later, for night owls") { nav.open(Route.Settings) },
-            MeLink(AppIcons.Bell, "Notifications", "Inbox and quiet hours") { nav.open(Route.Notifications) },
-            MeLink(AppIcons.Footprints, "Phone data", "What the phone measures for you") { nav.open(Route.Sensors) },
-            MeLink(AppIcons.Wallet, "Money", "Ledgers, accounts, payee memory") { nav.open(Route.MoneySettings) },
-            MeLink(AppIcons.ArrowsClockwise, "Sync", "What goes to aiimin.in") { nav.open(Route.SyncSettings) },
-            MeLink(AppIcons.Chat, "Assistant and voice", "What it may read, recent captures") { nav.open(Route.AiSettings) },
-            MeLink(AppIcons.TextAa, "Appearance", "Text size, motion") { nav.open(Route.Appearance) },
-            MeLink(AppIcons.Translate, "Language and region", "English (India)") { nav.open(Route.Language) },
+            MeLink(AppIcons.Sliders, "Settings", "Day, notifications, privacy, phone data, money, appearance") { nav.open(Route.Settings) },
+            MeLink(AppIcons.CloudCheck, "Account and sync", if (session?.signedIn == true) "Synced with aiimin.in" else "Only on this phone") { nav.open(Route.Account) },
+            MeLink(AppIcons.Star, "Plan", plan.label + if (plan == aiimin.core.data.plan.Plan.FREE) " · see what plans add" else "") { nav.open(if (plan == aiimin.core.data.plan.Plan.FREE) Route.Plans else Route.Subscription) },
         ))
-        meGroup("Support", listOf(
+        meGroup("Help and legal", listOf(
             MeLink(AppIcons.Lifebuoy, "Help and feedback", null) { nav.open(Route.Help) },
             MeLink(AppIcons.Share, "Tell a friend", "Send them a link to the beta") {
                 val send = android.content.Intent(android.content.Intent.ACTION_SEND).setType("text/plain").putExtra(android.content.Intent.EXTRA_TEXT, inviteText())
