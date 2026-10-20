@@ -246,7 +246,7 @@ private fun ReviewCardBody(
         Spacer(Modifier.height(8.dp))
         // D-008 (S9): equal columns, so the chips form a grid instead of ragged rows.
         val chips = (categories.ifEmpty { if (d.direction == "in") Categories.INCOME else Categories.SPEND }).map { it to false } + ("New" to true)
-        aiimin.designsystem.component.PillGrid(chips, columns = 3) { (k, isNew), m ->
+        aiimin.designsystem.component.PillGrid(chips, columns = if (chips.any { it.first.length > 9 } || LocalDensity.current.fontScale >= 1.5f) 2 else 3) { (k, isNew), m ->
             if (isNew) Pill("New", adding, { adding = !adding }, m, icon = AppIcons.Plus) else Pill(k, cat == k, { onCat(k) }, m)
         }
         if (adding) Row(Modifier.padding(top = 10.dp), verticalAlignment = Alignment.CenterVertically) {

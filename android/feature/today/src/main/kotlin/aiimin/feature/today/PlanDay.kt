@@ -331,7 +331,7 @@ fun DebriefScreen(vm: DebriefViewModel = hiltViewModel()) {
                 Box(Modifier.weight(1f)) { AppTextField(line, { line = it }, placeholder = "One line about today", singleLine = false) }
                 AppIconButton(AppIcons.Mic, "Speak", voiceLine, tint = c.accent)
             }
-            Text("40 words count toward your journal signal. It stays private and encrypted.${if (words > 0) " $words so far." else ""}", style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp))
+            Text("Write as much or as little as you like. It stays private and encrypted.${if (words > 0) " $words words so far." else ""}", style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp))
             SectionHeader("Tomorrow's first task")
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.weight(1f)) { AppTextField(tomorrow, { tomorrow = it }, placeholder = "What comes first tomorrow?") }
