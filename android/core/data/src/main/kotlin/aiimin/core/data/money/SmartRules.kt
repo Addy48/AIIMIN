@@ -32,30 +32,30 @@ object SmartRules {
     fun first(rules: List<MoneyRuleEntity>, p: Payment): MoneyRuleEntity? =
         rules.sortedWith(compareBy<MoneyRuleEntity> { it.position }.thenBy { it.createdAt }).firstOrNull { matches(it, p) }
 
-    /** "swiggy" is in "Swiggy Instamart", in "SWIGGYINSTAMART" and in "swiggy.instamart@icici". */
+    /**
+     * "swiggy" is in "Swiggy Instamart", "SWIGGYINSTAMART" and "swiggy.instamart@icici"; "ola" is not in "Bholanath".
+     * Words match whole, or a word of 5 letters or more may start a joined name. A comma separates alternatives.
+     */
     private fun nameHas(p: Payment, needle: String): Boolean {
-        val n = MerchantList.words(needle)
-        if (n.isEmpty()) return false
-        val hay = listOfNotNull(p.name, p.upiId?.substringBefore('@')).map(MerchantList::words)
-        val spaced = n.joinToString(" ")
-        val joined = n.joinToString("")
-        return hay.any { w -> w.joinToString(" ").contains(spaced) || w.joinToString("").contains(joined) }
+        val hay = listOfNotNull(p.name, p.upiId?.substringBefore('@')?.replace(Regex("""\d+"""), " ")).map(MerchantList::words)
+        return needle.split(',').map(MerchantList::words).filter { it.isNotEmpty() }.any { n -> hay.any { w -> MerchantList.has(w, n) } }
     }
 
-    /** "Make this a rule?" accepted: the place's name, its category and ledger, filed without asking. */
-    fun fromPayee(r: PayeeRuleEntity, id: String, position: Int, now: Long): MoneyRuleEntity {
-        val name = r.label.ifBlank { r.key }
+    /**
+     * "Make this a rule?" accepted: the place under every name it is remembered by (its UPI handle and the bank's
+     * name for it, not only the name the person gave it), its category and ledger, filed without asking.
+     */
+    fun fromPayee(r: PayeeRuleEntity, keys: List<String>, id: String, position: Int, now: Long): MoneyRuleEntity {
+        val names = (keys + r.key).filter { it.isNotBlank() }.distinct()
         return MoneyRuleEntity(
-            id = id, name = name, position = position, contains = MerchantList.words(name).joinToString(" ").ifEmpty { r.key },
+            id = id, name = r.label.ifBlank { r.key }, position = position, contains = names.joinToString(", "),
             category = r.category, ledger = r.ledger, autoBook = true, createdAt = now, updatedAt = now,
         )
     }
 
-    /** True when a rule already files this payee. */
-    fun covers(rules: List<MoneyRuleEntity>, r: PayeeRuleEntity): Boolean {
-        val name = r.label.ifBlank { r.key }
-        return rules.any { it.enabled && it.contains.isNotBlank() && nameHas(Payment(name, null, 0, null, "", "out"), it.contains) }
-    }
+    /** True when a rule that books by itself already answers this place (under any of its [keys]). */
+    fun covers(rules: List<MoneyRuleEntity>, keys: List<String>): Boolean =
+        rules.any { r -> r.enabled && r.autoBook && r.contains.isNotBlank() && keys.any { k -> nameHas(Payment(k, null, 0, null, "", "out"), r.contains) } }
 
     /** One line a person reads: "Name has “swiggy” · under ₹500 → Food · Personal". */
     fun describe(r: MoneyRuleEntity): String {
@@ -103,17 +103,21 @@ object MoneySorter {
 
     fun decide(rules: List<MoneyRuleEntity>, exact: PayeeRuleEntity?, memory: List<PayeeRuleEntity>, p: SmartRules.Payment, hasReference: Boolean): Decision {
         val inbound = p.direction == "in"
-        val known = exact ?: partial(memory, p)
-        // Only an exact match renames the payee; a partial one ("swiggy" for "Swiggy Instamart") lends its category.
         val title = exact?.label?.ifBlank { null } ?: p.name
         SmartRules.first(rules, p)?.let { r ->
-            return Decision(title, r.category, r.ledger, 0.97, r.autoBook, r.id, Source.RULE)
+            // "Always ask for this payee" wins over booking: the rule still fills it in, the person still looks.
+            return Decision(title, r.category, r.ledger, 0.97, r.autoBook && exact?.alwaysAsk != true, r.id, Source.RULE)
         }
-        if (known != null && !known.alwaysAsk) {
-            return Decision(title, known.category, known.ledger, if (hasReference) 0.95 else 0.9, false, null, Source.MEMORY)
+        if (exact != null && !exact.alwaysAsk) {
+            return Decision(title, exact.category, exact.ledger, if (hasReference) 0.95 else 0.9, false, null, Source.MEMORY)
         }
         val listed = if (inbound) null else MerchantList.categoryOf(p.name, p.upiId)
         if (listed != null) return Decision(title, listed.category, Ledger.PERSONAL.name, if (hasReference) 0.85 else 0.8, false, null, Source.LIST)
+        // A remembered place whose name starts this one ("kamalam" for "Kamalam Andheri") lends its category only:
+        // weaker than an exact match, never its ledger or name, and only when the list knows nothing better.
+        if (exact == null) partial(memory, p)?.takeIf { !it.alwaysAsk }?.let { m ->
+            return Decision(title, m.category, Ledger.PERSONAL.name, 0.75, false, null, Source.MEMORY)
+        }
         val guess = if (inbound) "Other income" else BankSms.guessCategory(p.name)
         return Decision(title, guess, Ledger.PERSONAL.name, if (hasReference) 0.8 else 0.6, false, null, Source.GUESS)
     }
@@ -121,7 +125,7 @@ object MoneySorter {
     /** The longest remembered key that starts the payee's key ("swiggy" in "swiggyinstamart"), or the reverse. */
     fun partial(memory: List<PayeeRuleEntity>, p: SmartRules.Payment): PayeeRuleEntity? {
         val keys = listOfNotNull(BankSms.payeeKey(p.name), p.upiId?.substringBefore('@')?.let(BankSms::payeeKey)).filter { it.length >= PART_MIN }
-        return memory.filter { m -> m.key.length >= PART_MIN && keys.any { k -> k.startsWith(m.key) || m.key.startsWith(k) } }
+        return memory.filter { m -> m.key.length >= PART_MIN && keys.any { k -> k.length > m.key.length && k.startsWith(m.key) } }
             .maxByOrNull { it.key.length }
     }
 }

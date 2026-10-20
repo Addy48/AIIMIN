@@ -103,7 +103,8 @@ class SmsImporter @Inject constructor(
         val p = preview(months, f) ?: return null
         openTrackFrom(months.min())
         var added = 0
-        for (s in p.fresh) if (money.capture(s.message.body, "sms", s.message.at) is MoneyRepository.Capture.Added) added++
+        // Past messages go to Review, filled in by the person's rules but never booked by them (30.A).
+        for (s in p.fresh) if (money.capture(s.message.body, "sms", s.message.at, allowAutoBook = false) is MoneyRepository.Capture.Added) added++
         log.log("txn.sms_import", data = mapOf("months" to months.size, "added" to added), tier = Tier.A, source = "user")
         return Result(p.read, added, p.already + (p.fresh.size - added), p.sift.skipped)
     }

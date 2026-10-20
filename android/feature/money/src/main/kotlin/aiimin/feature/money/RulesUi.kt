@@ -70,7 +70,8 @@ internal fun RuleSheet(
     onDismiss: () -> Unit, onSave: (MoneyRuleEntity) -> Unit, onDelete: (() -> Unit)?,
 ) {
     val now = System.currentTimeMillis()
-    val base = start ?: MoneyRuleEntity(id = newId(), name = "", position = 0, category = "Food", createdAt = now, updatedAt = now)
+    // A new rule only fills payments in; booking without a look is something the person switches on.
+    val base = start ?: MoneyRuleEntity(id = newId(), name = "", position = 0, category = "Food", autoBook = false, createdAt = now, updatedAt = now)
     var contains by remember { mutableStateOf(base.contains) }
     var from by remember { mutableStateOf(base.minPaise?.let { (it / 100).toString() }.orEmpty()) }
     var under by remember { mutableStateOf(base.maxPaise?.let { (it / 100).toString() }.orEmpty()) }
@@ -89,7 +90,7 @@ internal fun RuleSheet(
     val ok = SmartRules.hasCondition(draft) && (draft.minPaise == null || draft.maxPaise == null || draft.minPaise!! < draft.maxPaise!!)
     AppSheet(onDismiss, title = if (start == null) "New rule" else "Edit rule", subtitle = "Every line you fill in must match. Rules run top to bottom, before anything AIIMIN guessed.") {
         Column(Modifier.verticalScroll(rememberScrollState())) {
-            AppTextField(contains, { contains = it }, label = "Name has", placeholder = "swiggy, sanchy, uber")
+            AppTextField(contains, { contains = it }, label = "Name has", placeholder = "swiggy · a comma for more names")
             Spacer(Modifier.height(12.dp))
             Row {
                 AppTextField(from, { from = it.filter(Char::isDigit).take(9) }, Modifier.weight(1f), label = "Amount from ₹", placeholder = "Any", keyboardType = KeyboardType.Number)

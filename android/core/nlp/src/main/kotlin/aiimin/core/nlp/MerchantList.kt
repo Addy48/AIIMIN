@@ -57,6 +57,12 @@ object MerchantList {
         return hit?.let { Hit(it.category, it.words.joinToString(" ")) }
     }
 
+    /**
+     * True when [needle] is in [w] as whole words in a row, or, for a needle of 5 letters or more, as the start of a
+     * joined run of words ("swiggy" in "SWIGGYINSTAMART"). "ola" is not in "Bholanath"; "mom" is not in "Momos".
+     */
+    fun has(w: List<String>, needle: List<String>): Boolean = needle.isNotEmpty() && matches(w, Entry("", needle))
+
     private fun matches(w: List<String>, e: Entry): Boolean {
         val p = e.words
         // Whole words in a row: "metro" in "delhi metro rail".

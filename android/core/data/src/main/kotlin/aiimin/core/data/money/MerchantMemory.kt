@@ -16,7 +16,7 @@ object MerchantMemory {
     fun notes(r: PayeeRuleEntity): List<String> = r.lastNotes.split('|').map { it.trim() }.filter { it.isNotEmpty() }
 
     /** The rule after a payment is settled: the chosen place and category, the item added to the recent list. */
-    fun learn(cur: PayeeRuleEntity?, key: String, place: String, category: String, ledger: String, note: String?, now: Long): PayeeRuleEntity {
+    fun learn(cur: PayeeRuleEntity?, key: String, place: String, category: String, ledger: String, note: String?, now: Long, byHand: Boolean = true): PayeeRuleEntity {
         val item = note?.trim()?.replace("|", " ").orEmpty()
         val old = cur?.let(::notes).orEmpty()
         val recent = if (item.isEmpty()) old else (listOf(item) + old.filterNot { it.equals(item, ignoreCase = true) }).take(MAX_NOTES)
@@ -26,7 +26,11 @@ object MerchantMemory {
             alwaysAsk = cur?.alwaysAsk ?: false,
             hits = (cur?.hits ?: 0) + 1,
             lastNotes = recent.joinToString("|"),
-            sameCount = if (cur != null && cur.category == category) cur.sameCount + 1 else 1,
+            // Only a payment the person opened and filed counts toward the offer; Confirm all keeps the count.
+            sameCount = when {
+                cur != null && cur.category == category -> cur.sameCount + if (byHand) 1 else 0
+                else -> if (byHand) 1 else 0
+            },
             ruleOffer = cur?.ruleOffer ?: 0,
         )
     }
@@ -35,8 +39,8 @@ object MerchantMemory {
     const val RULE_AFTER = 3
 
     /** True when this place was filed by hand [RULE_AFTER] times in a row the same way and nothing else answers it. */
-    fun offersRule(r: PayeeRuleEntity, rules: List<aiimin.core.database.MoneyRuleEntity>): Boolean =
-        r.sameCount >= RULE_AFTER && r.ruleOffer == 0 && !r.alwaysAsk && !SmartRules.covers(rules, r)
+    fun offersRule(r: PayeeRuleEntity, keys: List<String>, rules: List<aiimin.core.database.MoneyRuleEntity>): Boolean =
+        r.sameCount >= RULE_AFTER && r.ruleOffer == 0 && !r.alwaysAsk && !SmartRules.covers(rules, (keys + r.key).distinct())
 
     /** How a new alert is filled in: the learned place and category, or the cleaned SMS name. */
     fun guess(rule: PayeeRuleEntity?, parsedName: String, hasReference: Boolean, fallbackCategory: String): Guess {

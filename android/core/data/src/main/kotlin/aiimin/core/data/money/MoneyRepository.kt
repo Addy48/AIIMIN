@@ -18,6 +18,7 @@ import java.io.File
 import java.time.Instant
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.sync.withLock
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.temporal.WeekFields
@@ -255,7 +256,16 @@ class MoneyRepository @Inject constructor(
      * A bank SMS, payment notification or pasted text. Parsed on the device and
      * dropped into the review inbox — nothing is booked until settled.
      */
-    suspend fun capture(text: String, source: String, at: Long = System.currentTimeMillis(), allowAutoBook: Boolean = true): Capture {
+    /**
+     * One capture, settle or re-sort at a time: two posts of the same alert must not both pass the duplicate
+     * check, and a draft must not be booked twice or brought back to pending while another tap settles it.
+     */
+    private val lock = kotlinx.coroutines.sync.Mutex()
+
+    suspend fun capture(text: String, source: String, at: Long = System.currentTimeMillis(), allowAutoBook: Boolean = true): Capture =
+        lock.withLock { captureNow(text, source, at, allowAutoBook) }
+
+    private suspend fun captureNow(text: String, source: String, at: Long, allowAutoBook: Boolean): Capture {
         val p = BankSms.parse(text) ?: return Capture.NotABankAlert
         // Live alerts follow the person's bank-message filter (amount, direction, account, words).
         if (source == "notification" && aiimin.core.nlp.SmsSift.filterReason(p, text, aiimin.core.nlp.SmsFilter.decode(settings.current().smsFilter)) != null) {
@@ -284,7 +294,7 @@ class MoneyRepository @Inject constructor(
         // A rule the person set to "file without asking" books it now (their tap was making the rule).
         val r = g.ruleId?.let { id -> rules.firstOrNull { it.id == id } }
         if (r != null && g.autoBook && allowAutoBook) {
-            settle(draft.id, g.category, Ledger.entries.firstOrNull { it.name == g.ledger } ?: Ledger.PERSONAL, g.title, learn = false)
+            settleNow(draft.id, g.category, Ledger.entries.firstOrNull { it.name == g.ledger } ?: Ledger.PERSONAL, g.title, learn = false, note = null, byHand = false)
             dao.upsertMoneyRule(r.copy(hits = r.hits + 1, updatedAt = System.currentTimeMillis()))
             return Capture.Added(draft.copy(status = "settled"), filedBy = r.name)
         }
@@ -292,8 +302,13 @@ class MoneyRepository @Inject constructor(
     }
 
     /** Book a draft; optionally remember the payee's category for next time. */
-    suspend fun settle(draftId: String, category: String, ledger: Ledger, title: String? = null, learn: Boolean = true, note: String? = null): String? {
-        val d = dao.draft(draftId) ?: return null
+    /** [byHand]: the person opened this payment and filed it (counts toward "Make this a rule?"); Confirm all does not. */
+    suspend fun settle(draftId: String, category: String, ledger: Ledger, title: String? = null, learn: Boolean = true, note: String? = null, byHand: Boolean = true): String? =
+        lock.withLock { settleNow(draftId, category, ledger, title, learn, note, byHand) }
+
+    private suspend fun settleNow(draftId: String, category: String, ledger: Ledger, title: String?, learn: Boolean, note: String?, byHand: Boolean): String? {
+        // A second tap, or Confirm all reaching a row already confirmed, books nothing.
+        val d = dao.draft(draftId)?.takeIf { it.status == "pending" } ?: return null
         val name = title?.trim()?.ifEmpty { null } ?: d.title
         val id = add(
             d.amountPaise, d.direction, name, category, ledger, "UPI",
@@ -302,7 +317,7 @@ class MoneyRepository @Inject constructor(
         )
         dao.upsertDraft(d.copy(status = "settled"))
         // The place is learned under the bank's own name too, so the next alert finds it either way.
-        if (learn) remember(name, category, ledger.name, d.upiId, note, alsoKey = d.title)
+        if (learn) remember(name, category, ledger.name, d.upiId, note, alsoKey = d.title, byHand = byHand)
         return id
     }
 
@@ -316,16 +331,18 @@ class MoneyRepository @Inject constructor(
      * Payments waiting in Review that were only guessed (no rule, no remembered place) are sorted again with
      * today's rules and list, so drafts from before an update or a new rule improve. Never books anything.
      */
-    suspend fun resortPending() {
+    suspend fun resortPending() = lock.withLock {
         val rules = dao.moneyRulesNow()
+        val ids = rules.map { it.id }.toSet()
         val memory = dao.rulesNow()
-        dao.pendingDraftsNow().filter { it.ruleId == null && it.confidence < 0.9 }.forEach { d ->
+        // A draft sorted by a rule that still exists, or by a remembered place, keeps its guess.
+        dao.pendingDraftsNow().filter { (it.ruleId == null || it.ruleId !in ids) && it.confidence < 0.9 }.forEach { d ->
             val p = BankSms.parse(d.raw) ?: return@forEach
             val exact = (p.upiId?.let { dao.rule(BankSms.payeeKey(it.substringBefore('@'))) }) ?: dao.rule(BankSms.payeeKey(p.name))
             val pay = SmartRules.Payment(p.name, p.upiId, p.paise, p.accountLast4, d.raw, d.direction)
             val g = MoneySorter.decide(rules, exact, memory, pay, d.reference != null)
-            if (g.category != d.category || g.title != d.title || g.ledger != d.ledger) {
-                dao.upsertDraft(d.copy(title = g.title, category = g.category, ledger = g.ledger, ruleId = g.ruleId))
+            if (g.category != d.category || g.title != d.title || g.ledger != d.ledger || g.ruleId != d.ruleId) {
+                dao.resortDraft(d.id, g.title, g.category, g.ledger, g.ruleId)
             }
         }
     }
@@ -334,7 +351,7 @@ class MoneyRepository @Inject constructor(
     suspend fun ruleOffer(title: String, upiId: String?): PayeeRuleEntity? {
         val keys = listOfNotNull(BankSms.payeeKey(title), upiId?.substringBefore('@')?.let(BankSms::payeeKey)).filter { it.isNotBlank() }
         val rules = dao.moneyRulesNow()
-        return keys.mapNotNull { dao.rule(it) }.firstOrNull { MerchantMemory.offersRule(it, rules) }
+        return keys.mapNotNull { dao.rule(it) }.firstOrNull { MerchantMemory.offersRule(it, keysOf(it).map { k -> k.key }, rules) }
     }
 
     /** All keys a place is remembered under (its name, UPI handle, the bank's name for it). */
@@ -346,7 +363,7 @@ class MoneyRepository @Inject constructor(
     /** "Make this a rule" accepted: a rule at the end of the list that files this place without asking. */
     suspend fun makeRule(place: PayeeRuleEntity): MoneyRuleEntity {
         val now = System.currentTimeMillis()
-        val r = SmartRules.fromPayee(place, newId(), (dao.moneyRulesNow().maxOfOrNull { it.position } ?: -1) + 1, now)
+        val r = SmartRules.fromPayee(place, keysOf(place).map { it.key }, newId(), (dao.moneyRulesNow().maxOfOrNull { it.position } ?: -1) + 1, now)
         dao.upsertMoneyRule(r)
         keysOf(place).forEach { dao.upsertRule(it.copy(ruleOffer = 2)) }
         log.log("rule.add", "rule", r.id, mapOf("from" to "offer"))
@@ -395,10 +412,10 @@ class MoneyRepository @Inject constructor(
      * handle too, so "9822104471@ybl" and "Sharma Kirana" land on the same rule. Keeps the
      * person's "always ask" choice and counts uses.
      */
-    private suspend fun remember(name: String, category: String, ledger: String, upiId: String? = null, note: String? = null, alsoKey: String? = null) {
+    private suspend fun remember(name: String, category: String, ledger: String, upiId: String? = null, note: String? = null, alsoKey: String? = null, byHand: Boolean = true) {
         val keys = listOfNotNull(BankSms.payeeKey(name), upiId?.substringBefore('@')?.let(BankSms::payeeKey), alsoKey?.let(BankSms::payeeKey))
             .filter { it.isNotBlank() }.distinct()
-        for (k in keys) dao.upsertRule(MerchantMemory.learn(dao.rule(k), k, name, category, ledger, note, System.currentTimeMillis()))
+        for (k in keys) dao.upsertRule(MerchantMemory.learn(dao.rule(k), k, name, category, ledger, note, System.currentTimeMillis(), byHand))
     }
 
     private suspend fun accountIgnores(last4: String?, at: Long): Boolean {

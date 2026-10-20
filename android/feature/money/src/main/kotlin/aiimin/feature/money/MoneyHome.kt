@@ -191,7 +191,7 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
             ) {
                 Column(Modifier.weight(1f)) {
                     Text("Needs you · ${d.pending.size} to review", style = Aiimin.type.bodyStrong)
-                    Text("From bank alerts on this phone. Nothing is booked until you look.", style = Aiimin.type.caption)
+                    Text("From bank alerts on this phone. None of these is booked until you look.", style = Aiimin.type.caption)
                 }
                 Spacer(Modifier.width(8.dp))
                 Icon(AppIcons.CaretRight, null, tint = c.textFaint, modifier = Modifier.size(16.dp))

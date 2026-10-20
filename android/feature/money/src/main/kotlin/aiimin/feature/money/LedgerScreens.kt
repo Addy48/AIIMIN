@@ -746,7 +746,7 @@ fun PayeeMemoryScreen(vm: PayeeMemoryViewModel = hiltViewModel()) {
             Spacer(Modifier.height(12.dp))
             AppButton("Save", { vm.save(r.copy(category = cat, ledger = ledger, alwaysAsk = ask, label = label.trim()), keys); editing = null; toaster.show("Saved") }, Modifier.fillMaxWidth())
             // Phase 2: any remembered place can become a rule that books it without asking.
-            if (!ask && !aiimin.core.data.money.SmartRules.covers(moneyRules, r)) {
+            if (!ask && !aiimin.core.data.money.SmartRules.covers(moneyRules, keys)) {
                 Spacer(Modifier.height(8.dp))
                 AppButton("Make this a rule", { vm.makeRule(r.copy(category = cat, ledger = ledger, label = label.trim())); editing = null; toaster.show("Rule made") }, Modifier.fillMaxWidth(), kind = ButtonKind.SECONDARY)
             }

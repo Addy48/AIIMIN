@@ -93,8 +93,8 @@ fun MoneyInboxScreen(vm: InboxViewModel = hiltViewModel()) {
 
     fun ledgerOf(d: TxnDraftEntity) = books[d.id] ?: Ledger.entries.firstOrNull { it.name == d.ledger } ?: Ledger.PERSONAL
     fun placeOf(d: TxnDraftEntity) = names[d.id]?.trim()?.ifEmpty { null } ?: d.title
-    suspend fun confirm(d: TxnDraftEntity) =
-        vm.settle(d.id, cats[d.id] ?: d.category, ledgerOf(d), placeOf(d), keep[d.id] ?: true, notes[d.id], d.upiId)
+    suspend fun confirm(d: TxnDraftEntity, byHand: Boolean) =
+        vm.settle(d.id, cats[d.id] ?: d.category, ledgerOf(d), placeOf(d), keep[d.id] ?: true, notes[d.id], d.upiId, byHand)
 
     Column(Modifier.fillMaxSize().background(c.base)) {
         TopBar(if (pending.isEmpty()) "Review" else "Review · ${pending.size}", onBack = { nav.back() }) {
@@ -142,11 +142,15 @@ fun MoneyInboxScreen(vm: InboxViewModel = hiltViewModel()) {
                         rememberIt = keep[d.id] ?: true, onRemember = { keep = keep + (d.id to it) },
                         onNotPayment = { open = null; vm.dismiss(d.id); toaster.show("Removed from review") },
                         onConfirm = {
-                            scope.launch {
-                                val place = placeOf(d)
-                                confirm(d)
-                                open = null
-                                toaster.show("Confirmed ${Money.format(d.amountPaise)} · $place")
+                            if (!busy) {
+                                busy = true
+                                scope.launch {
+                                    try {
+                                        val place = placeOf(d)
+                                        if (confirm(d, byHand = true) != null) toaster.show("Confirmed ${Money.format(d.amountPaise)} · $place")
+                                        open = null
+                                    } finally { busy = false }
+                                }
                             }
                         },
                     )
@@ -163,11 +167,12 @@ fun MoneyInboxScreen(vm: InboxViewModel = hiltViewModel()) {
                         if (busy) return@AppButton
                         busy = true
                         scope.launch {
-                            val all = pending.toList()
-                            all.forEach { confirm(it) }
-                            open = null
-                            busy = false
-                            toaster.show("Confirmed ${all.size} payments")
+                            try {
+                                // Already-confirmed rows book nothing a second time (settle checks the status).
+                                val n = pending.toList().count { confirm(it, byHand = false) != null }
+                                open = null
+                                toaster.show("Confirmed $n payments")
+                            } finally { busy = false }
                         }
                     },
                     Modifier.fillMaxWidth(), icon = AppIcons.Check, enabled = !busy,

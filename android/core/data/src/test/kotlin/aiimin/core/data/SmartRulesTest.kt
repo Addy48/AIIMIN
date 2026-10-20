@@ -75,15 +75,37 @@ class SmartRulesTest {
         assertThat(MoneySorter.decide(emptyList(), null, emptyList(), pay("Acme Pvt Ltd", 50000, direction = "in"), true).category).isEqualTo("Other income")
     }
 
-    @Test fun `payee memory matches partial names`() {
-        val swiggy = PayeeRuleEntity("swiggy", "Food", "PERSONAL", 1L, label = "Swiggy")
-        val d = MoneySorter.decide(emptyList(), null, listOf(swiggy), pay("Swiggy Instamart", 120), true)
+    @Test fun `payee memory matches partial names, weaker than the list and without its name or ledger`() {
+        val kamalam = PayeeRuleEntity("kamalam", "Food", "HOUSEHOLD", 1L, label = "Kamalam")
+        val d = MoneySorter.decide(emptyList(), null, listOf(kamalam), pay("Kamalam Andheri West", 120), true)
         assertThat(d.category).isEqualTo("Food")
         assertThat(d.source).isEqualTo(MoneySorter.Source.MEMORY)
-        assertThat(d.title).isEqualTo("Swiggy Instamart")
+        assertThat(d.title).isEqualTo("Kamalam Andheri West")
+        assertThat(d.ledger).isEqualTo("PERSONAL")
+        assertThat(d.confidence).isLessThan(0.9)
+        // the list knows Instamart: a remembered "swiggy" does not override it
+        val swiggy = PayeeRuleEntity("swiggy", "Food", "PERSONAL", 1L, label = "Swiggy")
+        assertThat(MoneySorter.decide(emptyList(), null, listOf(swiggy), pay("Swiggy Instamart", 120), true).category).isEqualTo("Grocery")
+        // only forward: a longer memory never stands for a shorter name
+        val longer = PayeeRuleEntity("kamalamandheri", "Fun", "PERSONAL", 1L, label = "Kamalam Andheri")
+        assertThat(MoneySorter.decide(emptyList(), null, listOf(longer), pay("Kamalam", 120), true).source).isNotEqualTo(MoneySorter.Source.MEMORY)
         // too short to trust as a part
         val ola = PayeeRuleEntity("ola", "Transport", "PERSONAL", 1L, label = "Ola")
         assertThat(MoneySorter.decide(emptyList(), null, listOf(ola), pay("Olam Agro", 120), true).source).isNotEqualTo(MoneySorter.Source.MEMORY)
+    }
+
+    @Test fun `a rule name matches whole words, or the start of a joined name, never the middle of a word`() {
+        assertThat(SmartRules.first(listOf(rule(contains = "ola", category = "Transport")), pay("Bholanath Sweets", 100))).isNull()
+        assertThat(SmartRules.first(listOf(rule(contains = "mom", category = "Family")), pay("Momos Point", 100))).isNull()
+        assertThat(SmartRules.first(listOf(rule(contains = "ola", category = "Transport")), pay("Ola", 100))).isNotNull()
+        assertThat(SmartRules.first(listOf(rule(contains = "uber, rapido", category = "Transport")), pay("Rapido Bike Taxi", 100))).isNotNull()
+    }
+
+    @Test fun `always ask stops a rule from booking, but the rule still fills it in`() {
+        val ask = PayeeRuleEntity("swiggy", "Food", "PERSONAL", 1L, label = "Swiggy", alwaysAsk = true)
+        val d = MoneySorter.decide(listOf(swiggyUnder500), ask, emptyList(), pay("Swiggy", 300), true)
+        assertThat(d.category).isEqualTo("Food")
+        assertThat(d.autoBook).isFalse()
     }
 
     @Test fun `always ask keeps the name but never the category, even from a partial match`() {
@@ -96,26 +118,33 @@ class SmartRulesTest {
     @Test fun `three hand filings with one category offer the rule, once`() {
         var r: PayeeRuleEntity? = null
         repeat(2) { r = MerchantMemory.learn(r, "sanchy", "Sanchy", "Grocery", "PERSONAL", "Milk", 1L) }
-        assertThat(MerchantMemory.offersRule(r!!, emptyList())).isFalse()
+        assertThat(MerchantMemory.offersRule(r!!, listOf("sanchy"), emptyList())).isFalse()
+        // Confirm all teaches the place but does not count as filing it by hand
+        r = MerchantMemory.learn(r, "sanchy", "Sanchy", "Grocery", "PERSONAL", null, 1L, byHand = false)
+        assertThat(r!!.sameCount).isEqualTo(2)
         r = MerchantMemory.learn(r, "sanchy", "Sanchy", "Grocery", "PERSONAL", null, 1L)
         assertThat(r!!.sameCount).isEqualTo(3)
-        assertThat(MerchantMemory.offersRule(r!!, emptyList())).isTrue()
+        assertThat(MerchantMemory.offersRule(r!!, listOf("sanchy"), emptyList())).isTrue()
         // a change of category starts the count again
         assertThat(MerchantMemory.learn(r, "sanchy", "Sanchy", "Food", "PERSONAL", null, 1L).sameCount).isEqualTo(1)
-        // "Not now" or an existing rule stops the offer
-        assertThat(MerchantMemory.offersRule(r!!.copy(ruleOffer = 1), emptyList())).isFalse()
-        assertThat(MerchantMemory.offersRule(r!!, listOf(rule(contains = "sanchy", category = "Grocery")))).isFalse()
+        // "Not now" or a rule that books it already stops the offer; a rule that only fills in does not
+        assertThat(MerchantMemory.offersRule(r!!.copy(ruleOffer = 1), listOf("sanchy"), emptyList())).isFalse()
+        assertThat(MerchantMemory.offersRule(r!!, listOf("sanchy"), listOf(rule(contains = "sanchy", category = "Grocery")))).isFalse()
+        assertThat(MerchantMemory.offersRule(r!!, listOf("sanchy"), listOf(rule(contains = "sanchy", category = "Grocery", autoBook = false)))).isTrue()
     }
 
-    @Test fun `accepting the offer makes a rule that files the payee by itself`() {
+    @Test fun `accepting the offer makes a rule that knows every name of the place`() {
+        // The person named it Sanchy; the bank calls it SANCHAY KIRANA and the handle is sanchaykirana@ybl.
         val r = PayeeRuleEntity("sanchy", "Grocery", "PERSONAL", 1L, label = "Sanchy", sameCount = 3)
-        val made = SmartRules.fromPayee(r, id = "n", position = 4, now = 9L)
-        assertThat(made.contains).isEqualTo("sanchy")
+        val made = SmartRules.fromPayee(r, listOf("sanchy", "sanchaykirana"), id = "n", position = 4, now = 9L)
         assertThat(made.category).isEqualTo("Grocery")
         assertThat(made.position).isEqualTo(4)
         assertThat(made.autoBook).isTrue()
-        assertThat(SmartRules.first(listOf(made), pay("Sanchy Enterprises", 20))).isNotNull()
-        assertThat(SmartRules.describe(made)).isEqualTo("Name has “sanchy” → Grocery · Personal")
+        assertThat(made.name).isEqualTo("Sanchy")
+        assertThat(SmartRules.first(listOf(made), pay("SANCHAY KIRANA", 20, upi = "sanchaykirana@ybl"))).isNotNull()
+        assertThat(SmartRules.first(listOf(made), pay("Sanchy", 20))).isNotNull()
+        assertThat(SmartRules.covers(listOf(made), listOf("sanchaykirana"))).isTrue()
+        assertThat(SmartRules.describe(made)).isEqualTo("Name has “sanchy, sanchaykirana” → Grocery · Personal")
         assertThat(SmartRules.describe(swiggyUnder500)).isEqualTo("Name has “swiggy” · under ₹500 → Food · Personal")
     }
 

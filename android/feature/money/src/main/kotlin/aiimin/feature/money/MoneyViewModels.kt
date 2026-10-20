@@ -120,9 +120,9 @@ class InboxViewModel @Inject constructor(private val money: MoneyRepository, set
 
     init { viewModelScope.launch { runCatching { money.resortPending() } } }
 
-    suspend fun settle(id: String, category: String, ledger: Ledger, title: String, learn: Boolean, note: String? = null, upiId: String? = null): String? {
-        val txn = money.settle(id, category, ledger, title, learn, note)
-        if (learn && offer.value == null) offer.value = money.ruleOffer(title, upiId)
+    suspend fun settle(id: String, category: String, ledger: Ledger, title: String, learn: Boolean, note: String? = null, upiId: String? = null, byHand: Boolean = true): String? {
+        val txn = money.settle(id, category, ledger, title, learn, note, byHand)
+        if (txn != null && learn && byHand && offer.value == null) offer.value = money.ruleOffer(title, upiId)
         return txn
     }
 

@@ -262,6 +262,10 @@ interface MoneyDao {
     @Query("SELECT * FROM payee_rules")
     suspend fun rulesNow(): List<PayeeRuleEntity>
 
+    /** A new guess for a draft that is still pending; a draft settled or dismissed meanwhile is left alone. */
+    @Query("UPDATE txn_drafts SET title = :title, category = :category, ledger = :ledger, ruleId = :ruleId WHERE id = :id AND status = 'pending'")
+    suspend fun resortDraft(id: String, title: String, category: String, ledger: String, ruleId: String?)
+
     /** Smart rules (Phase 2), in the order they run. */
     @Query("SELECT * FROM money_rules ORDER BY position, createdAt")
     fun moneyRules(): Flow<List<MoneyRuleEntity>>
