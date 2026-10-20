@@ -97,16 +97,17 @@ class NotificationRepository @Inject constructor(
     suspend fun snooze(key: String, minutes: Int) {
         NotificationManagerCompat.from(context).cancel(key.hashCode())
         val until = System.currentTimeMillis() + minutes * 60_000L
-        snoozes.edit().putLong(key, until).apply()
-        NotifyAlarms.arm(context, until)
+        snoozes.edit().putLong(key, until).commit()
+        // A run arms the earliest of everything, so the snooze never replaces a nearer reminder.
+        run()
     }
 
     fun cancel(key: String) = NotificationManagerCompat.from(context).cancel(key.hashCode())
 
     /** The category to ask "Stop these?" about (PRD 2.1), from the last 30 days. */
     val stopAsk: kotlinx.coroutines.flow.Flow<Category?> = kotlinx.coroutines.flow.combine(
-        dao.logSinceFlow(java.time.LocalDate.now().minusDays(30).toString()), settings.settings,
-    ) { log, s -> NudgeBudget.stopAsk(outcomes(log, System.currentTimeMillis()), s.stopAnswered.mapNotNull(::categoryOf).toSet() + s.stoppedCategories.mapNotNull(::categoryOf)) }
+        dao.logSinceFlow("0000"), settings.settings, clock.tick,
+    ) { all, s, _ -> val log = all.filter { it.day >= LocalDate.now().minusDays(30).toString() }; NudgeBudget.stopAsk(outcomes(log, System.currentTimeMillis()), s.stopAnswered.mapNotNull(::categoryOf).toSet() + s.stoppedCategories.mapNotNull(::categoryOf)) }
 
     suspend fun answerStop(c: Category, stop: Boolean) = settings.update {
         it.copy(
@@ -150,7 +151,9 @@ class NotificationRepository @Inject constructor(
         ensureChannels(context)
         collapseRepeats()
         val s = settings.current()
-        val today = clock.today()
+        // Times are wall-clock: the calendar date, even when a late day end keeps the logical day on yesterday.
+        val today = LocalDate.now(clock.zone)
+        val logicalDay = clock.today()
         val nowMs = System.currentTimeMillis()
         val now = minuteOf(nowMs)
         val log = dao.logSince(today.minusDays(30).toString())
@@ -159,7 +162,7 @@ class NotificationRepository @Inject constructor(
         val historyDays = log.minOfOrNull { it.day }?.let { ChronoUnit.DAYS.between(LocalDate.parse(it), today).toInt() } ?: 0
         fun best(rule: String, default: Int, window: IntRange) = NotifyTiming.bestMinute(opensBy[rule].orEmpty(), historyDays, default, window)
 
-        val snap = snapshot(s, today, now, ::best)
+        val snap = runCatching { snapshot(s, today, logicalDay, now, ::best) }.getOrElse { NotifySnapshot(today, now, 0, briefOn = false, nudgesOn = false) }
         val cands = NotifyRules.candidates(snap)
         val delivered = dao.existingKeys(cands.map { it.key }).toSet()
         val fresh = cands.filter { it.key !in delivered }
@@ -169,7 +172,7 @@ class NotificationRepository @Inject constructor(
             allowed = permitted(), channelsOff = channelsOff(),
             stopped = s.stoppedCategories.mapNotNull(::categoryOf).toSet(),
             nudgesShownToday = nudgesToday.size,
-            allowance = NudgeBudget.allowance(log.count { it.kind == Kind.NUDGE.name && it.openedAt != null }, s.notifyCeiling),
+            allowance = NudgeBudget.allowance(dao.openedNudges(), s.notifyCeiling),
             lastNudgeMinute = nudgesToday.maxOfOrNull { it.shownMinute },
         )
         val decisions = NotifyPolicy.decide(fresh, ctx)
@@ -194,19 +197,19 @@ class NotificationRepository @Inject constructor(
         }
 
         // The evening wrap-up: what waited today, in one notice (2.1 "Bundling"), from day 2.
-        val wrapAt = (if (s.quiet.enabled) s.quiet.fromMin - 30 else 21 * 60).coerceIn(18 * 60, 23 * 60)
+        val wrapAt = if (s.quiet.enabled && s.quiet.fromMin >= 18 * 60 + 30) s.quiet.fromMin - 30 else if (s.quiet.enabled && s.quiet.fromMin < 18 * 60 + 30) 23 * 60 else 21 * 60 + 30
         val installDays = s.installDay?.let { runCatching { ChronoUnit.DAYS.between(LocalDate.parse(it), today).toInt() }.getOrNull() } ?: 0
         if (s.notifyWrapUp && installDays >= 1) {
             val foldedKeys = (dao.logSince(today.toString()).filter { it.day == today.toString() && it.delivery == "DIGEST" }.map { it.key } +
                 cands.filter { it.rule == "money.review" }.map { it.key }).distinct()
             if (now >= wrapAt) {
                 val folded = foldedKeys.mapNotNull { dao.byKey(it) }.filter { !it.dismissed }
-                val wrap = NotifyRules.wrapUp(today, wrapAt, folded.map { Candidate("folded", it.ruleKey, Kind.INFO, Category.DIGEST, now, 0, it.title, it.body, it.route) }, s.playful)
+                val wrap = NotifyRules.wrapUp(today, wrapAt, folded.map { Candidate("folded", it.ruleKey, Kind.INFO, if (signedAiimin(it.ruleKey, it.route)) Category.MONEY else Category.DIGEST, now, 0, it.title, it.body, it.route, sensitive = signedAiimin(it.ruleKey, it.route)) }, s.playful)
                 if (wrap != null && dao.byKey(wrap.key) == null) {
                     val d = NotifyPolicy.decide(listOf(wrap), ctx).single()
                     dao.insertIfNew(NotificationEntity(newId(), wrap.key, wrap.title, wrap.body, nowMs, wrap.route, null, 0))
                     dao.log(NotifyLogEntity(wrap.key, wrap.rule, wrap.category.name, wrap.kind.name, if (d.delivery == Delivery.POST_NOW) "POST" else "IN_APP", today.toString(), nowMs, now))
-                    if (d.delivery == Delivery.POST_NOW) post(wrap, d.silent, s.lockDetails, raahiArt, lines = folded.map { it.title })
+                    if (d.delivery == Delivery.POST_NOW) post(wrap, d.silent, s.lockDetails, raahiArt && !wrap.sensitive, lines = folded.map { it.title })
                 }
             } else if (foldedKeys.isNotEmpty() || cands.any { it.kind == Kind.NUDGE }) wake(wrapAt)
         }
@@ -216,22 +219,32 @@ class NotificationRepository @Inject constructor(
             val until = v as? Long ?: return@forEach
             if (until <= nowMs) {
                 snoozes.edit().remove(key).apply()
-                dao.byKey(key)?.let { row -> cands.firstOrNull { it.key == key }?.let { post(it, false, s.lockDetails, raahiArt) } ?: postRow(row, s.lockDetails, raahiArt) }
+                val row = dao.byKey(key)
+                val taskOpen = key.startsWith("task:") && tasks.get(key.split(':')[1])?.done == false
+                val c = cands.firstOrNull { it.key == key }
+                    ?: row?.takeIf { taskOpen }?.let { Candidate("task.soon", it.ruleKey, Kind.PROMISE, Category.REMINDERS, now, it.priority, it.title, it.body, it.route, it.routeArg, listOf(aiimin.core.engine.notify.NotifyAction("done", "Done"), aiimin.core.engine.notify.NotifyAction("snooze", "Snooze 1 h"))) }
+                if (row != null && !row.dismissed && c != null) {
+                    val d = NotifyPolicy.decide(listOf(c.copy(atMinute = now)), ctx).single()
+                    if (d.delivery == Delivery.POST_NOW) post(c, d.silent, s.lockDetails, raahiArt)
+                }
             } else nextAlarm = minOf(nextAlarm ?: until, until)
         }
         // One exact alarm for the next due minute (fixes NF1: events no longer wait for the 15-minute worker).
-        nextAlarm?.let { NotifyAlarms.arm(context, it) } ?: NotifyAlarms.cancel(context)
+        // With nothing left today, wake a minute after midnight so tomorrow's early reminders are armed in time.
+        val midnight = today.plusDays(1).atStartOfDay(clock.zone).plusMinutes(1).toInstant().toEpochMilli()
+        NotifyAlarms.arm(context, nextAlarm ?: midnight)
     }
 
-    private suspend fun snapshot(s: aiimin.core.data.settings.AppSettings, today: LocalDate, now: Int, best: (String, Int, IntRange) -> Int): NotifySnapshot {
+    private suspend fun snapshot(s: aiimin.core.data.settings.AppSettings, today: LocalDate, logicalDay: LocalDate, now: Int, best: (String, Int, IntRange) -> Int): NotifySnapshot {
         val dayStart = today.atStartOfDay(clock.zone).toInstant().toEpochMilli()
         val events = calendar.betweenNow(dayStart, dayStart + 24 * 3_600_000L).filter { !it.allDay && it.startAt >= dayStart && it.startAt < dayStart + 24 * 3_600_000L }
             .map { EventSoon(it.id, it.title, minuteOf(it.startAt)) }
-        val timed = tasks.forDayNow(today.toString()).filter { !it.done && it.time != null && it.assignee == null }
+        val dayTasks = (tasks.forDayNow(today.toString()) + if (logicalDay != today) tasks.forDayNow(logicalDay.toString()) else emptyList()).distinctBy { it.id }
+        val timed = dayTasks.filter { !it.done && it.time != null && it.assignee == null }
             .mapNotNull { t -> runCatching { LocalTime.parse(t.time) }.getOrNull()?.let { TaskTimed(t.id, t.title, it.hour * 60 + it.minute) } }
-        val bills = ledger.billsNow().filter { it.status == "CONFIRMED" && it.remind && !it.autopay && LocalDate.parse(it.nextDue) == today.plusDays(1) }
+        val bills = ledger.billsNow().filter { it.status == "CONFIRMED" && it.remind && !it.autopay && runCatching { LocalDate.parse(it.nextDue) }.getOrNull() == today.plusDays(1) }
             .map { BillTomorrow(it.id, it.title, Money.whole(it.amountPaise)) }
-        val docs = vault.withExpiry().map { DocExpiry(it.id, it.title, ChronoUnit.DAYS.between(today, LocalDate.parse(it.expires!!))) }
+        val docs = vault.withExpiry().mapNotNull { d -> runCatching { LocalDate.parse(d.expires!!) }.getOrNull()?.let { DocExpiry(d.id, d.title, ChronoUnit.DAYS.between(today, it), d.expires!!) } }
         val docCount = vault.allNow().count { !it.deleted }
         val last = context.getSharedPreferences(aiimin.core.data.vault.VaultBackupRepository.PREFS, Context.MODE_PRIVATE).getLong("last_at", 0L)
         val backupDays = if (last == 0L) null else ChronoUnit.DAYS.between(java.time.Instant.ofEpochMilli(last).atZone(clock.zone).toLocalDate(), today)
@@ -246,6 +259,7 @@ class NotificationRepository @Inject constructor(
             today = today, nowMinute = now, installDays = ChronoUnit.DAYS.between(install, today).toInt(),
             firstName = s.name.trim().split(" ").firstOrNull().orEmpty(), playful = s.playful,
             events = events, timedTasks = timed, bills = bills, docs = docs, docCount = docCount, lastBackupDays = backupDays,
+            lastBackupDay = if (last == 0L) "never" else java.time.Instant.ofEpochMilli(last).atZone(clock.zone).toLocalDate().toString(),
             minimumsLeft = if (view?.today?.paused == true) emptyList() else left,
             paused = view?.today?.paused == true,
             lightDay = view?.battery?.state == BatteryState.LOW,
@@ -281,7 +295,7 @@ class NotificationRepository @Inject constructor(
         val nowMs = System.currentTimeMillis()
         if (dao.insertIfNew(NotificationEntity(newId(), key, title, body, nowMs, route, null, 1)) == -1L) return
         val s = settings.current()
-        val c = Candidate("announce", key, Kind.PROMISE, if (signedAiimin(key, route)) Category.MONEY else Category.INSIGHTS, minuteOf(nowMs), 1, title, body, route)
+        val c = Candidate("announce", key, Kind.PROMISE, if (signedAiimin(key, route)) Category.MONEY else Category.INSIGHTS, minuteOf(nowMs), 1, title, body, route, sensitive = signedAiimin(key, route))
         val d = NotifyPolicy.decide(listOf(c), PolicyContext(minuteOf(nowMs), s.quiet.fromMin, s.quiet.toMin, s.quiet.enabled, permitted(), channelsOff())).single()
         dao.log(NotifyLogEntity(key, c.rule, c.category.name, c.kind.name, if (d.delivery == Delivery.POST_NOW) "POST" else "IN_APP", clock.today().toString(), nowMs, minuteOf(nowMs)))
         if (d.delivery == Delivery.POST_NOW) post(c, d.silent, s.lockDetails, aiimin.core.engine.raahi.RaahiMode.of(s.raahiMode) != aiimin.core.engine.raahi.RaahiMode.OFF)
@@ -293,12 +307,12 @@ class NotificationRepository @Inject constructor(
         val nowMs = System.currentTimeMillis()
         val copy = NotifyCopy.pick("focus.done", clock.today().toEpochDay(), mapOf("min" to "$minutes", "label" to label), s.playful)
         val c = Candidate("focus.done", "focus:$nowMs", Kind.PROMISE, Category.FOCUS, minuteOf(nowMs), 2, copy.title, copy.body, "focus")
+        // Like every notice, it is also an inbox row, so a muted channel loses nothing.
+        dao.insertIfNew(NotificationEntity(newId(), c.key, c.title, c.body, nowMs, c.route, null, c.priority))
         val d = NotifyPolicy.decide(listOf(c), PolicyContext(minuteOf(nowMs), s.quiet.fromMin, s.quiet.toMin, s.quiet.enabled, permitted(), channelsOff())).single()
+        dao.log(NotifyLogEntity(c.key, c.rule, c.category.name, c.kind.name, if (d.delivery == Delivery.POST_NOW) "POST" else "IN_APP", clock.today().toString(), nowMs, minuteOf(nowMs)))
         if (d.delivery == Delivery.POST_NOW) post(c, d.silent, s.lockDetails, aiimin.core.engine.raahi.RaahiMode.of(s.raahiMode) != aiimin.core.engine.raahi.RaahiMode.OFF, notifyId = 7001)
     }
-
-    private fun postRow(n: NotificationEntity, lockDetails: Boolean, raahiArt: Boolean) =
-        post(Candidate("repost", n.ruleKey, Kind.PROMISE, if (signedAiimin(n.ruleKey, n.route)) Category.MONEY else Category.REMINDERS, 0, n.priority, n.title, n.body, n.route, n.routeArg, sensitive = signedAiimin(n.ruleKey, n.route)), false, lockDetails, raahiArt)
 
     private fun post(c: Candidate, silent: Boolean, lockDetails: Boolean, raahiArt: Boolean, lines: List<String> = emptyList(), notifyId: Int = c.key.hashCode()) {
         if (!permitted()) return
@@ -328,7 +342,8 @@ class NotificationRepository @Inject constructor(
             .setCategory(if (c.kind == Kind.PROMISE && c.category == Category.REMINDERS) NotificationCompat.CATEGORY_REMINDER else NotificationCompat.CATEGORY_RECOMMENDATION)
             .setPriority(if (c.priority >= 2) NotificationCompat.PRIORITY_HIGH else NotificationCompat.PRIORITY_DEFAULT)
             // Lock screen: private by default for money and documents; no amounts or names (2.1).
-            .setVisibility(if (c.sensitive && !lockDetails) NotificationCompat.VISIBILITY_PRIVATE else NotificationCompat.VISIBILITY_PUBLIC)
+            // Everything else keeps Android's default, so the person's own "hide sensitive content" still applies.
+            .apply { if (c.sensitive && !lockDetails) setVisibility(NotificationCompat.VISIBILITY_PRIVATE) }
         if (c.sensitive && !lockDetails) {
             b.setPublicVersion(
                 NotificationCompat.Builder(context, c.category.channelId).setSmallIcon(R.drawable.ic_stat_aiimin)

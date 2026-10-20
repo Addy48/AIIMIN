@@ -5,7 +5,8 @@ import java.time.LocalDate
 data class EventSoon(val id: String, val title: String, val startMinute: Int)
 data class TaskTimed(val id: String, val title: String, val minute: Int)
 data class BillTomorrow(val id: String, val title: String, val amountText: String)
-data class DocExpiry(val id: String, val title: String, val daysLeft: Long)
+/** [expires] is part of the key, so a renewed document (same id, new date) is reminded again. */
+data class DocExpiry(val id: String, val title: String, val daysLeft: Long, val expires: String = "")
 
 /** Everything the rules read, built once per run by the data layer. Plain data, no Android. */
 data class NotifySnapshot(
@@ -20,8 +21,9 @@ data class NotifySnapshot(
     val bills: List<BillTomorrow> = emptyList(),
     val docs: List<DocExpiry> = emptyList(),
     val docCount: Int = 0,
-    /** Days since the last vault backup; null = never. */
+    /** Days since the last vault backup; null = never. [lastBackupDay] keys the nudge, so each lapse nudges again. */
     val lastBackupDays: Long? = null,
+    val lastBackupDay: String = "never",
     val minimumsLeft: List<String> = emptyList(),
     val paused: Boolean = false,
     val lightDay: Boolean = false,
@@ -90,7 +92,7 @@ object NotifyRules {
                 }
                 val c = copy(rule, vars)
                 val kind = if (d.daysLeft >= 0 && step <= 30) Kind.PROMISE else Kind.INFO
-                add(Candidate(rule, "doc:${d.id}:$step", kind, Category.VAULT, s.docMinute, if (step <= 30) 2 else 1, c.title, c.body, "doc", d.id,
+                add(Candidate(rule, "doc:${d.id}:${d.expires}:$step", kind, Category.VAULT, s.docMinute, if (step <= 30) 2 else 1, c.title, c.body, "doc", d.id,
                     why = "A document in your vault has an expiry date.", sensitive = true))
             }
         }
@@ -111,7 +113,7 @@ object NotifyRules {
                 val step = when { s.lastBackupDays == null -> "never"; s.lastBackupDays >= 30 -> "30"; s.lastBackupDays >= 14 -> "14"; else -> null }
                 if (step != null) {
                     val c = if (step == "never") copy("vault.backup.never") else copy("vault.backup", mapOf("days" to "${s.lastBackupDays}"))
-                    add(Candidate("vault.backup", "backup:$step", Kind.NUDGE, Category.VAULT, s.docMinute, 1, c.title, c.body, "backup", why = "Your documents have no recent backup."))
+                    add(Candidate("vault.backup", "backup:${s.lastBackupDay}:$step", Kind.NUDGE, Category.VAULT, s.docMinute, 1, c.title, c.body, "backup", why = "Your documents have no recent backup."))
                 }
             }
             s.budgetShare?.let { share ->
@@ -150,6 +152,8 @@ object NotifyRules {
     fun wrapUp(today: LocalDate, minute: Int, folded: List<Candidate>, playful: Boolean): Candidate? {
         if (folded.isEmpty()) return null
         val c = NotifyCopy.pick("digest.wrapup", today.toEpochDay(), mapOf("n" to "${folded.size} ${if (folded.size == 1) "thing" else "things"}"), playful)
-        return Candidate("digest.wrapup", "wrap:$today", Kind.PROMISE, Category.DIGEST, minute, 1, c.title, c.body, "notifications", why = "Today's notes that waited, in one place.")
+        // Carrying a money or document line makes the whole wrap-up private on the lock screen.
+        return Candidate("digest.wrapup", "wrap:$today", Kind.PROMISE, Category.DIGEST, minute, 1, c.title, c.body, "notifications",
+            why = "Today's notes that waited, in one place.", sensitive = folded.any { it.sensitive || it.category == Category.MONEY || it.category == Category.VAULT })
     }
 }

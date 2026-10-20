@@ -469,6 +469,10 @@ interface NotificationDao {
     @Query("SELECT * FROM notify_log WHERE day >= :from ORDER BY shownAt")
     suspend fun logSince(from: String): List<NotifyLogEntity>
 
+    /** Opened nudges ever: the budget earns from all of them (PRD 2.1, 30.A). */
+    @Query("SELECT COUNT(*) FROM notify_log WHERE kind = 'NUDGE' AND openedAt IS NOT NULL")
+    suspend fun openedNudges(): Int
+
     @Query("SELECT * FROM notify_log WHERE day >= :from ORDER BY shownAt")
     fun logSinceFlow(from: String): Flow<List<NotifyLogEntity>>
 }

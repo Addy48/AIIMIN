@@ -170,6 +170,22 @@ class NotifyRulesTest {
         assertEquals("1 thing to look at when you have a minute.", NotifyRules.wrapUp(day, 21 * 60, listOf(c), false)!!.body)
     }
 
+    @Test fun aRenewedDocumentOrALaterBackupLapseIsRemindedAgain() {
+        val old = NotifyRules.candidates(snap { copy(docs = listOf(DocExpiry("d", "Passport", 7, "2026-10-28"))) }).first { it.routeArg == "d" }.key
+        val renewed = NotifyRules.candidates(snap { copy(docs = listOf(DocExpiry("d", "Passport", 7, "2036-10-28"))) }).first { it.routeArg == "d" }.key
+        assertNotEquals(old, renewed)
+        val a = NotifyRules.candidates(snap { copy(docCount = 1, lastBackupDays = 15, lastBackupDay = "2026-10-06") }).first { it.rule == "vault.backup" }.key
+        val b = NotifyRules.candidates(snap { copy(docCount = 1, lastBackupDays = 15, lastBackupDay = "2026-12-01") }).first { it.rule == "vault.backup" }.key
+        assertNotEquals(a, b)
+    }
+
+    @Test fun aWrapUpCarryingMoneyIsPrivate() {
+        val money = Candidate("x", "budget:1", Kind.NUDGE, Category.MONEY, 0, 1, "80% of the month plan used", "b", "money")
+        val day = Candidate("y", "light:1", Kind.NUDGE, Category.DAY, 0, 1, "A lighter day", "b", "today")
+        assertTrue(NotifyRules.wrapUp(this.day, 1290, listOf(day, money), false)!!.sensitive)
+        assertFalse(NotifyRules.wrapUp(this.day, 1290, listOf(day), false)!!.sensitive)
+    }
+
     @Test fun everyRuleLineIsFreeOfGuiltWords() {
         val all = NotifyRules.candidates(snap(now = 480) {
             copy(installDays = 9, events = listOf(EventSoon("e", "Standup", 630)), timedTasks = listOf(TaskTimed("t", "Call", 700), TaskTimed("u", "Old", 400)),
