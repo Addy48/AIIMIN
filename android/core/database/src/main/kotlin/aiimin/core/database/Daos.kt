@@ -649,7 +649,7 @@ interface LedgerDao {
 
     /** Every masked account number bank alerts carried, with the alert text when kept (owner, 20 Oct). */
     @Query(
-        "SELECT account4, raw, detectedAt AS at FROM txn_drafts WHERE account4 IS NOT NULL " +
+        "SELECT account4, raw, detectedAt AS at FROM txn_drafts WHERE account4 IS NOT NULL AND status = 'pending' " +
             "UNION ALL SELECT account4, NULL AS raw, at FROM txns WHERE account4 IS NOT NULL AND source IN ('sms', 'notification', 'paste') AND deleted = 0",
     )
     suspend fun seenAccounts(): List<SeenAccountRow>

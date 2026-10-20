@@ -143,7 +143,8 @@ fun Dock(items: List<DockItem>, onPlus: () -> Unit, onPlusLong: () -> Unit, modi
     Column(modifier.fillMaxWidth().background(c.base)) {
         Hairline()
         Row(
-            Modifier.fillMaxWidth().navigationBarsPadding().height(72.dp).padding(horizontal = 4.dp),
+            // At least 72 dp; grows at large text so the labels never clip (Part 18, 2.0x).
+            Modifier.fillMaxWidth().navigationBarsPadding().heightIn(min = 72.dp).padding(horizontal = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             val half = items.size / 2
@@ -190,11 +191,11 @@ private fun RowScope.DockButton(item: DockItem) {
             .padding(vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        // Part 26.5: the selected icon fills and its label fades in over 160 ms (cross-fades; opacity only).
+        val fill by androidx.compose.animation.core.animateFloatAsState(
+            if (item.selected) 1f else 0f, Motion.fade(LocalReduceMotion.current, Motion.quick()), label = "tabFill",
+        )
         Box {
-            // Part 26.5: the selected icon fills over 160 ms (outline and fill cross-fade; opacity only).
-            val fill by androidx.compose.animation.core.animateFloatAsState(
-                if (item.selected) 1f else 0f, Motion.fade(LocalReduceMotion.current, Motion.quick()), label = "tabFill",
-            )
             Icon(item.icon, null, tint = color, modifier = Modifier.size(25.dp).graphicsLayer { alpha = 1f - fill })
             Icon(item.iconFill, null, tint = color, modifier = Modifier.size(25.dp).graphicsLayer { alpha = fill })
             if (item.count > 0) {
@@ -205,7 +206,11 @@ private fun RowScope.DockButton(item: DockItem) {
             }
         }
         Spacer(Modifier.height(3.dp))
-        Text(item.label, style = Aiimin.type.caption.copy(color = color, fontWeight = if (item.selected) FontWeight.SemiBold else FontWeight.Medium, fontSize = 11.5.sp))
+        // Part 26.5: the selected label fades in over 160 ms (two layers cross-fade; opacity only).
+        Box(contentAlignment = Alignment.Center) {
+            Text(item.label, style = Aiimin.type.caption.copy(color = c.textMuted, fontWeight = FontWeight.Medium, fontSize = 11.5.sp), modifier = Modifier.graphicsLayer { alpha = 1f - fill })
+            Text(item.label, style = Aiimin.type.caption.copy(color = c.accentText, fontWeight = FontWeight.SemiBold, fontSize = 11.5.sp), modifier = Modifier.graphicsLayer { alpha = fill })
+        }
     }
 }
 
@@ -381,11 +386,15 @@ fun Skeleton(modifier: Modifier) {
 fun ThinkingDots() {
     val c = Aiimin.colors
     val reduce = LocalReduceMotion.current
-    val t = rememberInfiniteTransition(label = "dots")
     Row(horizontalArrangement = Arrangement.spacedBy(5.dp), modifier = Modifier.padding(8.dp).semantics { contentDescription = "Thinking" }) {
-        repeat(3) { i ->
-            val a by t.animateFloat(0.3f, 1f, infiniteRepeatable(Motion.ambient(), RepeatMode.Reverse, StartOffset(i * Motion.STAGGER * 10)), label = "d$i")
-            Box(Modifier.size(6.dp).graphicsLayer { alpha = if (reduce) 0.7f else a }.clip(CircleShape).background(c.textMuted))
+        if (reduce) {
+            repeat(3) { Box(Modifier.size(6.dp).graphicsLayer { alpha = 0.7f }.clip(CircleShape).background(c.textMuted)) }
+        } else {
+            val t = rememberInfiniteTransition(label = "dots")
+            repeat(3) { i ->
+                val a by t.animateFloat(0.3f, 1f, infiniteRepeatable(Motion.ambient(), RepeatMode.Reverse, StartOffset(i * Motion.STAGGER * 10)), label = "d$i")
+                Box(Modifier.size(6.dp).graphicsLayer { alpha = a }.clip(CircleShape).background(c.textMuted))
+            }
         }
     }
 }

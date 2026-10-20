@@ -1,5 +1,7 @@
 package aiimin.feature.notes
 
+import androidx.compose.foundation.lazy.itemsIndexed
+import aiimin.designsystem.component.enterStagger
 import androidx.compose.ui.graphics.Color
 import kotlin.math.roundToInt
 import androidx.compose.foundation.layout.aspectRatio
@@ -197,8 +199,8 @@ fun NotesScreen(vm: NotesViewModel = hiltViewModel()) {
             PillRow { tags.forEach { (t, n) -> Pill("#$t", tag == t, { vm.tag.value = if (tag == t) null else t }, count = n) } }
         }
         LazyColumn(contentPadding = PaddingValues(bottom = 40.dp)) {
-            items(shown, key = { it.id }) { n ->
-                Column(Modifier.fillMaxWidth().clickable { nav.open(Route.Note(n.id)) }.padding(horizontal = Aiimin.space.gutter, vertical = 12.dp)) {
+            itemsIndexed(shown, key = { _, it -> it.id }) { i, n ->
+                Column(Modifier.fillMaxWidth().enterStagger(i).clickable { nav.open(Route.Note(n.id)) }.padding(horizontal = Aiimin.space.gutter, vertical = 12.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         if (n.pinned) Icon(AppIcons.PushPin, "Pinned", tint = c.accent, modifier = Modifier.size(14.dp).padding(end = 4.dp))
                         Text(n.title, style = Aiimin.type.bodyStrong, modifier = Modifier.weight(1f), maxLines = 1)
@@ -565,7 +567,8 @@ fun MoodYearScreen(vm: JournalViewModel = hiltViewModel()) {
     val entries by vm.entries.collectAsStateWithLifecycle()
     var year by remember { mutableIntStateOf(LocalDate.now().year) }
     var picked by remember { mutableStateOf<LocalDate?>(null) }
-    var openMonth by remember { mutableStateOf<java.time.YearMonth?>(java.time.YearMonth.now()) }
+    // The open month belongs to the year on screen (this month in the current year, none in other years).
+    var openMonth by remember(year) { mutableStateOf<java.time.YearMonth?>(java.time.YearMonth.now().takeIf { it.year == year }) }
     val all = entries.orEmpty()
     val moods = remember(all) { moodsByDay(all) }
     Column(Modifier.fillMaxSize().background(c.base)) {
@@ -619,7 +622,7 @@ fun MoodYearScreen(vm: JournalViewModel = hiltViewModel()) {
                 item {
                     Spacer(Modifier.height(12.dp))
                     Hairline()
-                    Text(ym.month.getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.ENGLISH) + " $year", style = Aiimin.type.headline, modifier = Modifier.padding(top = 12.dp, bottom = 8.dp))
+                    Text(ym.month.getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.ENGLISH) + " ${ym.year}", style = Aiimin.type.headline, modifier = Modifier.padding(top = 12.dp, bottom = 8.dp))
                     MonthGrid(ym, moods, picked, gap = 4.dp, onPick = { picked = it })
                 }
             }

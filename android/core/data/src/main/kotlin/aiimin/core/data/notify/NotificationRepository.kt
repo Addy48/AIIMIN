@@ -134,7 +134,7 @@ class NotificationRepository @Inject constructor(
 
         // Weekly review, Sunday evening.
         if (today.dayOfWeek == DayOfWeek.SUNDAY && now.hour >= 18) {
-            emit("review:${today.get(IsoFields.WEEK_BASED_YEAR)}-W%02d".format(today.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR)), "Your week, in one screen", "Five minutes to close the week and set up the next.", "score", null, 0)
+            emit("review:${today.get(IsoFields.WEEK_BASED_YEAR)}-W%02d".format(java.util.Locale.ROOT, today.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR)), "Your week, in one screen", "Five minutes to close the week and set up the next.", "score", null, 0)
         }
     }
 

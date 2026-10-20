@@ -356,7 +356,7 @@ private fun PdfPages(f: File) {
 @Composable
 private fun ReadingView(text: String) {
     if (text.isBlank()) {
-        EmptyState(AppIcons.FileText, "No text to show", "This file has no readable text. Share or open it with another app from the menu.")
+        EmptyState(AppIcons.FileText, "No text to show", "This file has no readable text. Share or open it with another app from the menu.", sidePadding = 4.dp)
         return
     }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp, vertical = 16.dp)) {

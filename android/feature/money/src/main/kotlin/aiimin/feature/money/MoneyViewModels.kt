@@ -66,6 +66,9 @@ class MoneyViewModel @Inject constructor(
         .onEach { tlog("month") }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
+    /** Accounts bank messages named that are not added yet (owner, 20 Oct). Declared before init, which fills it. */
+    val found = MutableStateFlow<List<aiimin.core.data.money.SeenAccount>>(emptyList())
+
     init {
         viewModelScope.launch {
             val t = clock.today()
@@ -79,12 +82,13 @@ class MoneyViewModel @Inject constructor(
         }
     }
 
-    /** Accounts bank messages named that are not added yet (owner, 20 Oct). */
-    val found = MutableStateFlow<List<aiimin.core.data.money.SeenAccount>>(emptyList())
     private suspend fun refreshFound() { found.value = runCatching { accountsRepo.suggestions() }.getOrDefault(emptyList()) }
+    /** New alerts may name new accounts: Money re-reads them each time it comes to the front. */
+    fun refreshFoundNow() = viewModelScope.launch { refreshFound() }
     fun linkTarget(s: aiimin.core.data.money.SeenAccount) = s.linkTarget(extras.value?.accounts.orEmpty())?.name
-    fun acceptFound(s: aiimin.core.data.money.SeenAccount) = viewModelScope.launch { accountsRepo.accept(s); refreshFound() }
-    fun dismissFound(s: aiimin.core.data.money.SeenAccount) = viewModelScope.launch { accountsRepo.dismiss(s.last4); refreshFound() }
+    // The card leaves at once, so a second tap can't reach it (one account per number).
+    fun acceptFound(s: aiimin.core.data.money.SeenAccount) { found.value = found.value - s; viewModelScope.launch { accountsRepo.accept(s); refreshFound() } }
+    fun dismissFound(s: aiimin.core.data.money.SeenAccount) { found.value = found.value - s; viewModelScope.launch { accountsRepo.dismiss(s.last4); refreshFound() } }
 
     fun accountOf(t: TxnEntity): String? = extras.value?.accounts?.let { accountsRepo.accountFor(t, it)?.id }
 

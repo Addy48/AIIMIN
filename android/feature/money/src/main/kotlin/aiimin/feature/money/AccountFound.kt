@@ -6,7 +6,6 @@ import aiimin.designsystem.component.ButtonKind
 import aiimin.designsystem.component.SurfaceCard
 import aiimin.designsystem.theme.Aiimin
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Text
@@ -30,7 +29,9 @@ internal fun AccountFoundCard(s: SeenAccount, linkTo: String?, onAdd: () -> Unit
             style = Aiimin.type.caption, modifier = Modifier,
         )
         Spacer(Modifier.height(12.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        // Wraps at large text instead of squeezing the buttons.
+        @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+        androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             AppButton(if (linkTo != null) "Link account" else "Add account", onAdd, compact = true)
             AppButton("Not mine", onNotMine, kind = ButtonKind.SECONDARY, compact = true)
         }

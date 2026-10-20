@@ -1,5 +1,7 @@
 package aiimin.feature.vault
 
+import androidx.compose.foundation.lazy.itemsIndexed
+import aiimin.designsystem.component.enterStagger
 import aiimin.designsystem.component.RootActions
 import aiimin.designsystem.component.DocThumb
 import aiimin.designsystem.component.ExpiryVial
@@ -234,9 +236,11 @@ fun VaultScreen(vm: VaultViewModel = hiltViewModel()) {
                     )
                 }
             }
-            items(shown.sortedByDescending { it.doc.createdAt }, key = { it.doc.id }) { d ->
-                DocRow(d) { nav.open(Route.Doc(d.doc.id)) }
-                Hairline(Modifier.padding(start = Aiimin.space.gutter + 54.dp, end = Aiimin.space.gutter))
+            itemsIndexed(shown.sortedByDescending { it.doc.createdAt }, key = { _, it -> it.doc.id }) { i, d ->
+                Column(Modifier.enterStagger(i)) {
+                    DocRow(d) { nav.open(Route.Doc(d.doc.id)) }
+                    Hairline(Modifier.padding(start = Aiimin.space.gutter + 54.dp, end = Aiimin.space.gutter))
+                }
             }
             item {
                 // The empty state already promises files stay on the phone; the count line is for a vault with papers.

@@ -45,4 +45,15 @@ class AccountSuggestionTest {
         assertThat(s.linkTarget(listOf(blank, acct("Cash", null, bank = "")))).isEqualTo(blank)
         assertThat(SeenAccount("9", "HDFC Bank", 1, 1).linkTarget(listOf(blank))).isNull()
     }
+
+    @Test fun `a bank in a UPI handle or IFSC is not the account's bank`() =
+        assertThat(bankFromRaw("Rs 99 debited from ICICI Bank A/c XX733 to VPA shop@sbi IFSC SBIN0001234")).isEqualTo("ICICI Bank")
+
+    @Test fun `the bank nearest the masked number wins`() =
+        assertThat(bankFromRaw("HDFC Bank card offer: Rs 500 sent from Kotak Bank A/c XX4455 to Ravi")).isEqualTo("Kotak Bank")
+
+    @Test fun `an account typed as 0733 matches alerts that show 733`() {
+        val out = suggestAccounts(listOf(SeenAccount("733", "ICICI Bank", 1, 1)), listOf(acct("ICICI", "0733")), emptySet())
+        assertThat(out).isEmpty()
+    }
 }

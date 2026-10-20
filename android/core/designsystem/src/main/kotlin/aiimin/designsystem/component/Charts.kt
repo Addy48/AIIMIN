@@ -1,5 +1,7 @@
 package aiimin.designsystem.component
 
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.foundation.layout.fillMaxSize
 import aiimin.designsystem.theme.LocalReduceMotion
 import aiimin.designsystem.theme.Aiimin
 import aiimin.designsystem.theme.Motion
@@ -191,7 +193,12 @@ fun Sparkline(
 fun Meter(progress: Float, modifier: Modifier = Modifier, color: Color = Aiimin.colors.accent, height: Dp = 6.dp, overColor: Color = Aiimin.colors.danger) {
     val p by animateFloatAsState(progress.coerceIn(0f, 1f), Motion.move(LocalReduceMotion.current, Motion.emphasised()), label = "meter")
     Box(modifier.fillMaxWidth().height(height).clip(Shapes.pill).background(Aiimin.colors.raised)) {
-        Box(Modifier.fillMaxHeight().fillMaxWidth(p).clip(Shapes.pill).background(if (progress > 1f) overColor else color))
+        // The fill grows as a scale from the left edge (Part 26.5: transform, not width).
+        Box(
+            Modifier.fillMaxSize()
+                .graphicsLayer { scaleX = p; transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0f, 0.5f) }
+                .clip(Shapes.pill).background(if (progress > 1f) overColor else color),
+        )
     }
 }
 

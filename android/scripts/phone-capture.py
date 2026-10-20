@@ -168,7 +168,7 @@ def main() -> int:
             report["screens"].append({"index": i, "name": name, **g})
             print(f"{i:02d} {name:14s} margin={len(g.get('margin', []))} overlap={len(g.get('overlap', []))}", flush=True)
         crash = adb(a.serial, "logcat", "-d", "-t", "2000", "AndroidRuntime:E", "*:S").stdout.decode()
-        report["crash"] = "FATAL" in crash
+        report["crash"] = "FATAL EXCEPTION" in crash and PKG in crash
     finally:
         adb(a.serial, "shell", "settings", "put", "system", "font_scale", original)
         adb(a.serial, "shell", "rm", "-f", "/sdcard/aiimin-b1.xml")

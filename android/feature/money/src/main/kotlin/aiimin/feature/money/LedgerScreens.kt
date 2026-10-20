@@ -1,5 +1,6 @@
 package aiimin.feature.money
 
+import aiimin.designsystem.component.bleed
 import aiimin.core.data.money.AccountRepository
 import aiimin.core.data.money.AccountType
 import aiimin.core.data.money.AccountView
@@ -130,8 +131,8 @@ class AccountsViewModel @Inject constructor(private val repo: AccountRepository)
     }
 
     fun linkTarget(s: aiimin.core.data.money.SeenAccount) = s.linkTarget(views.value.orEmpty().map { it.account })?.name
-    fun acceptFound(s: aiimin.core.data.money.SeenAccount) = viewModelScope.launch { repo.accept(s) }
-    fun dismissFound(s: aiimin.core.data.money.SeenAccount) = viewModelScope.launch { repo.dismiss(s.last4); found.value = repo.suggestions() }
+    fun acceptFound(s: aiimin.core.data.money.SeenAccount) { found.value = found.value - s; viewModelScope.launch { repo.accept(s) } }
+    fun dismissFound(s: aiimin.core.data.money.SeenAccount) { found.value = found.value - s; viewModelScope.launch { repo.dismiss(s.last4); found.value = repo.suggestions() } }
 
     fun save(a: AccountEntity) = viewModelScope.launch { repo.save(a) }
     fun archive(id: String) = viewModelScope.launch { repo.archive(id) }
@@ -704,7 +705,8 @@ fun PayeeMemoryScreen(vm: PayeeMemoryViewModel = hiltViewModel()) {
                 items(custom, key = { "cat-" + it.id }) { cat ->
                     ListRow(
                         cat.name, subtitle = if (cat.archived) "Archived · hidden from the chips" else if (cat.kind == "in") "Money in" else "Money out",
-                        trailing = { AppButton(if (cat.archived) "Restore" else "Archive", { vm.archive(cat, !cat.archived) }, kind = ButtonKind.GHOST, compact = true) },
+                        // D-011: the word ends on the margin like the chevrons above; the button's padding hangs into it.
+                        trailing = { AppButton(if (cat.archived) "Restore" else "Archive", { vm.archive(cat, !cat.archived) }, Modifier.bleed(end = 14.dp), kind = ButtonKind.GHOST, compact = true) },
                     )
                 }
             }

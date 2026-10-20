@@ -1,5 +1,6 @@
 package aiimin.feature.money
 
+import aiimin.core.data.money.payeeLabel
 import aiimin.core.data.money.Categories
 import aiimin.core.data.money.Ledger
 import aiimin.core.data.money.MoneyRepository
@@ -433,7 +434,7 @@ private fun OneByOne(queue: List<SiftedSms>, vm: SmsImportViewModel, onDone: () 
                     Text(if (s.alert.direction == MoneyDirection.IN) "Received" else "Paid", style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(bottom = 6.dp))
                 }
                 Spacer(Modifier.height(6.dp))
-                Text(draft?.title ?: s.alert.name, style = Aiimin.type.headline.copy(fontSize = 20.sp, lineHeight = 26.sp))
+                Text(payeeLabel(draft?.title ?: s.alert.name), style = Aiimin.type.headline.copy(fontSize = 20.sp, lineHeight = 26.sp))
                 Spacer(Modifier.height(6.dp))
                 Text(s.message.body, style = Aiimin.type.code, maxLines = 4)
                 Spacer(Modifier.height(16.dp))

@@ -19,8 +19,8 @@ import kotlin.math.cos
  * nothing animates while the person types. With reduce motion on, movement is replaced by a 200 ms fade.
  */
 object Motion {
-    /** Press feedback: linear-out. */
-    val LinearOut: Easing = CubicBezierEasing(0f, 0f, 0.58f, 1f)
+    /** Press feedback: linear-out (Material's linear-out, slow-in). */
+    val LinearOut: Easing = CubicBezierEasing(0f, 0f, 0.2f, 1f)
     /** Toggles, chips, content in. */
     val Standard: Easing = CubicBezierEasing(0.2f, 0f, 0f, 1f)
     /** Sheets, shared-element moves, the "+" sheet. */

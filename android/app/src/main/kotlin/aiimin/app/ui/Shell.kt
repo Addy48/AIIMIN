@@ -1,5 +1,6 @@
 package aiimin.app.ui
 
+import aiimin.designsystem.component.keepFinalSize
 import aiimin.designsystem.component.sharedContainer
 import aiimin.designsystem.theme.LocalReduceMotion
 import androidx.compose.foundation.layout.height
@@ -255,14 +256,14 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
             // bottom bar doesn't pad twice. Root tabs end on the dock, which takes the inset itself.
             val root = ROOTS.any { it.toString() == entry.contentKey.toString() }
             Box(
-                Modifier.fillMaxSize().background(c.base).sharedContainer(aiimin.designsystem.component.sharedKeyOf(entry.contentKey))
+                Modifier.fillMaxSize().sharedContainer(aiimin.designsystem.component.sharedKeyOf(entry.contentKey)).background(c.base)
                     .then(
                         if (root) Modifier
                         else Modifier.windowInsetsPadding(
                             androidx.compose.foundation.layout.WindowInsets.navigationBars.only(androidx.compose.foundation.layout.WindowInsetsSides.Bottom),
                         ),
                     ),
-            ) { entry.Content() }
+            ) { Box(Modifier.keepFinalSize()) { entry.Content() } }
         }
     }
     val reduce = LocalReduceMotion.current

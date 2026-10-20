@@ -111,6 +111,7 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
     var exporting by remember { mutableStateOf(false) }
     val extras by vm.extras.collectAsStateWithLifecycle()
     val found by vm.found.collectAsStateWithLifecycle()
+    androidx.lifecycle.compose.LifecycleResumeEffect(Unit) { vm.refreshFoundNow(); onPauseOrDispose { } }
     val prefs by vm.prefs.collectAsStateWithLifecycle()
     val accountFilter by vm.accountFilter.collectAsStateWithLifecycle()
     val quiet by vm.quietAccounts.collectAsStateWithLifecycle()

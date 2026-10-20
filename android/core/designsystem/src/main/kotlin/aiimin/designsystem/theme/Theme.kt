@@ -94,10 +94,19 @@ fun AiiminTheme(mode: ThemeMode = ThemeMode.LIGHT, textScale: Float = 1f, reduce
     // The in-app text size (Appearance) multiplies the system one; the result stays inside the tested range.
     val density = remember(base.density, base.fontScale, fit, textScale) { Density(base.density * fit, clampFontScale(base.fontScale, textScale)) }
     val resolver = LocalContext.current.contentResolver
-    val systemOff = remember(resolver) { Settings.Global.getFloat(resolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f }
+    fun animationsOff() = Settings.Global.getFloat(resolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f
+    // Follows Android's "Remove animations" while the app is open.
+    val systemOff = remember(resolver) { androidx.compose.runtime.mutableStateOf(animationsOff()) }
+    androidx.compose.runtime.DisposableEffect(resolver) {
+        val observer = object : android.database.ContentObserver(android.os.Handler(android.os.Looper.getMainLooper())) {
+            override fun onChange(selfChange: Boolean) { systemOff.value = animationsOff() }
+        }
+        resolver.registerContentObserver(Settings.Global.getUriFor(Settings.Global.ANIMATOR_DURATION_SCALE), false, observer)
+        onDispose { resolver.unregisterContentObserver(observer) }
+    }
     CompositionLocalProvider(
         LocalDensity provides density, LocalPalette provides p, LocalType provides type, LocalSpacing provides Spacing(),
-        LocalReduceMotion provides (reduceMotion || systemOff),
+        LocalReduceMotion provides (reduceMotion || systemOff.value),
     ) {
         MaterialTheme(colorScheme = scheme, typography = type.material, content = content)
     }

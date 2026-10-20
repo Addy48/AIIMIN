@@ -1,5 +1,6 @@
 package aiimin.feature.today
 
+import aiimin.designsystem.component.enterStagger
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.layout.LastBaseline
 import aiimin.designsystem.component.armShared
@@ -195,10 +196,11 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
             if (later.isEmpty()) {
                 item { Text("Nothing left on the plan. The rest of today is yours.", style = Aiimin.type.caption, modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(vertical = 8.dp)) }
             }
-            later.forEach { it ->
+            later.forEachIndexed { i, it ->
                 item(key = "l" + it.kind.name + it.id) {
                     LaterRow(
                         it,
+                        modifier = Modifier.enterStagger(i),
                         onToggle = { toggleTask(it.id) },
                         onOpen = {
                             when (it.kind) {
@@ -517,10 +519,10 @@ private fun StatLine(u: TodayUi, modifier: Modifier) {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun LaterRow(item: FlowItem, onToggle: () -> Unit, onOpen: () -> Unit, onLong: () -> Unit) {
+private fun LaterRow(item: FlowItem, onToggle: () -> Unit, onOpen: () -> Unit, onLong: () -> Unit, modifier: Modifier = Modifier) {
     val c = Aiimin.colors
     Row(
-        Modifier
+        modifier
             .fillMaxWidth()
             .combinedClickable(onClick = onOpen, onLongClick = onLong, onLongClickLabel = "Remove")
             // Spec T1: time | title | tag, no checkbox. Done lives on the task itself; screen readers get it as an action.

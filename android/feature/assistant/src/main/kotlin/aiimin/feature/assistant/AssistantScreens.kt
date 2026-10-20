@@ -572,8 +572,11 @@ private fun CardEditor(start: Action, onDismiss: () -> Unit, onDone: (Action) ->
 @Composable
 private fun Meter18(active: Boolean, level: Float = 0f) {
     val c = Aiimin.colors
-    val t = androidx.compose.animation.core.rememberInfiniteTransition(label = "level")
-    val phase by t.animateFloat(0f, 6.2832f, androidx.compose.animation.core.infiniteRepeatable(androidx.compose.animation.core.tween(Motion.AMBIENT_MIN, easing = androidx.compose.animation.core.LinearEasing)), label = "p")
+    // The wave runs only while listening and never with reduce motion (the bars still follow the mic level).
+    val phase = if (active && !LocalReduceMotion.current) {
+        val t = androidx.compose.animation.core.rememberInfiniteTransition(label = "level")
+        t.animateFloat(0f, 6.2832f, androidx.compose.animation.core.infiniteRepeatable(androidx.compose.animation.core.tween(Motion.AMBIENT_MIN, easing = androidx.compose.animation.core.LinearEasing)), label = "p").value
+    } else 0f
     Row(Modifier.fillMaxWidth().height(56.dp), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
         repeat(18) { i ->
             // Follows the real microphone level; the gentle wave only shapes it across the bars.

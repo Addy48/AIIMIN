@@ -70,7 +70,7 @@ fun BulletList(items: List<String>, modifier: Modifier = Modifier, style: TextSt
         items.forEach { item ->
             Row {
                 // The dot sits on the first line's x-height centre.
-                val lineHeight = with(LocalDensity.current) { style.lineHeight.toDp() }
+                val lineHeight = with(LocalDensity.current) { if (style.lineHeight.isSp) style.lineHeight.toDp() else 20.dp }
                 Box(Modifier.width(16.dp).heightIn(min = lineHeight), contentAlignment = Alignment.CenterStart) {
                     Box(Modifier.size(5.dp).clip(RoundedCornerShape(50)).background(c.textMuted))
                 }
@@ -158,7 +158,8 @@ fun Modifier.bleed(start: Dp = 0.dp, end: Dp = 0.dp): Modifier = this.then(
         val s = start.roundToPx()
         val e = end.roundToPx()
         val p = measurable.measure(constraints.copy(maxWidth = if (constraints.hasBoundedWidth) constraints.maxWidth + s + e else constraints.maxWidth))
-        layout((p.width - s - e).coerceAtLeast(0), p.height) { p.place(-s, 0) }
+        val w = (p.width - s - e).coerceAtLeast(constraints.minWidth)
+        layout(w, p.height) { p.placeRelative(-s, 0) }
     },
 )
 

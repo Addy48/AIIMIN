@@ -326,10 +326,11 @@ class DataControlRepository @Inject constructor(
     }
 }
 
-/** "Added a task · Buy milk": the row's words plus what it was about, cut to fit one line. */
 /** D-029: "Day settled: Sun 18 Oct", not the raw ISO date. */
 fun daySettledText(isoDay: String?): String =
     isoDay?.let { runCatching { "Day settled: " + aiimin.core.data.util.Dates.short(java.time.LocalDate.parse(it)) }.getOrNull() } ?: "Day settled"
+
+/** "Added a task · Buy milk": the row's words plus what it was about, cut to fit one line. */
 
 fun withName(text: String, name: String?): String {
     val n = name?.trim().orEmpty()

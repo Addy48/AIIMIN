@@ -266,7 +266,7 @@ fun Segmented(options: List<String>, selected: Int, onSelect: (Int) -> Unit, mod
         val w = maxWidth / options.size
         val x by animateDpAsState(w * selected, Motion.move(LocalReduceMotion.current, Motion.springSoft()), label = "thumb")
         Box(
-            Modifier.offset(x = x).width(w).fillMaxHeight()
+            Modifier.offset { androidx.compose.ui.unit.IntOffset(x.roundToPx(), 0) }.width(w).fillMaxHeight()
                 .shadow(1.dp, inner, ambientColor = c.shadowKey, spotColor = c.shadowKey)
                 .clip(inner).background(c.paper),
         )

@@ -180,6 +180,7 @@ private fun SwipeCard(key: String, onConfirm: () -> Unit, onSkip: () -> Unit, co
     val scope = rememberCoroutineScope()
     val threshold = with(density) { 110.dp.toPx() }
     val fly = with(density) { 420.dp.toPx() }
+    val reduce = aiimin.designsystem.theme.LocalReduceMotion.current
     Box(
         Modifier
             .offset { IntOffset(x.value.roundToInt(), 0) }
@@ -189,13 +190,13 @@ private fun SwipeCard(key: String, onConfirm: () -> Unit, onSkip: () -> Unit, co
                     onDragEnd = {
                         scope.launch {
                             when {
-                                x.value > threshold -> { x.animateTo(fly, Motion.exit()); onConfirm() }
-                                x.value < -threshold -> { x.animateTo(-fly, Motion.exit()); onSkip() }
-                                else -> x.animateTo(0f, Motion.springSoft())
+                                x.value > threshold -> { x.animateTo(fly, Motion.move(reduce, Motion.exit())); onConfirm() }
+                                x.value < -threshold -> { x.animateTo(-fly, Motion.move(reduce, Motion.exit())); onSkip() }
+                                else -> x.animateTo(0f, Motion.move(reduce, Motion.springSoft()))
                             }
                         }
                     },
-                    onDragCancel = { scope.launch { x.animateTo(0f, Motion.springSoft()) } },
+                    onDragCancel = { scope.launch { x.animateTo(0f, Motion.move(reduce, Motion.springSoft())) } },
                 ) { change, drag -> change.consume(); scope.launch { x.snapTo(x.value + drag) } }
             },
     ) { content() }

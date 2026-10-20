@@ -156,11 +156,27 @@ object SmsSift {
         return if (code.endsWith("SBI")) "SBI" else null
     }
 
-    /** A known bank named in a message's text ("from HDFC Bank A/c …" → "HDFC Bank"); null if none. */
+    private val MASKED = Regex("""(?i)(?:x{2,}|\*{2,}|ending\s*|a/c\s*(?:no\.?\s*)?)(\d{3,4})\b""")
+
+    /**
+     * The bank whose name sits nearest the masked account number ("from Kotak Bank A/c XX4455" → "Kotak Bank",
+     * even when an offer elsewhere names another bank). Names inside UPI handles ("shop@sbi") and IFSC codes
+     * ("SBIN0001234") don't count. Null if no bank is named.
+     */
     fun bankNamedIn(body: String): String? {
         val up = body.uppercase()
-        BANKS.firstOrNull { (_, name) -> up.contains(name.uppercase()) }?.let { return it.second }
-        return BANKS.firstOrNull { (prefix, _) -> prefix.length >= 3 && Regex("\\b$prefix\\b").containsMatchIn(up) }?.second
+        val anchor = MASKED.find(body)?.range?.first ?: 0
+        var best: Pair<Int, String>? = null
+        for ((prefix, name) in BANKS) {
+            val words = listOf(name.uppercase()) + if (prefix.length >= 3) listOf(prefix) else emptyList()
+            for (w in words) {
+                Regex("""(?<![@\w])${Regex.escape(w)}(?![@\w])""").findAll(up).forEach { m ->
+                    val d = kotlin.math.abs(m.range.first - anchor)
+                    if (best == null || d < best!!.first) best = d to name
+                }
+            }
+        }
+        return best?.second
     }
 
     fun kind(sender: String, body: String): SmsKind {

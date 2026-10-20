@@ -57,7 +57,7 @@ class AccountRepository @Inject constructor(
 
     suspend fun get(id: String) = dao.account(id)
 
-    /** First open: build the list from what onboarding knows and the cards alerts have shown. */
+    /** First open: build the list from what onboarding knows (banks picked, cash wallet). */
     suspend fun ensureSeeded() {
         val existing = dao.accountsNow()
         val now = System.currentTimeMillis()
@@ -79,9 +79,11 @@ class AccountRepository @Inject constructor(
     }
 
     /** "Add this account": links to a same-bank account that has no number yet, else adds a new one. */
-    suspend fun accept(s: SeenAccount): AccountEntity {
+    suspend fun accept(s: SeenAccount): AccountEntity? {
         val now = System.currentTimeMillis()
         val all = dao.accountsNow()
+        // A second tap (or a number added meanwhile) changes nothing: one account per number.
+        if (all.any { a -> a.last4?.let { sameNumber(it, s.last4) } == true }) return null
         val target = s.linkTarget(all)?.copy(last4 = s.last4, updatedAt = now)
             ?: AccountEntity(newId(), s.bank ?: "Bank", s.bank.orEmpty(), s.last4, primary = all.none { it.primary && !it.archived }, createdAt = now, updatedAt = now)
         dao.upsertAccount(target)

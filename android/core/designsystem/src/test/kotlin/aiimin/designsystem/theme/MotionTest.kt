@@ -14,7 +14,7 @@ class MotionTest {
 
     @Test fun tap_is_90ms_linear_out() {
         assertEquals(90, tween(Motion.tap<Float>()).durationMillis)
-        assertEquals(CubicBezierEasing(0f, 0f, 0.58f, 1f), tween(Motion.tap<Float>()).easing)
+        assertEquals(CubicBezierEasing(0f, 0f, 0.2f, 1f), tween(Motion.tap<Float>()).easing)
     }
 
     @Test fun quick_is_160ms_standard_curve() {

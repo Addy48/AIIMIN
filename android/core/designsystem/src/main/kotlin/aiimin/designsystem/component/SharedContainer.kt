@@ -77,6 +77,18 @@ fun Modifier.sharedContainer(key: String?): Modifier {
     }
 }
 
+/**
+ * The screen inside a shared container keeps its final (lookahead) size during the transform, so it is laid
+ * out once rather than at every frame's size; the container clips it while it grows.
+ */
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+fun Modifier.keepFinalSize(): Modifier {
+    if (LocalReduceMotion.current) return this
+    val scope = LocalSharedScope.current ?: return this
+    return with(scope) { this@keepFinalSize.skipToLookaheadSize() }
+}
+
 /** A card that opens [route]: it grows into that screen. Pair with [armShared] in the click. */
 @Composable
 fun Modifier.opensScreen(route: Any): Modifier = sharedContainer(sharedKeyOf(route))

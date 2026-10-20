@@ -88,7 +88,7 @@ fun BodyScreen(vm: MeViewModel = hiltViewModel()) {
                     fmt = { hm(it) }, target = life.intentions.card(Signals.SLEEP)?.target,
                     empty = "No sleep data last night. If you wear a watch, check its Health Connect sharing.", source = "Health Connect") }
                 else -> item {
-                    EmptyState(AppIcons.Heart, "No heart-rate data", "Resting heart rate appears when Health Connect shares it. It is track-only: it never moves your score.")
+                    EmptyState(AppIcons.Heart, "No heart-rate data", "Resting heart rate appears when Health Connect shares it. It is track-only: it never moves your score.", sidePadding = 0.dp)
                 }
             }
             item {
@@ -106,7 +106,7 @@ private fun MetricBlock(
     val c = Aiimin.colors
     val vals = days.map { it.value(key) }
     if (vals.none { it != null }) {
-        EmptyState(AppIcons.Footprints, "Nothing yet", empty)
+        EmptyState(AppIcons.Footprints, "Nothing yet", empty, sidePadding = 0.dp)
         return
     }
     val idx = sel ?: vals.indexOfLast { it != null }

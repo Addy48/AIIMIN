@@ -501,7 +501,7 @@ fun AppearanceScreen(vm: ProfileViewModel = hiltViewModel()) {
             Text("Preview", style = Aiimin.type.caption, modifier = Modifier.padding(top = 10.dp))
             Text("Your day so far · ₹1,240 spent · 3 of 3 kept", style = Aiimin.type.body.copy(fontSize = (16 * st.textScale).sp), modifier = Modifier.padding(top = 2.dp))
             SectionHeader("Motion and touch")
-            SwitchRow("Reduce motion", st.reduceMotion, { v -> vm.save { it.copy(reduceMotion = v) } }, subtitle = "Charts and meters stop animating")
+            SwitchRow("Reduce motion", st.reduceMotion, { v -> vm.save { it.copy(reduceMotion = v) } }, subtitle = "Movement becomes a short fade")
             SwitchRow("Haptics", st.haptics, { v -> vm.save { it.copy(haptics = v) } }, subtitle = "A light tick when scrubbing charts and confirming")
             Spacer(Modifier.height(32.dp))
         }

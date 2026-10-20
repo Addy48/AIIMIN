@@ -438,7 +438,7 @@ fun MinimumsScreen(vm: MinimumsViewModel = hiltViewModel()) {
                 Text("The floor for a day you keep. Small enough to do on a bad day; the plan freezes at the start of each day, so new ones join tomorrow.", style = Aiimin.type.caption)
                 Spacer(Modifier.height(12.dp))
             }
-            if (list.isEmpty()) item { EmptyState(AppIcons.ListChecks, "No minimums yet", "Try: Read 10 pages · Walk 20 minutes · No phone in bed.", action = "Add one", onAction = { adding = true }) }
+            if (list.isEmpty()) item { EmptyState(AppIcons.ListChecks, "No minimums yet", "Try: Read 10 pages · Walk 20 minutes · No phone in bed.", action = "Add one", onAction = { adding = true }, sidePadding = 0.dp) }
             items(list, key = { it.minimum.id }) { m ->
                 // D-020: checkbox and camera sit on the page margins like the Pause row below.
                 Panel(Modifier.padding(vertical = 4.dp), padding = PaddingValues(vertical = 4.dp)) {

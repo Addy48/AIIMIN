@@ -1,5 +1,7 @@
 package aiimin.feature.me
 
+import androidx.compose.foundation.lazy.itemsIndexed
+import aiimin.designsystem.component.enterStagger
 import aiimin.designsystem.component.bleed
 import aiimin.designsystem.component.IconButtonInset
 import kotlinx.coroutines.launch
@@ -111,9 +113,9 @@ fun NotificationsScreen(vm: NotificationsViewModel = hiltViewModel()) {
             val today = LocalDate.now()
             all.groupBy { Instant.ofEpochMilli(it.at).atZone(zone).toLocalDate() == today }.toSortedMap(compareByDescending { it }).forEach { (isToday, list) ->
                 item { SectionHeader(if (isToday) "Today" else "Earlier") }
-                items(list, key = { it.id }) { n ->
+                itemsIndexed(list, key = { _, it -> it.id }) { i, n ->
                     ListRow(
-                        n.title, subtitle = n.body, maxSubtitleLines = 3,
+                        n.title, modifier = Modifier.enterStagger(i), subtitle = n.body, maxSubtitleLines = 3,
                         leading = {
                             IconTile(
                                 when (n.route) { "doc" -> AppIcons.ShieldCheck; "money", "bills" -> AppIcons.Money; "score" -> AppIcons.Pulse; else -> AppIcons.Bell },

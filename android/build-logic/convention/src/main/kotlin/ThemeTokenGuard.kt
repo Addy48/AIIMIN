@@ -29,9 +29,10 @@ abstract class ThemeTokenGuard : DefaultTask() {
             .filter { it.isFile && it.extension == "kt" }
             .sortedBy { it.path }
             .flatMap { file ->
-                val rules = RULES.filter { file.name !in it.allowedIn }
+                val path = file.invariantSeparatorsPath
+                val rules = RULES.filter { r -> r.allowedIn.none { path.endsWith(it) } }
                 file.readLines().mapIndexedNotNull { i, line ->
-                    val code = line.substringBefore("//")
+                    val code = codeOf(line)
                     rules.firstOrNull { it.pattern.containsMatchIn(code) }?.let { "${file.path}:${i + 1}: [${it.why}] ${line.trim()}" }
                 }
             }
@@ -47,18 +48,37 @@ abstract class ThemeTokenGuard : DefaultTask() {
     data class Rule(val why: String, val pattern: Regex, val allowedIn: Set<String>)
 
     companion object {
-        private val COLOUR = setOf("Palette.kt")
-        private val FONT = setOf("Type.kt", "Palette.kt")
+        // Allowed by path suffix, so another module's file of the same name is not exempt.
+        private val COLOUR = setOf("designsystem/theme/Palette.kt")
+        private val FONT = setOf("designsystem/theme/Type.kt", "designsystem/theme/Palette.kt")
         // BootMark.kt keeps its own timings until B1b replaces it with the Part 26 opening screen.
-        private val MOTION = setOf("Motion.kt", "BootMark.kt")
+        private val MOTION = setOf("designsystem/theme/Motion.kt", "designsystem/component/BootMark.kt")
+        // The printable emergency sheet is a PDF drawn with android.graphics, not a screen.
+        private val PRINT = setOf("core/data/vault/VaultBackup.kt") + FONT
         val RULES = listOf(
-            Rule("raw colour", Regex("""\bColor\(0x"""), COLOUR),
+            Rule("raw colour", Regex("""\bColor\(\s*(0x|red\s*=|[0-9.]+f\b)"""), COLOUR),
             Rule("named colour", Regex("""\bColor\.(Black|White|Red|Gray|Grey|Blue|Green|Yellow|Cyan|Magenta|DarkGray|LightGray)\b"""), COLOUR),
             Rule("system font", Regex("""\bFontFamily\.(Serif|SansSerif|Monospace|Cursive|Default)\b"""), FONT),
-            Rule("raw duration", Regex("""\btween\(\s*\d"""), MOTION),
-            Rule("raw spring", Regex("""\bspring\(\s*(dampingRatio|stiffness)"""), MOTION),
+            Rule("system typeface", Regex("""\bTypeface\.(DEFAULT|SANS_SERIF|SERIF|MONOSPACE|create)\b"""), PRINT),
+            Rule("raw duration", Regex("""\btween(<[^>]*>)?\(\s*(durationMillis\s*=\s*)?\d"""), MOTION),
+            Rule("raw spring", Regex("""\bspring(<[^>]*>)?\("""), MOTION),
+            Rule("raw keyframes", Regex("""\bkeyframes(<[^>]*>)?\s*\{"""), MOTION),
             Rule("colour animation", Regex("""\banimateColorAsState\b"""), MOTION),
             Rule("size animation", Regex("""\banimateContentSize\b"""), MOTION),
         )
+
+        /** The line without its // comment; a "//" inside a string ("https://…") is kept. */
+        fun codeOf(line: String): String {
+            var inString = false
+            var i = 0
+            while (i < line.length) {
+                val ch = line[i]
+                if (ch == '\\' && inString) { i += 2; continue }
+                if (ch == '"') inString = !inString
+                if (!inString && ch == '/' && i + 1 < line.length && line[i + 1] == '/') return line.substring(0, i)
+                i++
+            }
+            return line
+        }
     }
 }
