@@ -1,5 +1,6 @@
 package aiimin.designsystem.component
 
+import androidx.compose.foundation.layout.wrapContentSize
 import aiimin.designsystem.theme.LocalReduceMotion
 import androidx.compose.animation.core.StartOffset
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -200,7 +201,10 @@ private fun RowScope.DockButton(item: DockItem) {
             Icon(item.iconFill, null, tint = color, modifier = Modifier.size(25.dp).graphicsLayer { alpha = fill })
             if (item.count > 0) {
                 // Anchored on the icon's top-right corner, ringed in the page colour, mostly outside the icon (S5, D-004).
-                CountBadge(item.count, Modifier.align(Alignment.TopEnd).offset(x = 14.dp, y = (-8).dp))
+                // A zero-size anchor: the badge never changes the icon's layout (so labels stay level at any text size).
+                Box(Modifier.align(Alignment.TopEnd).size(0.dp)) {
+                    CountBadge(item.count, Modifier.wrapContentSize(Alignment.TopStart, unbounded = true).offset(x = (-6).dp, y = (-8).dp))
+                }
             } else if (item.badge) {
                 Box(Modifier.align(Alignment.TopEnd).offset(x = 6.dp, y = (-3).dp).size(7.dp).clip(CircleShape).background(c.accent))
             }
