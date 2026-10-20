@@ -145,7 +145,7 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
                     val pc = remember(s, plan, today) { paceData(s, plan, today) }
                     PaceChart(
                         data = pc.chart, selected = selected, onSelect = { selection.value = it },
-                        barTint = MoneyGold,
+                        barTint = Aiimin.colors.moneyGold,
                         description = pc.summary,
                     )
                     pc.footnote?.let {
@@ -167,7 +167,7 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
                         alert = if (s.range == MoneyRange.Y && plan != null) s.bars.indices.filter { s.bars[it].paise > plan }.toSet() else emptySet(),
                         planLine = if (s.range == MoneyRange.Y && plan != null) plan / 100.0 else null,
                         planLabel = if (s.range == MoneyRange.Y && plan != null) "Plan ${shortRupees(plan)}" else null,
-                        tint = MoneyGold,
+                        tint = Aiimin.colors.moneyGold,
                     )
                 }
             }
@@ -449,7 +449,6 @@ internal fun PaymentRow(t: aiimin.core.database.TxnEntity, biggest: Boolean, onC
 }
 
 /** Money's colour family on charts: the "money" domain gold, warm against the cream base. */
-private val MoneyGold = androidx.compose.ui.graphics.Color(0xFFB8893A)
 
 /** "₹20k", "₹1.2L": short enough to sit on a chart. */
 private fun shortRupees(paise: Long): String {

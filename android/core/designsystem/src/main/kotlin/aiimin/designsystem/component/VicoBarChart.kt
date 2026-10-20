@@ -123,8 +123,8 @@ fun ScrubBarChart(
     val vmax = (maxValue ?: max(points.filter { !it.stub }.maxOfOrNull { it.value } ?: 1.0, max(max(bandHigh ?: 0.0, usual ?: 0.0), planLine ?: 0.0)) * 1.12).coerceAtLeast(1.0)
 
     // Warm taupe bars; ink marks today, the accent marks the bar you are reading or a period over plan.
-    val ink = if (emphasis != null) c.bandLine else Color(0xFF8C8273)
-    val dim = Color(0xFFD9D2C5)
+    val ink = if (emphasis != null) c.bandLine else c.chartInk
+    val dim = c.chartDim
     val future = c.futureBar
     val colW = when { n > 20 -> 6.dp; n > 10 -> 12.dp; else -> 24.dp }
     val rounded = RoundedCornerShape(topStart = colW / 2f, topEnd = colW / 2f, bottomStart = 2.dp, bottomEnd = 2.dp)

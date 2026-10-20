@@ -2,14 +2,15 @@
 
 ## Fonts
 
-`core/designsystem/src/main/res/font/` holds two variable font families, both under the
+`core/designsystem/src/main/res/font/` holds four font families, all under the
 **SIL Open Font License 1.1**, taken from the Google Fonts repository (`github.com/google/fonts`):
 
 | File | Family | Used for | Upstream |
 |---|---|---|---|
 | `funnel_display.ttf` | Funnel Display (variable `wght`) | Display, headlines, numbers | `ofl/funneldisplay` |
 | `bodoni_moda.ttf` | Bodoni Moda (variable `opsz`, `wght`), SIL OFL 1.1 | The AIIMIN wordmark only | `ofl/bodonimoda` |
-| `golos_text.ttf` | Golos Text (variable `wght`) | Body text and controls | `ofl/golostext` |
+| `golos_text.ttf` | Golos Text (variable `wght`) | Body text, controls and the journal | `ofl/golostext` |
+| `jetbrains_mono.ttf` | JetBrains Mono Regular, © 2020 The JetBrains Mono Project Authors | Backup codes and raw bank-message text | `github.com/JetBrains/JetBrainsMono` |
 
 They are bundled rather than fetched so the type is identical offline, on first run, and on a
 phone with no Google Play services. The OFL requires the licence to travel with the fonts: full

@@ -1,5 +1,7 @@
 package aiimin.designsystem.component
 
+import aiimin.designsystem.theme.LightPalette
+
 import aiimin.designsystem.theme.Aiimin
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
@@ -77,11 +79,11 @@ fun BootMark(onDone: () -> Unit) {
         Canvas(Modifier.size(120.dp)) {
             val k = size.minDimension / 512f
             scale(k, k, pivot = Offset.Zero) {
-                drawPath(trimmed(archPath, arch.value), Color(0xFFD1D5DB), style = Stroke(24f, cap = StrokeCap.Round))
+                drawPath(trimmed(archPath, arch.value), LightPalette.markArch, style = Stroke(24f, cap = StrokeCap.Round))
                 drawPath(trimmed(peakPath, peak.value), c.text, style = Stroke(24f, cap = StrokeCap.Round, join = StrokeJoin.Round))
-                drawPath(trimmed(innerPath, inner.value), Color(0xFF6B7280).copy(alpha = 0.85f), style = Stroke(18f, cap = StrokeCap.Round, join = StrokeJoin.Round))
+                drawPath(trimmed(innerPath, inner.value), LightPalette.markInner.copy(alpha = 0.85f), style = Stroke(18f, cap = StrokeCap.Round, join = StrokeJoin.Round))
                 val r = 28f * sun.value
-                if (r > 0f) translate(0f, 70f * (1f - sun.value.coerceAtMost(1f))) { drawCircle(Color(0xFFFF6B35), r, Offset(256f, 240f)) }
+                if (r > 0f) translate(0f, 70f * (1f - sun.value.coerceAtMost(1f))) { drawCircle(LightPalette.accent, r, Offset(256f, 240f)) }
             }
         }
         // The wordmark rises in under the mark, in the website's Bodoni Moda, then a quiet line.

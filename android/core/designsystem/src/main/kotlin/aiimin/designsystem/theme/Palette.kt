@@ -8,7 +8,7 @@ import androidx.compose.ui.graphics.Color
  * The locked visual system (AIIMIN_DESIGN_HANDOFF §1). Evidence beige, warm ink,
  * one orange. `accent` is for fills only (now line, sun, selected bar, badges);
  * orange text on beige uses [accentText] because #FF6B35 text fails contrast.
- * No gradients, no purple. Dark is a designed warm counterpart, not an inversion.
+ * No gradients, no purple. Light theme only (PRD 1.1); [DarkPalette] is dormant code, never offered.
  */
 @Immutable
 data class Palette(
@@ -59,6 +59,22 @@ data class Palette(
     /** Review stack cards peeking behind the front card. */
     val stackMid: Color,
     val stackBack: Color,
+    /** Text and icons on an ink (`text`) fill. */
+    val onInk: Color,
+    /** The action word on an ink toast (undo). */
+    val onInkAccent: Color,
+    /** A page: document thumbnails, edit cards, segmented thumb. */
+    val paper: Color,
+    /** The AIIMIN mark: pale arch and inner peak (logo-symbol.svg). */
+    val markArch: Color,
+    val markInner: Color,
+    /** Soft key shadow under raised controls. */
+    val shadowKey: Color,
+    /** Chart bars when nothing is emphasised, and the dimmed bars. */
+    val chartInk: Color,
+    val chartDim: Color,
+    /** Money spend bars and the spend chart line. */
+    val moneyGold: Color,
     /** Muted domain hues for bars and legends (no rings). */
     val domains: List<Color>,
 )
@@ -100,6 +116,15 @@ val LightPalette = Palette(
     chartInactive = Color(0xFF5B5750),
     stackMid = Color(0xFFF0ECE5),
     stackBack = Color(0xFFE9E5DD),
+    onInk = Color(0xFFFFFFFF),
+    onInkAccent = Color(0xFFFFB08A),
+    paper = Color(0xFFFFFFFF),
+    markArch = Color(0xFFD1D5DB),
+    markInner = Color(0xFF6B7280),
+    shadowKey = Color(0x33000000),
+    chartInk = Color(0xFF8C8273),
+    chartDim = Color(0xFFD9D2C5),
+    moneyGold = Color(0xFFB8893A),
     domains = listOf(
         Color(0xFF2F6B4F), // body
         Color(0xFFC24E20), // craft
@@ -147,6 +172,15 @@ val DarkPalette = Palette(
     chartInactive = Color(0xFF8A857A),
     stackMid = Color(0xFF201E1B),
     stackBack = Color(0xFF1A1816),
+    onInk = Color(0xFF141311),
+    onInkAccent = Color(0xFFFFB08A),
+    paper = Color(0xFF26231F),
+    markArch = Color(0xFFD1D5DB),
+    markInner = Color(0xFF6B7280),
+    shadowKey = Color(0x33000000),
+    chartInk = Color(0xFF8C8273),
+    chartDim = Color(0xFF45403A),
+    moneyGold = Color(0xFFD9B26A),
     domains = listOf(
         Color(0xFF7FB89A),
         Color(0xFFFF9467),

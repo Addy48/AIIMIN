@@ -180,7 +180,7 @@ fun Avatar(name: String, hueIndex: Int, modifier: Modifier = Modifier, size: Dp 
     val c = Aiimin.colors
     val initials = name.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }.take(2).joinToString("") { it.first().uppercase() }.ifEmpty { "?" }
     val shape = RoundedCornerShape(if (size >= 56.dp) 12.dp else 8.dp)
-    val onInk = if (c.isDark) c.base else Color.White
+    val onInk = c.onInk
     Box(
         modifier.size(size).clip(shape).then(if (outlined) Modifier.border(1.dp, c.borderStrong, shape) else Modifier.background(c.text)),
         contentAlignment = Alignment.Center,
@@ -260,7 +260,7 @@ fun ExpiryVial(percentLeft: Float?, modifier: Modifier = Modifier) {
 fun DocThumb(modifier: Modifier = Modifier, locked: Boolean = false, tint: Color? = null) {
     val c = Aiimin.colors
     val shape = RoundedCornerShape(5.dp)
-    Box(modifier.size(width = 40.dp, height = 52.dp).clip(shape).background(tint ?: Color.White).border(1.dp, c.borderStrong, shape).padding(horizontal = 6.dp, vertical = 8.dp)) {
+    Box(modifier.size(width = 40.dp, height = 52.dp).clip(shape).background(tint ?: c.paper).border(1.dp, c.borderStrong, shape).padding(horizontal = 6.dp, vertical = 8.dp)) {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Box(Modifier.fillMaxWidth(0.55f).height(3.dp).background(c.text))
             Box(Modifier.fillMaxWidth().height(2.dp).background(c.borderStrong))

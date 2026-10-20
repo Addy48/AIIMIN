@@ -135,7 +135,7 @@ data class DockItem(
 @Composable
 fun Dock(items: List<DockItem>, onPlus: () -> Unit, onPlusLong: () -> Unit, modifier: Modifier = Modifier) {
     val c = Aiimin.colors
-    val onInk = if (c.isDark) c.base else Color.White
+    val onInk = c.onInk
     Column(modifier.fillMaxWidth().background(c.base)) {
         Hairline()
         Row(
@@ -186,7 +186,7 @@ private fun RowScope.DockButton(item: DockItem) {
                     Modifier.align(Alignment.TopEnd).offset(x = 9.dp, y = (-5).dp).heightIn(min = 16.dp).widthIn(min = 16.dp)
                         .clip(RoundedCornerShape(4.dp)).background(c.text).padding(horizontal = 4.dp),
                     contentAlignment = Alignment.Center,
-                ) { Text(if (item.count > 9) "9+" else item.count.toString(), style = Aiimin.type.caption.copy(color = if (c.isDark) c.base else Color.White, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)) }
+                ) { Text(if (item.count > 9) "9+" else item.count.toString(), style = Aiimin.type.caption.copy(color = c.onInk, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)) }
             } else if (item.badge) {
                 Box(Modifier.align(Alignment.TopEnd).offset(x = 6.dp, y = (-3).dp).size(7.dp).clip(CircleShape).background(c.accent))
             }
@@ -290,15 +290,15 @@ fun ToastHost(toaster: Toaster, modifier: Modifier = Modifier) {
                 .padding(horizontal = 16.dp, vertical = 8.dp)
                 .fillMaxWidth()
                 .clip(Shapes.control)
-                .background(if (c.isDark) c.overlay else c.text)
+                .background(c.text)
                 .semantics { contentDescription = toast.text },
         ) {
             Row(Modifier.padding(start = 16.dp, end = 6.dp).heightIn(min = 52.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(toast.text, style = Aiimin.type.body.copy(color = if (c.isDark) c.text else Color.White), modifier = Modifier.weight(1f), maxLines = 2)
+                Text(toast.text, style = Aiimin.type.body.copy(color = c.onInk), modifier = Modifier.weight(1f), maxLines = 2)
                 if (toast.actionLabel != null && toast.action != null) {
                     Text(
                         toast.actionLabel,
-                        style = Aiimin.type.bodyStrong.copy(color = Color(0xFFFFB08A)),
+                        style = Aiimin.type.bodyStrong.copy(color = c.onInkAccent),
                         modifier = Modifier.clip(Shapes.small).clickable {
                             toast.action.invoke()
                             toaster.dismiss(toast.id)
@@ -307,7 +307,7 @@ fun ToastHost(toaster: Toaster, modifier: Modifier = Modifier) {
                 }
             }
             if (toast.action != null) {
-                Box(Modifier.fillMaxWidth(progress.value).height(2.dp).background(Color(0xFFFFB08A)))
+                Box(Modifier.fillMaxWidth(progress.value).height(2.dp).background(c.onInkAccent))
             }
         }
     }

@@ -38,6 +38,9 @@ val BrandSerif: FontFamily = FontFamily(
     Font(R.font.bodoni_moda, FontWeight.Bold, variationSettings = FontVariation.Settings(FontVariation.weight(700), FontVariation.Setting("opsz", 96f))),
 )
 
+/** Codes and raw bank text only (PRD 30.A): bundled so it never falls back to the phone's monospace. */
+val Mono: FontFamily = FontFamily(Font(R.font.jetbrains_mono, FontWeight.Normal))
+
 @Immutable
 data class AppType(
     /** heroTime: Today's clock. 68/65, -3%. */
@@ -65,7 +68,10 @@ data class AppType(
     val caption: TextStyle,
     /** chartAxis: 11.5/14. */
     val axis: TextStyle,
+    /** Journal and Pour writing: Golos at a reading size (owner, 20 Oct). */
     val journal: TextStyle,
+    /** Backup codes and raw bank-message text: JetBrains Mono 12/17, muted. */
+    val code: TextStyle,
     val material: Typography,
 )
 
@@ -98,9 +104,10 @@ internal fun appType(p: Palette): AppType {
     val eyebrow = s(Golos, 12.0, 16.0, sb, 0.08).copy(color = p.textMuted)
     val caption = s(Golos, 12.5, 18.0, FontWeight.Normal, num = true).copy(color = p.textMuted)
     val axis = s(Golos, 11.5, 14.0, FontWeight.Normal, num = true).copy(color = p.textMuted)
-    val journal = TextStyle(fontFamily = FontFamily.Serif, fontSize = 18.sp, lineHeight = 29.sp, color = p.text)
+    val journal = s(Golos, 18.0, 29.0, FontWeight.Normal)
+    val code = s(Mono, 12.0, 17.0, FontWeight.Normal).copy(color = p.textMuted)
     return AppType(
-        display, heroNumber, numberLarge, numberMedium, numberSmall, title, cardTitle, headline, body, bodyStrong, label, eyebrow, caption, axis, journal,
+        display, heroNumber, numberLarge, numberMedium, numberSmall, title, cardTitle, headline, body, bodyStrong, label, eyebrow, caption, axis, journal, code,
         material = Typography(
             displayLarge = display, headlineLarge = title, headlineMedium = cardTitle,
             titleLarge = headline, titleMedium = headline, titleSmall = bodyStrong,

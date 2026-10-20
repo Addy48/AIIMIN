@@ -1,5 +1,7 @@
 package aiimin.designsystem.icon
 
+import aiimin.designsystem.theme.LightPalette
+
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -277,6 +279,6 @@ object AppIcons {
 
     private fun icon(name: String, vararg paths: String): ImageVector =
         ImageVector.Builder(name = name, defaultWidth = 24.dp, defaultHeight = 24.dp, viewportWidth = 256f, viewportHeight = 256f)
-            .apply { paths.forEach { d -> addPath(pathData = addPathNodes(d), fill = SolidColor(Color.Black)) } }
+            .apply { paths.forEach { d -> addPath(pathData = addPathNodes(d), fill = SolidColor(LightPalette.text)) } }
             .build()
 }

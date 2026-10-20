@@ -413,7 +413,7 @@ fun VoicePage(
     if (cards.isNotEmpty()) {
         Text("“$text”", style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(bottom = 12.dp))
         cards.forEach { a ->
-            Column(Modifier.fillMaxWidth().padding(vertical = 5.dp).clip(RoundedCornerShape(12.dp)).background(androidx.compose.ui.graphics.Color.White).border(1.dp, c.border, RoundedCornerShape(12.dp)).padding(16.dp)) {
+            Column(Modifier.fillMaxWidth().padding(vertical = 5.dp).clip(RoundedCornerShape(12.dp)).background(c.paper).border(1.dp, c.border, RoundedCornerShape(12.dp)).padding(16.dp)) {
                 Text(a.headline, style = Aiimin.type.headline.copy(fontSize = 18.sp))
                 Text(a.label, style = Aiimin.type.body.copy(color = c.textMuted, fontSize = 14.sp), modifier = Modifier.padding(top = 4.dp))
             }
@@ -435,7 +435,7 @@ fun VoicePage(
             Box(
                 Modifier.size(96.dp).clip(CircleShape).background(if (listening) c.accent else c.text).clickable { listening = true; voice() },
                 contentAlignment = Alignment.Center,
-            ) { Icon(AppIcons.Mic, "Talk", tint = androidx.compose.ui.graphics.Color.White, modifier = Modifier.size(40.dp)) }
+            ) { Icon(AppIcons.Mic, "Talk", tint = c.onInk, modifier = Modifier.size(40.dp)) }
             Spacer(Modifier.height(12.dp))
             Text(if (listening) "Listening…" else "Tap to talk", style = Aiimin.type.label.copy(color = c.text))
             Spacer(Modifier.height(20.dp))

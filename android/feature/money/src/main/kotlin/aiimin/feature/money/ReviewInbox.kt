@@ -233,7 +233,7 @@ private fun ReviewCardBody(
         // Name the place once; the next alert from it arrives with this name (plan §3).
         AppTextField(name, onName, label = if (d.direction == "in") "From" else "Paid to", placeholder = "Shop or person")
         Spacer(Modifier.height(8.dp))
-        Text(d.raw, style = Aiimin.type.caption.copy(fontFamily = FontFamily.Monospace, fontSize = 12.sp, lineHeight = 17.sp), maxLines = 3)
+        Text(d.raw, style = Aiimin.type.code, maxLines = 3)
         if (d.confidence < 0.75) {
             Spacer(Modifier.height(12.dp))
             Text("Check the amount. The alert text was unclear.", style = Aiimin.type.label.copy(color = c.warn))

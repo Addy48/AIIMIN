@@ -150,11 +150,11 @@ fun DocScreen(id: String, vm: DocViewModel = hiltViewModel()) {
                 if (d.sensitive) LinkChip("Sensitive", AppIcons.LockSimple) {}
             }
             // page preview
-            Box(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 16.dp).fillMaxWidth().height(360.dp).clip(RoundedCornerShape(6.dp)).background(androidx.compose.ui.graphics.Color.White).border(1.dp, c.borderStrong, RoundedCornerShape(6.dp)).clickable { full = true }) {
+            Box(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 16.dp).fillMaxWidth().height(360.dp).clip(RoundedCornerShape(6.dp)).background(c.paper).border(1.dp, c.borderStrong, RoundedCornerShape(6.dp)).clickable { full = true }) {
                 val f = file
                 if (f == null) Skeleton(Modifier.fillMaxSize()) else FirstPage(d, f)
                 if (d.pages > 1) Box(Modifier.align(Alignment.BottomEnd).padding(10.dp).clip(RoundedCornerShape(4.dp)).background(c.text).padding(horizontal = 8.dp, vertical = 3.dp)) {
-                    Text("1 / ${d.pages}", style = Aiimin.type.caption.copy(color = if (c.isDark) c.base else androidx.compose.ui.graphics.Color.White, fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold))
+                    Text("1 / ${d.pages}", style = Aiimin.type.caption.copy(color = c.onInk, fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold))
                 }
             }
             Text("Tap to open full size. Double-tap or pinch to zoom.", style = Aiimin.type.caption.copy(fontSize = 12.sp), modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 6.dp))

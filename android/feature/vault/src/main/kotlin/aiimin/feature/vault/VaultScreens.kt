@@ -261,7 +261,7 @@ fun VaultScreen(vm: VaultViewModel = hiltViewModel()) {
         }
         if (busy) {
             Box(Modifier.align(Alignment.BottomCenter).padding(bottom = 100.dp).clip(Shapes.control).background(c.text).padding(horizontal = 16.dp, vertical = 12.dp)) {
-                Text("Reading your document…", style = Aiimin.type.label.copy(color = if (c.isDark) c.base else androidx.compose.ui.graphics.Color.White))
+                Text("Reading your document…", style = Aiimin.type.label.copy(color = c.onInk))
             }
         }
     }
@@ -339,9 +339,9 @@ private fun DocRow(d: DocView, onClick: () -> Unit) {
 @Composable
 private fun PersonChip(text: String, selected: Boolean, emergency: Boolean = false, dashed: Boolean = false, icon: androidx.compose.ui.graphics.vector.ImageVector? = null, onLong: (() -> Unit)? = null, onClick: () -> Unit) {
     val c = Aiimin.colors
-    val onInk = if (c.isDark) c.base else androidx.compose.ui.graphics.Color.White
+    val onInk = c.onInk
     val shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
-    val emColor = androidx.compose.ui.graphics.Color(0xFFB4462A)
+    val emColor = c.danger
     val fg = when { emergency -> c.warn; selected -> onInk; dashed -> c.textMuted; else -> c.text }
     @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
     Row(

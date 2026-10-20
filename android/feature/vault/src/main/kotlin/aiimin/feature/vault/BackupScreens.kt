@@ -268,7 +268,7 @@ fun EmergencyKitsScreen(vm: VaultBackupViewModel = hiltViewModel()) {
         val to = kits.lastOrNull()?.to ?: "them"
         AppSheet({ vm.built.value = null }, title = "Kit ready", subtitle = "Send the file to $to now, then print the sheet. The code is shown only this once.") {
             Text("Kit code", style = Aiimin.type.caption)
-            SelectionContainer { Text(code, style = Aiimin.type.headline.copy(fontFamily = FontFamily.Monospace, fontSize = 19.sp, lineHeight = 28.sp), modifier = Modifier.padding(vertical = 8.dp)) }
+            SelectionContainer { Text(code, style = Aiimin.type.code.copy(fontSize = 19.sp, lineHeight = 28.sp, color = Aiimin.colors.text), modifier = Modifier.padding(vertical = 8.dp)) }
             AppButton("Send the kit file", {
                 share(context, file, "application/octet-stream", "Send kit")
             }, Modifier.fillMaxWidth(), icon = AppIcons.Share)

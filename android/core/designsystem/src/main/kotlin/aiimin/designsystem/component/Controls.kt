@@ -79,7 +79,7 @@ fun AppButton(
 ) {
     val c = Aiimin.colors
     // Handoff §5.7: primary = ink fill + white text; secondary = transparent with a 1dp outline. No gradients, no pills.
-    val onInk = if (c.isDark) c.base else Color.White
+    val onInk = c.onInk
     val (bg, fg, border) = when (kind) {
         ButtonKind.PRIMARY -> Triple(c.text, onInk, null)
         ButtonKind.SECONDARY -> Triple(Color.Transparent, c.text, c.borderStrong)
@@ -184,7 +184,7 @@ fun CheckCircle(
             contentAlignment = Alignment.Center,
         ) {
             if (tick > 0.01f) {
-                Icon(AppIcons.Check, null, tint = if (c.isDark) c.base else Color.White, modifier = Modifier.size(15.dp).scale(0.6f + 0.4f * tick).alpha(tick))
+                Icon(AppIcons.Check, null, tint = c.onInk, modifier = Modifier.size(15.dp).scale(0.6f + 0.4f * tick).alpha(tick))
             }
         }
     }
@@ -214,7 +214,7 @@ fun Pill(
     count: Int? = null,
 ) {
     val c = Aiimin.colors
-    val onInk = if (c.isDark) c.base else Color.White
+    val onInk = c.onInk
     val bg by animateColorAsState(if (selected) c.text else Color.Transparent, tween(Motion.FAST), label = "pillBg")
     val fg by animateColorAsState(if (selected) onInk else c.text, tween(Motion.FAST), label = "pillFg")
     val chip = RoundedCornerShape(6.dp)
@@ -261,8 +261,8 @@ fun Segmented(options: List<String>, selected: Int, onSelect: (Int) -> Unit, mod
         val x by animateDpAsState(w * selected, spring(dampingRatio = 0.85f, stiffness = 400f), label = "thumb")
         Box(
             Modifier.offset(x = x).width(w).fillMaxHeight()
-                .shadow(1.dp, inner, ambientColor = Color(0x33000000), spotColor = Color(0x33000000))
-                .clip(inner).background(if (c.isDark) c.overlay else Color.White),
+                .shadow(1.dp, inner, ambientColor = c.shadowKey, spotColor = c.shadowKey)
+                .clip(inner).background(c.paper),
         )
         Row(Modifier.fillMaxWidth()) {
             options.forEachIndexed { i, o ->
@@ -351,7 +351,7 @@ fun SwitchRow(title: String, checked: Boolean, onChange: (Boolean) -> Unit, subt
             Box(
                 Modifier.width(46.dp).height(28.dp).clip(Shapes.control).background(track).padding(3.dp),
             ) {
-                Box(Modifier.offset(x = x + 2.dp).size(22.dp).clip(RoundedCornerShape(6.dp)).background(if (checked && c.isDark) c.base else Color.White))
+                Box(Modifier.offset(x = x + 2.dp).size(22.dp).clip(RoundedCornerShape(6.dp)).background(c.paper))
             }
         },
     )

@@ -402,7 +402,7 @@ fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, v
                     Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         items.forEachIndexed { i, a ->
                             if (i in dropped) return@forEachIndexed
-                            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(androidx.compose.ui.graphics.Color.White).border(1.dp, c.border, RoundedCornerShape(12.dp)).clickable { editing = i }.padding(16.dp)) {
+                            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(c.paper).border(1.dp, c.border, RoundedCornerShape(12.dp)).clickable { editing = i }.padding(16.dp)) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Row(Modifier.clip(RoundedCornerShape(6.dp)).background(c.raised).padding(horizontal = 10.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                                         Icon(iconFor(a), null, tint = c.text, modifier = Modifier.size(16.dp))
