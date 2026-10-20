@@ -69,6 +69,8 @@ data class AppSettings(
     val banks: List<String> = emptyList(),
     /** Masked account numbers the person marked "Not mine" (never offered again). */
     val dismissedAccounts: Set<String> = emptySet(),
+    /** The day (ISO) the full opening last played; later cold starts that day get the short one (Part 26.2). */
+    val lastBootDay: String? = null,
     val cashWallet: Boolean = true,
     val lifeScoreSharedWith: Set<String> = emptySet(),
     val stepCounterState: String? = null,
@@ -156,6 +158,7 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         val primaryBank = stringPreferencesKey("primary_bank")
         val banks = stringPreferencesKey("banks")
         val dismissedAccounts = stringSetPreferencesKey("dismissed_accounts")
+        val lastBootDay = stringPreferencesKey("last_boot_day")
         val cashWallet = booleanPreferencesKey("cash_wallet")
         val scoreShare = stringSetPreferencesKey("score_share")
         val stepCounter = stringPreferencesKey("step_counter")
@@ -211,6 +214,7 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         primaryBank = p[K.primaryBank],
         banks = p[K.banks]?.split("|")?.filter { it.isNotBlank() }.orEmpty(),
         dismissedAccounts = p[K.dismissedAccounts] ?: emptySet(),
+        lastBootDay = p[K.lastBootDay],
         cashWallet = p[K.cashWallet] ?: true,
         lifeScoreSharedWith = p[K.scoreShare] ?: emptySet(),
         stepCounterState = p[K.stepCounter],
@@ -268,6 +272,7 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
             s.primaryBank?.let { p[K.primaryBank] = it } ?: p.remove(K.primaryBank)
             p[K.banks] = s.banks.joinToString("|")
             p[K.dismissedAccounts] = s.dismissedAccounts
+            s.lastBootDay?.let { p[K.lastBootDay] = it } ?: p.remove(K.lastBootDay)
             p[K.cashWallet] = s.cashWallet
             p[K.scoreShare] = s.lifeScoreSharedWith
             s.stepCounterState?.let { p[K.stepCounter] = it } ?: p.remove(K.stepCounter)

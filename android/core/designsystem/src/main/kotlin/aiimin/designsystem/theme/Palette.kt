@@ -220,3 +220,20 @@ object Horizons {
         return if (dark) h.copy(line = Color(0xFFF2EFE8), dottedFuture = Color(0xFF4A4038)) else h
     }
 }
+
+/**
+ * The opening screen's warm page (PRD Part 26.1b): sky stops, sun glow, rays, motes, vignette, shadow and
+ * grain. Used only by BootScene; values from `aiimin/05-design/boot/boot-prototype.html`.
+ */
+object BootColors {
+    val sky = listOf(0f to Color(0xFFF5F3EE), 0.38f to Color(0xFFF3EEE5), 0.62f to Color(0xFFF1E6D6), 1f to Color(0xFFEDE0CC))
+    val glow = listOf(0f to Color(0xF2FFD6B8), 0.32f to Color(0xA6FAE8D6), 0.68f to Color(0x00F5F3EE))
+    val ray = Color(0x42FFC896)
+    val mote = Color(0xFFFFD8AE)
+    val moteHalo = Color(0x8CFFC88C)
+    val vignette = Color(0x1C6E5032)
+    val shadow = Color(0x3362401E)
+    val shadowTight = Color(0x2962401E)
+    val highlight = Color(0xBFFFFFFF)
+    val grain = Color(0xFF8C8070)
+}

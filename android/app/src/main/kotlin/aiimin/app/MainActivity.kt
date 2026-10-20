@@ -82,10 +82,11 @@ class MainActivity : FragmentActivity() {
         var ready = false
         splash.setKeepOnScreenCondition { !ready }
         // The opening animation plays once per cold start; rotation or returning from the background skips it.
-        var boot by mutableStateOf(savedInstanceState == null)
+        val coldStart = savedInstanceState == null
+        var bootDone by mutableStateOf(false)
         handle(intent)
-        // Opened to a specific screen (launcher shortcut, notification, deep link): go straight there, no logo (audit A-034).
-        if (request != null) boot = false
+        // Opened to a specific screen (launcher shortcut, notification, deep link): go straight there, no opening (audit A-034).
+        val openedToScreen = request != null
         setContent {
             val s by settings.settings.collectAsStateWithLifecycle(initialValue = null)
             val st = s
@@ -109,7 +110,15 @@ class MainActivity : FragmentActivity() {
                         }
                     }
                 }
-                if (boot && !st.reduceMotion) aiimin.designsystem.component.BootMark(onDone = { boot = false })
+                // The opening screen (Part 26): full on the first launch of the day, short on later cold starts,
+                // none on a warm resume or a deep link, the still frame with reduce motion.
+                if (!bootDone) {
+                    val reduce = aiimin.designsystem.theme.LocalReduceMotion.current
+                    val today = java.time.LocalDate.now().toString()
+                    val mode = remember { aiimin.designsystem.component.bootMode(coldStart, openedToScreen, reduce, st.lastBootDay, today) }
+                    LaunchedEffect(mode) { if (mode == aiimin.designsystem.component.BootMode.FULL) settings.update { it.copy(lastBootDay = today) } }
+                    aiimin.designsystem.component.BootScene(mode, ready = true, onDone = { bootDone = true })
+                }
                 LaunchedEffect(st.appLock) { if (st.appLock && !unlocked) authenticate() }
                 // Hide in the app switcher also blocks screenshots (FLAG_SECURE).
                 LaunchedEffect(st.hideInRecents) {

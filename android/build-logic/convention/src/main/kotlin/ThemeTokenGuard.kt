@@ -51,8 +51,7 @@ abstract class ThemeTokenGuard : DefaultTask() {
         // Allowed by path suffix, so another module's file of the same name is not exempt.
         private val COLOUR = setOf("designsystem/theme/Palette.kt")
         private val FONT = setOf("designsystem/theme/Type.kt", "designsystem/theme/Palette.kt")
-        // BootMark.kt keeps its own timings until B1b replaces it with the Part 26 opening screen.
-        private val MOTION = setOf("designsystem/theme/Motion.kt", "designsystem/component/BootMark.kt")
+        private val MOTION = setOf("designsystem/theme/Motion.kt")
         // The printable emergency sheet is a PDF drawn with android.graphics, not a screen.
         private val PRINT = setOf("core/data/vault/VaultBackup.kt") + FONT
         val RULES = listOf(
