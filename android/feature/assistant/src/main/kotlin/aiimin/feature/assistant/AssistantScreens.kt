@@ -1,5 +1,7 @@
 package aiimin.feature.assistant
 
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.graphicsLayer
 import aiimin.designsystem.component.enterStagger
 import androidx.compose.ui.semantics.contentDescription
@@ -291,8 +293,11 @@ fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, i
     val reduce = aiimin.designsystem.theme.LocalReduceMotion.current
     var text by remember { mutableStateOf(prefill.orEmpty()) }
     val forced by vm.forced.collectAsStateWithLifecycle()
+    // The view model outlives the sheet: every opening starts clean, with the shortcut's type if there is one.
+    var chooserPick by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { vm.forced.value = quickKind(initialType) }
     LaunchedEffect(text) { vm.text.value = text }
-    LaunchedEffect(initialType) { quickKind(initialType)?.let { vm.forced.value = it } }
+    var saving by remember { mutableStateOf(false) }
     val preview by vm.preview.collectAsStateWithLifecycle()
     val keyboard = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
     val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
@@ -314,7 +319,7 @@ fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, i
     fun speak() { listening = true; voice() }
     // 26.5: the sheet rises on the emphasised token and the field takes focus 120 ms in, so the keyboard
     // doesn't jump the sheet mid-rise; reduce motion fades instead.
-    val rise = remember { androidx.compose.animation.core.Animatable(if (reduce) 1f else 0f) }
+    val rise = remember { androidx.compose.animation.core.Animatable(0f) }
     val leave = remember { androidx.compose.animation.core.Animatable(0f) }
     LaunchedEffect(Unit) {
         if (startVoice) speak()
@@ -325,11 +330,16 @@ fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, i
     LaunchedEffect(preview) { dropped = emptySet(); edits = emptyMap() }
     val goTo = remember(text) { aiimin.designsystem.nav.FeatureIndex.navigationMatches(text).take(3) }
     val journalLine = text.isNotBlank() && preview.isEmpty() && goTo.isEmpty()
+    // Private writing goes to Pour (never saved by the sheet): when the text reads like it, or Journal is picked.
+    val toPour = journalLine && (forced == null || forced == aiimin.core.nlp.Kind.JOURNAL)
     val items = preview.mapIndexed { i, a -> edits[i] ?: a }
     val kept = items.filterIndexed { i, a -> i !in dropped && a !is Action.Choose }
     val unsure = items.any { it is Action.Choose }
 
+    var closing by remember { mutableStateOf(false) }
     fun close(after: () -> Unit = {}) {
+        if (closing) return
+        closing = true
         keyboard?.hide(); focusManager.clearFocus()
         scope.launch {
             // On save the sheet shrinks toward the bar (exit token), then closes.
@@ -337,10 +347,12 @@ fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, i
             onDismiss(); after()
         }
     }
-    fun save() = scope.launch {
-        val created = vm.saveActions(kept)
-        close {
-            if (created.isNotEmpty()) toaster.undo(if (created.size == 1) "Saved." else "Saved ${created.size}.") { vm.revert(created) }
+    // One save per sheet; it runs in the view model, so closing the sheet can't cancel it halfway.
+    fun save() {
+        if (saving) return
+        saving = true
+        vm.saveAll(kept) { created ->
+            close { if (created.isNotEmpty()) toaster.undo(if (created.size == 1) "Saved." else "Saved ${created.size}.") { vm.revert(created) } }
         }
     }
 
@@ -351,7 +363,7 @@ fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, i
         Box(Modifier.fillMaxSize()) {
             Box(
                 Modifier.fillMaxSize().graphicsLayer { alpha = rise.value * (1f - leave.value) }.background(c.scrim)
-                    .clickable(indication = null, interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }) { close() },
+                    .clickable(indication = null, interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }, onClickLabel = "Close") { close() },
             )
             Column(
                 Modifier.align(Alignment.BottomCenter).fillMaxWidth()
@@ -364,7 +376,8 @@ fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, i
                         transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0.5f, 1f)
                     }
                     .clip(RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp)).background(c.sheet)
-                    .clickable(indication = null, interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }) {}
+                    // Taps on the sheet itself don't reach the scrim (no extra button for TalkBack).
+                    .pointerInput(Unit) { detectTapGestures { } }
                     .navigationBarsPadding().imePadding().padding(horizontal = Aiimin.space.gutter).padding(top = 10.dp, bottom = 12.dp),
             ) {
                 Box(Modifier.align(Alignment.CenterHorizontally).size(width = 38.dp, height = 4.dp).clip(RoundedCornerShape(2.dp)).background(c.borderStrong))
@@ -380,7 +393,8 @@ fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, i
                         )
                         if (shown != null) Text(shown, style = Aiimin.type.body.copy(fontSize = 17.sp))
                         else BasicTextField(
-                            text, { text = it; vm.forced.value = null },
+                            // A type picked on the "not sure" card is for that text only; a quick type stays.
+                            text, { text = it; if (chooserPick) { vm.forced.value = null; chooserPick = false } },
                             textStyle = Aiimin.type.body.copy(fontSize = 17.sp, color = c.text), cursorBrush = SolidColor(c.text), maxLines = 5,
                             modifier = Modifier.fillMaxWidth().focusRequester(focus).semantics { contentDescription = "Capture" },
                         )
@@ -424,7 +438,7 @@ fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, i
                 }
                 items.filterIsInstance<Action.Choose>().firstOrNull()?.let { a ->
                     Spacer(Modifier.height(10.dp))
-                    ChooserCard(a) { vm.forced.value = it }
+                    ChooserCard(a) { vm.forced.value = it; chooserPick = true }
                 }
                 // Up to three suggestions: features named in the text.
                 if (goTo.isNotEmpty()) {
@@ -441,20 +455,20 @@ fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, i
                         }
                     }
                 }
-                if (journalLine && forced == null) Text("Sounds like a private line. Save opens Pour, which stays on this phone.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp))
+                if (toPour) Text("Sounds like a private line. Save opens Pour, which stays on this phone.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp))
                 Spacer(Modifier.height(12.dp))
                 AppButton(
                     when {
                         unsure -> "Pick a type first"
-                        journalLine && forced == null -> "Write it in Pour"
+                        toPour -> "Write it in Pour"
                         kept.size > 1 -> "Save ${kept.size}"
                         else -> "Save"
                     },
                     {
-                        if (journalLine && forced == null) close { nav.open(Route.JournalWrite()) } else save()
+                        if (toPour) close { nav.open(Route.JournalWrite(prefill = text.trim())) } else save()
                     },
                     Modifier.fillMaxWidth(),
-                    enabled = !unsure && (kept.isNotEmpty() || (journalLine && forced == null)),
+                    enabled = !saving && !unsure && (kept.isNotEmpty() || toPour),
                 )
             }
             editing?.let { i ->
@@ -480,12 +494,14 @@ private fun quickIcon(key: String): ImageVector = when (key) {
 }
 
 /** "₹240 · Food · Expense", "Call CA · Tomorrow 4:30 PM" (1.2b chips). */
+private fun rel(day: String) = runCatching { aiimin.core.data.util.Dates.relative(java.time.LocalDate.parse(day), java.time.LocalDate.now()) }.getOrDefault(day)
+
 internal fun chipText(a: Action): String = when (a) {
     is Action.Expense -> "${aiimin.core.data.util.Money.formatIn(a.paise, a.currency)} · ${a.category} · Expense"
     is Action.Income -> "${aiimin.core.data.util.Money.formatIn(a.paise, a.currency)} · ${a.category} · Income"
     is Action.Recurring -> "${aiimin.core.data.util.Money.formatIn(a.paise, a.currency)} · ${a.title} · ${a.cadence.lowercase()}"
-    is Action.Task -> listOfNotNull(a.title, aiimin.core.data.util.Dates.relative(java.time.LocalDate.parse(a.day), java.time.LocalDate.now()) + (a.time?.let { " " + aiimin.core.data.util.Dates.clock(it) } ?: "")).joinToString(" · ")
-    is Action.Event -> a.title + " · " + aiimin.core.data.util.Dates.relative(java.time.LocalDate.parse(a.date), java.time.LocalDate.now()) + (if (a.minutes >= 1440) " all day" else " " + aiimin.core.data.util.Dates.clock(a.time))
+    is Action.Task -> listOfNotNull(a.title, rel(a.day) + (a.time?.let { " " + (aiimin.core.data.util.Dates.clock(it) ?: it) } ?: "")).joinToString(" · ")
+    is Action.Event -> a.title + " · " + rel(a.date) + (if (a.minutes >= 1440) " all day" else " " + (aiimin.core.data.util.Dates.clock(a.time) ?: a.time))
     else -> a.headline + " · " + typeName(a)
 }
 

@@ -80,8 +80,10 @@ abstract class ThemeTokenGuard : DefaultTask() {
         /** True when a string literal on the line (templates removed) contains a guilt word. */
         fun guiltIn(code: String): Boolean = LITERAL.findAll(stripTemplates(code)).any { m ->
             val text = TEMPLATE.replace(m.groupValues[1], " ")
-            // A space-less lowercase literal is a key, regex or wire name ("streak:", "failed"), not copy.
-            if (!text.trim().contains(' ') && text.none { it.isUpperCase() }) return@any false
+            // A space-less lowercase literal is a key, regex or wire name ("streak:", "a|b"), not copy, unless it is
+            // exactly a guilt word ("late", "missed"): those are shown as labels.
+            val whole = text.trim()
+            if (!whole.contains(' ') && whole.none { it.isUpperCase() } && !GUILT.matches(whole) && !LATENESS.matches(whole)) return@any false
             GUILT.containsMatchIn(text) || LATENESS.containsMatchIn(TIME_OF_DAY.replace(text, " "))
         }
 

@@ -330,7 +330,7 @@ fun PermissionsPage(
     val c = Aiimin.colors
     var asking by remember { mutableStateOf<String?>(null) }
     var declined by remember { mutableStateOf(setOf<String>()) }
-    Headline("Let the phone do the logging", "Each is optional. You can change them later in Me → Sensors and permissions.")
+    Headline("Let the phone do the logging", "Each is optional. You can change them later in You → Sensors and permissions.")
     PERMS.forEach { p ->
         val granted = when (p.key) {
             "usage" -> access?.usage == true
@@ -460,7 +460,7 @@ fun KeepSafePage(signedInAs: String?) {
     Text(
         "What syncs: tasks, notes and payments go to aiimin.in over an encrypted connection, so you see them on the website. " +
             "Journal text only syncs if you switch it on. Documents and bank-message text never leave your phone. " +
-            "You choose what syncs, any time, in Me → Account.",
+            "You choose what syncs, any time, in You → Account.",
         style = Aiimin.type.body.copy(color = c.textMuted, fontSize = 15.sp, lineHeight = 22.sp),
     )
 }
@@ -490,7 +490,7 @@ fun ReadyPage(d: Draft, signedInAs: String?, access: SensorAccess?, onJump: (Int
         }
         Hairline()
     }
-    if (d.role == "shift" && d.roster.isBlank()) Text("Set your roster in Me → Settings → My day.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 12.dp))
+    if (d.role == "shift" && d.roster.isBlank()) Text("Set your roster in You → Settings → My day.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 12.dp))
     Spacer(Modifier.height(20.dp))
     Text(
         "Your Life Score appears once four of your signals, across three areas, have 7 days of data: a provisional score first, firm after 14 days. Until then you'll see each signal calibrating.",

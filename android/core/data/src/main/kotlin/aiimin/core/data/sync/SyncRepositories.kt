@@ -307,7 +307,7 @@ class SyncRepository @Inject constructor(
             t.failed > 0 -> SyncState.Attention("${t.failed} ${if (t.failed == 1) "item" else "items"} didn't sync. They'll retry.")
             else -> SyncState.Idle(now)
         }
-        log.log("sync", data = mapOf("pushed" to t.pushed, "pulled" to t.pulled, "failed" to t.failed, "conflicts" to t.conflicts), tier = Tier.A, source = "system")
+        log.log("sync", data = mapOf("pushed" to t.pushed, "pulled" to t.pulled, "errors" to t.failed, "conflicts" to t.conflicts), tier = Tier.A, source = "system")
         return SyncReport(t.pushed, t.pulled, t.failed, t.conflicts, now)
     }
 

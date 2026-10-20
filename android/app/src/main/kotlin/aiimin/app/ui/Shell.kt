@@ -212,8 +212,10 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
         object : AppNavigator {
             override fun open(route: Route) {
                 tabSwitch = false
-                if (stack.lastOrNull() != route) stack.add(route)
-                vm.countOpen(route)
+                if (stack.lastOrNull() != route) {
+                    stack.add(route)
+                    vm.countOpen(route)
+                }
             }
 
             override fun back() {
@@ -405,7 +407,7 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
                         entry<Route.Notes> { NotesScreen() }
                         entry<Route.Note> { NoteScreen(it.id) }
                         entry<Route.Journal> { JournalScreen() }
-                        entry<Route.JournalWrite> { JournalWriteScreen(it.id) }
+                        entry<Route.JournalWrite> { JournalWriteScreen(it.id, prefill = it.prefill) }
                         entry<Route.Assistant> { AssistantScreen(it) }
                     },
                 )

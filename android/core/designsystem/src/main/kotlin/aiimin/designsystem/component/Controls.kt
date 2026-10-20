@@ -1,5 +1,6 @@
 package aiimin.designsystem.component
 
+import androidx.compose.ui.semantics.selected
 import aiimin.designsystem.theme.LocalReduceMotion
 import androidx.compose.foundation.selection.toggleable
 
@@ -89,6 +90,8 @@ fun AppButton(
     }
     Row(
         modifier
+            // Part 18: a compact (40 dp) button still has a 48 dp touch target.
+            .then(if (compact) Modifier.minimumInteractiveComponentSize() else Modifier)
             .alphaIf(!enabled)
             .pressable(if (enabled) onClick else null)
             .clip(Shapes.control)
@@ -226,6 +229,7 @@ fun Pill(
     Row(
         modifier
             .minimumInteractiveComponentSize()
+            .semantics { this.selected = selected }
             .pressable(onClick, role = Role.Tab)
             .clip(chip)
             .background(bg)

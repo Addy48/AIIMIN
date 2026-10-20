@@ -76,8 +76,14 @@ fun SettingsScreen(vm: MeViewModel = hiltViewModel()) {
     val integrity by vm.integrity.collectAsStateWithLifecycle()
     var dayMode by remember { mutableStateOf(false) }
     var quietPick by remember { mutableStateOf<String?>(null) }
+    var dayEndPick by remember { mutableStateOf(false) }
     val c = Aiimin.colors
     val st = s ?: return
+    if (dayEndPick) aiimin.designsystem.component.TimePick(
+        java.time.LocalTime.of((st.dayEndMin / 60) % 24, st.dayEndMin % 60),
+        { t -> vm.update { it.copy(dayEndMin = t.hour * 60 + t.minute, dayEndMode = "PINNED", dayEndChangedOn = java.time.LocalDate.now().toString()) }; dayEndPick = false },
+        { dayEndPick = false },
+    )
     Column(Modifier.fillMaxSize().background(c.base)) {
         TopBar("Settings", onBack = { nav.back() })
         LazyColumn(contentPadding = PaddingValues(start = Aiimin.space.gutter, end = Aiimin.space.gutter, bottom = 40.dp)) {
@@ -93,6 +99,12 @@ fun SettingsScreen(vm: MeViewModel = hiltViewModel()) {
                 SettingsLink(AppIcons.Wallet, "Money", "Ledgers, accounts, bank messages, payee memory") { nav.open(Route.MoneySettings) }
                 SettingsLink(AppIcons.ChatCircleText, "Assistant and voice", "What it may read, recent captures") { nav.open(Route.AiSettings) }
                 SettingsLink(AppIcons.TextAa, "Appearance", "Text size, motion") { nav.open(Route.Appearance) }
+                // PRD 1.2: the day-end hour shows where it came from; editing pins it (never overwritten).
+                val dayEnd = java.time.LocalTime.of((st.dayEndMin / 60) % 24, st.dayEndMin % 60)
+                SettingsLink(
+                    AppIcons.MoonStars, "Day ends at ${aiimin.core.data.util.Dates.clock(dayEnd)}",
+                    when (st.dayEndMode) { "LEARNING" -> "Learned from the last 7 nights · Edit"; "PINNED" -> "Set by you · Edit"; else -> "From your sleep time · Edit" },
+                ) { dayEndPick = true }
                 SettingsLink(AppIcons.Translate, "Language and region", "English (India)") { nav.open(Route.Language) }
                 SettingsLink(AppIcons.Pulse, "How AIIMIN is running", "Background jobs and their last run") { nav.open(Route.Running) }
                 SettingsLink(AppIcons.Lifebuoy, "Help", "Questions and contact") { nav.open(Route.Help) }

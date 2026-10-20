@@ -61,4 +61,9 @@ class DayEndLearnerTest {
         assertEquals(t(23, 50), DayEndLearner.sleepStart(events, LocalDate.of(2026, 10, 19), ZoneOffset.UTC))
         assertNull(DayEndLearner.sleepStart(listOf(ms(19, 23) to false, ms(20, 1) to true), LocalDate.of(2026, 10, 19), ZoneOffset.UTC))
     }
+
+    @Test fun `nights that start after 4 am do not count (shift work is later)`() {
+        val nights = List(7) { t(6) }
+        assertEquals(DayEndDecision.None, DayEndLearner.next(nights, t(22), DayEndMode.SET, null, today, true))
+    }
 }

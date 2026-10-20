@@ -34,7 +34,7 @@ import kotlin.math.sin
 data class HorizonTick(val minute: Int, val label: String)
 
 /**
- * Today's horizon (handoff §6 T1, slimmed to 72 dp in PRD 1.2): y = 50 − 44·sin(πx/W)^1.3 from 7 AM to 11 PM.
+ * Today's horizon (handoff §6 T1, slimmed to 72 dp in PRD 1.2): y = 50 − 40·sin(πx/W)^1.3 from 7 AM to 11 PM (the sun stays inside).
  * Solid ink up to now, dotted after; baseline at y = 78; sun r=8 at now;
  * 2 dp ticks at the next items, labels skipped when closer than 40 dp.
  * Only the sun, horizon and dotted arc change with the hour; the background never does.
@@ -61,7 +61,7 @@ fun DayHorizon(nowMinute: Int, ticks: List<HorizonTick>, horizon: Horizon, modif
         val end = 23 * 60
         fun frac(min: Int) = ((min - start).toFloat() / (end - start)).coerceIn(0f, 1f)
         fun px(min: Int) = frac(min) * w
-        fun py(min: Int): Float = base - (44 * dp) * sin(PI.toFloat() * frac(min)).toDouble().pow(1.3).toFloat()
+        fun py(min: Int): Float = base - (40 * dp) * sin(PI.toFloat() * frac(min)).toDouble().pow(1.3).toFloat()
         val target = nowMinute.coerceIn(start, end)
         val now = (start + (target - start) * travel.value).toInt()
         fun path(a: Int, b: Int): Path = Path().apply {

@@ -38,7 +38,8 @@ object DayEndLearner {
 
     fun next(nights: List<LocalTime?>, current: LocalTime, mode: DayEndMode, lastChange: LocalDate?, today: LocalDate, usageAccess: Boolean): DayEndDecision {
         if (mode == DayEndMode.PINNED) return DayEndDecision.None
-        val valid = nights.takeLast(NIGHTS).filterNotNull().map(::nightMin).sorted()
+        // A "night" that starts after 04:00 is shift work or a long morning off-screen stretch: not learned (later).
+        val valid = nights.takeLast(NIGHTS).filterNotNull().map(::nightMin).filter { it <= 8 * 60 }.sorted()
         if (valid.size < MIN_VALID) return DayEndDecision.None
         val median = if (valid.size % 2 == 1) valid[valid.size / 2] else (valid[valid.size / 2 - 1] + valid[valid.size / 2]) / 2
         val target = maxOf(0, ((median - 60) / 15) * 15)

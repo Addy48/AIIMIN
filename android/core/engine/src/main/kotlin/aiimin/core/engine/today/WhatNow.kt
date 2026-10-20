@@ -65,13 +65,13 @@ object WhatNow {
 
     /** The order after learning: a kind skipped three times drops one step (never below "All clear"). */
     fun order(skips: Map<NowKind, Int>): List<NowKind> {
-        val o = BASE.toMutableList()
-        for (k in BASE) {
-            if (k == NowKind.CLEAR || (skips[k] ?: 0) < SKIPS_TO_DROP) continue
-            val i = o.indexOf(k)
-            if (i + 1 < o.lastIndex) { o[i] = o[i + 1]; o[i + 1] = k }
+        // Each demoted kind moves 1.5 places down, so two neighbours demoted together both drop below the
+        // next kind instead of swapping back; "All clear" always stays last.
+        fun rank(k: NowKind): Double {
+            val i = BASE.indexOf(k).toDouble()
+            return if (k != NowKind.CLEAR && (skips[k] ?: 0) >= SKIPS_TO_DROP) minOf(i + 1.5, BASE.lastIndex - 0.5) else i
         }
-        return o
+        return BASE.sortedBy(::rank)
     }
 
     /** The evening starts at 17:00, or four hours before an early day end. */
@@ -98,7 +98,11 @@ object WhatNow {
     }
 
     private fun soon(i: NowInput): NowLine? {
-        fun happening(t: Timed) = !i.time.isBefore(t.start) && i.time.isBefore(t.end ?: t.start.plusMinutes(30))
+        fun happening(t: Timed): Boolean {
+            val end = t.end ?: t.start.plusMinutes(30)
+            // An event that runs past midnight (23:00 to 01:00) is happening on both sides of it.
+            return if (end.isBefore(t.start)) !i.time.isBefore(t.start) || i.time.isBefore(end) else !i.time.isBefore(t.start) && i.time.isBefore(end)
+        }
         fun upcoming(t: Timed) = !t.start.isBefore(i.time) && ChronoUnit.MINUTES.between(i.time, t.start) <= SOON_MINUTES
         val pick = i.timed.filter { happening(it) || upcoming(it) }
             .sortedWith(compareByDescending<Timed> { happening(it) }.thenBy { it.start }.thenByDescending { it.isEvent }.thenBy { it.title })

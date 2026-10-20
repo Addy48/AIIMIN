@@ -29,4 +29,10 @@ class QuickDoorsTest {
 
     @Test fun `pinned doors come first and stay`() =
         assertEquals(listOf("emergency", "budget", "focus", "goals"), QuickDoors.pick(install, install.plusDays(30), mapOf("budget" to 9, "focus" to 7, "goals" to 5), listOf("emergency"), false))
+
+    @Test fun `keys with no screen behind them are skipped, so the row stays full`() {
+        val opens = mapOf("txn" to 50, "goal" to 40, "budget" to 9)
+        val doors = QuickDoors.pick(install, install.plusDays(30), opens, emptyList(), false, valid = setOf("budget", "journalwrite", "focus", "calendar", "planday", "notes"))
+        assertEquals(listOf("budget", "journalwrite", "focus", "calendar"), doors)
+    }
 }

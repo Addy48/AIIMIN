@@ -1,5 +1,7 @@
 package aiimin.feature.today
 
+import androidx.compose.ui.semantics.heading
+import androidx.compose.foundation.combinedClickable
 import aiimin.core.data.util.Dates
 import aiimin.core.engine.today.NowKind
 import aiimin.core.engine.today.NowLine
@@ -85,13 +87,13 @@ internal fun WhatNowCard(
     var why by remember { mutableStateOf(false) }
     val text = WhatNowText.line(line, h24)
     Column(modifier.fillMaxWidth().clip(Shapes.card).background(c.surface).border(1.dp, c.border, Shapes.card).padding(16.dp)) {
-        Text("WHAT NOW?", style = Aiimin.type.eyebrow)
+        Text("WHAT NOW?", style = Aiimin.type.eyebrow, modifier = Modifier.semantics { heading() })
         Spacer(Modifier.height(8.dp))
         Text(
             text,
             style = Aiimin.type.cardTitle.copy(color = c.accentText),
             maxLines = 3, overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.fillMaxWidth().pressable({ why = true }, onClickLabel = "Why this?").semantics { stateDescription = "What now" },
+            modifier = Modifier.fillMaxWidth().pressable({ why = true }, onClickLabel = "Why this?"),
         )
         val actions = actionsFor(line)
         if (actions.isNotEmpty()) {
@@ -175,6 +177,7 @@ internal fun FirstWeekCard(steps: List<Pair<SetupStep, Boolean>>, onStep: (Setup
             Row(
                 Modifier.fillMaxWidth().heightIn(min = 48.dp)
                     .then(if (isDone) Modifier else Modifier.pressable({ onStep(step) }, role = Role.Button))
+                    .semantics(mergeDescendants = true) { stateDescription = if (isDone) "Done" else "Not done yet" }
                     .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -189,16 +192,23 @@ internal fun FirstWeekCard(steps: List<Pair<SetupStep, Boolean>>, onStep: (Setup
 
 /** Part 17: four Quick doors, one tap each, equal width; a door grows into its screen (26.5). */
 @Composable
-internal fun QuickDoorsRow(keys: List<String>, modifier: Modifier = Modifier) {
+internal fun QuickDoorsRow(keys: List<String>, pinned: List<String>, onPin: (String) -> Unit, modifier: Modifier = Modifier) {
     val nav = LocalNavigator.current
     val c = Aiimin.colors
-    val doors = keys.mapNotNull(::doorFor)
+    val doors = keys.mapNotNull { k -> doorFor(k)?.let { k to it } }
     if (doors.isEmpty()) return
     Row(modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        doors.forEach { d ->
+        doors.forEach { (key, d) ->
+            val isPinned = key in pinned
+            @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
             Column(
                 Modifier.weight(1f).fillMaxHeight().heightIn(min = 72.dp).opensScreen(d.route).clip(Shapes.card).background(c.surface)
-                    .border(1.dp, c.border, Shapes.card).pressable({ armShared(d.route); nav.open(d.route) })
+                    .border(1.dp, if (isPinned) c.borderStrong else c.border, Shapes.card)
+                    .combinedClickable(
+                        onClick = { armShared(d.route); nav.open(d.route) },
+                        onLongClick = { onPin(key) },
+                        onLongClickLabel = if (isPinned) "Unpin" else "Pin to Today",
+                    )
                     .padding(horizontal = 4.dp, vertical = 12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,

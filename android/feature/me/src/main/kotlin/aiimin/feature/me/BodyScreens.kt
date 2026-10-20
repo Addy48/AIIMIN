@@ -83,7 +83,7 @@ fun BodyScreen(vm: MeViewModel = hiltViewModel()) {
             when (tab) {
                 0 -> item { MetricBlock(days, Signals.STEPS, range, sel, { sel = it }, { range = it; sel = null }, "steps",
                     fmt = { "%,d".format(it.roundToInt()) }, target = life.intentions.card(Signals.STEPS)?.target,
-                    empty = "No step data yet. Turn on Health Connect in Me → Sensors, or carry the phone and steps appear.", source = "Health Connect (watch preferred)") }
+                    empty = "No step data yet. Turn on Health Connect in You → Sensors, or carry the phone and steps appear.", source = "Health Connect (watch preferred)") }
                 1 -> item { MetricBlock(days, Signals.SLEEP, range, sel, { sel = it }, { range = it; sel = null }, "asleep",
                     fmt = { hm(it) }, target = life.intentions.card(Signals.SLEEP)?.target,
                     empty = "No sleep data last night. If you wear a watch, check its Health Connect sharing.", source = "Health Connect") }

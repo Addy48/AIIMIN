@@ -320,7 +320,7 @@ fun MergeSheet(p: MergePreview, plan: suspend () -> aiimin.core.data.sync.SyncRe
             AppButton("Replace this phone's data", { confirmReplace = true }, Modifier.fillMaxWidth(), kind = ButtonKind.SECONDARY)
             Spacer(Modifier.height(8.dp))
             AppButton("Keep this phone separate for now", { onChoose(MergeChoice.SEPARATE) }, Modifier.fillMaxWidth(), kind = ButtonKind.GHOST)
-            Text("You can turn sync on later in Me › Sync.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 10.dp))
+            Text("You can turn sync on later in You › Sync.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 10.dp))
         } else {
             // Measured fresh from the phone and aiimin.in before anything moves.
             val r by androidx.compose.runtime.produceState<aiimin.core.data.sync.SyncRepository.ReplacePlan?>(null) { value = plan() }
@@ -365,7 +365,7 @@ fun HealthPrivacyScreen(onBack: () -> Unit) {
                 "Why" to "To measure your day, not to judge it. The numbers feed your own Life Score, compared only with your own history.",
                 "Where it stays" to "On this phone. If you sign in and leave sync on, only daily totals go to aiimin.in. Heart-rate samples and sleep stages never leave the phone.",
                 "Never" to "Sold, shared with advertisers, used for ads or used to set insurance or loan terms.",
-                "Taking it back" to "Turn any permission off in Health Connect, or in Me → Sensors and permissions. AIIMIN stops reading at once and keeps what it already measured until you delete it.",
+                "Taking it back" to "Turn any permission off in Health Connect, or in You → Sensors and permissions. AIIMIN stops reading at once and keeps what it already measured until you delete it.",
             ).forEach { (h, b) ->
                 Text(h, style = Aiimin.type.headline, modifier = Modifier.padding(top = 14.dp))
                 Text(b, style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(top = 4.dp))

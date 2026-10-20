@@ -57,9 +57,12 @@ class NotificationRepository @Inject constructor(
     suspend fun dismiss(id: String) = dao.dismiss(id)
 
     suspend fun run() {
-        // Older rows kept the old wording (streaks, "Rough patch"); they read like new ones now (PRD 13.2, C-001).
-        dao.reword("battery:", "A lighter day", "Today your minimums are the tiny versions, and each counts double.")
-        dao.rewordBody("streak:", minimumsNudgeBody(2))
+        // Older rows kept the old wording (streaks, "Rough patch"); reworded once (PRD 13.2, C-001).
+        if (!settings.current().notificationsReworded) {
+            dao.reword("battery:", "A lighter day", "Today your minimums are the tiny versions, and each counts double.")
+            dao.rewordBody("streak:", "The tiny versions count. Keep what you can.")
+            settings.update { it.copy(notificationsReworded = true) }
+        }
         collapseRepeats()
         val today = clock.today()
         val now = LocalTime.now(clock.zone)

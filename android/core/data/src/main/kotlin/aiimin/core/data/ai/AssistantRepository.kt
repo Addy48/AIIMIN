@@ -530,12 +530,12 @@ class AssistantRepository @Inject constructor(
     private suspend fun bodyAnswer(s: String, today: LocalDate): Reply {
         val d = device.observe(today).first()
         val text = when {
-            "sleep" in s -> d?.sleepMin?.let { "Last night: ${Dates.minutes(it.toLong())} of sleep." } ?: "No sleep data yet — connect Health Connect in Me → Sensors."
-            "step" in s || "walk" in s -> d?.steps?.let { "%,d steps so far today.".format(it) } ?: "Steps aren't connected yet — Me → Sensors."
+            "sleep" in s -> d?.sleepMin?.let { "Last night: ${Dates.minutes(it.toLong())} of sleep." } ?: "No sleep data yet — connect Health Connect in You → Sensors."
+            "step" in s || "walk" in s -> d?.steps?.let { "%,d steps so far today.".format(it) } ?: "Steps aren't connected yet — You → Sensors."
             else -> d?.screenMs?.let { ms ->
                 val apps = DeviceRepository.apps(d).take(3).joinToString { "${it.label} ${Dates.minutes(it.ms / 60_000)}" }
                 "Screen time today: ${Dates.minutes(ms / 60_000)}${d.unlocks?.let { " across $it unlocks" } ?: ""}. Top: $apps."
-            } ?: "Screen time needs Usage access — Me → Sensors."
+            } ?: "Screen time needs Usage access — You → Sensors."
         }
         return Reply(text, sources = listOf(Source("device", today.toString(), "Today's phone data")), saw = listOf("Phone measurements for today"))
     }

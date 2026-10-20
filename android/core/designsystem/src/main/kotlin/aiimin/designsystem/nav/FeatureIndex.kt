@@ -31,7 +31,7 @@ object FeatureIndex {
         f("Today", "Your day on one screen", Route.Today, { AppIcons.CalendarCheck }, "home", "dashboard", "day"),
         f("Calendar", "Events and plans by day", Route.Calendar, { AppIcons.Calendar }, "events", "schedule", "agenda", "meetings"),
         f("Focus", "Timer for one thing", Route.Focus(), { AppIcons.Timer }, "pomodoro", "deep work", "timer", "concentrate"),
-        f("Daily minimums", "The few things you keep every day", Route.Minimums, { AppIcons.CheckSquare }, "minimums", "habits", "routine", "streak"),
+        f("Daily minimums", "The few things you keep every day", Route.Minimums, { AppIcons.CheckSquare }, "minimums", "habits", "routine", "kept days"),
         f("Upcoming tasks", "Everything planned ahead", Route.Upcoming, { AppIcons.ListChecks }, "tasks", "todo", "to do", "later"),
         f("Plan my day", "Pick what today is for", Route.PlanDay(), { AppIcons.Sunrise }, "plan", "morning", "schedule today"),
         f("Plan tomorrow", "Set up tomorrow tonight", Route.PlanDay(tomorrow = true), { AppIcons.MoonStars }, "tomorrow", "evening plan"),

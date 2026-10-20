@@ -138,4 +138,17 @@ class WhatNowTest {
         ).map { WhatNow.pick(it) }
         lines.forEach { assertFalse(guilt.containsMatchIn(WhatNowText.line(it, false) + " " + WhatNowText.why(it, false)), it.toString()) }
     }
+
+    @Test fun `two neighbours demoted together each drop one step`() {
+        val o = WhatNow.order(mapOf(NowKind.BILL to 3, NowKind.WRAP_UP to 3))
+        assertTrue(o.indexOf(NowKind.LANDMARK) < o.indexOf(NowKind.WRAP_UP), o.toString())
+        assertTrue(o.indexOf(NowKind.SOON) < o.indexOf(NowKind.BILL), o.toString())
+        assertEquals(NowKind.CLEAR, o.last())
+    }
+
+    @Test fun `an event across midnight is happening after midnight`() {
+        val l = WhatNow.pick(input(time = at(0, 30), timed = listOf(Timed("p", "Party", at(23), at(1), true))))
+        assertEquals(NowKind.SOON, l.kind)
+        assertTrue(l.happeningNow)
+    }
 }

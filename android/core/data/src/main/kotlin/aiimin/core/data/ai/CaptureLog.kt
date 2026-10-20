@@ -40,7 +40,11 @@ class CaptureLog @Inject constructor(@ApplicationContext context: Context, priva
 
     fun record(text: String, created: List<Source>) {
         if (created.isEmpty()) return
-        persist(listOf(CaptureRecord(aiimin.core.data.util.newId(), System.currentTimeMillis(), text.trim(), created)) + load())
+        // Private writing never sits in plain text outside the journal (Part 12): keep only that it happened.
+        val private = created.any { it.type == "journal" }
+        val shown = if (private) "Private entry" else text.trim()
+        val items = created.map { if (it.type == "journal") it.copy(label = "Private entry") else it }
+        persist(listOf(CaptureRecord(aiimin.core.data.util.newId(), System.currentTimeMillis(), shown, items)) + load())
     }
 
     /** Undo a whole capture: every item it created is removed (the usual undo for each kind). */

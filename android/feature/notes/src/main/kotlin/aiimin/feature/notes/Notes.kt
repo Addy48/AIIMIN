@@ -680,7 +680,7 @@ private fun JournalCard(e: JournalEntry, onClick: () -> Unit) {
 }
 
 @Composable
-fun JournalWriteScreen(id: String?, vm: JournalViewModel = hiltViewModel()) {
+fun JournalWriteScreen(id: String?, prefill: String? = null, vm: JournalViewModel = hiltViewModel()) {
     val nav = LocalNavigator.current
     val toaster = LocalToaster.current
     val scope = rememberCoroutineScope()
@@ -688,7 +688,7 @@ fun JournalWriteScreen(id: String?, vm: JournalViewModel = hiltViewModel()) {
     val yesterdayOpen by vm.yesterdayOpen.collectAsStateWithLifecycle()
     val existing = entries?.firstOrNull { it.id == id }
     val c = Aiimin.colors
-    var text by remember(existing?.id) { mutableStateOf(existing?.text.orEmpty()) }
+    var text by remember(existing?.id) { mutableStateOf(existing?.text ?: prefill.orEmpty()) }
     var mood by remember(existing?.id) { mutableStateOf(existing?.mood) }
     var yesterday by remember { mutableStateOf(false) }
     val voice = rememberVoiceInput("Speak your entry", onText = { t -> text = (text.trimEnd() + " " + t).trim() }, onUnavailable = { toaster.show("Speech input isn't available on this phone") })

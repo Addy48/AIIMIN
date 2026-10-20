@@ -102,6 +102,9 @@ class CaptureViewModel @Inject constructor(
     }
 
     fun revert(created: List<Source>) = viewModelScope.launch { repo.revert(created) }
+
+    /** Saves in the view model's scope, so closing the sheet mid-save never loses it; [done] runs on the main thread. */
+    fun saveAll(list: List<Action>, done: (List<Source>) -> Unit) = viewModelScope.launch { done(saveActions(list)) }
 }
 
 @HiltViewModel

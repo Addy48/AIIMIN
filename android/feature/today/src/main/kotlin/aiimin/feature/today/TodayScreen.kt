@@ -225,7 +225,12 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
                 }, modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 16.dp))
             }
         }
-        item { QuickDoorsRow(u.doors, Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 16.dp)) }
+        item {
+            QuickDoorsRow(u.doors, u.pinnedDoors, onPin = { key ->
+                vm.togglePin(key)
+                toaster.show(if (key in u.pinnedDoors) "Unpinned" else "Pinned to Today")
+            }, modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 16.dp))
+        }
         item { PhoneDataCard(vm, Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 12.dp)) }
         item { KeepAliveCard(vm, Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 12.dp)) }
 
@@ -260,7 +265,7 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
             }
         }
         if (lowBattery && u.minimums.isNotEmpty()) {
-            item { Text("Low battery: tiny versions count double today.", style = Aiimin.type.caption, modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 8.dp)) }
+            item { Text("A lighter day: tiny versions count double today.", style = Aiimin.type.caption, modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 8.dp)) }
         }
         // ---- Today list (PRD 1.2): one list, an Evening section, and "From yesterday · N" folded at the top.
         item {
@@ -498,7 +503,7 @@ private fun LaterRow(item: FlowItem, onToggle: () -> Unit, onOpen: () -> Unit, o
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            item.time?.let(Dates::clockPlain) ?: if (item.carried > 0) "late" else "anytime",
+            item.time?.let(Dates::clockPlain) ?: "anytime",
             style = if (item.time != null) Aiimin.type.bodyStrong.copy(color = if (item.done) c.textFaint else c.text) else Aiimin.type.caption,
             modifier = Modifier.width(56.dp),
         )

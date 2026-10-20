@@ -16,11 +16,12 @@ object QuickDoors {
     const val SLOTS = 4
     const val LEARN_AFTER_DAYS = 7L
 
-    fun pick(installDay: LocalDate, today: LocalDate, opens: Map<String, Int>, pinned: List<String>, hasNote: Boolean): List<String> {
+    /** [valid] is every key that has a screen behind it; others (single items like a payment) are skipped. */
+    fun pick(installDay: LocalDate, today: LocalDate, opens: Map<String, Int>, pinned: List<String>, hasNote: Boolean, valid: Set<String>? = null): List<String> {
         val base = if (hasNote) DEFAULTS.dropLast(1) + "notes" else DEFAULTS
         val learned = if (ChronoUnit.DAYS.between(installDay, today) >= LEARN_AFTER_DAYS) {
             opens.filterKeys { it !in EXCLUDED && opens[it]!! > 0 }.entries.sortedWith(compareByDescending<Map.Entry<String, Int>> { it.value }.thenBy { it.key }).map { it.key }
         } else emptyList()
-        return (pinned.filter { it !in EXCLUDED } + learned + base).distinct().take(SLOTS)
+        return (pinned.filter { it !in EXCLUDED } + learned + base).distinct().filter { valid == null || it in valid }.take(SLOTS)
     }
 }

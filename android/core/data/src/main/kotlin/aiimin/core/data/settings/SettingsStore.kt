@@ -90,6 +90,8 @@ data class AppSettings(
     val pinnedDoors: List<String> = emptyList(),
     /** First-week ladder: a capture has been saved at least once. */
     val firstCaptureDone: Boolean = false,
+    /** Stored notifications were reworded to the B2 copy once. */
+    val notificationsReworded: Boolean = false,
     val cashWallet: Boolean = true,
     val lifeScoreSharedWith: Set<String> = emptySet(),
     val stepCounterState: String? = null,
@@ -189,6 +191,7 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         val featureOpens = stringPreferencesKey("feature_opens")
         val pinnedDoors = stringPreferencesKey("pinned_doors")
         val firstCaptureDone = booleanPreferencesKey("first_capture_done")
+        val notificationsReworded = booleanPreferencesKey("notifications_reworded")
         val cashWallet = booleanPreferencesKey("cash_wallet")
         val scoreShare = stringSetPreferencesKey("score_share")
         val stepCounter = stringPreferencesKey("step_counter")
@@ -256,6 +259,7 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         featureOpens = decodeCounts(p[K.featureOpens]),
         pinnedDoors = p[K.pinnedDoors]?.split("|")?.filter { it.isNotBlank() }.orEmpty(),
         firstCaptureDone = p[K.firstCaptureDone] ?: false,
+        notificationsReworded = p[K.notificationsReworded] ?: false,
         cashWallet = p[K.cashWallet] ?: true,
         lifeScoreSharedWith = p[K.scoreShare] ?: emptySet(),
         stepCounterState = p[K.stepCounter],
@@ -325,6 +329,7 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
             p[K.featureOpens] = encodeCounts(s.featureOpens)
             p[K.pinnedDoors] = s.pinnedDoors.joinToString("|")
             p[K.firstCaptureDone] = s.firstCaptureDone
+            p[K.notificationsReworded] = s.notificationsReworded
             p[K.cashWallet] = s.cashWallet
             p[K.scoreShare] = s.lifeScoreSharedWith
             s.stepCounterState?.let { p[K.stepCounter] = it } ?: p.remove(K.stepCounter)
