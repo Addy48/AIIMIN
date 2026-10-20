@@ -250,7 +250,7 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
     val top = stack.last()
     // Every screen is the far end of a container transform keyed by its route (Part 26.5).
     val sharedScreenDecorator = remember {
-        androidx.navigation3.runtime.NavEntryDecorator<Any>(onPop = {}) { entry ->
+        androidx.navigation3.runtime.NavEntryDecorator<Any>(onPop = { key -> aiimin.designsystem.component.SharedNav.forget(aiimin.designsystem.component.sharedKeyOf(key)) }) { entry ->
             Box(Modifier.fillMaxSize().background(c.base).sharedContainer(aiimin.designsystem.component.sharedKeyOf(entry.contentKey))) { entry.Content() }
         }
     }

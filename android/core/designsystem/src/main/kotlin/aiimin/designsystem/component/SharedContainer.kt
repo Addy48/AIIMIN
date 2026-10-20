@@ -37,18 +37,26 @@ object SharedNav {
         armedAt = System.nanoTime()
     }
 
-    /** True once if the screen being opened was opened by its card (within half a second of the tap). */
+    /**
+     * True if the screen being opened was opened by its card (within a second of the tap). Idempotent:
+     * the transition spec may be read more than once for one navigation.
+     */
     fun opening(key: String): Boolean {
-        val hit = armedKey == key && System.nanoTime() - armedAt < 500_000_000L
-        if (hit) {
-            armedKey = null
-            opened += key
-        }
+        val hit = armedKey == key && System.nanoTime() - armedAt < 1_000_000_000L
+        if (hit) opened += key
         return hit
     }
 
     /** True if the screen being closed was opened by a card, so it shrinks back into it. */
-    fun closing(key: String): Boolean = opened.remove(key)
+    fun closing(key: String): Boolean {
+        if (armedKey == key) armedKey = null
+        return key in opened
+    }
+
+    /** The screen left the back stack for good. */
+    fun forget(key: String) {
+        opened -= key
+    }
 }
 
 /** Joins this card or screen to its partner under [key]; no-op without a shell or with reduce motion. */
