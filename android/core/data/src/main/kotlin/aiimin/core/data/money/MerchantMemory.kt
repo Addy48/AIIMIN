@@ -26,8 +26,17 @@ object MerchantMemory {
             alwaysAsk = cur?.alwaysAsk ?: false,
             hits = (cur?.hits ?: 0) + 1,
             lastNotes = recent.joinToString("|"),
+            sameCount = if (cur != null && cur.category == category) cur.sameCount + 1 else 1,
+            ruleOffer = cur?.ruleOffer ?: 0,
         )
     }
+
+    /** Hand filings of one place with one category before AIIMIN asks "Make this a rule?" (Phase 2). */
+    const val RULE_AFTER = 3
+
+    /** True when this place was filed by hand [RULE_AFTER] times in a row the same way and nothing else answers it. */
+    fun offersRule(r: PayeeRuleEntity, rules: List<aiimin.core.database.MoneyRuleEntity>): Boolean =
+        r.sameCount >= RULE_AFTER && r.ruleOffer == 0 && !r.alwaysAsk && !SmartRules.covers(rules, r)
 
     /** How a new alert is filled in: the learned place and category, or the cleaned SMS name. */
     fun guess(rule: PayeeRuleEntity?, parsedName: String, hasReference: Boolean, fallbackCategory: String): Guess {

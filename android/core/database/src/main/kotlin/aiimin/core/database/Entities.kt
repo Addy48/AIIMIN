@@ -166,6 +166,10 @@ data class TxnDraftEntity(
     val confidence: Double,
     /** pending · settled · dismissed */
     val status: String = "pending",
+    /** Ledger the payment is suggested for, from a rule or the place's memory (v8). */
+    @ColumnInfo(defaultValue = "PERSONAL") val ledger: String = "PERSONAL",
+    /** The smart rule that filed or sorted it, if any (v8). */
+    val ruleId: String? = null,
 )
 
 @Entity(tableName = "payee_rules")
@@ -182,6 +186,39 @@ data class PayeeRuleEntity(
     @ColumnInfo(defaultValue = "0") val hits: Int = 0,
     /** What was bought here lately, newest first, "|"-separated, five at most ("Chocolate|Milk") (v6, plan §3). */
     @ColumnInfo(defaultValue = "") val lastNotes: String = "",
+    /** Hand filings in a row with this same category; at 3 AIIMIN offers "Make this a rule?" (v8, Phase 2). */
+    @ColumnInfo(defaultValue = "0") val sameCount: Int = 0,
+    /** 0 not offered yet · 1 "Not now" · 2 made into a rule (v8). */
+    @ColumnInfo(defaultValue = "0") val ruleOffer: Int = 0,
+)
+
+/**
+ * A smart rule the person made (Part 5 Phase 2): every condition that is set must hold; rules run in [position]
+ * order before payee memory and the built-in merchant list. [autoBook] files a matching bank alert without asking.
+ */
+@Entity(tableName = "money_rules")
+data class MoneyRuleEntity(
+    @PrimaryKey val id: String,
+    val name: String,
+    val position: Int,
+    val enabled: Boolean = true,
+    /** Payee name or UPI handle contains this ("swiggy"); empty = any. */
+    val contains: String = "",
+    /** Amount from (inclusive), in paise. */
+    val minPaise: Long? = null,
+    /** Amount under (exclusive), in paise. */
+    val maxPaise: Long? = null,
+    val account4: String? = null,
+    /** The note or the bank message contains this; empty = any. */
+    val noteContains: String = "",
+    /** out · in · any */
+    val direction: String = "out",
+    val category: String,
+    val ledger: String = "PERSONAL",
+    val autoBook: Boolean = true,
+    val hits: Int = 0,
+    val createdAt: Long,
+    val updatedAt: Long,
 )
 
 /** A category the person made ("Pet"), shown next to the built-in ones (v6, plan §3). [kind] is out or in. */

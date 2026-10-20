@@ -1,0 +1,551 @@
+# AIIMIN built-in merchant list, India (Part 5 Phase 2). Written for AIIMIN on 20 Oct 2026 from public brand,
+# company and utility names (facts, not copied from any dataset). One merchant per line, spellings separated by "|".
+# "@Category" starts a block. The longest name found in a payment wins, so "Swiggy Instamart" beats "Swiggy".
+# Short names (under 5 letters) only match whole words.
+
+@Food
+swiggy|swiggy limited|bundl technologies|swiggy food|swiggy dineout
+zomato|zomato ltd|zomato limited|zomato online|eternal limited|zomato media
+dineout|eazydiner|magicpin food
+dominos|dominos pizza|domino s|jubilant foodworks|jubilant food works
+pizza hut|devyani international|sapphire foods
+kfc|kentucky fried chicken
+mcdonalds|mc donalds|mcdonald|hardcastle restaurants|connaught plaza restaurants|mcd india
+burger king|restaurant brands asia
+subway|subway sandwiches
+starbucks|tata starbucks|starbucks coffee
+costa coffee
+cafe coffee day|coffee day|ccd|coffee day global
+barista|barista coffee
+third wave coffee|third wave
+blue tokai|blue tokai coffee
+chaayos|sunshine teahouse
+chai point|mountain trail foods
+chai sutta bar
+mba chai wala
+tea villa
+chaiwala|chai wala|chaiwalla
+haldiram|haldirams|haldiram snacks|haldiram foods
+bikanervala|bikanerwala
+barbeque nation|bbq nation|barbeque nation hospitality
+absolute barbecues|absolute barbecue
+mainland china|speciality restaurants
+oh calcutta
+sigree global grill
+punjab grill
+pind balluchi
+moti mahal|moti mahal delux
+karims|karim hotels
+paradise biryani|paradise food court|paradise restaurant
+bawarchi
+shah ghouse
+behrouz|behrouz biryani
+faasos|faasos wraps
+oven story|ovenstory
+rebel foods
+eatsure
+box8|box 8
+freshmenu
+biryani by kilo|bbk biryani
+biryani blues
+meghana foods|meghana biryani
+empire restaurant|hotel empire
+truffles
+mtr|mavalli tiffin rooms
+vidyarthi bhavan
+central tiffin room|ctr
+rameshwaram cafe|the rameshwaram cafe
+brahmins coffee bar
+saravana bhavan|hotel saravana bhavan
+sangeetha veg|sangeetha restaurant
+a2b|adyar ananda bhavan
+murugan idli
+anjappar
+dindigul thalappakatti|thalappakatti
+junior kuppanna
+kamat hotel|kamats
+udupi|udupi cafe|udupi hotel|udupi grand
+shiv sagar
+sukh sagar
+leopold cafe
+theobroma|theobroma foods
+monginis
+karachi bakery
+iyengar bakery|iyengars bakery
+ribbons and balloons
+cakezone
+bakingo
+baskin robbins|baskin
+naturals ice cream
+havmor
+cream stone|creamstone
+huber and holly
+keventers
+wow momo|wow momo foods|wowmomo
+taco bell
+wendys
+popeyes
+dunkin|dunkin donuts
+krispy kreme
+mad over donuts
+smoor
+haagen dazs
+belgian waffle|the belgian waffle co
+the chocolate room
+hocco
+hard rock cafe
+toit
+byg brewski
+the beer cafe|beer cafe
+social offline|smaaash food
+chili s|chilis
+the irish house
+mamagoto
+dimsum
+sbarro
+california burrito
+la pinoz|la pinoz pizza
+oven express
+mojo pizza
+pizza express
+papa johns
+nandos
+bercos
+yo china
+chung wah
+rajdhani thali|rajdhani restaurant
+sagar ratna
+haldiram bhujiawala
+nathu sweets|nathus
+bikaner sweets
+ganguram
+balaram mullick
+k c das
+mithai mahal
+chitale bandhu|chitale
+kayani bakery
+almond house
+pulla reddy sweets
+sri krishna sweets
+adyar bakery
+anand sweets
+agarwal sweets
+bombay halwa
+brijwasi sweets
+kanha sweets
+om sweets
+rasoi
+annapoorna restaurant
+naivedyam
+dakshin
+copper chimney
+farzi cafe
+massive restaurants
+indigo deli
+smoke house deli
+cafe delhi heights
+big chill cafe
+tpot
+starbucks reserve
+mcafe
+tim hortons
+pret a manger
+blue frog
+olive bar and kitchen
+cafe mondegar
+bademiya
+britannia and co
+kyani and co
+cafe madras
+mani s cafe
+ram ashraya
+anand stall
+jumbo king|jumboking
+goli vada pav
+mumbai vada pav
+wat a burger
+burger singh
+biggies burger
+lord of the drinks
+cafe hangout
+chocolate fantasy
+frozen bottle
+drinks and dine
+~chaat
+~pani puri|~golgappa
+~juice|~juices|~juice centre|~juice center|~juice bar
+~shake|~shakes|~falooda|~lassi
+~ice cream|~icecream|~kulfi|~gelato
+~bakery|~bakers|~bake house|~bakehouse|~cake shop|~cakes|~patisserie|~confectionery|~confectioners
+~sweets|~sweet house|~sweet shop|~mithai|~misthan|~mishthan|~mishthan bhandar|~misthan bhandar|~halwai|~sweet mart
+~restaurant|~restaurants|~resto|~restro|~family restaurant|~veg restaurant
+~dhaba|~da dhaba
+~cafe|~caf|~coffee|~coffee house|~coffee shop|~cafeteria
+~chai|~tea stall|~tea point|~tea house|~chai stall
+~canteen|~mess|~tiffin|~tiffins|~tiffin centre|~tiffin center|~khanavalli|~khanaval
+~biryani|~biryani house|~biryani point
+~pizza|~pizzeria
+~burger|~burgers
+~shawarma|~rolls|~kathi roll|~frankie
+~momo|~momos
+~noodles|~chinese corner|~chinese fast food|~fast food|~fastfood
+~tandoor|~tandoori|~grill|~bbq|~barbeque|~barbecue
+~bistro|~diner|~eatery|~eats|~food court|~foods court|~food corner|~food plaza|~food junction|~foodies
+~kitchen|~cloud kitchen
+~catering|~caterers
+~bhojanalaya|~bhojnalaya|~bhojnalay
+~bhavan|~bhavana
+~hotel|~hotel and restaurant
+~idli|~dosa|~dosa corner|~dosa point|~vada pav|~pav bhaji
+~brewery|~brewing|~brewpub|~pub|~bar and kitchen|~lounge bar
+~dairy and sweets
+~food
+
+@Grocery
+swiggy instamart|instamart|swiggyinstamart
+bigbasket|big basket|supermarket grocery supplies|innovative retail concepts|bb now|bb daily|bbnow|bbdaily
+blinkit|grofers|grofers india|blink commerce
+zepto|kiranakart|zepto marketplace|zeptonow|geddit convenience
+flipkart minutes|flipkart grocery|flipkart supermart
+dunzo|dunzo daily
+milkbasket
+country delight
+dmart|d mart|avenue supermarts|dmart ready|avenue e commerce
+reliance fresh|reliance smart|smart bazaar|smart point|reliance smart point|freshpik
+jiomart|jio mart
+more retail|more supermarket|more megastore|more hypermarket
+spencers|spencer s|spencers retail
+natures basket|godrej natures basket
+star bazaar|star market|trent hypermarket
+ratnadeep|ratnadeep supermarket|ratnadeep retail
+vijetha supermarkets|vijetha
+heritage fresh
+nilgiris|nilgiris supermarket|the nilgiri dairy farm
+foodhall
+hypercity
+big bazaar|future retail|easyday|easy day
+metro cash and carry|metro cash carry
+walmart best price|best price wholesale
+lulu hypermarket|lulu mall hypermarket|lulu
+spar|spar hypermarket|max hypermarket
+margin free market
+amul|amul parlour|amul dairy|gcmmf
+mother dairy|mother dairy booth|safal
+nandini|nandini milk parlour|kmf
+aavin
+verka
+sudha dairy
+saras dairy
+gokul dairy
+hatsun|arun ice creams|arokya
+akshayakalpa
+licious|delightful gourmet
+freshtohome|fresh to home|freshtohome foods
+tendercuts
+zappfresh
+meatigo
+otipy
+kisankonnect
+pluckk
+24 mantra organic
+pro nature organic
+organic tattva
+farmers fresh zone
+~vegetable|~vegetables|~veg market|~sabzi|~sabji|~sabzi mandi|~subzi
+~fruits|~fruit|~fruit shop|~fruits and vegetables
+~dairy|~milk|~milk centre|~milk center|~milk booth|~milk parlour|~doodh
+~eggs|~egg centre|~chicken|~chicken centre|~chicken center|~mutton|~mutton shop|~meat|~meat shop|~fish|~fish market|~poultry|~seafood
+~kirana|~kirana store|~kirana stores|~kiryana
+~provision|~provisions|~provision store|~provision stores
+~general store|~general stores|~gen store
+~departmental store|~departmental stores|~department store|~dept store
+~supermarket|~super market|~supermart|~super mart|~hypermarket|~mini mart|~minimart
+~grocery|~groceries|~grocer|~grocers|~grocery store
+~atta chakki|~flour mill|~oil mill
+~ration|~ration shop|~fair price shop
+
+@Transport
+uber|uber india|uber india systems|uber bv|uber auto|uber moto
+ola|ola cabs|olacabs|ani technologies|ola money|olamoney|ola auto
+rapido|rapido bike taxi|roppen transportation|rapido auto
+namma yatri|nammayatri
+blusmart|blusmart mobility
+evera cabs
+meru cabs|meru
+mega cabs
+savaari
+quick ride
+blablacar
+indrive|indriver
+yulu|yulu bikes
+bounce|bounce share
+vogo
+zoomcar
+revv
+drivezy
+myles cars
+shuttl
+chalo|chalo app
+park plus|parkplus|park+
+~parking|~parking charges|~pay and park|~car parking|~parking lot|~multilevel parking
+~toll|~toll plaza|~toll tax|~tollplaza
+~fastag|~fastag recharge|~netc fastag|~netc|~ihmcl|~nhai
+~petrol|~petrol pump|~petrol bunk|~petroleum|~petroleum products
+~fuel|~fuels|~fuel station|~fuel point|~filling station|~service station|~fuel centre|~auto fuels
+~cng|~cng station|~cng pump
+~ev charging|~ev charger|statiq|chargezone|tata power ez charge|jio bp pulse
+indian oil|indianoil|iocl|indian oil corporation|ioc
+bharat petroleum|bpcl|bharat petroleum corporation|bharat petroleum corp|bp petrol
+hindustan petroleum|hpcl|hp petrol pump|hp petrol|hindustan petroleum corporation
+shell|shell india|shell india markets|shell petrol
+nayara|nayara energy|essar oil
+jio bp|jio-bp|jiobp|reliance bp mobility
+reliance petroleum
+~metro|~metro rail|~metro card|~metro recharge
+dmrc|delhi metro|delhi metro rail|delhi metro rail corporation
+bmrcl|namma metro|bangalore metro|bangalore metro rail|bengaluru metro
+hyderabad metro|l and t metro rail|ltmrhl
+chennai metro|cmrl|chennai metro rail
+kochi metro|kmrl
+pune metro|maha metro
+nagpur metro
+mumbai metro|mumbai metro one|mmrda|mmmocl
+navi mumbai metro
+lucknow metro|lmrc
+jaipur metro
+kolkata metro
+ahmedabad metro|gujarat metro
+noida metro|nmrc
+rapid metro
+kanpur metro
+bmtc|best bus|dtc bus|delhi transport corporation|mtc bus|pmpml|bmtc bus
+~uts|~uts ticket|~mumbai local|~suburban railway
+~auto rickshaw|~autorickshaw|~rickshaw|~taxi|~cab|~cabs|~cab service|~taxi service|~car rental|~car rentals|~self drive
+~car wash|~car spa|~car care|~bike wash
+tyre|tyres|tyre shop|apollo tyres|mrf|mrf tyres|ceat|jk tyre|bridgestone|michelin|yokohama
+~auto parts|~spare parts|~automobile|~automobiles|~motors|~garage|~mechanic|~puncture
+maruti suzuki|maruti|nexa|arena maruti|true value
+hyundai|hyundai motor
+tata motors
+mahindra and mahindra|mahindra automotive
+kia india|kia motors
+toyota kirloskar|toyota
+honda cars|honda motorcycle|honda two wheelers
+hero motocorp|hero honda
+bajaj auto
+tvs motor|tvs motors
+royal enfield
+ather energy|ather
+ola electric
+parivahan|vahan|sarathi|rto
+
+@Bills
+jio|reliance jio|reliance jio infocomm|jio prepaid|jio postpaid|jiofiber|jio fiber|myjio
+airtel|bharti airtel|bharti hexacom|airtel postpaid|airtel prepaid|airtel xstream|airtel broadband|airtel dth|airtel digital tv|airtel payments bank
+vodafone idea|vodafone|vi prepaid|vi postpaid|idea cellular|vodafone india
+bsnl|bharat sanchar nigam|bsnl bill|bsnl broadband|bsnl ftth|mtnl
+tata teleservices|tata docomo
+act fibernet|act broadband|atria convergence|fibernet
+hathway|hathway broadband|hathway cable
+excitel|you broadband|spectra broadband|tikona|alliance broadband|asianet broadband|asianet satellite|den networks|gtpl|siti cable|fastway|railwire|tata play fiber|connect broadband|gigatel
+~broadband|~internet bill|~wifi bill|~cable tv|~cable operator
+tata play|tata sky|dish tv|d2h|videocon d2h|sun direct|dth|dth recharge
+~recharge|~mobile recharge|~prepaid recharge|~postpaid bill|~mobile bill|~phone bill|~landline bill|~data recharge|~top up
+~electricity|~electricity bill|~power bill|~electricity board|~power distribution
+msedcl|mahavitaran|msedcl electricity|mahadiscom
+bescom|bescom electricity|hescom|gescom|mescom|cesc mysore|cesc|cesc limited
+tneb|tangedco|tnpdcl|tneb electricity|tamil nadu electricity
+kseb|kerala state electricity
+apspdcl|apepdcl|apcpdcl|tsspdcl|tsnpdcl|tgspdcl|tgnpdcl
+bses|bses rajdhani|bses yamuna|bses electricity|tpddl|tata power ddl|tata power delhi|ndmc electricity
+tata power|tata power company|tata power mumbai|tpcodl|tpwodl|tpsodl|tpnodl|tp central odisha
+adani electricity|adani electricity mumbai|reliance energy
+torrent power
+best undertaking|best electricity|brihanmumbai electric
+uppcl|pvvnl|mvvnl|dvvnl|puvvnl|kesco|npcl|noida power
+pspcl|punjab state power
+uhbvn|dhbvn|uhbvnl|dhbvnl
+jvvnl|avvnl|jdvvnl|jaipur vidyut
+mpez|mppkvvcl|mpmkvvcl|mpcz|mpwz|mp paschim kshetra|mp madhya kshetra
+cspdcl|chhattisgarh state power
+wbsedcl|west bengal state electricity
+nbpdcl|sbpdcl|bihar electricity
+jbvnl|jharkhand bijli
+cesu|tp odisha
+apdcl|assam power
+mepdcl|tsecl|hpsebl|hpseb|jkpdd|upcl|uttarakhand power|goa electricity|sikkim power|puducherry electricity|dnh power|ddeg
+dgvcl|mgvcl|pgvcl|ugvcl|gujarat vij
+~gas bill|~piped gas|~png bill|~lpg|~lpg booking|~cylinder booking|~gas booking|~gas agency
+mahanagar gas|mgl|indraprastha gas|igl|gujarat gas|adani total gas|adani gas|gail gas|torrent gas|sabarmati gas|maharashtra natural gas|mngl|bhagyanagar gas|green gas|central up gas|haryana city gas|tripura natural gas|assam gas|avantika gas|vadodara gas|megha gas|think gas|irm energy
+indane|indane gas|hp gas|hpgas|bharat gas|bharatgas|super gas
+~water bill|~water supply|~water charges|~jal board|~delhi jal board|djb|bwssb|hmwssb|chennai metro water|cmwssb|~jal nigam|~water works|~phed|~water tax
+~municipal corporation|~municipal|~nagar nigam|~nagar palika|~nagarpalika|~property tax|~house tax|mcgm|bbmp|ghmc|~mcd property tax|~pune municipal|~pmc property tax|~amc tax|~corporation tax|~panchayat tax
+~society maintenance|~maintenance charges|~society charges|~apartment maintenance|mygate|nobrokerhood|apnacomplex|adda apartment|~association dues|~rwa
+lic|life insurance corporation|lic of india|lic premium
+hdfc life|hdfc standard life|icici prudential|icici pru|icici prudential life|sbi life|sbi life insurance|max life|axis max life|bajaj allianz|bajaj allianz life|bajaj allianz general|tata aia|kotak life|kotak mahindra life|aditya birla sun life|pnb metlife|canara hsbc life|aegon life|bandhan life|edelweiss tokio|bharti axa|exide life|shriram life|star union dai ichi|indiafirst life|reliance nippon life|future generali|pramerica life|sahara life|ageas federal
+star health|star health insurance|care health|care health insurance|religare health|niva bupa|max bupa|hdfc ergo|icici lombard|tata aig|new india assurance|united india insurance|national insurance|oriental insurance|go digit|digit insurance|acko|acko general|reliance general|royal sundaram|cholamandalam ms|chola ms|sbi general|iffco tokio|kotak general|liberty general|magma hdi|manipalcigna|manipal cigna|aditya birla health|universal sompo|zuno general|navi general|raheja qbe
+policybazaar|policy bazaar|insurancedekho|renewbuy|turtlemint|coverfox
+~insurance|~insurance premium|~premium payment|~policy premium
+bajaj finance|bajaj finserv|bajaj finance emi|bajaj housing finance
+~emi|~emi payment|~education loan|~laptop emi|~mobile emi|~consumer loan|~loan emi|~loan repayment|~loan|~home loan|~car loan|~personal loan|~two wheeler loan|~gold loan|~nach debit|~ach debit|~ecs debit|~si debit
+~credit card|~credit card bill|~card bill|~cc bill|~cc payment|~card payment|~credit card payment|~card dues
+hdfc credit card|icici credit card|sbi card|sbi cards|sbi cards and payment|axis credit card|axis bank credit card|kotak credit card|amex|american express|citi credit card|indusind credit card|yes bank credit card|rbl credit card|idfc first credit card|au credit card|hsbc credit card|standard chartered credit card|bob card|bob financial|onecard|one card|slice card|uni cards|scapia|jupiter card
+cred|cred club|dreamplug
+home credit|tata capital|fullerton india|smfg india credit|idfc first|hdb financial|muthoot finance|muthoot fincorp|manappuram|shriram finance|shriram transport|mahindra finance|l and t finance|hero fincorp|poonawalla fincorp|aditya birla capital|piramal finance|cholamandalam finance|chola finance|iifl finance|lic housing finance|pnb housing|can fin homes|aavas|aptus|kreditbee|moneyview|money view|navi finserv|navi loan|fibe|earlysalary|paysense|cashe|lazypay|simpl|zestmoney|kissht|ring loan|mpokket|stashfin|truebalance|dhani|paytm postpaid|amazon pay later|flipkart pay later
+income tax|tax payment|advance tax|tds|gst payment|gst challan|challan|e challan|traffic challan|tin nsdl|protean|egov
+~electricity duty|~stamp duty|~registration fee|~court fee
+~postpaid
+~bill payment|~bill pay|billdesk|bbps|bharat bill pay|~utility bill|~utility payment
+
+@Rent
+~rent|~house rent|~room rent|~flat rent|~rent payment|~rental|~monthly rent|~pg rent|~hostel rent
+nobroker|nobroker rent|nobroker technologies
+nestaway
+stanza living|stanza
+zolo|zolo stays|zolostays
+colive
+your space|yourspace
+housing rent|housing com rent|magicbricks rent
+cred rent|paytm rent|rentpay
+rentomojo|furlenco|cityfurnish
+~paying guest|~pg accommodation|~ladies pg|~gents pg|~boys pg|~girls pg
+~co living|~coliving
+
+@Subs
+netflix|netflix entertainment|netflix entertainment services|netflix com
+disney hotstar|hotstar|jiohotstar|jio hotstar|novi digital|novi digital entertainment|star india digital
+amazon prime|prime video|amazon prime video|prime membership
+youtube premium|youtube music|youtube|google youtube
+spotify|spotify india|spotify ab
+apple services|apple media services|apple com bill|itunes|apple music|apple tv|apple one|icloud|apple arcade
+google play|google play store|play store|google one|google storage|google workspace|google cloud
+sonyliv|sony liv|sony pictures networks|culver max
+zee5|zee entertainment|zee5 subscription
+jiocinema|jio cinema|jiosaavn|jio saavn|saavn
+gaana|wynk|wynk music|hungama|hungama music
+aha|aha video|arha media
+sun nxt|sunnxt
+hoichoi
+alt balaji|altt
+mx player|mx player pro
+eros now
+voot|voot select
+discovery plus|discovery+
+lionsgate play
+mubi
+shemaroo|shemaroome
+chaupal
+erosnow
+audible|kindle unlimited|amazon kindle unlimited
+pocket fm|pocketfm|kuku fm|kukufm|storytel|headfone
+times prime|et prime|economic times|the hindu|hindustan times|times of india|toi plus|indian express|livemint|mint subscription|moneycontrol pro|business standard|the ken|the morning context|newslaundry|the print|scroll|magzter|readwhere
+swiggy one|zomato gold|zomato pro|swiggy super|flipkart plus|myntra insider|amazon prime lite
+microsoft|microsoft 365|office 365|microsoft store|xbox game pass|msft|linkedin premium|linkedin
+adobe|adobe systems|adobe creative cloud|canva|figma|notion|dropbox|evernote|todoist|grammarly|zoom|zoom video|slack|github|gitlab|jetbrains|atlassian|1password|nordvpn|expressvpn|surfshark|proton
+openai|chatgpt|chat gpt|anthropic|claude ai|perplexity|midjourney|gemini advanced
+tinder|bumble|hinge|aisle|truly madly|trulymadly|shaadi com|jeevansathi|bharat matrimony|matrimony com
+headspace|calm app|healthifyme pro|cult pass|fittr pro
+tata neu pass|paytm first
+~subscription|~monthly subscription|~annual subscription|~membership fee|~auto renewal|~autopay subscription
+
+@Shopping
+amazon|amazon india|amazon seller|amazon seller services|amazon retail|amazon pay|amazonpay|amazon in|amazon marketplace|cloudtail|appario|amazon com
+flipkart|flipkart internet|flipkart india|flipkart com|shopsy|ekart
+myntra|myntra designs|myntra jabong|jabong
+ajio|ajio com|reliance ajio
+nykaa|nykaa e retail|fsn e commerce|nykaa fashion|nykaaman
+purplle|purplle com
+meesho|fashnear technologies
+snapdeal|shopclues|tata cliq|tatacliq|tata cliq luxury|limeroad|koovs|voonik|firstcry fashion
+reliance trends|trends|trends footwear|reliance digital|reliance retail digital|reliance jewels|reliance digital store
+croma|infiniti retail|croma infiniti retail
+vijay sales|poorvika|poorvika mobiles|sangeetha mobiles|bajaj electronics|pai international|girias|lot mobiles|big c mobiles|ezone|great eastern|kohinoor electronics|sathya agencies|happi mobiles|celekt|bharat electronics store|jumbo electronics|viveks
+tanishq|kalyan jewellers|malabar gold|malabar gold and diamonds|joyalukkas|pc jeweller|caratlane|bluestone|senco gold|p n gadgil|png jewellers|bhima jewellers|grt jewellers|tribhovandas bhimji zaveri|tbz|giva|melorra|candere|lalithaa jewellery|khazana jewellery|vaibhav jewellers|thangamayil|josco|chemmanur|jos alukkas|sri krishna jewellers|orra|kirtilals|waman hari pethe|d damas
+titan|titan company|fastrack|sonata watches|helios watch|ethos|ethos watch|just in time|kapoor watch|casio|fossil|timex|daniel wellington
+lenskart|lenskart solutions|titan eye plus|titan eyeplus|specsmakers|vision express|lawrence and mayo|eyewear|john jacobs
+pantaloons|westside|zudio|trent|trent limited|max fashion|max retail|landmark group|lifestyle|lifestyle international|home centre|shoppers stop|brand factory|v mart|vishal mega mart|vishal megamart|style union|cantabil|mufti|spykar|killer jeans|flying machine|pepe jeans|levis|levi strauss|lee jeans|wrangler|jack and jones|vero moda|bestseller retail|us polo|u s polo assn|uspa|tommy hilfiger|calvin klein|arrow|van heusen|allen solly|louis philippe|peter england|abfrl|aditya birla fashion|raymond|the raymond shop|park avenue|colorplus|blackberrys|manyavar|mohey|vedant fashions|fabindia|biba|biba apparels|w for woman|wforwoman|aurelia|global desi|rangriti|soch|libas|kalki fashion|nalli|nalli silks|pothys|the chennai silks|chennai silks|kalanjali|mysore saree udyog|neerus|meena bazaar|sabyasachi|bewakoof|the souled store|snitch|rare rabbit|the bear house|urbanic|zara|inditex|h and m|hennes and mauritz|h m hennes|uniqlo|uniqlo india|marks and spencer|marks spencer|forever 21|superdry|celio|gant|diesel|armani exchange|hugo boss|massimo dutti|bershka|pull and bear|easybuy|reliance centro|centro|azorte|yousta|tasva|indian terrain|basics life|jockey|page industries|enamor|zivame|clovia|amante|triumph
+puma|nike|adidas|reebok|asics|skechers|new balance|fila|under armour|hrx|decathlon|decathlon sports|sports station|planet sports|superkicks|veg nonveg|crocs|clarks|hush puppies|woodland|red tape|bata|bata india|liberty shoes|metro shoes|metro brands|mochi|mochi footwear|khadims|relaxo|campus shoes|campus activewear|sparx|inc 5|catwalk|lakhani|regal shoes|footwear|shoes|shoe store|shoe mart|chappal
+mamaearth|honasa|sugar cosmetics|lakme|plum goodness|the body shop|forest essentials|kama ayurveda|bath and body works|sephora|mac cosmetics|biotique|wow skin science|mcaffeine|minimalist|the derma co|bombay shaving|beardo|man matters|ustraa|pilgrim|dot and key|foxtale|renee cosmetics|myglamm|kay beauty|swiss beauty|colorbar|faces canada|lotus herbals|vlcc|nat habit|juicy chemistry|innisfree|the face shop|loreal|maybelline|tira beauty|tira
+lakme salon|naturals salon|green trends|toni and guy|toni guy|jawed habib|enrich salon|looks salon|bodycraft|ylg salon|geetanjali salon|bblunt|kaya clinic|kaya skin|salon|unisex salon|beauty salon|hair salon|beauty parlour|ladies parlour|barber|barber shop|hair cut|haircut|spa|nail art|nails
+urban company|urbanclap|urban clap|housejoy|snabbit|pronto home
+apple|apple india|apple store|imagine apple|unicorn infosolutions|samsung|samsung india|samsung store|oneplus|xiaomi|mi store|mi home|redmi|realme|vivo|oppo|iqoo|nothing technology|nothing phone|motorola|google store|pixel store|sony centre|sony india|lg electronics|lg india|whirlpool|voltas|daikin|blue star|godrej appliances|haier|panasonic|philips|havells|bajaj electricals|crompton|prestige|ttk prestige|hawkins|pigeon|butterfly|wonderchef|borosil|milton|cello|tupperware|kent ro|aquaguard|eureka forbes|dyson|ifb|lloyd|carrier|hitachi|bosch|boat|boat lifestyle|imagine marketing|gonoise|noise smartwatch|fire boltt|boult|jbl|harman|bose|sennheiser|zebronics|portronics|ambrane|mivi|dell|dell india|hp store|hp world|lenovo|asus|acer|msi|canon|nikon|gopro|amazon basics|logitech|xbox store|intel|amd|western digital|sandisk|seagate|tp link|d link|netgear|usha international
+ikea|ikea india|pepperfry|urban ladder|home centre|hometown|home town|godrej interio|durian|nilkamal|wakefit|sleepwell|duroflex|kurlon|kurl on|sleepyhead|the sleep company|livspace|homelane|d decor|bombay dyeing|welspun|asian paints|berger paints|nerolac|jaquar|hindware|cera|kajaria|somany|ace hardware|hardware|hardware store|electricals|electrical store|furniture|furnitures|furnishing|furnishings|home decor|decor|crockery|utensils|vessels|steel house|plastics|glass house|lighting|paints|sanitary|plywood|tiles
+~electronics|~electronic|~mobiles|~mobile store|~mobile shop|~mobile point|~mobile gallery|~mobile world|~mobile accessories|~computers|~computer|~laptop|~laptops|~gadgets|~digital world|~appliances|~home appliances
+~fashion|~fashions|~garments|~garment|~textiles|~textile|~cloth|~cloth store|~cloth house|~clothing|~apparel|~apparels|~boutique|~tailor|~tailors|~readymade|~ready made|~saree|~sarees|~silks|~silk house|~collection|~collections|~kurta|~ethnic wear|~menswear|~mens wear|~womens wear|~kids wear|~hosiery|~uniforms
+~jewellers|~jewellery|~jewelers|~jewelry|~gold palace|~diamonds|~imitation jewellery
+~watches|~watch store|~watch co|~watch house|~opticals|~optical|~optics|~spectacles
+~cosmetics|~beauty store|~beauty products|~perfumes|~perfume|~fragrance
+~shopping|~mall shopping|~online shopping|~online order|~online purchase|~emporium|~mega store|~megastore|~outlet|~factory outlet|~store|~stores|~bazaar|~shop|~shoppe|~mart
+
+@Health
+apollo|apollo pharmacy|apollo hospitals|apollo hospital|apollo 247|apollo clinic|apollo health|apollo diagnostics|apollo sugar|apollo cradle|apollo spectra
+fortis|fortis hospital|fortis healthcare|fortis escorts
+max healthcare|max hospital|max super speciality|max lab
+manipal|manipal hospital|manipal hospitals|manipal health
+narayana health|narayana hrudayalaya|narayana hospital|narayana multispeciality|narayana nethralaya
+aster|aster dm|aster cmi|aster hospital|aster medcity|aster pharmacy
+medanta|aiims|kokilaben|kokilaben hospital|lilavati|lilavati hospital|hinduja hospital|p d hinduja|breach candy|jaslok|nanavati|nanavati max|ruby hall|ruby hall clinic|sahyadri hospital|jupiter hospital|kims hospital|kims|yashoda hospital|care hospitals|care hospital|rainbow children|rainbow hospital|cloudnine|cloud nine hospital|motherhood hospital|sankara nethralaya|aravind eye|dr agarwals eye|agarwal eye hospital|vasan eye care|columbia asia|sakra|sparsh hospital|bgs gleneagles|gleneagles|gleneagles global|global hospital|wockhardt|ganga ram|sir ganga ram|blk|blk max|artemis|paras hospital|medica|amri|peerless hospital|ruby general|christian medical college|cmc vellore|pgimer|tata memorial|hcg|hcg oncology|cytecare|indraprastha apollo|moolchand|st johns hospital|jehangir hospital|deenanath mangeshkar|bombay hospital|wadia hospital|kem hospital|sion hospital|safdarjung|rml hospital|government hospital|civil hospital|district hospital|esic|cghs
+medplus|medplus health|netmeds|netmeds marketplace|pharmeasy|91streets|axelia solutions|1mg|tata 1mg|truemeds|wellness forever|frank ross|guardian pharmacy|medlife|dava india|davaindia|jan aushadhi|janaushadhi|generic aushadhi|zeno health|sanjeevani pharmacy|hetero|medkart|apollo pharmacy online
+dr lal pathlabs|lal pathlabs|lal path labs|dr lal|thyrocare|metropolis|metropolis healthcare|srl diagnostics|agilus|agilus diagnostics|redcliffe|redcliffe labs|healthians|orange health|neuberg|vijaya diagnostic|suburban diagnostics|mahajan imaging|aarthi scans|tata 1mg labs|pathkind|lupin diagnostics|sterling accuris|unipath|core diagnostics|max lab|oncquest|ganesh diagnostic
+practo|mfine|docsapp|tata health|lybrate|eka care|ekacare|medibuddy|plum health|visit health|pristyn care|hexahealth|mykare|clinikk|even healthcare|loop health|onsurity
+cult fit|cultfit|cure fit|curefit|cult gym|golds gym|gold s gym|anytime fitness|snap fitness|fitness first|talwalkars|healthifyme|fittr|crossfit|f45|powerworld gym|multifit|bodybuilding|nutrabay|healthkart|muscleblaze|myprotein
+~gym|~gymnasium|~fitness|~fitness centre|~fitness center|~fitness studio|~yoga|~yoga studio|~yoga centre|~zumba|~physiotherapy|~physio|~physiotherapist|~pilates
+~dentist|~dental|~dental clinic|~dental care|~dental hospital|~orthodontic|~tooth|~teeth
+~clinic|~clinics|~polyclinic|~poly clinic|~health centre|~health center|~health care|~healthcare|~medical centre|~medical center|~medicare|~nursing home|~maternity home|~hospital|~hospitals|~multispeciality|~multi speciality|~super speciality|~child clinic|~skin clinic|~ent clinic|~ayurveda clinic|~ayurvedic hospital|~homeopathy|~homoeopathy|~homeopathic|~siddha|~unani|patanjali chikitsalaya
+~medical|~medicals|~medicos|~medical store|~medical stores|~medical hall|~medical agency|~medical agencies|~medical shop|~meds|~medicines|~medicine|~chemist|~chemists|~chemist and druggist|~chemists and druggists|~druggist|~druggists|~pharma|~pharmacy|~pharmacies|~pharmaceuticals|~drug house|~drug store|~drugstore|~aushadhi|~aushadhalaya|~dawakhana|~dawa
+~diagnostic|~diagnostics|~diagnostic centre|~diagnostic center|~pathology|~path lab|~pathlab|~pathlabs|~pathlab services|~scan centre|~scan center|~scans|~imaging|~x ray|~xray|~mri|~ct scan|~blood bank|~laboratory|~laboratories|~lab test
+~eye hospital|~eye clinic|~eye care|~eyecare|~eye centre|~ophthalmic|~vision centre|~optometry
+~vaccination|~vaccine|cowin
+~ambulance|ziqitza|~108 ambulance
+~doctor|~doctors|~dr clinic|~consultation|~consultation fee|~opd|~ipd|~hospital bill
+
+@Education
+byjus|byju|byjus classes|think and learn|byjus exam prep|aakash byjus
+unacademy|sorting hat technologies|graphy
+vedantu|vedantu innovations
+physics wallah|physicswallah|pw store|pw live
+allen career|allen career institute|allen digital|allen kota
+aakash institute|aakash educational|aakash educational services
+fiitjee|resonance|resonance eduventures|motion education|vibrant academy|narayana school|narayana junior college|narayana group|sri chaitanya|chaitanya school|career launcher|time education|ims learning|made easy|ace academy|vision ias|drishti ias|forum ias|vajiram|vajiram and ravi|next ias|chanakya ias|shankar ias
+upgrad|simplilearn|great learning|scaler|scaler academy|interviewbit|coding ninjas|newton school|masai school|almabetter|geeksforgeeks|naukri learning|internshala|skill lync|testbook|adda247|adda 247|oliveboard|gradeup|byjus exam prep|toppr|doubtnut|extramarks|meritnation|embibe|cuemath|whitehat jr|whitehat education|codingal|planetspark|vedic maths|learnapp|unschool|leverage edu|yocket|leap scholar|edureka|pw skills|board infinity
+duolingo|coursera|udemy|edx|khan academy|skillshare|masterclass|linkedin learning|brilliant|chegg|pearson|cambridge|british council|ielts|idp education|ets toefl|toefl|gre exam|gmac|gmat|nta|national testing agency|cbse|icse|cisce|nios|ignou|state board|exam fee|examination fee|admission fee|application fee|tuition fee|tuition fees|school fee|school fees|college fee|college fees|semester fee|hostel fee
+~university|~universities|~college|~colleges|~school|~schools|~vidyalaya|~vidyalayam|~vidya mandir|~vidya bhavan|~vidya niketan|~vidyapeeth|~vidyapith|~shiksha|~academy|~academic|~institute|~institution|~institutions|~education|~educational|~classes|~tuition|~tuitions|~coaching|~coaching centre|~coaching classes|~tutorial|~tutorials|kendriya vidyalaya|~public school|~international school|~high school|~convent|~convent school|~playschool|~play school|~preschool|~pre school|~montessori|~kindergarten|kidzee|eurokids|euro kids|podar|podar international|dps|delhi public school|ryan international|amity|amity university|manipal university|manipal academy|symbiosis|christ university|bits pilani|nmims|lpu|lovely professional university|srm university|vit university|chandigarh university|sharda university|bennett university|ashoka university|~iit|~iim|~nit|~iiit|~jee|~neet|~polytechnic|~iti|~engineering college|~medical college|~law college|~b school
+~online course|~online courses|~course fee|~stationery|~stationary|~stationers|~book depot|~book house|~book store|~bookstore|~books|~book stall|~book centre|crossword|crossword bookstores|sapna book house|higginbothams|oxford bookstore|bahrisons|kitab khana|blossom book house|landmark books|wordsworth|~pustak|~pustakalaya|~library|~xerox|~photocopy|~print shop|~printers|navneet|classmate notebooks|camlin|faber castell
+
+@Travel
+irctc|irctc e ticketing|irctc eticketing|irctc tourism|indian railway|indian railways|railway|railways|railway reservation|rail ticket|train ticket|irctc ltd|indianrail|railyatri|confirmtkt|trainman|ixigo|le travenues|ixigo trains
+makemytrip|make my trip|makemytrip india|mmt india|goibibo|ibibo group|ibibo|redbus|red bus|abhibus|abhi bus|cleartrip|yatra|yatra online|easemytrip|ease my trip|easy trip planners|via com|akbar travels|thomas cook|sotc|cox and kings|kesari tours|kesari|veena world|club mahindra|mahindra holidays|sterling holidays|treebo|fabhotels|fab hotels|oyo|oyo rooms|oravel|oravel stays|oyo hotels|airbnb|booking com|bookingcom|agoda|expedia|trivago|hotels com|goibibo hotels|travelguru|tripadvisor|klook|thrillophilia|headout|tripoto|pickyourtrail|holidify|wanderon|justwravel
+taj hotels|ihcl|indian hotels company|vivanta|ginger hotels|ginger hotel|seleqtions|the taj|itc hotels|itc maurya|welcomhotel|oberoi|oberoi hotels|trident hotels|trident|eih limited|marriott|jw marriott|courtyard by marriott|fairfield by marriott|hyatt|hyatt regency|hilton|radisson|radisson blu|novotel|ibis|accor|lemon tree|lemon tree hotels|sarovar|sarovar hotels|fortune hotels|the leela|leela palace|the lalit|holiday inn|sheraton|westin|crowne plaza|four seasons|st regis|ritz carlton|park hyatt|the park hotel|clarks inn|royal orchid|keys hotels|mango hotels|pride hotels|country inn|zone by the park|regenta|ramada|wyndham|howard johnson|best western|ista
+zostel|gostops|go stops|the hosteller|moustache hostel|hostelworld|madpackers|backpacker panda|whoopers|zostel homes
+indigo|interglobe|interglobe aviation|6e|air india|air india express|air india limited|vistara|tata sia airlines|spicejet|spice jet|akasa|akasa air|sny aviation|go first|goair|go airlines|airasia|airasia india|aix connect|alliance air|star air|fly91|flybig|emirates|qatar airways|etihad|singapore airlines|lufthansa|british airways|thai airways|air arabia|flydubai|malaysia airlines|cathay pacific|klm|air france|turkish airlines|gulf air|oman air|saudia|srilankan airlines|virgin atlantic|united airlines|delta air|american airlines|air canada|qantas|scoot|vietjet|batik air
+~airline|~airlines|~airways|~aviation|~airport|~airport lounge|~lounge|dreamfolks|~duty free|~travel tax|~flight|~flights|~flight ticket|~air ticket|~air tickets
+zingbus|intrcity|intrcity smartbus|intercity smartbus|flixbus|nuego|vrl travels|vrl logistics|srs travels|orange travels|kallada travels|kallada|paulo travels|neeta travels|neeta tours|hans travels|jabbar travels|kaveri travels|morning star travels|kpn travels|parveen travels|sharma travels|raj national express|national travels|ksrtc|kerala rtc|karnataka rtc|msrtc|tsrtc|tgsrtc|apsrtc|upsrtc|gsrtc|rsrtc|hrtc|osrtc|wbtc|sbstc|nbstc|bsrtc|pepsu|punbus|hrtc himachal|uttarakhand transport|jktdc|sctc|tnstc|setc|kadamba transport|ktc goa|state transport|bus ticket|bus tickets|volvo bus
+~travels|~tours and travels|~tour and travels|~travel agency|~travel agent|~travel|~tours|~tour|~holidays|~holiday|~vacations|~vacation|~excursion|~pilgrimage|~yatra tours|~char dham|vaishno devi shrine board|shri mata vaishno devi|amarnath yatra|~kedarnath helicopter|~heli service
+vfs global|vfs|bls international|passport seva|passport office|visa fee|atlys|bookmyforex|forex|currency exchange|travel insurance|thomas cook forex|ebixcash forex|wise transfer
+~hotel booking|~hotel bookings|~room booking|~resort|~resorts|~homestay|~home stay|~homestays|~guest house|~guesthouse|~lodge|~lodging|~hotels|~villa|~cottage|~cottages|~camping|~glamping|~dharamshala|~dharamsala|~dormitory
+
+@Fun
+bookmyshow|book my show|bigtree entertainment|big tree entertainment|bms
+paytm insider|insider in|zomato district|district by zomato|skillbox|townscript|allevents|ticketnew|ticket new|eventbrite|explara|highape|sortmyscene
+pvr|pvr inox|pvr cinemas|pvr limited|pvr ltd|inox|inox leisure|inox movies|cinepolis|cinepolis india|carnival cinemas|miraj cinemas|mukta a2|mukta arts|movietime|movie time cinemas|rajhans cinemas|srs cinemas|wave cinemas|gold cinema|sathyam cinemas|spi cinemas|asian cinemas|prasads|prasads imax|prasads multiplex|imax|connplex|cinema|cinemas|cineplex|multiplex|theatre|theater|talkies|movies|movie|film city
+wonderla|wonderla holidays|imagicaa|imagica|adlabs imagica|essel world|esselworld|water kingdom|kidzania|snow world|snow kingdom|smaaash|timezone|timezone entertainment|fun city|funcity|game zone|gamezone|gaming zone|amoeba|blue o|bowling|bowling alley|go karting|gokarting|karting|escape room|trampoline park|bounce inc|paintball|laser tag|vr park|amusement|amusement park|water park|theme park|adventure park|zoo|museum|planetarium|aquarium|science city|safari|national park|tiger reserve|boating|ropeway|ride|rides
+dream11|dream 11|sporta technologies|my11circle|mpl|mobile premier league|winzo|rummy|rummycircle|rummy circle|junglee rummy|junglee games|a23|head digital works|pokerbaazi|adda52|zupee|ludo king|ludo|games24x7|gameskraft|rush gaming|howzat|fantasy|fantasy sports|vision11|probo|gaming
+steam|steam games|steampowered|valve|playstation|playstation store|playstation network|sony interactive|psn|xbox|xbox live|nintendo|nintendo eshop|epic games|riot games|garena|free fire|krafton|bgmi|battlegrounds mobile|supercell|clash of clans|candy crush|king com|roblox|mihoyo|genshin|ea sports|ubisoft|rockstar games|~games|~game|~video games|~gaming store
+~wine shop|~wines|~wine|~wine store|~wine mart|~liquor|~liquor store|~liquor shop|~beer shop|~beer|~beverages corporation|tasmac|ksbcl|bevco|bevq|apsbcl|tsbcl|~desi daru|~country liquor|~beer and wine|~wine and beer|living liquidz|tonique|la cave
+~club|~clubs|~country club|~sports club|~recreation club|gymkhana|~turf|~box cricket|playo|hudle|~sports arena|~badminton court|~swimming pool|~skating|~snooker|~pool parlour|~billiards|~golf|~golf course|~cricket academy
+~concert|~concerts|~live show|~comedy show|~standup|~stand up|~event|~events|~festival|~fest|~carnival|~exhibition|~expo|~fair|~mela|~garba|~dandiya|~party|~parties|~celebration|~celebrations|~dj|~karaoke|~nightclub|~night club|~disco|~lounge club|~toy train
+~hobby|~hobbies|~art supplies|~music store|~musical instruments|~guitar|~piano|~photography|~camera rental|~drone
+
+@Gifts
+ferns n petals|ferns and petals|fnp|fnp gifts|igp|igp com|igp gifts|interflora|archies|archies gallery|archies cards|winni|winni cakes|giftalove|floweraura|flower aura|oyegifts|oye gifts|myflowertree|bloomsvilla|bloom box|hallmark|giftsxpress|indiagift|giftease|zoomin|printland|ferns n petals gifts|presto gifts|the gift studio|giftmart|gift studio
+~gift|~gifts|~gift shop|~gift centre|~gift center|~gift gallery|~gift house|~gift corner|~gift store|~gift card|~gift cards|~gift voucher|~gift vouchers|~giftcard|woohoo|qwikcilver|pine labs gift|zaggle gift
+~florist|~florists|~flower shop|~flowers|~flower|~bouquet|~bouquets|~flower decoration|~garland|~phool|~phool mala
+~donation|~donations|~charity|~charitable trust|~foundation|~ngo|giveindia|give india|ketto|milaap|akshaya patra|cry india|smile foundation|goonj|helpage|helpage india|savethechildren|save the children|unicef|pm cares|~cm relief fund|~chief minister relief|~relief fund|~tithe|~dakshina|~offering|~hundi|~seva|~daan|~dharmada
+temple|mandir|devasthanam|devasthanams|tirumala tirupati devasthanams|ttd|tirupati balaji|shirdi sai baba sansthan|shirdi sansthan|sai baba sansthan|siddhivinayak|iskcon|gurudwara|gurdwara|sgpc|church|cathedral|masjid|mosque|dargah|jain mandir|derasar|matha|mutt|ashram|sansthan|trust temple|shrine|pooja|puja|prasad|prasadam|annadanam|langar
+~wedding gift|~shagun|~shagun envelope|~return gifts|~return gift|~gift wrap|~greeting cards|~cards gallery
+
+@Family
+firstcry|first cry|brainbees|brainbees solutions|hopscotch|babyhug|mothercare|hamleys|toys r us|funskool|chicco|the moms co|mother sparsh|mamaearth baby|babychakra|healofy|babyshop|mumzworld|toycra|kidsstoppress|smartivity|skillmatics|lego|~toy|~toys|~toy shop|~toy store|~toys and games|~baby|~baby shop|~baby store|~baby care|~babycare|~kids|~kids store|~kids zone|~kids shop|~child care|~childcare|~day care|~daycare|~creche|~nanny|~babysitter|~baby sitter|~ayah|~maid|~maid service|~house help|~domestic help|~cooking help|~driver salary|~watchman|~security guard|~caretaker|~elder care|~eldercare|~old age home|~senior care|samarth elder care|emoha|portea|care24|~nursing care|~home nurse|~attendant
+supertails|heads up for tails|huft|petsy|drools|pedigree|whiskas|royal canin|~pet shop|~pet store|~pet care|~petcare|~pet clinic|~pet hospital|~veterinary|~vet clinic|~vet hospital|~vets|~animal hospital|~pet food|~pet supplies|~pet grooming|~dog grooming|wiggles|dogsee|zigly|pet planet|just dogs|petkonnect|~kennel|~pet boarding
+~pocket money|~allowance|~family transfer|~home expenses|~household|~ghar kharch|~kharcha
+

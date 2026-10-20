@@ -259,6 +259,23 @@ interface MoneyDao {
     @Query("SELECT * FROM payee_rules WHERE `key` = :key")
     suspend fun rule(key: String): PayeeRuleEntity?
 
+    @Query("SELECT * FROM payee_rules")
+    suspend fun rulesNow(): List<PayeeRuleEntity>
+
+    /** Smart rules (Phase 2), in the order they run. */
+    @Query("SELECT * FROM money_rules ORDER BY position, createdAt")
+    fun moneyRules(): Flow<List<MoneyRuleEntity>>
+
+    @Query("SELECT * FROM money_rules ORDER BY position, createdAt")
+    suspend fun moneyRulesNow(): List<MoneyRuleEntity>
+
+    @Upsert suspend fun upsertMoneyRule(r: MoneyRuleEntity)
+
+    @Upsert suspend fun upsertMoneyRules(r: List<MoneyRuleEntity>)
+
+    @Query("DELETE FROM money_rules WHERE id = :id")
+    suspend fun deleteMoneyRule(id: String)
+
     @Upsert suspend fun upsertBudget(b: BudgetEntity)
 
     @Query("SELECT * FROM budgets WHERE month = :month")
