@@ -92,6 +92,15 @@ data class AppSettings(
     val firstCaptureDone: Boolean = false,
     /** Stored notifications were reworded to the B2 copy once. */
     val notificationsReworded: Boolean = false,
+    /** Raahi mode (PRD 1.1): FULL, QUIET (default) or OFF; read through [aiimin.core.engine.raahi.RaahiMode.of]. */
+    val raahiMode: String = "QUIET",
+    /** Raahi motions played today ([aiimin.core.engine.raahi.RaahiBudget.encode]); Quiet stops at 3. */
+    val raahiBudget: String? = null,
+    /** The last day the app was opened (ISO), for "Welcome back" (1.6b). */
+    val lastOpenDay: String? = null,
+    /** The day a greeting last showed, and the day the name was last used in one (at most once a day). */
+    val greetedOn: String? = null,
+    val nameGreetedOn: String? = null,
     val cashWallet: Boolean = true,
     val lifeScoreSharedWith: Set<String> = emptySet(),
     val stepCounterState: String? = null,
@@ -192,6 +201,11 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         val pinnedDoors = stringPreferencesKey("pinned_doors")
         val firstCaptureDone = booleanPreferencesKey("first_capture_done")
         val notificationsReworded = booleanPreferencesKey("notifications_reworded")
+        val raahiMode = stringPreferencesKey("raahi_mode")
+        val raahiBudget = stringPreferencesKey("raahi_budget")
+        val lastOpenDay = stringPreferencesKey("last_open_day")
+        val greetedOn = stringPreferencesKey("greeted_on")
+        val nameGreetedOn = stringPreferencesKey("name_greeted_on")
         val cashWallet = booleanPreferencesKey("cash_wallet")
         val scoreShare = stringSetPreferencesKey("score_share")
         val stepCounter = stringPreferencesKey("step_counter")
@@ -260,6 +274,11 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         pinnedDoors = p[K.pinnedDoors]?.split("|")?.filter { it.isNotBlank() }.orEmpty(),
         firstCaptureDone = p[K.firstCaptureDone] ?: false,
         notificationsReworded = p[K.notificationsReworded] ?: false,
+        raahiMode = p[K.raahiMode] ?: "QUIET",
+        raahiBudget = p[K.raahiBudget],
+        lastOpenDay = p[K.lastOpenDay],
+        greetedOn = p[K.greetedOn],
+        nameGreetedOn = p[K.nameGreetedOn],
         cashWallet = p[K.cashWallet] ?: true,
         lifeScoreSharedWith = p[K.scoreShare] ?: emptySet(),
         stepCounterState = p[K.stepCounter],
@@ -330,6 +349,11 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
             p[K.pinnedDoors] = s.pinnedDoors.joinToString("|")
             p[K.firstCaptureDone] = s.firstCaptureDone
             p[K.notificationsReworded] = s.notificationsReworded
+            p[K.raahiMode] = s.raahiMode
+            s.raahiBudget?.let { p[K.raahiBudget] = it } ?: p.remove(K.raahiBudget)
+            s.lastOpenDay?.let { p[K.lastOpenDay] = it } ?: p.remove(K.lastOpenDay)
+            s.greetedOn?.let { p[K.greetedOn] = it } ?: p.remove(K.greetedOn)
+            s.nameGreetedOn?.let { p[K.nameGreetedOn] = it } ?: p.remove(K.nameGreetedOn)
             p[K.cashWallet] = s.cashWallet
             p[K.scoreShare] = s.lifeScoreSharedWith
             s.stepCounterState?.let { p[K.stepCounter] = it } ?: p.remove(K.stepCounter)

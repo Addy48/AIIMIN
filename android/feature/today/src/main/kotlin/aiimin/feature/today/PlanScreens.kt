@@ -237,7 +237,7 @@ fun CalendarScreen(vm: CalendarViewModel = hiltViewModel()) {
         Hairline(Modifier.padding(top = 8.dp))
         LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(Aiimin.space.gutter)) {
             if (agenda.events.isEmpty() && agenda.tasks.none { it.time != null }) {
-                item { EmptyState(AppIcons.Calendar, "Nothing scheduled", "A free day. Add an event, or ask the assistant to block time.", action = "New event", onAction = { adding = true }, sidePadding = 0.dp) }
+                item { EmptyState(raahi = aiimin.core.engine.raahi.RaahiPose.IDLE, icon = AppIcons.Calendar, title = "Nothing scheduled", body = "A free day. Add an event, or ask the assistant to block time.", action = "New event", onAction = { adding = true }, sidePadding = 0.dp) }
             }
             items(agenda.events, key = { it.id }) { e ->
                 val st = vm.instant(e.startAt).toLocalTime()
@@ -438,7 +438,7 @@ fun MinimumsScreen(vm: MinimumsViewModel = hiltViewModel()) {
                 Text("The floor for a day you keep. Small enough to do on a bad day; the plan freezes at the start of each day, so new ones join tomorrow.", style = Aiimin.type.caption)
                 Spacer(Modifier.height(12.dp))
             }
-            if (list.isEmpty()) item { EmptyState(AppIcons.ListChecks, "No minimums yet", "Try: Read 10 pages · Walk 20 minutes · No phone in bed.", action = "Add one", onAction = { adding = true }, sidePadding = 0.dp) }
+            if (list.isEmpty()) item { EmptyState(raahi = aiimin.core.engine.raahi.RaahiPose.POINTING, icon = AppIcons.ListChecks, title = "No minimums yet", body = "Try: Read 10 pages · Walk 20 minutes · No phone in bed.", action = "Add one", onAction = { adding = true }, sidePadding = 0.dp) }
             items(list, key = { it.minimum.id }) { m ->
                 // D-020: checkbox and camera sit on the page margins like the Pause row below.
                 Panel(Modifier.padding(vertical = 4.dp), padding = PaddingValues(vertical = 4.dp)) {
@@ -549,7 +549,7 @@ fun UpcomingScreen(vm: UpcomingViewModel = hiltViewModel()) {
     Column(Modifier.fillMaxSize().background(c.base)) {
         TopBar("Upcoming", onBack = { nav.back() })
         if (list.isEmpty()) {
-            EmptyState(AppIcons.Calendar, "Nothing ahead", "Tasks for later days and someday ideas collect here.")
+            EmptyState(raahi = aiimin.core.engine.raahi.RaahiPose.SLEEPING, icon = AppIcons.Calendar, title = "Nothing ahead", body = "Tasks for later days and someday ideas collect here.")
             return@Column
         }
         val groups = list.groupBy { t ->

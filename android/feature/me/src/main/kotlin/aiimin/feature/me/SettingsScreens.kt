@@ -98,6 +98,7 @@ fun SettingsScreen(vm: MeViewModel = hiltViewModel()) {
                 SettingsLink(AppIcons.Footprints, "Phone data", "Screen time, steps, sleep, work apps") { nav.open(Route.Sensors) }
                 SettingsLink(AppIcons.Wallet, "Money", "Ledgers, accounts, bank messages, payee memory") { nav.open(Route.MoneySettings) }
                 SettingsLink(AppIcons.ChatCircleText, "Assistant and voice", "What it may read, recent captures") { nav.open(Route.AiSettings) }
+                SettingsLink(AppIcons.ChatCircleText, "Raahi", "How chatty: " + aiimin.core.engine.raahi.RaahiMode.of(st.raahiMode).name.lowercase().replaceFirstChar { it.uppercase() }) { nav.open(Route.RaahiSettings) }
                 SettingsLink(AppIcons.TextAa, "Appearance", "Text size, motion") { nav.open(Route.Appearance) }
                 // PRD 1.2: the day-end hour shows where it came from; editing pins it (never overwritten).
                 val dayEnd = java.time.LocalTime.of((st.dayEndMin / 60) % 24, st.dayEndMin % 60)

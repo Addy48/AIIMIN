@@ -106,7 +106,7 @@ fun NotificationsScreen(vm: NotificationsViewModel = hiltViewModel()) {
     Column(Modifier.fillMaxSize().background(Aiimin.colors.base)) {
         TopBar("Notifications", onBack = { nav.back() })
         if (all.isEmpty()) {
-            EmptyState(AppIcons.Bell, "All quiet", "Alerts come from real things: an expiring document, an event about to start, minimums left in the evening.")
+            EmptyState(raahi = aiimin.core.engine.raahi.RaahiPose.SLEEPING, icon = AppIcons.Bell, title = "All quiet", body = "Alerts come from real things: an expiring document, an event about to start, minimums left in the evening.")
             return@Column
         }
         LazyColumn(contentPadding = PaddingValues(horizontal = Aiimin.space.gutter, vertical = 8.dp)) {

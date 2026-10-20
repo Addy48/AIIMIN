@@ -704,7 +704,7 @@ fun RecentCapturesScreen(vm: RecentCapturesViewModel = hiltViewModel()) {
     Column(Modifier.fillMaxSize().background(c.base)) {
         TopBar("Recent captures", onBack = { nav.back() })
         if (list.isEmpty()) {
-            aiimin.designsystem.component.EmptyState(AppIcons.Waveform, "Nothing in the last 24 hours", "What you capture with ＋ shows here for a day, with everything it created, so you can undo a whole capture.")
+            aiimin.designsystem.component.EmptyState(raahi = aiimin.core.engine.raahi.RaahiPose.SATCHEL_OPEN, icon = AppIcons.Waveform, title = "Nothing in the last 24 hours", body = "What you capture with ＋ shows here for a day, with everything it created, so you can undo a whole capture.")
             return@Column
         }
         androidx.compose.foundation.lazy.LazyColumn(contentPadding = androidx.compose.foundation.layout.PaddingValues(start = Aiimin.space.gutter, end = Aiimin.space.gutter, bottom = 32.dp)) {

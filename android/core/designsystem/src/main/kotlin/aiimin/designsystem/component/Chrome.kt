@@ -351,10 +351,13 @@ fun ToastHost(toaster: Toaster, modifier: Modifier = Modifier) {
 fun EmptyState(
     icon: ImageVector, title: String, body: String, modifier: Modifier = Modifier, action: String? = null, onAction: (() -> Unit)? = null,
     sidePadding: androidx.compose.ui.unit.Dp = Aiimin.space.gutter,
+    /** Raahi's card pose for empty screens (PRD 1.1, 20.4); the icon shows instead when Raahi is Off. Never on money, vault or security screens. */
+    raahi: aiimin.core.engine.raahi.RaahiPose? = null,
 ) {
     val c = Aiimin.colors
     Column(modifier.fillMaxWidth().padding(vertical = 24.dp, horizontal = sidePadding), horizontalAlignment = Alignment.Start) {
-        Icon(icon, null, tint = c.textFaint, modifier = Modifier.size(32.dp))
+        if (raahi != null && aiimin.core.engine.raahi.RaahiRules.showsArt(LocalRaahiMode.current)) Raahi(raahi, RaahiSize.CARD)
+        else Icon(icon, null, tint = c.textFaint, modifier = Modifier.size(32.dp))
         Spacer(Modifier.height(16.dp))
         Text(title, style = Aiimin.type.cardTitle.copy(fontSize = 20.sp))
         Spacer(Modifier.height(8.dp))

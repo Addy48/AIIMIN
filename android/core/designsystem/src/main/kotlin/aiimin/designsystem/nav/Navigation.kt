@@ -54,6 +54,9 @@ sealed interface Route {
     data object Language : Route
     data object Help : Route
     data object About : Route
+    /** Settings › Raahi (mode) and About Raahi (PRD 1.1). */
+    data object RaahiSettings : Route
+    data object AboutRaahi : Route
     /** How AIIMIN is running: Pulse jobs and their last runs. */
     data object Running : Route
     data object Conflicts : Route

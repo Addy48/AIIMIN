@@ -190,7 +190,7 @@ fun NotesScreen(vm: NotesViewModel = hiltViewModel()) {
         TopBar("Notes", onBack = { nav.back() }) { AppIconButton(AppIcons.Pencil, "New note", { nav.open(Route.Note()) }) }
         val list = all
         if (list != null && list.isEmpty()) {
-            EmptyState(AppIcons.Note, "No notes yet", "Write anything. Link notes with [[Title]] and tag with #tags — the links connect themselves.", action = "New note", onAction = { nav.open(Route.Note()) })
+            EmptyState(raahi = aiimin.core.engine.raahi.RaahiPose.SATCHEL_OPEN, icon = AppIcons.Note, title = "No notes yet", body = "Write anything. Link notes with [[Title]] and tag with #tags — the links connect themselves.", action = "New note", onAction = { nav.open(Route.Note()) })
             return@Column
         }
         AppTextField(q, { q = it }, placeholder = "Search notes", leading = AppIcons.Search, modifier = Modifier.padding(horizontal = Aiimin.space.gutter))
@@ -497,7 +497,7 @@ fun JournalScreen(vm: JournalViewModel = hiltViewModel()) {
         }
         val list = entries
         if (list != null && list.isEmpty()) {
-            EmptyState(AppIcons.BookOpen, "Nothing written yet", "Write as much or as little as you like. Mood is kept for you and never scored.", action = "Write today", onAction = { nav.open(Route.JournalWrite()) })
+            EmptyState(raahi = aiimin.core.engine.raahi.RaahiPose.LISTENING, icon = AppIcons.BookOpen, title = "Nothing written yet", body = "Write as much or as little as you like. Mood is kept for you and never scored.", action = "Write today", onAction = { nav.open(Route.JournalWrite()) })
             return@Column
         }
         LazyColumn(contentPadding = PaddingValues(Aiimin.space.gutter)) {

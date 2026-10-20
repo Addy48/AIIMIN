@@ -95,6 +95,8 @@ class MainActivity : FragmentActivity() {
                 if (st == null) return@AiiminTheme
                 LaunchedEffect(Unit) { ready = true }
                 // On tablets and unfolded foldables the app stays a phone-width column in the middle.
+                // Raahi's mode reaches every picture of Raahi from here (Off hides them all, PRD 1.1).
+                androidx.compose.runtime.CompositionLocalProvider(aiimin.designsystem.component.LocalRaahiMode provides aiimin.core.engine.raahi.RaahiMode.of(st.raahiMode)) {
                 androidx.compose.foundation.layout.Box(
                     androidx.compose.ui.Modifier.fillMaxSize().background(aiimin.designsystem.theme.LightPalette.base),
                     contentAlignment = androidx.compose.ui.Alignment.TopCenter,
@@ -109,6 +111,7 @@ class MainActivity : FragmentActivity() {
                             else -> Shell(request, onRequestHandled = { request = null })
                         }
                     }
+                }
                 }
                 // The opening screen (Part 26): full on the first launch of the day, short on later cold starts,
                 // none on a warm resume or a deep link, the still frame with reduce motion.
@@ -191,7 +194,7 @@ class MainActivity : FragmentActivity() {
                     "debrief" -> Route.Debrief; "goals" -> Route.Goals; "weekly" -> Route.WeeklyReview; "why" -> Route.WhyScore; "patterns" -> Route.Patterns
                     "payments" -> Route.Payments; "category" -> Route.Category("Transport"); "emergency" -> Route.EmergencyCard("me")
                     "profile" -> Route.EditProfile; "plans" -> Route.Plans; "subscription" -> Route.Subscription; "devices" -> Route.LinkedDevices
-                    "moneysettings" -> Route.MoneySettings; "smsimport" -> Route.SmsImport; "appearance" -> Route.Appearance; "language" -> Route.Language; "help" -> Route.Help; "about" -> Route.About; "running" -> Route.Running
+                    "moneysettings" -> Route.MoneySettings; "smsimport" -> Route.SmsImport; "appearance" -> Route.Appearance; "raahi" -> Route.RaahiSettings; "aboutraahi" -> Route.AboutRaahi; "language" -> Route.Language; "help" -> Route.Help; "about" -> Route.About; "running" -> Route.Running
                     "captures" -> Route.RecentCaptures; "moodyear" -> Route.MoodYear; "backups" -> Route.VaultBackup; "kits" -> Route.EmergencyKits
                     "accounts" -> Route.Accounts; "splits" -> Route.Splits; "recurring" -> Route.Recurring; "payees" -> Route.PayeeMemory
                     "sync" -> Route.SyncSettings; "conflicts" -> Route.Conflicts; "trash" -> Route.Trash; "account" -> Route.Account; "privacy" -> Route.Privacy

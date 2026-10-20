@@ -1,5 +1,6 @@
 package aiimin.core.data.notify
 
+import aiimin.core.data.R
 import aiimin.core.data.core.DayClock
 import aiimin.core.data.life.LifeRepository
 import aiimin.core.data.settings.SettingsStore
@@ -165,10 +166,10 @@ class NotificationRepository @Inject constructor(
         val quiet = s.quiet.enabled && if (s.quiet.fromMin <= s.quiet.toMin) mins in s.quiet.fromMin until s.quiet.toMin else mins >= s.quiet.fromMin || mins < s.quiet.toMin
         // Quiet hours hold back low and medium; high still comes through.
         if (priority == 0 || (quiet && priority < 2)) return
-        post(n)
+        post(n, raahiArt = aiimin.core.engine.raahi.RaahiMode.of(s.raahiMode) != aiimin.core.engine.raahi.RaahiMode.OFF)
     }
 
-    private fun post(n: NotificationEntity) {
+    private fun post(n: NotificationEntity, raahiArt: Boolean) {
         if (Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) return
         ensureChannels(context)
         val launch = context.packageManager.getLaunchIntentForPackage(context.packageName)?.apply {
@@ -178,7 +179,10 @@ class NotificationRepository @Inject constructor(
         }
         val pi = launch?.let { PendingIntent.getActivity(context, n.ruleKey.hashCode(), it, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT) }
         val notif = NotificationCompat.Builder(context, if (n.priority >= 2) CH_HIGH else CH_DEFAULT)
-            .setSmallIcon(android.R.drawable.stat_notify_more)
+            // PRD 1.1 and 20.4: money and document notices are signed AIIMIN (its mark, no character); the rest
+            // speak as Raahi, with its face as the large icon unless Raahi is Off.
+            .setSmallIcon(if (signedAiimin(n.ruleKey)) R.drawable.ic_stat_aiimin else R.drawable.ic_stat_raahi)
+            .apply { if (raahiArt && !signedAiimin(n.ruleKey)) setLargeIcon(android.graphics.BitmapFactory.decodeResource(context.resources, R.drawable.raahi_notif_large)) }
             .setContentTitle(n.title)
             .setContentText(n.body)
             .setStyle(NotificationCompat.BigTextStyle().bigText(n.body))
@@ -209,6 +213,9 @@ class NotificationRepository @Inject constructor(
  * "inbox:2026-10-17" → "inbox:", "task:abc:2026-10-17" → "task:abc:", "review:2026-W42" → "review:" (and the
  * old "review:42" week keys, D-045); keys without a date or week are their own family.
  */
+/** Notices about money, documents and backups are signed AIIMIN, never Raahi (PRD 1.1, 20.5). */
+fun signedAiimin(ruleKey: String): Boolean = ruleKey.substringBefore(':') in setOf("doc", "backup", "bill", "budget", "inbox")
+
 internal fun family(ruleKey: String): String {
     val last = ruleKey.substringAfterLast(':', "")
     val periodic = Regex("\\d{4}-\\d{2}-\\d{2}|\\d{4}-W\\d{2}").matches(last) || (ruleKey.startsWith("review:") && last.all { it.isDigit() } && last.isNotEmpty())

@@ -100,7 +100,7 @@ fun GoalsScreen(vm: GoalsViewModel = hiltViewModel()) {
     Column(Modifier.fillMaxSize().background(c.base)) {
         TopBar("Goals", onBack = { nav.back() }) { AppIconButton(AppIcons.Plus, "New goal", { adding = true }) }
         if (live.isEmpty() && !adding) {
-            EmptyState(AppIcons.Flag, "No goals yet", "A goal is something that takes weeks. Link tasks and milestones to it, and the progress works itself out.", action = "New goal", onAction = { adding = true })
+            EmptyState(raahi = aiimin.core.engine.raahi.RaahiPose.POINTING, icon = AppIcons.Flag, title = "No goals yet", body = "A goal is something that takes weeks. Link tasks and milestones to it, and the progress works itself out.", action = "New goal", onAction = { adding = true })
             return@Column
         }
         LazyColumn(contentPadding = PaddingValues(start = Aiimin.space.gutter, end = Aiimin.space.gutter, bottom = 40.dp)) {

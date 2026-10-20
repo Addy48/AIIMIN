@@ -50,6 +50,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.first
 import aiimin.core.engine.today.BillDue
 import aiimin.core.engine.today.DayEndDecision
 import aiimin.core.engine.today.DayEndLearner
@@ -64,12 +65,32 @@ import aiimin.core.engine.today.QuickDoors
 import aiimin.core.engine.today.SetupStep
 import aiimin.core.engine.today.Timed
 import aiimin.core.engine.today.WhatNow
+import aiimin.core.engine.raahi.GreetInput
+import aiimin.core.engine.raahi.Greeting
+import aiimin.core.engine.raahi.MiniState
+import aiimin.core.engine.raahi.RaahiBudget
+import aiimin.core.engine.raahi.RaahiFirst
+import aiimin.core.engine.raahi.RaahiGreeting
+import aiimin.core.engine.raahi.RaahiMini
+import aiimin.core.engine.raahi.RaahiMode
+import aiimin.core.engine.raahi.RaahiMotion
+import aiimin.core.engine.raahi.RaahiPose
+import aiimin.core.engine.raahi.RaahiRules
 
 enum class FlowKind { TASK, EVENT, EXPIRY }
 
 /** Process-wide: the day the landmark line was first shown, and the day the day end was last learned. */
 private var landmarkSessionDay: LocalDate? = null
 private var lastLearnedDay: LocalDate? = null
+
+/**
+ * Process-wide Raahi state (PRD 1.6b): the greeting is picked once per app open and held for the open; the Mini's
+ * shown pose and its one motion, and the day's motion budget (written through, so a quick re-read never double-plays).
+ */
+private var sessionGreeting: Greeting? = null
+private var sessionGreetDay: LocalDate? = null
+private var shownMini: Pair<RaahiPose, RaahiMotion?>? = null
+private var budgetCache: RaahiBudget? = null
 
 /** Quick door keys that have a screen behind them (FeatureIndex routes plus Pour's writer). */
 private val DOOR_KEYS: Set<String> = aiimin.designsystem.nav.FeatureIndex.all.map { it.route::class.simpleName.orEmpty().lowercase() }.toSet() + "journalwrite"
@@ -120,6 +141,11 @@ data class TodayUi(
     val pinnedDoors: List<String> = emptyList(),
     /** Whether yesterday was closed (wrap-up after midnight belongs to yesterday). */
     val yesterdayClosed: Boolean = false,
+    /** Raahi's line beside the clock (0 to 2 lines; none on later opens or when Off). */
+    val greeting: List<String> = emptyList(),
+    val raahiMode: RaahiMode = RaahiMode.QUIET,
+    val mini: RaahiPose = RaahiPose.IDLE,
+    val miniMotion: RaahiMotion? = null,
 ) {
     val tasksOpen get() = flow.values.flatten().count { it.kind == FlowKind.TASK && !it.done }
 }
@@ -243,7 +269,7 @@ class TodayViewModel @Inject constructor(
             tasks = items.filter { it.kind == FlowKind.TASK && !it.done }.mapIndexed { i, t -> OpenTask(t.id, t.title, t.priority, t.time, i.toLong()) },
             hidden = hidden,
             skips = s.whatNowSkips.mapNotNull { (k, v) -> runCatching { NowKind.valueOf(k) to v }.getOrNull() }.toMap(),
-            raahiOn = true,
+            raahiOn = RaahiMode.of(s.raahiMode) != RaahiMode.OFF,
         )
         val install = s.installDay?.let { runCatching { LocalDate.parse(it) }.getOrNull() } ?: b.date
         val done = buildSet {
@@ -258,8 +284,26 @@ class TodayViewModel @Inject constructor(
             landmarkSessionDay = b.date
             viewModelScope.launch { settingsStore.update { it.copy(landmarkShownOn = b.date.toString()) } }
         }
+        val mode = RaahiMode.of(s.raahiMode)
+        val closed = if (night) b.yesterdayClosed else b.dayState?.closedAt != null
+        val planned = b.minimums.filter { it.planned }
+        val mini = RaahiMini.pose(
+            MiniState(
+                hour = time.hour,
+                firstOpenToday = sessionGreetDay == b.date && sessionGreeting?.lines?.isNotEmpty() == true,
+                dayClosed = closed,
+                afterDayEnd = WhatNow.afterDayEnd(time, dayEnd),
+                nothingLeft = pick.kind == NowKind.CLEAR,
+                allMinimumsKept = planned.isNotEmpty() && planned.all { it.done },
+                needsAttention = pick.kind == NowKind.BILL || (pick.kind == NowKind.SOON && !pick.happeningNow),
+            ),
+        )
         b.copy(
             whatNow = pick,
+            greeting = if (sessionGreetDay == b.date) sessionGreeting?.lines.orEmpty() else emptyList(),
+            raahiMode = mode,
+            mini = mini,
+            miniMotion = miniMotion(mini, mode, s.reduceMotion, b.date, s.raahiBudget),
             dayEnd = dayEnd,
             setup = if (FirstWeek.show(install, b.date, done)) FirstWeek.steps().map { it to (it in done) } else null,
             doors = QuickDoors.pick(install, b.date, s.featureOpens, s.pinnedDoors, b.hasNote, valid = DOOR_KEYS),
@@ -267,6 +311,68 @@ class TodayViewModel @Inject constructor(
             pinnedDoors = s.pinnedDoors,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    /**
+     * The Mini's motion for a new pose: played once, if the day's budget allows (Quiet: 3 a day). A pose that is
+     * already showing keeps its motion, so recomposition and the minute tick never replay it.
+     */
+    private fun miniMotion(pose: RaahiPose, mode: RaahiMode, reduce: Boolean, today: LocalDate, stored: String?): RaahiMotion? {
+        shownMini?.let { (p, m) -> if (p == pose) return m }
+        // Wait for the open's greeting, so the first pose can wave with it.
+        if (sessionGreetDay != today && shownMini == null) return null
+        val first = shownMini == null
+        val wanted = when {
+            first && sessionGreeting?.pose == RaahiPose.WAVING -> RaahiMotion.WAVE
+            pose == RaahiPose.WAKING -> RaahiMotion.WAKE
+            pose == RaahiPose.NOTICING -> RaahiMotion.NOTICE
+            pose == RaahiPose.SETTLE -> RaahiMotion.SETTLE
+            first -> null
+            else -> RaahiMotion.POSE_CHANGE
+        }
+        var motion: RaahiMotion? = null
+        if (wanted != null) {
+            val (ok, next) = RaahiRules.play(mode, reduce, today, budgetCache ?: RaahiBudget.decode(stored), wanted)
+            budgetCache = next
+            if (ok) { motion = wanted; viewModelScope.launch { settingsStore.update { it.copy(raahiBudget = next.encode()) } } }
+        }
+        shownMini = pose to motion
+        return motion
+    }
+
+    /** Picks the open's greeting once (1.6b) and records the open day, the greeting day and the name day. */
+    private suspend fun greetOnce(today: LocalDate) {
+        if (sessionGreetDay == today) return
+        val s = settingsStore.current()
+        val mode = RaahiMode.of(s.raahiMode)
+        val install = s.installDay?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+        // Before this build there was no open day: someone installed before today is not new.
+        val seen = s.lastOpenDay?.let { runCatching { LocalDate.parse(it) }.getOrNull() } ?: install?.takeIf { it.isBefore(today) }?.let { today.minusDays(1) }
+        val lastOpen = if (seen == today) today.minusDays(1) else seen
+        val planned = runCatching { minimums.today(today).first() }.getOrDefault(emptyList()).count { it.planned }
+        val g = RaahiGreeting.pick(
+            GreetInput(
+                mode = mode,
+                now = java.time.LocalDateTime.now(zone),
+                firstName = s.name.trim().split(" ").firstOrNull().orEmpty(),
+                lastOpenDay = lastOpen,
+                greetedToday = s.greetedOn == today.toString(),
+                nameUsedToday = s.nameGreetedOn == today.toString(),
+                dayClosedToday = runCatching { days.observe(today).first()?.closedAt != null }.getOrDefault(false),
+                minimumsToday = planned,
+                first = if (install != null && ChronoUnit.DAYS.between(install, today) == 7L) RaahiFirst.FIRST_WEEK else null,
+                lateHour = s.lateHour,
+            ),
+        )
+        sessionGreeting = g
+        sessionGreetDay = today
+        settingsStore.update {
+            it.copy(
+                lastOpenDay = today.toString(),
+                greetedOn = if (g.lines.isNotEmpty()) today.toString() else it.greetedOn,
+                nameGreetedOn = if (g.usedName) today.toString() else it.nameGreetedOn,
+            )
+        }
+    }
 
     /** "Not now": hidden until midnight; the third skip of a kind drops it one step (PRD 1.2). */
     fun notNow(kind: NowKind) = viewModelScope.launch {
@@ -336,6 +442,7 @@ class TodayViewModel @Inject constructor(
             val st = settingsStore.current()
             // People upgrading from an earlier build are not new: their first week is behind them.
             if (st.installDay == null) settingsStore.update { it.copy(installDay = (if (st.onboarded && st.xp.xp > 0) today.minusDays(30) else today).toString()) }
+            greetOnce(today)
             refreshAccess()
             if (lastLearnedDay != today) { lastLearnedDay = today; learnDayEnd() }
         }

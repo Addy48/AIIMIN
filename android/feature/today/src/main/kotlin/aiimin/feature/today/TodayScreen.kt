@@ -34,6 +34,8 @@ import aiimin.designsystem.nav.LocalToaster
 import aiimin.designsystem.nav.Route
 import aiimin.designsystem.nav.go
 import aiimin.designsystem.theme.Aiimin
+import aiimin.designsystem.component.Raahi
+import aiimin.designsystem.component.RaahiSize
 import aiimin.designsystem.theme.Horizons
 import aiimin.designsystem.theme.Motion
 import aiimin.designsystem.theme.Shapes
@@ -165,25 +167,34 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
         }
         item {
             Column(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 2.dp)) {
-                val greet = greeting(hour) + if (u.name.isBlank()) "" else ", " + u.name.trim().split(" ").first()
+                // PRD 1.6b: Raahi's line replaces the plain greeting; none on later opens or when Raahi is Off.
+                val greet = u.greeting.joinToString(" ")
+                val said = if (greet.isEmpty()) "" else " $greet"
                 val meridiem: @Composable () -> Unit = { Text(Dates.meridiem(now), style = Aiimin.type.bodyStrong.copy(color = Aiimin.colors.text)) }
                 val greeting: @Composable () -> Unit = {
-                    Text(greet, style = Aiimin.type.body.copy(color = Aiimin.colors.textMuted), maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    u.greeting.forEach { line ->
+                        Text(line, style = Aiimin.type.body.copy(color = Aiimin.colors.textMuted), maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    }
                 }
+                // Raahi Mini, 28 dp beside the clock (1.1); nothing when Off.
+                val mini: @Composable (Modifier) -> Unit = { m -> Raahi(u.mini, RaahiSize.MINI, m, motion = u.miniMotion) }
                 // D-002: "AM" and the greeting sit on the clock's baseline. At large text the clock fills the width,
                 // so the two lines move under it instead of floating beside it.
                 if (LocalDensity.current.fontScale < 1.5f) {
-                    Row(Modifier.semantics(mergeDescendants = true) { contentDescription = "It is ${Dates.clock(now)}. $greet" }) {
+                    Row(Modifier.fillMaxWidth().semantics(mergeDescendants = true) { contentDescription = "It is ${Dates.clock(now)}.$said" }) {
                         Text(Dates.clockPlain(now), style = Aiimin.type.display, modifier = Modifier.alignBy(LastBaseline))
                         Spacer(Modifier.width(10.dp))
-                        Column(Modifier.alignBy(LastBaseline)) { meridiem(); greeting() }
+                        Column(Modifier.weight(1f).alignBy(LastBaseline)) { meridiem(); greeting() }
+                        // Raahi stands on the clock's baseline.
+                        mini(Modifier.alignBy { it.measuredHeight }.padding(start = 8.dp))
                     }
                 } else {
-                    Column(Modifier.semantics(mergeDescendants = true) { contentDescription = "It is ${Dates.clock(now)}. $greet" }) {
-                        Row {
-                            Text(Dates.clockPlain(now), style = Aiimin.type.display, modifier = Modifier.alignByBaseline())
+                    Column(Modifier.semantics(mergeDescendants = true) { contentDescription = "It is ${Dates.clock(now)}.$said" }) {
+                        Row(Modifier.fillMaxWidth()) {
+                            Text(Dates.clockPlain(now), style = Aiimin.type.display, modifier = Modifier.alignBy(LastBaseline))
                             Spacer(Modifier.width(8.dp))
-                            Box(Modifier.alignByBaseline()) { meridiem() }
+                            Box(Modifier.weight(1f).alignBy(LastBaseline)) { meridiem() }
+                            mini(Modifier.alignBy { it.measuredHeight }.padding(start = 8.dp))
                         }
                         greeting()
                     }
@@ -412,13 +423,6 @@ internal fun momentum(scores: List<Double>): Int {
         recent - base < -3 -> -1
         else -> 0
     }
-}
-
-private fun greeting(h: Int) = when {
-    h < 5 -> "Late night"
-    h < 12 -> "Good morning"
-    h < 17 -> "Good afternoon"
-    else -> "Good evening"
 }
 
 internal fun ago(at: Long): String {
