@@ -4,6 +4,9 @@ import java.time.LocalDate
 
 data class EventSoon(val id: String, val title: String, val startMinute: Int)
 data class TaskTimed(val id: String, val title: String, val minute: Int)
+
+/** A note the person asked to be reminded about today (Part 11 "Time"). A locked note's title is never shown. */
+data class NoteReminder(val id: String, val title: String, val minute: Int, val locked: Boolean)
 data class BillTomorrow(val id: String, val title: String, val amountText: String)
 /** [expires] is part of the key, so a renewed document (same id, new date) is reminded again. */
 data class DocExpiry(val id: String, val title: String, val daysLeft: Long, val expires: String = "")
@@ -18,6 +21,7 @@ data class NotifySnapshot(
     val playful: Boolean = false,
     val events: List<EventSoon> = emptyList(),
     val timedTasks: List<TaskTimed> = emptyList(),
+    val noteReminders: List<NoteReminder> = emptyList(),
     val bills: List<BillTomorrow> = emptyList(),
     val docs: List<DocExpiry> = emptyList(),
     val docCount: Int = 0,
@@ -74,6 +78,12 @@ object NotifyRules {
                 val c = copy("task.still", mapOf("task" to t.title))
                 add(Candidate("task.still", "still:${t.id}:${s.today}", Kind.INFO, Category.DAY, s.nowMinute, 1, c.title, c.body, "today", t.id, why = "Its time passed half an hour ago."))
             }
+        }
+        // A note reminder is a promise at its own minute; a locked note says only that there is one.
+        s.noteReminders.forEach { n ->
+            val c = if (n.locked) copy("note.remind.locked") else copy("note.remind", mapOf("note" to n.title))
+            add(Candidate(if (n.locked) "note.remind.locked" else "note.remind", "note:${n.id}:${s.today}:${n.minute}", Kind.PROMISE, Category.REMINDERS, n.minute, 2,
+                c.title, c.body, "note", n.id, why = "You asked to be reminded about this note.", sensitive = n.locked))
         }
         if (s.billsDocsOn) {
             s.bills.forEach { b ->

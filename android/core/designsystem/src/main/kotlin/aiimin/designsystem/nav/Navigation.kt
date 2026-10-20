@@ -96,6 +96,8 @@ sealed interface Route {
     // notes / journal
     data object Notes : Route
     data class Note(val id: String? = null) : Route
+    /** Part 11.7 Q-1: bring notes in (Keep, Apple Notes, Markdown) and save them all. */
+    data object NotesImport : Route
     data object Journal : Route
     data object MoodYear : Route
     /** [prefill]: text typed into the "+" sheet that belongs in private writing (Pour). */

@@ -125,6 +125,17 @@ class NotifyRulesTest {
     private val day = LocalDate.of(2026, 10, 21) // a Wednesday
     private fun snap(now: Int = 600, f: NotifySnapshot.() -> NotifySnapshot = { this }) = NotifySnapshot(today = day, nowMinute = now, installDays = 5).f()
 
+    @Test fun noteReminderArrivesAtItsMinuteAndALockedNoteShowsNoTitle() {
+        val c = NotifyRules.candidates(snap { copy(noteReminders = listOf(NoteReminder("n1", "Call the CA", 9 * 60, false), NoteReminder("n2", "Secret plan", 11 * 60, true))) })
+        val open = c.first { it.rule == "note.remind" }
+        assertEquals(9 * 60, open.atMinute)
+        assertEquals(Kind.PROMISE, open.kind)
+        assertEquals("Call the CA", open.title)
+        val locked = c.first { it.rule == "note.remind.locked" }
+        assertFalse(locked.title.contains("Secret") || locked.body.contains("Secret"))
+        assertTrue(locked.sensitive)
+    }
+
     @Test fun eventsAndTimedTasksAreRemindersTenMinutesBefore() {
         val cs = NotifyRules.candidates(snap { copy(events = listOf(EventSoon("e", "Standup", 630)), timedTasks = listOf(TaskTimed("t", "Call CA", 700))) })
         val e = cs.first { it.rule == "event.soon" }

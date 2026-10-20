@@ -113,15 +113,19 @@ import kotlinx.coroutines.launch
 class NotesViewModel @Inject constructor(private val notes: NoteRepository) : ViewModel() {
     val query = MutableStateFlow("")
     val tag = MutableStateFlow<String?>(null)
+    /** Colour filter; null = any. */
+    val color = MutableStateFlow<String?>(null)
+    val showArchived = MutableStateFlow(false)
     val all = notes.all().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
-    val shown = combine(notes.all(), query, tag) { list, q, t ->
-        list.filter { n ->
-            (q.isBlank() || n.title.contains(q, true) || n.body.contains(q, true)) && (t == null || t in Codecs.decodeList(n.tags))
-        }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    private val source = combine(notes.all(), notes.archived(), showArchived) { a, b, arch -> if (arch) b else a }
+    val shown = combine(source, query, tag, color) { list, q, t, col -> aiimin.core.data.notes.NoteSearch.filter(list, q, t, col) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     suspend fun delete(id: String) = notes.delete(id)
     fun restore(n: NoteEntity) = viewModelScope.launch { notes.restore(n) }
+    /** Clipboard banner: the copied text becomes a note. */
+    suspend fun pasteAsNote(text: String) = notes.save(null, "", text.trim(), source = "share")
+    val pictureDir get() = notes.pictureDir
 }
 
 @HiltViewModel
@@ -131,30 +135,77 @@ class NoteViewModel @Inject constructor(private val notes: NoteRepository, priva
     var id: String? = null
         private set
     val note = MutableStateFlow<NoteEntity?>(null)
+    /** The note's real title and body; null while a locked note waits for the person to unlock it. */
+    val text = MutableStateFlow<aiimin.core.data.notes.NoteText?>(null)
+    /** True when the note is locked and not yet opened with the screen lock. */
+    val gated = MutableStateFlow(false)
+    val loaded = MutableStateFlow(false)
     val backlinks = MutableStateFlow<List<NoteEntity>>(emptyList())
-    private var loaded = false
+    private var started = false
+    val pictureDir get() = notes.pictureDir
 
     fun load(noteId: String?) {
-        if (loaded) return
-        loaded = true
+        if (started) return
+        started = true
         id = noteId
         viewModelScope.launch {
-            note.value = noteId?.let { notes.get(it) }
-            note.value?.let { backlinks.value = notes.backlinks(it.title).filter { b -> b.id != it.id } }
+            val n = noteId?.let { notes.get(it) }
+            // A locked note is gated before anything of it reaches the screen; only unlock() reads its text.
+            if (n?.locked == true) gated.value = true else text.value = n?.let(notes::textOf)
+            note.value = n
+            n?.takeIf { !it.locked }?.let { backlinks.value = notes.backlinks(it.title).filter { b -> b.id != it.id } }
+            loaded.value = true
         }
+    }
+
+    /** After the screen lock said yes. */
+    fun unlock() = viewModelScope.launch {
+        val nid = id ?: return@launch
+        text.value = notes.open(nid)
+        gated.value = false
     }
 
     fun links(body: String) = notes.links(body)
     suspend fun byTitle(t: String) = notes.byTitle(t)
 
-    /** Autosave on leave; empty new notes are not kept. */
+    /** Saves as you type and on leave; an empty new note is not kept. */
     suspend fun save(title: String, body: String, pinned: Boolean) {
-        if (title.isBlank() && body.isBlank()) return
-        val existing = note.value
-        if (existing != null && existing.title == title && existing.body == body && existing.pinned == pinned) return
+        if (gated.value) return
+        if (title.isBlank() && body.isBlank() && id == null) return
+        val t = text.value
+        if (t != null && t.title == title && t.body == body && t.note.pinned == pinned) return
         id = notes.save(id, title, body, pinned)
-        note.value = notes.get(id!!)
+        refresh()
     }
+
+    private suspend fun refresh() {
+        val n = id?.let { notes.get(it) } ?: return
+        note.value = n
+        text.value = notes.textOf(n)
+    }
+
+    /** Colour, lock, reminder and pictures need the note to exist: an untouched new note is saved first. */
+    private suspend fun ensure(title: String, body: String, pinned: Boolean): String {
+        id?.let { return it }
+        id = notes.save(null, title, body, pinned)
+        refresh()
+        return id!!
+    }
+
+    fun setColor(c: String, title: String, body: String, pinned: Boolean) = viewModelScope.launch { notes.setColor(ensure(title, body, pinned), c); refresh() }
+    fun setReminder(at: Long?, title: String, body: String, pinned: Boolean) = viewModelScope.launch { notes.setReminder(ensure(title, body, pinned), at); refresh() }
+    fun setArchived(a: Boolean, title: String, body: String, pinned: Boolean) = viewModelScope.launch { notes.setArchived(ensure(title, body, pinned), a); refresh() }
+    fun lock(title: String, body: String, pinned: Boolean) = viewModelScope.launch {
+        val nid = ensure(title, body, pinned)
+        notes.save(nid, title, body, pinned)
+        notes.lock(nid); refresh()
+    }
+    fun unlockForGood() = viewModelScope.launch { id?.let { notes.unlock(it) }; refresh() }
+    fun addPicture(uri: android.net.Uri, mime: String, title: String, body: String, pinned: Boolean, done: (Boolean) -> Unit) = viewModelScope.launch {
+        val a = notes.addPicture(ensure(title, body, pinned), uri, mime)
+        refresh(); done(a != null)
+    }
+    fun removePicture(file: String) = viewModelScope.launch { id?.let { notes.removePicture(it, file) }; refresh() }
 
     suspend fun delete() = id?.let { notes.delete(it) }
 }
@@ -180,37 +231,88 @@ class JournalViewModel @Inject constructor(private val journal: JournalRepositor
 @Composable
 fun NotesScreen(vm: NotesViewModel = hiltViewModel()) {
     val nav = LocalNavigator.current
+    val scope = rememberCoroutineScope()
     val all by vm.all.collectAsStateWithLifecycle()
     val shown by vm.shown.collectAsStateWithLifecycle()
     var q by remember { mutableStateOf(vm.query.value) }
     LaunchedEffect(q) { vm.query.value = q }
     val tag by vm.tag.collectAsStateWithLifecycle()
+    val color by vm.color.collectAsStateWithLifecycle()
+    val archived by vm.showArchived.collectAsStateWithLifecycle()
+    var menu by remember { mutableStateOf(false) }
     val c = Aiimin.colors
     Column(Modifier.fillMaxSize().background(c.base)) {
-        TopBar("Notes", onBack = { nav.back() }) { AppIconButton(AppIcons.Pencil, "New note", { nav.open(Route.Note()) }) }
+        TopBar(if (archived) "Archived notes" else "Notes", onBack = { if (archived) vm.showArchived.value = false else nav.back() }) {
+            AppIconButton(AppIcons.More, "More", { menu = true })
+            AppIconButton(AppIcons.Pencil, "New note", { nav.open(Route.Note()) })
+        }
+        ClipboardBanner { t -> scope.launch { val id = vm.pasteAsNote(t); nav.open(Route.Note(id)) } }
         val list = all
-        if (list != null && list.isEmpty()) {
-            EmptyState(raahi = aiimin.core.engine.raahi.RaahiPose.SATCHEL_OPEN, icon = AppIcons.Note, title = "No notes yet", body = "Write anything. Link notes with [[Title]] and tag with #tags — the links connect themselves.", action = "New note", onAction = { nav.open(Route.Note()) })
+        if (!archived && list != null && list.isEmpty()) {
+            EmptyState(raahi = aiimin.core.engine.raahi.RaahiPose.SATCHEL_OPEN, icon = AppIcons.Note, title = "No notes yet", body = "Write anything. Link notes with [[Title]] and tag with #tags. Already use Google Keep? Bring your notes in from the menu.", action = "New note", onAction = { nav.open(Route.Note()) })
             return@Column
         }
-        AppTextField(q, { q = it }, placeholder = "Search notes", leading = AppIcons.Search, modifier = Modifier.padding(horizontal = Aiimin.space.gutter))
+        AppTextField(q, { q = it }, placeholder = "Search notes and pictures", leading = AppIcons.Search, modifier = Modifier.padding(horizontal = Aiimin.space.gutter))
         val tags = list.orEmpty().flatMap { Codecs.decodeList(it.tags) }.groupingBy { it }.eachCount().entries.sortedByDescending { it.value }.take(12)
         if (tags.isNotEmpty()) Box(Modifier.padding(horizontal = Aiimin.space.gutter)) {
             PillRow { tags.forEach { (t, n) -> Pill("#$t", tag == t, { vm.tag.value = if (tag == t) null else t }, count = n) } }
         }
+        if (list.orEmpty().any { it.color.isNotEmpty() }) Box(Modifier.padding(horizontal = Aiimin.space.gutter)) {
+            ColorRow(color, { k -> vm.color.value = if (k == "*" || k == color) null else k }, withAny = true)
+        }
         LazyColumn(contentPadding = PaddingValues(bottom = 40.dp)) {
+            if (shown.isEmpty()) item {
+                Text(if (archived) "Nothing archived." else "No note matches.", style = Aiimin.type.caption, modifier = Modifier.padding(horizontal = Aiimin.space.gutter, vertical = 16.dp))
+            }
             itemsIndexed(shown, key = { _, it -> it.id }) { i, n ->
-                Column(Modifier.fillMaxWidth().enterStagger(i).clickable { nav.open(Route.Note(n.id)) }.padding(horizontal = Aiimin.space.gutter, vertical = 12.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (n.pinned) Icon(AppIcons.PushPin, "Pinned", tint = c.accent, modifier = Modifier.size(14.dp).padding(end = 4.dp))
-                        Text(n.title, style = Aiimin.type.bodyStrong, modifier = Modifier.weight(1f), maxLines = 1)
-                        Text(Dates.relative(java.time.Instant.ofEpochMilli(n.updatedAt).atZone(java.time.ZoneId.systemDefault()).toLocalDate(), LocalDate.now()), style = Aiimin.type.caption)
+                // A note's colour tints its whole row (as Keep tints its card), so every title stays on the margin.
+                val tint = if (n.color.isEmpty()) Color.Transparent else noteTint(n.color)
+                Row(Modifier.fillMaxWidth().enterStagger(i).background(tint).clickable { nav.open(Route.Note(n.id)) }.padding(horizontal = Aiimin.space.gutter, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (n.pinned) Icon(AppIcons.PushPin, "Pinned", tint = c.accent, modifier = Modifier.size(14.dp).padding(end = 4.dp))
+                            if (n.locked) Icon(AppIcons.Lock, null, tint = c.textMuted, modifier = Modifier.size(14.dp).padding(end = 4.dp))
+                            // A locked note shows nothing of itself in the list (Part 11.6).
+                            Text(if (n.locked) "Locked note" else n.title, style = Aiimin.type.bodyStrong, modifier = Modifier.weight(1f), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                            Text(Dates.relative(java.time.Instant.ofEpochMilli(n.updatedAt).atZone(java.time.ZoneId.systemDefault()).toLocalDate(), LocalDate.now()), style = Aiimin.type.caption)
+                        }
+                        // D-016: the preview ends with an ellipsis, never mid-word.
+                        val preview = when {
+                            n.locked -> "Unlock to read"
+                            else -> aiimin.core.data.notes.notePreview(n.body).take(140).ifBlank { if (attachmentsOf(n.attachments).isNotEmpty()) "Picture" else "" }
+                        }
+                        if (preview.isNotBlank()) Text(preview, style = Aiimin.type.caption, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                        n.reminderAt?.takeIf { it > System.currentTimeMillis() }?.let { Text(reminderText(it), style = Aiimin.type.caption.copy(color = c.link)) }
                     }
-                    // D-016: the preview ends with an ellipsis, never mid-word.
-                    Text(aiimin.core.data.notes.notePreview(n.body).take(140), style = Aiimin.type.caption, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                 }
                 Hairline(Modifier.padding(horizontal = Aiimin.space.gutter))
             }
+        }
+    }
+    if (menu) AppSheet({ menu = false }, title = "Notes") {
+        ListRow(if (archived) "Back to notes" else "Archived notes", leading = { IconTile(AppIcons.Archive) }, onClick = { vm.showArchived.value = !archived; menu = false })
+        ListRow("Bring in and save notes", subtitle = "Google Keep, Apple Notes, Markdown; save all as a zip", leading = { IconTile(AppIcons.Upload) }, onClick = { menu = false; nav.open(Route.NotesImport) })
+        ListRow("Deleted notes", subtitle = "Kept for 30 days", leading = { IconTile(AppIcons.Trash) }, onClick = { menu = false; nav.open(Route.Trash) })
+        Spacer(Modifier.height(8.dp))
+    }
+}
+
+/** A locked note before the screen lock is given (Part 11 "Safety"): nothing of it is shown. */
+@Composable
+private fun LockedGate(onUnlock: () -> Unit, hasLock: Boolean, onBack: () -> Unit) {
+    val c = Aiimin.colors
+    Column(Modifier.fillMaxSize().background(c.base)) {
+        TopBar("Note", onBack = onBack)
+        Column(Modifier.fillMaxSize().padding(horizontal = 32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+            Icon(AppIcons.Lock, null, tint = c.textMuted, modifier = Modifier.size(40.dp))
+            Spacer(Modifier.height(14.dp))
+            Text("This note is locked", style = Aiimin.type.cardTitle)
+            Text(
+                if (hasLock) "Open it with your fingerprint, face or screen lock." else "This phone has no screen lock, so anyone holding it can open the note. Add one in Android settings to be asked.",
+                style = Aiimin.type.caption, textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.padding(top = 6.dp),
+            )
+            Spacer(Modifier.height(20.dp))
+            AppButton("Open note", onUnlock, icon = AppIcons.LockOpen)
         }
     }
 }
@@ -258,25 +360,65 @@ fun NoteScreen(id: String?, vm: NoteViewModel = hiltViewModel()) {
     val scope = rememberCoroutineScope()
     LaunchedEffect(id) { vm.load(id) }
     val note by vm.note.collectAsStateWithLifecycle()
+    val text by vm.text.collectAsStateWithLifecycle()
+    val gated by vm.gated.collectAsStateWithLifecycle()
+    val ready by vm.loaded.collectAsStateWithLifecycle()
     val backlinks by vm.backlinks.collectAsStateWithLifecycle()
     val c = Aiimin.colors
-    var title by remember(note?.id) { mutableStateOf(note?.title.orEmpty()) }
-    var nextId by remember(note?.id) { mutableIntStateOf(0) }
-    val lines = remember(note?.id) {
+    // Keyed on load and unlock only: saving a new note gives it an id, and that must not reset what is being typed.
+    val session = ready to gated
+    // A title AIIMIN made from the first line (or "Untitled") is not shown as typed: the field stays empty.
+    var title by remember(session) {
+        val t = text
+        val derived = t?.body?.lineSequence()?.firstOrNull { it.isNotBlank() }?.take(60)?.trim()
+        mutableStateOf(t?.title?.takeIf { it != "Untitled" && it != derived }.orEmpty())
+    }
+    var nextId by remember(session) { mutableIntStateOf(0) }
+    val lines = remember(session) {
         mutableStateListOf<NLine>().also { l ->
-            val src = note?.body.orEmpty().split("\n")
+            val src = text?.body.orEmpty().split("\n")
             src.forEach { l += NLine(nextId++, it) }
         }
     }
-    var pinned by remember(note?.id) { mutableStateOf(note?.pinned ?: false) }
+    var pinned by remember(session) { mutableStateOf(note?.pinned ?: false) }
     var focused by remember { mutableIntStateOf(0) }
-    val requesters = remember(note?.id) { mutableMapOf<Int, FocusRequester>() }
+    val requesters = remember(session) { mutableMapOf<Int, FocusRequester>() }
     var wantFocus by remember { mutableStateOf<Int?>(null) }
     val body = lines.joinToString("\n") { it.text }
     val latest = rememberUpdatedValues(title, body, pinned)
     DisposableEffect(Unit) {
         // Survives the pop: the ViewModel scope is cancelled as this screen leaves.
         onDispose { kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO + NonCancellable).launch { vm.save(latest.title, latest.body, latest.pinned) } }
+    }
+    // Saved as you type (Part 11.6: killing the app loses nothing), a moment after the last key.
+    LaunchedEffect(title, body, pinned, ready, gated) {
+        if (!ready || gated) return@LaunchedEffect
+        kotlinx.coroutines.delay(400)
+        vm.save(title, body, pinned)
+    }
+    // A new note opens straight into typing (Part 11.6: first character under 2 s).
+    val keyboard = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
+    LaunchedEffect(ready) { if (ready && id == null) { wantFocus = 0; keyboard?.show() } }
+    var more by remember { mutableStateOf(false) }
+    var reminding by remember { mutableStateOf(false) }
+    var sorting by remember { mutableStateOf(false) }
+    var adding by remember { mutableStateOf(false) }
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val unlock = rememberDeviceAuth("Open locked note") { vm.unlock() }
+    val unlockForGood = rememberDeviceAuth("Unlock note") { vm.unlockForGood() }
+    val photo = androidx.activity.compose.rememberLauncherForActivityResult(androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null) { toaster.show("Reading the picture…"); vm.addPicture(uri, "image/jpeg", title, body, pinned) { ok -> toaster.show(if (ok) "Picture added" else "Could not add the picture") } }
+    }
+    val scan = androidx.activity.compose.rememberLauncherForActivityResult(androidx.activity.result.contract.ActivityResultContracts.StartIntentSenderForResult()) { res ->
+        if (res.resultCode == android.app.Activity.RESULT_OK) {
+            val r = com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult.fromActivityResultIntent(res.data)
+            r?.pages?.forEach { pg -> vm.addPicture(pg.imageUri, "image/jpeg", title, body, pinned) { } }
+            toaster.show("Reading the scanned pages…")
+        }
+    }
+    if (ready && (gated || (note?.locked == true && text == null))) {
+        LockedGate(onUnlock = unlock, hasLock = hasScreenLock(context), onBack = { nav.back() })
+        return
     }
     LaunchedEffect(wantFocus, lines.size) {
         val w = wantFocus ?: return@LaunchedEffect
@@ -311,17 +453,14 @@ fun NoteScreen(id: String?, vm: NoteViewModel = hiltViewModel()) {
     Column(Modifier.fillMaxSize().background(c.base).imePadding()) {
         TopBar("Note", onBack = { nav.back() }) {
             AppIconButton(AppIcons.PushPin, if (pinned) "Unpin" else "Pin", { pinned = !pinned }, tint = if (pinned) c.accent else c.text)
-            AppIconButton(AppIcons.Trash, "Delete note", {
-                scope.launch {
-                    vm.delete()?.let { toaster.show("Note deleted") }
-                    title = ""; lines.clear(); lines += NLine(nextId++, "")
-                    nav.back()
-                }
-            }, tint = c.text)
+            AppIconButton(AppIcons.More, "More", { more = true }, tint = c.text)
         }
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Aiimin.space.gutter)) {
             Text(
-                listOfNotNull("Pinned to Today".takeIf { pinned }, "Saved".takeIf { note != null }).joinToString(" · "),
+                listOfNotNull(
+                    "Pinned to Today".takeIf { pinned }, "Locked".takeIf { note?.locked == true }, "Archived".takeIf { note?.archived == true },
+                    note?.reminderAt?.takeIf { it > System.currentTimeMillis() }?.let(::reminderText), "Saved".takeIf { note != null },
+                ).joinToString(" · "),
                 style = Aiimin.type.body.copy(color = c.textMuted, fontSize = 14.sp),
             )
             Box(Modifier.padding(top = 6.dp)) {
@@ -388,6 +527,7 @@ fun NoteScreen(id: String?, vm: NoteViewModel = hiltViewModel()) {
                     }
                 }
             }
+            PictureStrip(attachmentsOf(note?.attachments ?: "[]"), vm.pictureDir) { a -> vm.removePicture(a.file) }
             Spacer(Modifier.height(20.dp))
             val links = vm.links(body)
             if (!hasLinks) Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp)).background(c.raised).padding(16.dp)) {
@@ -426,11 +566,76 @@ fun NoteScreen(id: String?, vm: NoteViewModel = hiltViewModel()) {
         Row(Modifier.fillMaxWidth().padding(horizontal = Aiimin.space.gutter, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.size(48.dp).clickable { insertAtEnd("[["); picking = true }, contentAlignment = Alignment.Center) { Text("[[", style = Aiimin.type.title.copy(fontSize = 20.sp)) }
             AppIconButton(AppIcons.ListChecks, "Checklist", { toggleChecklist() })
+            AppIconButton(AppIcons.Camera, "Add a picture or scan", { adding = true })
+            AppIconButton(AppIcons.Sparkle, "Sort it", { sorting = true })
             Spacer(Modifier.weight(1f))
-            AppButton("Dictate", { voice() }, icon = AppIcons.Mic)
+            AppButton("Dictate", { voice() }, icon = AppIcons.Mic, compact = true)
         }
     }
     if (picking) LinkPicker(vm, onDismiss = { picking = false }) { t -> insertLink(t); picking = false }
+    if (adding) AppSheet({ adding = false }, title = "Add to this note") {
+        ListRow("Scan pages", subtitle = "The camera finds the page edges; the text is read on this phone", leading = { IconTile(AppIcons.Scan) }, onClick = {
+            adding = false
+            val act = context as? android.app.Activity
+            if (act != null) {
+                val opts = com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.Builder()
+                    .setResultFormats(com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.RESULT_FORMAT_JPEG)
+                    .setScannerMode(com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.SCANNER_MODE_FULL).build()
+                com.google.mlkit.vision.documentscanner.GmsDocumentScanning.getClient(opts).getStartScanIntent(act)
+                    .addOnSuccessListener { scan.launch(androidx.activity.result.IntentSenderRequest.Builder(it).build()) }
+                    .addOnFailureListener { toaster.show("The scanner isn't available on this phone") }
+            }
+        })
+        ListRow("Choose a photo", subtitle = "From your gallery; any text in it becomes searchable", leading = { IconTile(AppIcons.Camera) }, onClick = {
+            adding = false
+            photo.launch(androidx.activity.result.PickVisualMediaRequest(androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia.ImageOnly))
+        })
+        Spacer(Modifier.height(8.dp))
+    }
+    if (sorting) SortItSheet(body, { sorting = false }) { line -> sorting = false; nav.capture(line) }
+    if (reminding) ReminderSheet(note?.reminderAt, { reminding = false }) { at ->
+        reminding = false
+        vm.setReminder(at, title, body, pinned)
+        toaster.show(if (at == null) "Reminder off" else "I'll remind you")
+    }
+    if (more) AppSheet({ more = false }, title = "This note") {
+        Text("Colour", style = Aiimin.type.eyebrow)
+        ColorRow(note?.color ?: "", { k -> vm.setColor(k, title, body, pinned) })
+        Spacer(Modifier.height(8.dp))
+        ListRow("Remind me", subtitle = note?.reminderAt?.takeIf { it > System.currentTimeMillis() }?.let(::reminderText) ?: "At a time you choose", leading = { IconTile(AppIcons.Bell) }, onClick = { more = false; reminding = true })
+        if (lines.any { isCheck(it.text) }) ListRow("Move done to the bottom", leading = { IconTile(AppIcons.SortAscending) }, onClick = {
+            val sorted = aiimin.core.data.notes.Checklist.moveDoneToBottom(body).split("\n")
+            lines.clear(); sorted.forEach { lines += NLine(nextId++, it) }
+            more = false
+        })
+        if (note?.locked == true) ListRow("Unlock this note", subtitle = "It shows in search and lists again", leading = { IconTile(AppIcons.LockOpen) }, onClick = { more = false; unlockForGood() })
+        else ListRow(
+            "Lock this note", subtitle = if (hasScreenLock(context)) "Opens with your fingerprint or screen lock; hidden from search, lists and notices" else "Hidden from search, lists and notices. Add a screen lock in Android to be asked before it opens",
+            leading = { IconTile(AppIcons.Lock) }, onClick = { more = false; vm.lock(title, body, pinned); toaster.show("Note locked") },
+        )
+        ListRow(if (note?.archived == true) "Move back to notes" else "Archive", leading = { IconTile(AppIcons.Archive) }, onClick = {
+            more = false
+            val a = note?.archived != true
+            vm.setArchived(a, title, body, pinned)
+            toaster.show(if (a) "Archived" else "Back in notes")
+            if (a) nav.back()
+        })
+        ListRow("Share", subtitle = "As text, to any app", leading = { IconTile(AppIcons.Share) }, onClick = {
+            more = false
+            val send = android.content.Intent(android.content.Intent.ACTION_SEND).setType("text/plain")
+                .putExtra(android.content.Intent.EXTRA_SUBJECT, title).putExtra(android.content.Intent.EXTRA_TEXT, listOf(title, body).filter { it.isNotBlank() }.joinToString("\n\n"))
+            context.startActivity(android.content.Intent.createChooser(send, "Share note"))
+        })
+        ListRow("Delete", leading = { IconTile(AppIcons.Trash) }, onClick = {
+            more = false
+            scope.launch {
+                vm.delete()?.let { toaster.show("Note deleted · in Deleted notes for 30 days") }
+                title = ""; lines.clear(); lines += NLine(nextId++, "")
+                nav.back()
+            }
+        })
+        Spacer(Modifier.height(8.dp))
+    }
 }
 
 private fun linkIcon(kind: String) = when (kind) {

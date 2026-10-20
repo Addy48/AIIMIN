@@ -3,4 +3,6 @@
     <string name="app_name">AIIMIN</string>
     <string name="widget_day_description">Day score, steps, and screen time</string>
     <string name="accessibility_service_description">Blocks selected apps and visible blocked browser terms in Aimin Discipline.</string>
+    <string name="notes_widget_description">Your latest notes and a New note button</string>
+    <string name="new_note_tile">New note</string>
 </resources>

@@ -302,10 +302,28 @@ interface NoteDao {
     @Query("SELECT * FROM notes WHERE id = :id")
     fun observe(id: String): Flow<NoteEntity?>
 
-    @Query("SELECT * FROM notes WHERE deleted = 0 ORDER BY pinned DESC, updatedAt DESC")
+    @Query("SELECT * FROM notes WHERE deleted = 0 AND archived = 0 ORDER BY pinned DESC, updatedAt DESC")
     fun all(): Flow<List<NoteEntity>>
 
-    @Query("SELECT * FROM notes WHERE deleted = 0 AND (title LIKE :q OR body LIKE :q) ORDER BY updatedAt DESC LIMIT 30")
+    @Query("SELECT * FROM notes WHERE deleted = 0 AND archived = 1 ORDER BY updatedAt DESC")
+    fun archived(): Flow<List<NoteEntity>>
+
+    /** Every note kept (archived too), for export. */
+    @Query("SELECT * FROM notes WHERE deleted = 0 ORDER BY createdAt")
+    suspend fun keptNow(): List<NoteEntity>
+
+    @Query("SELECT importKey FROM notes WHERE importKey IS NOT NULL")
+    suspend fun importKeys(): List<String>
+
+    @Query("SELECT id FROM notes")
+    suspend fun ids(): List<String>
+
+    /** Notes with a reminder still to come (Part 11 "Time"); locked notes too, their text is never shown. */
+    @Query("SELECT * FROM notes WHERE deleted = 0 AND reminderAt IS NOT NULL")
+    suspend fun withReminders(): List<NoteEntity>
+
+    /** Locked notes never match: their text is not in [title] or [body]. */
+    @Query("SELECT * FROM notes WHERE deleted = 0 AND locked = 0 AND (title LIKE :q OR body LIKE :q OR attachments LIKE :q) ORDER BY updatedAt DESC LIMIT 30")
     suspend fun search(q: String): List<NoteEntity>
 
     @Query("SELECT * FROM notes WHERE deleted = 0 AND body LIKE :needle")
@@ -325,6 +343,10 @@ interface NoteDao {
 
     @Query("DELETE FROM notes WHERE id = :id AND deleted = 1")
     suspend fun deleteForever(id: String)
+
+    /** Removes a note that was never shown (a shared picture that could not be read). */
+    @Query("DELETE FROM notes WHERE id = :id")
+    suspend fun deleteNow(id: String)
 }
 
 @Dao

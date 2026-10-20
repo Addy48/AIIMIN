@@ -306,6 +306,23 @@ data class NoteEntity(
     val remoteId: String? = null,
     val dirty: Boolean = true,
     val deleted: Boolean = false,
+    /** A palette tint key ("" plain, peach, leaf, sun, lilac, stone) (v9, Part 11). */
+    @ColumnInfo(defaultValue = "") val color: String = "",
+    @ColumnInfo(defaultValue = "0") val archived: Boolean = false,
+    /** Locked notes keep title and body only in [cipher] (device key); [title] and [body] are empty (v9). */
+    @ColumnInfo(defaultValue = "0") val locked: Boolean = false,
+    val cipher: String? = null,
+    val iv: String? = null,
+    /** typed · voice · share · scan · import (v9). */
+    @ColumnInfo(defaultValue = "typed") val source: String = "typed",
+    /** Where an import came from: keep · apple · file · aiimin (v9). */
+    @ColumnInfo(defaultValue = "") val sourceApp: String = "",
+    /** Stable key of an imported note, so a second import adds nothing twice (v9). */
+    val importKey: String? = null,
+    /** A one-time reminder about this note, epoch ms (v9). */
+    val reminderAt: Long? = null,
+    /** JSON [{file, mime, text}]: pictures and scans kept in the app's files, with the text read from them (v9). */
+    @ColumnInfo(defaultValue = "[]") val attachments: String = "[]",
 )
 
 /** Journal text is encrypted with a Keystore key; only the author reads it. */

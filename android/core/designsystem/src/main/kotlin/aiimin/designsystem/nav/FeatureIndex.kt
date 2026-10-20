@@ -54,6 +54,7 @@ object FeatureIndex {
 
         // Notes and journal
         f("Notes", "Everything you wrote down", Route.Notes, { AppIcons.Note }, "note", "memo", "write"),
+        f("Bring in notes", "Google Keep, Apple Notes, Markdown; save all notes", Route.NotesImport, { AppIcons.Upload }, "import notes", "keep", "google keep", "takeout", "apple notes", "export notes", "markdown"),
         f("Journal", "Private, encrypted on this phone", Route.Journal, { AppIcons.BookOpen }, "diary", "mood", "gratitude"),
         f("Write in journal", "Start today's entry", Route.JournalWrite(), { AppIcons.PenNib }, "new entry", "write journal", "dear diary"),
         f("Mood year", "A year of moods at a glance", Route.MoodYear, { AppIcons.Smiley }, "mood", "year in pixels", "feelings"),

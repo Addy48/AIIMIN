@@ -409,6 +409,7 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
                         entry<Route.EmergencyCard> { EmergencyCardScreen(it.personId) }
                         entry<Route.Notes> { NotesScreen() }
                         entry<Route.Note> { NoteScreen(it.id) }
+                        entry<Route.NotesImport> { aiimin.feature.notes.NotesImportScreen() }
                         entry<Route.Journal> { JournalScreen() }
                         entry<Route.JournalWrite> { JournalWriteScreen(it.id, prefill = it.prefill) }
                         entry<Route.Assistant> { AssistantScreen(it) }

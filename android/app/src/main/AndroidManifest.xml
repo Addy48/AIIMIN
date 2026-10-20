@@ -112,6 +112,12 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/csv" />
             </intent-filter>
+            <!-- Part 11: a shared picture becomes a note. -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
         </activity>
 
         <!-- Health Connect permission-usage entry (Android 14+). -->
@@ -125,6 +131,24 @@
                 <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
             </intent-filter>
         </activity-alias>
+
+        <!-- Part 11: Notes widget and the "New note" quick-settings tile. -->
+        <receiver android:name=".notes.NotesWidgetReceiver" android:exported="true" android:label="Notes">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/notes_widget" />
+        </receiver>
+        <service
+            android:name=".notes.NewNoteTile"
+            android:exported="true"
+            android:icon="@drawable/ic_stat_aiimin"
+            android:label="@string/new_note_tile"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
 
         <!-- Notification engine v2: the exact alarm for the next due notice, and actions from the shade. -->
         <receiver android:name=".notify.NotifyAlarmReceiver" android:exported="false" />

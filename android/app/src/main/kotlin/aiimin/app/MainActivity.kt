@@ -57,6 +57,7 @@ class MainActivity : FragmentActivity() {
 
     @Inject lateinit var settings: SettingsStore
     @Inject lateinit var money: MoneyRepository
+    @Inject lateinit var notes: aiimin.core.data.notes.NoteRepository
     @Inject lateinit var vault: VaultRepository
     @Inject lateinit var familyDao: aiimin.core.database.FamilyDao
     @Inject lateinit var notifications: NotificationRepository
@@ -141,6 +142,8 @@ class MainActivity : FragmentActivity() {
     override fun onStop() {
         super.onStop()
         backgroundedAt = System.currentTimeMillis()
+        // The Notes widget shows the latest notes once AIIMIN leaves the screen.
+        (application as AiiminApplication).appScope.launch { aiimin.app.notes.NotesWidget.refresh(applicationContext) }
     }
 
     override fun onStart() {
@@ -187,7 +190,7 @@ class MainActivity : FragmentActivity() {
             request = LaunchRequest.Open(
                 when (go) {
                     "money" -> Route.Money; "vault" -> Route.Vault; "me" -> Route.Me; "score" -> Route.Score; "inbox" -> Route.MoneyInbox
-                    "assistant" -> Route.Assistant(); "notes" -> Route.Notes; "note" -> Route.Note(); "journal" -> Route.Journal
+                    "assistant" -> Route.Assistant(); "notes" -> Route.Notes; "note" -> Route.Note(intent.getStringExtra("aiimin_arg")); "newnote" -> Route.Note(); "notesimport" -> Route.NotesImport; "journal" -> Route.Journal
                     "calendar" -> Route.Calendar; "focus" -> Route.Focus(); "minimums" -> Route.Minimums; "battery" -> Route.Battery
                     "signals" -> Route.Signals; "settings" -> Route.Settings; "family" -> Route.Family; "phoneday" -> Route.PhoneDay
                     "budget" -> Route.Budget; "notifications" -> Route.Notifications; "activity" -> Route.Activity; "search" -> Route.Search
@@ -213,6 +216,7 @@ class MainActivity : FragmentActivity() {
                     "doc" -> arg?.let { Route.Doc(it) } ?: Route.Vault
                     "money" -> Route.MoneyInbox
                     "bills" -> Route.Recurring
+                    "note" -> arg?.let { Route.Note(it) } ?: Route.Notes
                     "backup" -> Route.VaultBackup
                     "score" -> Route.Score
                     "focus" -> Route.Focus()
@@ -227,14 +231,25 @@ class MainActivity : FragmentActivity() {
         val text = intent.getStringExtra(Intent.EXTRA_TEXT)
         @Suppress("DEPRECATION")
         val stream = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
+        val mime = intent.type.orEmpty()
         when {
+            // Part 11.6: a shared picture becomes a note with the picture and the text read from it.
+            stream != null && mime.startsWith("image/") -> lifecycleScope.launch {
+                val id = notes.newFromPicture(stream, mime, intent.getStringExtra(Intent.EXTRA_SUBJECT).orEmpty(), text.orEmpty())
+                if (id != null) request = LaunchRequest.Open(Route.Note(id))
+                else android.widget.Toast.makeText(this@MainActivity, "Could not read that picture", android.widget.Toast.LENGTH_SHORT).show()
+            }
             stream != null -> lifecycleScope.launch {
                 runCatching { vault.import(stream, ME) }.onSuccess { request = LaunchRequest.Open(Route.Doc(it.docId)) }
             }
             text != null -> lifecycleScope.launch {
                 when (money.capture(text, "paste")) {
                     is MoneyRepository.Capture.Added, MoneyRepository.Capture.Duplicate -> request = LaunchRequest.Open(Route.MoneyInbox)
-                    MoneyRepository.Capture.NotABankAlert -> request = LaunchRequest.Capture(text)
+                    // Anything that is not a bank alert becomes a note at once (Part 11.6), ready to edit or sort.
+                    MoneyRepository.Capture.NotABankAlert -> {
+                        val id = notes.save(null, intent.getStringExtra(Intent.EXTRA_SUBJECT).orEmpty(), text, source = "share")
+                        request = LaunchRequest.Open(Route.Note(id))
+                    }
                 }
             }
         }
