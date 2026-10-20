@@ -185,7 +185,7 @@ fun PatternsScreen(vm: MeViewModel = hiltViewModel()) {
         )
         LazyColumn(contentPadding = PaddingValues(start = Aiimin.space.gutter, end = Aiimin.space.gutter, bottom = 40.dp)) {
             if (found.isEmpty()) item {
-                EmptyState(AppIcons.Pulse, "Nothing stands out yet", "Your days are steady, so no two things clearly move together. Check back as more days arrive.")
+                EmptyState(AppIcons.Pulse, "Nothing stands out yet", "Your days are steady, so no two things clearly move together. Check back as more days arrive.", sidePadding = 0.dp)
             }
             items(found.size) { i ->
                 val p = found[i]

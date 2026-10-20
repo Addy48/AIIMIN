@@ -62,12 +62,7 @@ fun RowScope.RootActions(unread: Int, sync: SyncUi = LocalSyncUi.current.ui, onS
     AppIconButton(AppIcons.Search, "Search", { nav.open(Route.Search) })
     Box {
         AppIconButton(AppIcons.BellSimple, "Notifications", { nav.open(Route.Notifications) })
-        if (unread > 0) {
-            Box(
-                Modifier.align(Alignment.TopEnd).offset(x = (-4).dp, y = 6.dp).heightIn(min = 16.dp).widthIn(min = 16.dp)
-                    .clip(RoundedCornerShape(4.dp)).background(c.accent).padding(horizontal = 3.dp),
-                contentAlignment = Alignment.Center,
-            ) { Text(if (unread > 9) "9+" else unread.toString(), style = Aiimin.type.caption.copy(color = c.onAccent, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)) }
-        }
+        // On the bell's top-right corner, inside the button so it never reaches the screen edge (S5, D-003).
+        CountBadge(unread, Modifier.align(Alignment.TopEnd).offset(x = (-4).dp, y = 4.dp))
     }
 }

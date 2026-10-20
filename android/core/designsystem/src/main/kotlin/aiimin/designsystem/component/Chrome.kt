@@ -81,7 +81,8 @@ import kotlinx.coroutines.delay
 @Composable
 fun TopBar(title: String, onBack: (() -> Unit)?, modifier: Modifier = Modifier, actions: @Composable RowScope.() -> Unit = {}) {
     Row(
-        modifier.fillMaxWidth().statusBarsPadding().height(56.dp).padding(start = 4.dp, end = 8.dp),
+        // 3 dp + the 48 dp button's 13 dp inset puts back and action icons on the 16 dp margin (S1).
+        modifier.fillMaxWidth().statusBarsPadding().height(56.dp).padding(start = 3.dp, end = 3.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (onBack != null) AppIconButton(AppIcons.ArrowLeft, "Back", onBack) else Spacer(Modifier.width(16.dp))
@@ -103,12 +104,13 @@ fun TopBar(title: String, onBack: (() -> Unit)?, modifier: Modifier = Modifier, 
 @Composable
 fun LargeHeader(title: String, modifier: Modifier = Modifier, overline: String? = null, actions: @Composable RowScope.() -> Unit = {}) {
     Row(
-        modifier.fillMaxWidth().statusBarsPadding().heightIn(min = 56.dp).padding(start = Aiimin.space.gutter, end = 8.dp),
+        modifier.fillMaxWidth().statusBarsPadding().heightIn(min = 56.dp).padding(start = Aiimin.space.gutter, end = 3.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(Modifier.weight(1f).padding(vertical = 6.dp)) {
             Text(title, style = Aiimin.type.title, modifier = Modifier.semantics { heading() })
-            if (overline != null) Text(overline, style = Aiimin.type.caption)
+            // One line: a status, not a paragraph (D-001).
+            if (overline != null) Text(overline, style = Aiimin.type.caption, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
         Row(verticalAlignment = Alignment.CenterVertically, content = actions)
     }
@@ -196,11 +198,8 @@ private fun RowScope.DockButton(item: DockItem) {
             Icon(item.icon, null, tint = color, modifier = Modifier.size(25.dp).graphicsLayer { alpha = 1f - fill })
             Icon(item.iconFill, null, tint = color, modifier = Modifier.size(25.dp).graphicsLayer { alpha = fill })
             if (item.count > 0) {
-                Box(
-                    Modifier.align(Alignment.TopEnd).offset(x = 9.dp, y = (-5).dp).heightIn(min = 16.dp).widthIn(min = 16.dp)
-                        .clip(RoundedCornerShape(4.dp)).background(c.text).padding(horizontal = 4.dp),
-                    contentAlignment = Alignment.Center,
-                ) { Text(if (item.count > 9) "9+" else item.count.toString(), style = Aiimin.type.caption.copy(color = c.onInk, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)) }
+                // Anchored on the icon's top-right corner, ringed in the page colour, mostly outside the icon (S5, D-004).
+                CountBadge(item.count, Modifier.align(Alignment.TopEnd).offset(x = 14.dp, y = (-8).dp))
             } else if (item.badge) {
                 Box(Modifier.align(Alignment.TopEnd).offset(x = 6.dp, y = (-3).dp).size(7.dp).clip(CircleShape).background(c.accent))
             }
@@ -335,17 +334,24 @@ fun ToastHost(toaster: Toaster, modifier: Modifier = Modifier) {
 
 // ------------------------------------------------------------------ empty / loading
 
+/**
+ * Empty state on the page grid: left-aligned with everything else on the screen (D-012). [sidePadding] puts it
+ * on the 16 dp margins; pass 0 when the list around it already has them.
+ */
 @Composable
-fun EmptyState(icon: ImageVector, title: String, body: String, modifier: Modifier = Modifier, action: String? = null, onAction: (() -> Unit)? = null) {
+fun EmptyState(
+    icon: ImageVector, title: String, body: String, modifier: Modifier = Modifier, action: String? = null, onAction: (() -> Unit)? = null,
+    sidePadding: androidx.compose.ui.unit.Dp = Aiimin.space.gutter,
+) {
     val c = Aiimin.colors
-    Column(modifier.fillMaxWidth().padding(vertical = 28.dp, horizontal = 24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(modifier.fillMaxWidth().padding(vertical = 24.dp, horizontal = sidePadding), horizontalAlignment = Alignment.Start) {
         Icon(icon, null, tint = c.textFaint, modifier = Modifier.size(32.dp))
-        Spacer(Modifier.height(14.dp))
-        Text(title, style = Aiimin.type.cardTitle.copy(fontSize = 20.sp), textAlign = TextAlign.Center)
-        Spacer(Modifier.height(6.dp))
-        Text(body, style = Aiimin.type.caption.copy(textAlign = TextAlign.Center, fontSize = 14.sp, lineHeight = 20.sp), modifier = Modifier.padding(horizontal = 8.dp))
+        Spacer(Modifier.height(16.dp))
+        Text(title, style = Aiimin.type.cardTitle.copy(fontSize = 20.sp))
+        Spacer(Modifier.height(8.dp))
+        Text(body, style = Aiimin.type.caption.copy(fontSize = 14.sp, lineHeight = 20.sp))
         if (action != null && onAction != null) {
-            Spacer(Modifier.height(18.dp))
+            Spacer(Modifier.height(16.dp))
             AppButton(action, onAction, kind = ButtonKind.SECONDARY, compact = true)
         }
     }

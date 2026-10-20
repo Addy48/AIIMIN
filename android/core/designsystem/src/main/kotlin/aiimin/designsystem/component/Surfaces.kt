@@ -95,7 +95,8 @@ fun Modifier.enterStagger(index: Int): Modifier {
 fun Panel(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
-    padding: PaddingValues = PaddingValues(vertical = 12.dp),
+    /** Default: 16 dp all round for a filled or bordered card (S8), 12 dp top and bottom for a flat group. */
+    padding: PaddingValues? = null,
     color: Color = Color.Transparent,
     shape: Shape = Shapes.card,
     bordered: Boolean = false,
@@ -113,7 +114,7 @@ fun Panel(
             .clip(shape)
             .background(color)
             .then(if (bordered) Modifier.border(1.dp, c.border, shape) else Modifier)
-            .padding(padding),
+            .padding(padding ?: if (bordered || color != Color.Transparent) PaddingValues(16.dp) else PaddingValues(vertical = 12.dp)),
         content = content,
     )
     if (!bordered && color == Color.Transparent) Hairline()
@@ -150,8 +151,10 @@ fun SectionHeader(
 /** Icon inside a soft tinted square; the standard leading element of a row. */
 @Composable
 fun IconTile(icon: ImageVector, tint: Color = Aiimin.colors.textMuted, background: Color = Color.Transparent, size: Dp = 36.dp) {
-    // A bare icon by default; a tinted square only when it carries status (warn, danger, done).
-    Box(Modifier.size(size).clip(Shapes.small).background(background), contentAlignment = Alignment.Center) {
+    // A bare icon by default, flush with the margin like the text above it (S1); a tinted square only when it
+    // carries status (warn, danger, done).
+    val bare = background == Color.Transparent
+    Box(Modifier.size(size).clip(Shapes.small).background(background), contentAlignment = if (bare) Alignment.CenterStart else Alignment.Center) {
         Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(if (background == Color.Transparent) size * 0.6f else size * 0.5f))
     }
 }
@@ -177,12 +180,14 @@ fun ListRow(
             .heightIn(min = 52.dp)
             .sharedContainer(key)
             .then(if (onClick != null) Modifier.clip(Shapes.row).clickable { key?.let(SharedNav::arm); onClick() } else Modifier)
-            .padding(vertical = 10.dp, horizontal = 4.dp),
+            .padding(vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        // S1: one row shape everywhere. No side padding, so the leading icon starts and the trailing item ends
+        // exactly on the 16 dp page margins; the leading slot is 40 dp so every title starts on one column.
         if (leading != null) {
-            leading()
-            Spacer(Modifier.width(12.dp))
+            Box(Modifier.width(40.dp), contentAlignment = Alignment.CenterStart) { leading() }
+            Spacer(Modifier.width(8.dp))
         }
         Column(Modifier.weight(1f)) {
             Text(title, style = Aiimin.type.bodyStrong.copy(color = titleColor), maxLines = 2, overflow = TextOverflow.Ellipsis)
@@ -192,7 +197,7 @@ fun ListRow(
         }
         if (trailing != null) {
             Spacer(Modifier.width(8.dp))
-            trailing()
+            Box(contentAlignment = Alignment.CenterEnd) { trailing() }
         }
     }
 }

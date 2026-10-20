@@ -234,7 +234,7 @@ fun CalendarScreen(vm: CalendarViewModel = hiltViewModel()) {
         Hairline(Modifier.padding(top = 8.dp))
         LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(Aiimin.space.gutter)) {
             if (agenda.events.isEmpty() && agenda.tasks.none { it.time != null }) {
-                item { EmptyState(AppIcons.Calendar, "Nothing scheduled", "A free day. Add an event, or ask the assistant to block time.", action = "New event", onAction = { adding = true }) }
+                item { EmptyState(AppIcons.Calendar, "Nothing scheduled", "A free day. Add an event, or ask the assistant to block time.", action = "New event", onAction = { adding = true }, sidePadding = 0.dp) }
             }
             items(agenda.events, key = { it.id }) { e ->
                 val st = vm.instant(e.startAt).toLocalTime()

@@ -99,7 +99,7 @@ internal fun TxnRow(t: TxnEntity, onClick: () -> Unit) {
         }
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
-            Text(if (t.giftHideFrom != null) "Gift" else t.title, style = Aiimin.type.bodyStrong, maxLines = 1)
+            Text(if (t.giftHideFrom != null) "Gift" else payeeLabel(t.title), style = Aiimin.type.bodyStrong, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
             Text(listOfNotNull(t.category, t.method.takeIf { it != "UPI" }, if (t.receiptDocId != null) "Receipt" else null, if (t.source == "sms" || t.source == "notification") "Bank alert" else null).joinToString(" · "), style = Aiimin.type.caption)
         }
         Text(

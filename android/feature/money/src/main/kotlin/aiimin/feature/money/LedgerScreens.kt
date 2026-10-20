@@ -145,7 +145,7 @@ fun AccountsScreen(vm: AccountsViewModel = hiltViewModel()) {
         val items = list ?: return@Column
         LazyColumn(contentPadding = PaddingValues(start = Aiimin.space.gutter, end = Aiimin.space.gutter, bottom = 40.dp)) {
             if (items.isEmpty()) item {
-                EmptyState(AppIcons.Bank, "No accounts yet", "Add the bank accounts, cards and wallets you pay from. Bank alerts fill in the last four digits for you.", action = "Add account", onAction = { adding = true })
+                EmptyState(AppIcons.Bank, "No accounts yet", "Add the bank accounts, cards and wallets you pay from. Bank alerts fill in the last four digits for you.", action = "Add account", onAction = { adding = true }, sidePadding = 0.dp)
             }
             items(items, key = { it.account.id }) { v ->
                 val a = v.account
@@ -280,6 +280,7 @@ fun SplitsScreen(vm: SplitsViewModel = hiltViewModel()) {
                     AppIcons.Handshake, "All square",
                     "Split a payment from its page (\"Split with…\"), or say \"split with Rahul\" when you add it. When someone pays for you, record it here.",
                     action = "Record what I owe", onAction = { recording = true },
+                    sidePadding = 0.dp,
                 )
             }
             val owed = items.filter { it.theyOwe }

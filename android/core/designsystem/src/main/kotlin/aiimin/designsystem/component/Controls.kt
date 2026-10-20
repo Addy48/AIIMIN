@@ -39,6 +39,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -116,7 +117,10 @@ fun AppButton(
 
 private fun Modifier.alphaIf(dim: Boolean) = if (dim) this.alpha(0.4f) else this
 
-/** 44 dp touch target, icon only, always labelled for TalkBack. */
+/**
+ * 48 dp touch target (Part 18), 22 dp icon, always labelled for TalkBack. The icon sits 13 dp inside the
+ * target, so bars place the button 3 dp from the screen edge to put the icon on the 16 dp margin (S1).
+ */
 @Composable
 fun AppIconButton(
     icon: ImageVector,
@@ -125,7 +129,7 @@ fun AppIconButton(
     modifier: Modifier = Modifier,
     tint: Color = Aiimin.colors.text,
     background: Color = Color.Transparent,
-    size: Dp = 44.dp,
+    size: Dp = 48.dp,
 ) {
     Box(
         modifier
@@ -213,6 +217,7 @@ fun Pill(
     icon: ImageVector? = null,
     count: Int? = null,
 ) {
+    // 40 dp chip inside a 48 dp touch target (Part 18; S9). Rows of pills therefore need no extra gap.
     val c = Aiimin.colors
     val onInk = c.onInk
     val bg = if (selected) c.text else Color.Transparent
@@ -220,17 +225,18 @@ fun Pill(
     val chip = RoundedCornerShape(6.dp)
     Row(
         modifier
+            .minimumInteractiveComponentSize()
             .pressable(onClick, role = Role.Tab)
             .clip(chip)
             .background(bg)
             .then(if (selected) Modifier else Modifier.border(1.dp, c.borderStrong, chip))
-            .heightIn(min = 36.dp)
+            .heightIn(min = 40.dp)
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         if (icon != null) Icon(icon, null, tint = fg, modifier = Modifier.size(16.dp))
-        Text(text, style = Aiimin.type.label.copy(color = fg, fontSize = 14.sp), maxLines = 1)
+        Text(text, style = Aiimin.type.label.copy(color = fg, fontSize = 14.sp), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
         if (count != null) Text(count.toString(), style = Aiimin.type.caption.copy(color = fg.copy(alpha = 0.7f)))
     }
 }
@@ -242,7 +248,6 @@ fun PillRow(content: @Composable () -> Unit) {
     androidx.compose.foundation.layout.FlowRow(
         Modifier.fillMaxWidth().padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) { content() }
 }
 
@@ -255,7 +260,7 @@ fun Segmented(options: List<String>, selected: Int, onSelect: (Int) -> Unit, mod
     val c = Aiimin.colors
     val inner = RoundedCornerShape(8.dp)
     BoxWithConstraints(
-        modifier.fillMaxWidth().height(40.dp).clip(Shapes.control).background(c.segmentTrack).padding(3.dp),
+        modifier.fillMaxWidth().heightIn(min = 48.dp).height(androidx.compose.foundation.layout.IntrinsicSize.Min).clip(Shapes.control).background(c.segmentTrack).padding(3.dp),
     ) {
         val w = maxWidth / options.size
         val x by animateDpAsState(w * selected, Motion.move(LocalReduceMotion.current, Motion.springSoft()), label = "thumb")
@@ -270,7 +275,12 @@ fun Segmented(options: List<String>, selected: Int, onSelect: (Int) -> Unit, mod
                     Modifier.width(w).fillMaxHeight().clip(inner).clickable(role = Role.Tab) { onSelect(i) },
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(o, style = Aiimin.type.label.copy(color = c.text, fontWeight = FontWeight.SemiBold), maxLines = 1, textAlign = TextAlign.Center)
+                    // Equal widths; at large text a long label steps its size down instead of touching its neighbour (D-007).
+                    val st = Aiimin.type.label.copy(color = c.text, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center)
+                    androidx.compose.foundation.text.BasicText(
+                        o, style = st, maxLines = 1, modifier = Modifier.padding(horizontal = 6.dp),
+                        autoSize = androidx.compose.foundation.text.TextAutoSize.StepBased(minFontSize = 10.sp, maxFontSize = st.fontSize, stepSize = 0.5.sp),
+                    )
                 }
             }
         }

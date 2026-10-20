@@ -149,9 +149,10 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
                         description = pc.summary,
                     )
                     pc.footnote?.let {
-                        Row(Modifier.padding(top = 4.dp).fillMaxWidth().clip(Shapes.small).pressable({ nav.open(Route.Budget) }).heightIn(min = 40.dp), verticalAlignment = Alignment.CenterVertically) {
+                        // D-005: the chevron stays on the first line when the line wraps.
+                        Row(Modifier.padding(top = 4.dp).fillMaxWidth().clip(Shapes.small).pressable({ nav.open(Route.Budget) }).heightIn(min = 48.dp).padding(vertical = 6.dp), verticalAlignment = Alignment.Top) {
                             Text(it, style = Aiimin.type.caption, modifier = Modifier.weight(1f))
-                            Icon(AppIcons.CaretRight, "Open budget", tint = c.textFaint, modifier = Modifier.size(14.dp))
+                            Icon(AppIcons.CaretRight, "Open budget", tint = c.textFaint, modifier = Modifier.padding(top = 2.dp, start = 8.dp).size(14.dp))
                         }
                     }
                 } else {
@@ -179,10 +180,11 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
                 androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     accts.forEach { a ->
                         val label = a.name + (a.last4?.let { " ••$it" } ?: "") + if (a.primary) " · Primary" else ""
-                        Box {
-                            aiimin.designsystem.component.Pill(label, accountFilter == a.id, { vm.accountFilter.value = if (accountFilter == a.id) null else a.id })
-                            if (a.id in quiet) Box(Modifier.align(Alignment.TopEnd).padding(top = 4.dp, end = 4.dp).size(6.dp).clip(androidx.compose.foundation.shape.CircleShape).background(c.accent))
-                        }
+                        // D-006: the quiet-alerts mark sits inside the chip, after its label, not on its border.
+                        aiimin.designsystem.component.Pill(
+                            label + if (a.id in quiet) " · no alerts" else "", accountFilter == a.id,
+                            { vm.accountFilter.value = if (accountFilter == a.id) null else a.id },
+                        )
                     }
                     Text("Manage", style = Aiimin.type.label.copy(color = c.accentText, fontSize = 14.sp), modifier = Modifier.clip(Shapes.small).pressable({ nav.open(Route.Accounts) }).padding(horizontal = 6.dp, vertical = 8.dp))
                 }
@@ -394,7 +396,8 @@ private fun Headline(s: aiimin.core.data.money.SpendSeries, bar: SpendBar?, plan
                     listOf("${Money.whole(remaining.coerceAtLeast(0))} left of ${Money.whole(plan)}", "$daysLeft days to go", word).filter { it.isNotBlank() }
                         .joinToString(" · ") { it.replace(' ', '\u00A0') }
                 } else if (monthIsCurrent && ledger == Ledger.PERSONAL) "Set a monthly plan to see your pace" else "${Money.whole(s.usualPaise)} a ${s.unit} on average"
-                Text(sub, style = Aiimin.type.caption.copy(fontSize = 14.sp, lineHeight = 20.sp))
+                // D-005: the parts wrap as whole parts; no "·" is left at a line end.
+                aiimin.designsystem.component.MetaLine(sub, style = Aiimin.type.caption.copy(fontSize = 14.sp, lineHeight = 20.sp))
             }
         }
     }
@@ -424,26 +427,20 @@ internal fun PaymentRow(t: aiimin.core.database.TxnEntity, biggest: Boolean, onC
     Row(Modifier.fillMaxWidth().pressable(onClick).heightIn(min = 60.dp), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f).padding(vertical = 8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(if (t.giftHideFrom != null) "Gift" else t.title, style = Aiimin.type.bodyStrong, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
+                Text(if (t.giftHideFrom != null) "Gift" else payeeLabel(t.title), style = Aiimin.type.bodyStrong, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
                 if (biggest) {
                     Spacer(Modifier.width(8.dp))
                     Text("Biggest", style = Aiimin.type.caption.copy(color = c.accentText, fontWeight = FontWeight.SemiBold, fontSize = 11.5.sp))
                 }
             }
-            Text(
-                listOfNotNull(t.category, t.account4?.let { "••$it" }, Dates.clock(java.time.Instant.ofEpochMilli(t.at).atZone(java.time.ZoneId.systemDefault()).toLocalTime())).joinToString(" · "),
-                style = Aiimin.type.caption,
+            aiimin.designsystem.component.MetaLine(
+                t.category, t.account4?.let { "••$it" }, Dates.clock(java.time.Instant.ofEpochMilli(t.at).atZone(java.time.ZoneId.systemDefault()).toLocalTime()),
             )
         }
+        // D-010: one quiet mark per row (how the payment was known), not two icons.
         Column(horizontalAlignment = Alignment.End) {
             Text((if (t.direction == "in") "+" else "−") + Money.format(t.amountPaise).removePrefix("−"), style = Aiimin.type.bodyStrong)
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                Icon(
-                    when (t.source) { "notification" -> AppIcons.BellSimple; "sms", "paste" -> AppIcons.ChatText; "ai" -> AppIcons.Mic; else -> AppIcons.Pencil },
-                    null, tint = c.textFaint, modifier = Modifier.size(12.dp),
-                )
-                EvidenceDot(if (t.source == "notification" || t.source == "sms") 'A' else 'C', size = 8.dp)
-            }
+            EvidenceDot(if (t.source == "notification" || t.source == "sms") 'A' else 'C', size = 8.dp)
         }
     }
 }

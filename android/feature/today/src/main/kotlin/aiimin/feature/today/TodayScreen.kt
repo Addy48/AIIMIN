@@ -1,5 +1,7 @@
 package aiimin.feature.today
 
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.layout.LastBaseline
 import aiimin.designsystem.component.armShared
 import aiimin.designsystem.component.opensScreen
 import aiimin.core.data.day.DayRepository
@@ -132,24 +134,34 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
             val status = when {
                 u.dayState?.paused == true -> "Paused today · nothing counts against you"
                 light -> "Light day · just the minimums"
-                u.yesterdayOpen -> "Yesterday open till noon · long-press a minimum"
+                u.yesterdayOpen -> "Yesterday stays open till noon"
                 else -> null
             }
             LargeHeader(title = Dates.dayMonth(u.date), overline = status) { RootActions(u.unread) }
         }
         item {
             Column(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 2.dp)) {
-                Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.semantics { contentDescription = "It is ${Dates.clock(now)}" }) {
-                    Text(Dates.clockPlain(now), style = Aiimin.type.display)
-                    Spacer(Modifier.width(10.dp))
-                    // Two short lines beside the clock instead of one that gets cut off on narrow phones.
-                    Column(Modifier.padding(bottom = 8.dp)) {
-                        Text(Dates.meridiem(now), style = Aiimin.type.bodyStrong.copy(color = Aiimin.colors.text))
-                        Text(
-                            greeting(hour) + if (u.name.isBlank()) "" else ", " + u.name.trim().split(" ").first(),
-                            style = Aiimin.type.body.copy(color = Aiimin.colors.textMuted),
-                            maxLines = 2, overflow = TextOverflow.Ellipsis,
-                        )
+                val greet = greeting(hour) + if (u.name.isBlank()) "" else ", " + u.name.trim().split(" ").first()
+                val meridiem: @Composable () -> Unit = { Text(Dates.meridiem(now), style = Aiimin.type.bodyStrong.copy(color = Aiimin.colors.text)) }
+                val greeting: @Composable () -> Unit = {
+                    Text(greet, style = Aiimin.type.body.copy(color = Aiimin.colors.textMuted), maxLines = 2, overflow = TextOverflow.Ellipsis)
+                }
+                // D-002: "AM" and the greeting sit on the clock's baseline. At large text the clock fills the width,
+                // so the two lines move under it instead of floating beside it.
+                if (LocalDensity.current.fontScale < 1.5f) {
+                    Row(Modifier.semantics(mergeDescendants = true) { contentDescription = "It is ${Dates.clock(now)}. $greet" }) {
+                        Text(Dates.clockPlain(now), style = Aiimin.type.display, modifier = Modifier.alignBy(LastBaseline))
+                        Spacer(Modifier.width(10.dp))
+                        Column(Modifier.alignBy(LastBaseline)) { meridiem(); greeting() }
+                    }
+                } else {
+                    Column(Modifier.semantics(mergeDescendants = true) { contentDescription = "It is ${Dates.clock(now)}. $greet" }) {
+                        Row {
+                            Text(Dates.clockPlain(now), style = Aiimin.type.display, modifier = Modifier.alignByBaseline())
+                            Spacer(Modifier.width(8.dp))
+                            Box(Modifier.alignByBaseline()) { meridiem() }
+                        }
+                        greeting()
                     }
                 }
                 Spacer(Modifier.height(16.dp))
@@ -487,7 +499,8 @@ private fun StatLine(u: TodayUi, modifier: Modifier) {
             u.hideScore -> Cell("—", "Score hidden", Route.Score)
             score == null -> {
                 val left = life?.readout?.calibrating?.values?.sorted()?.getOrNull(3)
-                Cell(if (left != null && left > 0) "$left d" else "Soon", "Score", Route.Score)
+                // D-040: the value and its label say the same thing.
+                Cell(if (left != null && left > 0) (if (left == 1) "1 day" else "$left days") else "Soon", "Until your score", Route.Score)
             }
             else -> Cell(score.toString(), life.readout.band.label, Route.Score) {
                 Icon(when (momentum(life.readout.series.mapNotNull { it.score })) { 1 -> AppIcons.ArrowUp; -1 -> AppIcons.ArrowDown; else -> AppIcons.ArrowRight }, null, tint = c.textMuted, modifier = Modifier.size(14.dp))

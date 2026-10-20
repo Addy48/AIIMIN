@@ -636,14 +636,18 @@ fun FamilyScreen(vm: FamilyViewModel = hiltViewModel()) {
             item {
                 Panel(color = c.surface) {
                     Text("How sharing works", style = Aiimin.type.bodyStrong)
-                    Spacer(Modifier.height(6.dp))
-                    listOf(
-                        "Private by default. People share results, not inputs.",
-                        "Managing someone's account never means reading it.",
-                        "Journals are never visible to anyone else — no override.",
-                        "Life Scores are private unless the owner shares the number.",
-                        "Every access outside a share is logged and notified.",
-                    ).forEach { Text("· $it", style = Aiimin.type.caption, modifier = Modifier.padding(vertical = 2.dp)) }
+                    Spacer(Modifier.height(8.dp))
+                    // D-013: a real list with a hanging indent, inside the card's 16 dp padding.
+                    aiimin.designsystem.component.BulletList(
+                        listOf(
+                            "Private by default. People share results, not inputs.",
+                            "Managing someone's account never means reading it.",
+                            "Journals are never visible to anyone else — no override.",
+                            "Life Scores are private unless the owner shares the number.",
+                            "Every access outside a share is logged and notified.",
+                        ),
+                        style = Aiimin.type.caption.copy(fontSize = 13.5.sp, lineHeight = 19.sp),
+                    )
                 }
                 Spacer(Modifier.height(8.dp))
             }
