@@ -138,7 +138,7 @@ fun AuthFlow(
                     PinInput(pin, { pin = it; error = null }, autoFocus = false)
                     ErrorLine(error)
                     Spacer(Modifier.height(8.dp))
-                    Text("Forgot your PIN?", style = Aiimin.type.label.copy(color = c.accentText), modifier = Modifier.clickable { mode = AuthMode.FORGOT; error = null }.padding(vertical = 10.dp))
+                    Text("Forgot your PIN?", style = Aiimin.type.label.copy(color = c.link), modifier = Modifier.clickable { mode = AuthMode.FORGOT; error = null }.padding(vertical = 10.dp))
                 }
                 AuthMode.SIGN_UP -> {
                     Text("Create your aiimin.in account", style = Aiimin.type.title.copy(fontSize = 28.sp, lineHeight = 34.sp))
@@ -163,7 +163,7 @@ fun AuthFlow(
                     Text("We sent a link to $email. Tap it, then come back and sign in. The link works once.", style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(top = 8.dp, bottom = 24.dp))
                     Text(
                         if (cooldown > 0) "Resend in 0:${"%02d".format(cooldown)}" else "Send the link again",
-                        style = Aiimin.type.label.copy(color = if (cooldown > 0) c.textFaint else c.accentText),
+                        style = Aiimin.type.label.copy(color = if (cooldown > 0) c.textFaint else c.link),
                         modifier = Modifier.clickable(enabled = cooldown == 0 && !busy) {
                             busy = true
                             scope.launch { auth.resendVerification(email).let { r -> busy = false; if (r is AuthResult.Ok) { info = "Sent. Check your inbox and spam."; cooldown = 45 } else if (r is AuthResult.Failed) error = r.message } }
@@ -195,7 +195,7 @@ fun AuthFlow(
                     Spacer(Modifier.height(12.dp))
                     Row(Modifier.clickable { mode = AuthMode.SIGN_UP; error = null }.padding(8.dp)) {
                         Text("New here? ", style = Aiimin.type.body.copy(color = c.textMuted))
-                        Text("Create an account", style = Aiimin.type.body.copy(color = c.accentText, fontWeight = FontWeight.SemiBold))
+                        Text("Create an account", style = Aiimin.type.body.copy(color = c.link, fontWeight = FontWeight.SemiBold))
                     }
                 }
                 AuthMode.SIGN_UP -> {
@@ -207,7 +207,7 @@ fun AuthFlow(
                     Spacer(Modifier.height(12.dp))
                     Row(Modifier.clickable { mode = AuthMode.SIGN_IN; error = null }.padding(8.dp)) {
                         Text("Already have one? ", style = Aiimin.type.body.copy(color = c.textMuted))
-                        Text("Sign in", style = Aiimin.type.body.copy(color = c.accentText, fontWeight = FontWeight.SemiBold))
+                        Text("Sign in", style = Aiimin.type.body.copy(color = c.link, fontWeight = FontWeight.SemiBold))
                     }
                 }
                 AuthMode.VERIFY -> {
@@ -225,9 +225,9 @@ fun AuthFlow(
             Spacer(Modifier.height(10.dp))
             Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
                 Text("By continuing you agree to the ", style = Aiimin.type.caption)
-                Text("Terms", style = Aiimin.type.caption.copy(color = c.accentText), modifier = Modifier.clickable { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://www.aiimin.in/terms"))) })
+                Text("Terms", style = Aiimin.type.caption.copy(color = c.link), modifier = Modifier.clickable { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://www.aiimin.in/terms"))) })
                 Text(" and ", style = Aiimin.type.caption)
-                Text("Privacy Policy", style = Aiimin.type.caption.copy(color = c.accentText), modifier = Modifier.clickable { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://www.aiimin.in/privacy"))) })
+                Text("Privacy Policy", style = Aiimin.type.caption.copy(color = c.link), modifier = Modifier.clickable { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://www.aiimin.in/privacy"))) })
             }
         }
     }

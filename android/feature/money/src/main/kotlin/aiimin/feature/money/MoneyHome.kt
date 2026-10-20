@@ -1,5 +1,6 @@
 package aiimin.feature.money
 
+import aiimin.core.data.money.payeeLabel
 import aiimin.designsystem.theme.Motion
 import aiimin.designsystem.component.PaceChartData
 import aiimin.designsystem.component.PaceChart
@@ -186,7 +187,7 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
                             { vm.accountFilter.value = if (accountFilter == a.id) null else a.id },
                         )
                     }
-                    Text("Manage", style = Aiimin.type.label.copy(color = c.accentText, fontSize = 14.sp), modifier = Modifier.clip(Shapes.small).pressable({ nav.open(Route.Accounts) }).padding(horizontal = 6.dp, vertical = 8.dp))
+                    Text("Manage", style = Aiimin.type.label.copy(color = c.link, fontSize = 14.sp), modifier = Modifier.clip(Shapes.small).pressable({ nav.open(Route.Accounts) }).padding(horizontal = 6.dp, vertical = 8.dp))
                 }
             }
         }
@@ -302,7 +303,7 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
                         Text(b.title, style = Aiimin.type.bodyStrong, modifier = Modifier.weight(1f))
                         Text(
                             Money.whole(b.amountPaise) + " · " + when { days <= 0 -> "today"; days == 1L -> "tomorrow"; days < 7 -> "in $days days"; else -> Dates.shortDm(due) },
-                            style = Aiimin.type.body.copy(color = if (days <= 2) c.accentText else c.text),
+                            style = Aiimin.type.body.copy(color = if (days <= 2) c.warn else c.text),
                         )
                     }
                     Hairline()
@@ -430,7 +431,7 @@ internal fun PaymentRow(t: aiimin.core.database.TxnEntity, biggest: Boolean, onC
                 Text(if (t.giftHideFrom != null) "Gift" else payeeLabel(t.title), style = Aiimin.type.bodyStrong, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
                 if (biggest) {
                     Spacer(Modifier.width(8.dp))
-                    Text("Biggest", style = Aiimin.type.caption.copy(color = c.accentText, fontWeight = FontWeight.SemiBold, fontSize = 11.5.sp))
+                    Text("Biggest", style = Aiimin.type.caption.copy(color = c.textMuted, fontWeight = FontWeight.SemiBold, fontSize = 11.5.sp))
                 }
             }
             aiimin.designsystem.component.MetaLine(

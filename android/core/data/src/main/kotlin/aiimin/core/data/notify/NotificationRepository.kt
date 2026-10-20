@@ -134,7 +134,7 @@ class NotificationRepository @Inject constructor(
 
         // Weekly review, Sunday evening.
         if (today.dayOfWeek == DayOfWeek.SUNDAY && now.hour >= 18) {
-            emit("review:${today.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR)}", "Your week, in one screen", "Five minutes to close the week and set up the next.", "score", null, 0)
+            emit("review:${today.get(IsoFields.WEEK_BASED_YEAR)}-W%02d".format(today.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR)), "Your week, in one screen", "Five minutes to close the week and set up the next.", "score", null, 0)
         }
     }
 
@@ -199,10 +199,14 @@ class NotificationRepository @Inject constructor(
     }
 }
 
-/** "inbox:2026-10-17" → "inbox:", "task:abc:2026-10-17" → "task:abc:"; keys without a date are their own family. */
+/**
+ * "inbox:2026-10-17" → "inbox:", "task:abc:2026-10-17" → "task:abc:", "review:2026-W42" → "review:" (and the
+ * old "review:42" week keys, D-045); keys without a date or week are their own family.
+ */
 internal fun family(ruleKey: String): String {
     val last = ruleKey.substringAfterLast(':', "")
-    return if (Regex("\\d{4}-\\d{2}-\\d{2}").matches(last)) ruleKey.substringBeforeLast(':') + ":" else ruleKey
+    val periodic = Regex("\\d{4}-\\d{2}-\\d{2}|\\d{4}-W\\d{2}").matches(last) || (ruleKey.startsWith("review:") && last.all { it.isDigit() } && last.isNotEmpty())
+    return if (periodic) ruleKey.substringBeforeLast(':') + ":" else ruleKey
 }
 
 /** The evening minimums reminder's second line; a zero streak is an invitation, not "your 0-day streak". */

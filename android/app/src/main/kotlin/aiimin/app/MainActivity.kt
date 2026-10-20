@@ -241,7 +241,7 @@ private fun Locked(card: aiimin.core.database.PersonEntity?, onUnlock: () -> Uni
             if (card != null && (card.blood.isNotBlank() || card.allergies.isNotBlank() || card.contacts != "[]")) {
                 Spacer(Modifier.height(24.dp))
                 Text(
-                    "Emergency card", style = Aiimin.type.label.copy(color = c.accentText),
+                    "Emergency card", style = Aiimin.type.label.copy(color = c.link),
                     modifier = Modifier.clickable { showCard = true }.padding(12.dp),
                 )
             }
@@ -258,7 +258,7 @@ private fun Locked(card: aiimin.core.database.PersonEntity?, onUnlock: () -> Uni
                 run {
                     contacts.forEach { (name, phone) ->
                         Text(name, style = Aiimin.type.bodyStrong, modifier = Modifier.padding(top = 14.dp))
-                        Text(phone, style = Aiimin.type.body.copy(color = c.accentText, fontSize = 18.sp), modifier = Modifier.clickable {
+                        Text(phone, style = Aiimin.type.body.copy(color = c.link, fontSize = 18.sp), modifier = Modifier.clickable {
                             runCatching { context.startActivity(Intent(Intent.ACTION_DIAL, android.net.Uri.parse("tel:$phone"))) }
                         })
                     }

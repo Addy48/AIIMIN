@@ -211,7 +211,7 @@ fun OnboardingScreen(onDone: () -> Unit, vm: OnboardingViewModel = hiltViewModel
                     Spacer(Modifier.height(8.dp))
                     Row(Modifier.clickable { overlay = Overlay.SIGN_IN }.padding(10.dp)) {
                         Text("I already use aiimin.in · ", style = Aiimin.type.body.copy(color = c.textMuted))
-                        Text("Sign in", style = Aiimin.type.body.copy(color = c.accentText, fontWeight = FontWeight.SemiBold))
+                        Text("Sign in", style = Aiimin.type.body.copy(color = c.link, fontWeight = FontWeight.SemiBold))
                     }
                 }
                 1 -> AppButton("Continue", {
@@ -226,7 +226,7 @@ fun OnboardingScreen(onDone: () -> Unit, vm: OnboardingViewModel = hiltViewModel
                         Spacer(Modifier.height(8.dp))
                         AppButton("Create an account", { overlay = Overlay.SIGN_UP }, Modifier.fillMaxWidth(), kind = ButtonKind.SECONDARY)
                         Spacer(Modifier.height(4.dp))
-                        Text("Stay on this phone only", style = Aiimin.type.label.copy(color = c.accentText), modifier = Modifier.clickable { next() }.padding(12.dp))
+                        Text("Stay on this phone only", style = Aiimin.type.label.copy(color = c.link), modifier = Modifier.clickable { next() }.padding(12.dp))
                     } else AppButton("Continue", { next() }, Modifier.fillMaxWidth())
                 }
                 LAST -> AppButton(if (saving) "Setting up…" else "Start my day", { if (!saving) vm.finish(onDone) }, Modifier.fillMaxWidth(), enabled = !saving)
@@ -327,7 +327,7 @@ fun MergeSheet(p: MergePreview, plan: suspend () -> aiimin.core.data.sync.SyncRe
             val pl = r
             when {
                 pl == null -> Text("Checking what's on aiimin.in…", style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(bottom = 16.dp))
-                pl.blocked != null -> Text(pl.blocked!!, style = Aiimin.type.body.copy(color = c.accentText), modifier = Modifier.padding(bottom = 16.dp))
+                pl.blocked != null -> Text(pl.blocked!!, style = Aiimin.type.body.copy(color = c.warn), modifier = Modifier.padding(bottom = 16.dp))
                 else -> {
                     val parts = listOfNotNull(
                         "${pl.tasks} tasks".takeIf { pl.tasks > 0 }, "${pl.notes} notes".takeIf { pl.notes > 0 },

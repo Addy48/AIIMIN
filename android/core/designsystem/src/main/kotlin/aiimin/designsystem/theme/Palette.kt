@@ -31,8 +31,10 @@ data class Palette(
     val textFaint: Color,
     /** Fills only. */
     val accent: Color,
-    /** Orange text and links. */
+    /** Orange text: the active tab and at most one accent in a screen's content (PRD 17.1 rule 6). */
     val accentText: Color,
+    /** Text links and text actions ("All tasks", "Manage", "Terms"): ink, so they never add orange. */
+    val link: Color,
     /** Text/icons placed on an accent fill. */
     val onAccent: Color,
     val accentSoft: Color,
@@ -93,6 +95,7 @@ val LightPalette = Palette(
     textFaint = Color(0xFF8A8478),
     accent = Color(0xFFFF6B35),
     accentText = Color(0xFFC24E20),
+    link = Color(0xFF1A1916),
     onAccent = Color(0xFF1A1916),
     accentSoft = Color(0xFFF6E5DA),
     done = Color(0xFF2F6B4F),
@@ -149,6 +152,7 @@ val DarkPalette = Palette(
     textFaint = Color(0xFF7A756B),
     accent = Color(0xFFFF7A47),
     accentText = Color(0xFFFF9467),
+    link = Color(0xFFF2EFE8),
     onAccent = Color(0xFF1A1916),
     accentSoft = Color(0xFF3A2418),
     done = Color(0xFF7FB89A),

@@ -1,5 +1,7 @@
 package aiimin.feature.today
 
+import aiimin.designsystem.component.IconButtonInset
+import aiimin.designsystem.component.bleed
 import aiimin.core.data.core.DayClock
 import aiimin.core.data.life.LifeRepository
 import aiimin.core.data.notes.JournalRepository
@@ -156,7 +158,8 @@ fun PlanDayScreen(tomorrow: Boolean, vm: PlanDayViewModel = hiltViewModel()) {
                 item {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(Modifier.weight(1f)) { SectionHeader("From yesterday") }
-                        Text("Keep all", style = Aiimin.type.label.copy(color = c.accentText), modifier = Modifier.clickable { vm.keepAll(u.carried) }.padding(8.dp))
+                        // D-025: the word ends on the margin; its padded target hangs into it.
+                        Text("Keep all", style = Aiimin.type.label.copy(color = c.link), modifier = Modifier.bleed(end = 8.dp).clickable { vm.keepAll(u.carried) }.padding(8.dp))
                     }
                 }
                 items(u.carried.size) { i ->
@@ -205,14 +208,20 @@ fun PlanDayScreen(tomorrow: Boolean, vm: PlanDayViewModel = hiltViewModel()) {
                                 },
                                 style = Aiimin.type.caption,
                             )
-                        }
-                        if (t.day == null || LocalDate.parse(t.day!!) != u.day) {
-                            Text("Do it ${if (tomorrow) "tomorrow" else "today"}", style = Aiimin.type.label.copy(color = c.textMuted, fontSize = 13.sp), modifier = Modifier.clickable { vm.pullTo(t, u.day) }.padding(8.dp))
+                            // D-026 (S4): the action sits under the title, so the title keeps the full width at any text size.
+                            if (t.day == null || LocalDate.parse(t.day!!) != u.day) {
+                                Text(
+                                    "Do it ${if (tomorrow) "tomorrow" else "today"}",
+                                    style = Aiimin.type.label.copy(color = c.link, fontSize = 13.sp),
+                                    modifier = Modifier.clickable { vm.pullTo(t, u.day) }.heightIn(min = 40.dp).padding(top = 10.dp, bottom = 10.dp, end = 8.dp),
+                                )
+                            }
                         }
                         AppIconButton(
                             if (starred) AppIcons.StarFill else AppIcons.Star, if (starred) "Remove from top three" else "Add to top three",
                             { scope.launch { if (!vm.toggleStar(t, u.top.size)) toaster.show("Three is the most") } },
                             tint = if (starred) c.accent else c.textMuted,
+                            modifier = Modifier.bleed(end = IconButtonInset),
                         )
                     }
                     Hairline()

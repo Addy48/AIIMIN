@@ -1,4 +1,7 @@
-package aiimin.feature.money
+package aiimin.core.data
+
+import aiimin.core.data.money.payeeLabel
+import aiimin.core.data.app.daySettledText
 
 import org.junit.Test
 import kotlin.test.assertEquals
@@ -16,4 +19,8 @@ class PayeeLabelTest {
     @Test fun a_name_with_digits_is_kept() = assertEquals("Shop 24", payeeLabel("Shop 24"))
 
     @Test fun blank_stays_blank() = assertEquals("", payeeLabel(" "))
+
+    @Test fun settled_day_reads_as_a_date() = assertEquals("Day settled: Sun 18 Oct", daySettledText("2026-10-18"))
+
+    @Test fun settled_day_without_a_date() = assertEquals("Day settled", daySettledText(null))
 }

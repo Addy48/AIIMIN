@@ -172,7 +172,7 @@ fun VaultScreen(vm: VaultViewModel = hiltViewModel()) {
                         Icon(AppIcons.Search, null, tint = c.textFaint, modifier = Modifier.size(20.dp))
                         Spacer(Modifier.width(10.dp))
                         androidx.compose.foundation.layout.Box(Modifier.weight(1f)) {
-                            if (query.isEmpty()) Text("Find by name, or the last 4 digits", style = Aiimin.type.body.copy(color = c.textFaint))
+                            if (query.isEmpty()) Text("Find by name, or the last 4 digits", style = Aiimin.type.body.copy(color = c.textFaint), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, modifier = Modifier.padding(start = 3.dp))
                             androidx.compose.foundation.text.BasicTextField(query, { query = it }, singleLine = true, textStyle = Aiimin.type.body, cursorBrush = androidx.compose.ui.graphics.SolidColor(c.text), modifier = Modifier.fillMaxWidth())
                         }
                     }
@@ -198,7 +198,7 @@ fun VaultScreen(vm: VaultViewModel = hiltViewModel()) {
                                     Text(d.ownerName, style = Aiimin.type.caption)
                                 }
                                 val n = d.daysToExpiry ?: 0
-                                Text(if (n < 0) "expired" else "expires in $n days", style = Aiimin.type.label.copy(color = if (n <= 30) c.accentText else c.textMuted, fontWeight = if (n <= 30) FontWeight.SemiBold else FontWeight.Normal, fontSize = 13.5.sp))
+                                Text(if (n < 0) "expired" else "expires in $n days", style = Aiimin.type.label.copy(color = if (n <= 30) c.warn else c.textMuted, fontWeight = if (n <= 30) FontWeight.SemiBold else FontWeight.Normal, fontSize = 13.5.sp))
                             }
                             Hairline()
                         }
@@ -330,7 +330,7 @@ private fun DocRow(d: DocView, onClick: () -> Unit) {
                 days <= 120 -> "Expires ${d.doc.expires?.let { Dates.short(LocalDate.parse(it)) }} · $days days"
                 else -> "Valid to ${d.doc.expires?.let { Dates.short(LocalDate.parse(it)) }}"
             }
-            Text(line, style = Aiimin.type.caption.copy(color = if (days != null && days <= 36) c.accentText else c.textMuted, fontWeight = if (days != null && days <= 36) androidx.compose.ui.text.font.FontWeight.SemiBold else androidx.compose.ui.text.font.FontWeight.Normal))
+            Text(line, style = Aiimin.type.caption.copy(color = if (days != null && days <= 36) c.warn else c.textMuted, fontWeight = if (days != null && days <= 36) androidx.compose.ui.text.font.FontWeight.SemiBold else androidx.compose.ui.text.font.FontWeight.Normal))
         }
         ExpiryVial(left)
     }
@@ -382,7 +382,7 @@ private fun PackCard(p: Pack, modifier: Modifier, onClick: () -> Unit) {
             repeat(p.total) { i -> Box(Modifier.weight(1f).height(5.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(2.dp)).background(if (i < p.have) c.text else c.borderStrong)) }
         }
         Spacer(Modifier.height(10.dp))
-        Text("${p.have} of ${p.total} ready" + (p.missing?.let { " · $it" } ?: ""), style = Aiimin.type.caption.copy(color = if (p.missing != null) c.accentText else c.done, fontWeight = androidx.compose.ui.text.font.FontWeight.Medium, fontSize = 12.sp))
+        Text("${p.have} of ${p.total} ready" + (p.missing?.let { " · $it" } ?: ""), style = Aiimin.type.caption.copy(color = if (p.missing != null) c.warn else c.done, fontWeight = androidx.compose.ui.text.font.FontWeight.Medium, fontSize = 12.sp))
     }
 }
 

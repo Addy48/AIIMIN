@@ -204,7 +204,8 @@ fun NotesScreen(vm: NotesViewModel = hiltViewModel()) {
                         Text(n.title, style = Aiimin.type.bodyStrong, modifier = Modifier.weight(1f), maxLines = 1)
                         Text(Dates.relative(java.time.Instant.ofEpochMilli(n.updatedAt).atZone(java.time.ZoneId.systemDefault()).toLocalDate(), LocalDate.now()), style = Aiimin.type.caption)
                     }
-                    Text(aiimin.core.data.notes.notePreview(n.body).take(140), style = Aiimin.type.caption, maxLines = 2)
+                    // D-016: the preview ends with an ellipsis, never mid-word.
+                    Text(aiimin.core.data.notes.notePreview(n.body).take(140), style = Aiimin.type.caption, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                 }
                 Hairline(Modifier.padding(horizontal = Aiimin.space.gutter))
             }
@@ -494,7 +495,7 @@ fun JournalScreen(vm: JournalViewModel = hiltViewModel()) {
         }
         val list = entries
         if (list != null && list.isEmpty()) {
-            EmptyState(AppIcons.BookOpen, "Nothing written yet", "Forty honest words a day count toward your journal signal. Mood is tracked for you and never scored.", action = "Write today", onAction = { nav.open(Route.JournalWrite()) })
+            EmptyState(AppIcons.BookOpen, "Nothing written yet", "Write as much or as little as you like. Mood is kept for you and never scored.", action = "Write today", onAction = { nav.open(Route.JournalWrite()) })
             return@Column
         }
         LazyColumn(contentPadding = PaddingValues(Aiimin.space.gutter)) {
@@ -537,13 +538,20 @@ private fun MoodMonth(all: List<JournalEntry>, modifier: Modifier, onOpen: () ->
     Column(modifier.fillMaxWidth().clickable(onClick = onOpen)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(ym.month.getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.ENGLISH), style = Aiimin.type.caption, modifier = Modifier.weight(1f))
-            Text("Mood year", style = Aiimin.type.label.copy(color = Aiimin.colors.accentText, fontSize = 13.sp))
+            Text("Mood year", style = Aiimin.type.label.copy(color = Aiimin.colors.link, fontSize = 13.sp))
         }
         Spacer(Modifier.height(8.dp))
-        androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            (1..ym.lengthOfMonth()).forEach { d ->
-                val day = ym.atDay(d)
-                MoodSquare(moods[day], day in moods, 14.dp, selected = day == today)
+        // D-018: two rows of equal columns, so the second row lines up with the first; the strip as a whole
+        // is the tap target (it opens the year).
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            (1..ym.lengthOfMonth()).chunked(16).forEach { week ->
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    week.forEach { d ->
+                        val day = ym.atDay(d)
+                        Box(Modifier.weight(1f).aspectRatio(1f)) { MoodSquare(moods[day], day in moods, 40.dp, selected = day == today) }
+                    }
+                    repeat(16 - week.size) { Spacer(Modifier.weight(1f)) }
+                }
             }
         }
     }
@@ -557,6 +565,7 @@ fun MoodYearScreen(vm: JournalViewModel = hiltViewModel()) {
     val entries by vm.entries.collectAsStateWithLifecycle()
     var year by remember { mutableIntStateOf(LocalDate.now().year) }
     var picked by remember { mutableStateOf<LocalDate?>(null) }
+    var openMonth by remember { mutableStateOf<java.time.YearMonth?>(java.time.YearMonth.now()) }
     val all = entries.orEmpty()
     val moods = remember(all) { moodsByDay(all) }
     Column(Modifier.fillMaxSize().background(c.base)) {
@@ -584,20 +593,34 @@ fun MoodYearScreen(vm: JournalViewModel = hiltViewModel()) {
                 }
                 Spacer(Modifier.height(14.dp))
             }
-            items((1..12).toList()) { mo ->
-                val ym = java.time.YearMonth.of(year, mo)
-                Row(Modifier.fillMaxWidth().padding(vertical = 3.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text(ym.month.getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.ENGLISH), style = Aiimin.type.caption.copy(fontSize = 11.5.sp), maxLines = 1, softWrap = false, modifier = Modifier.widthIn(min = 34.dp))
-                    Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                        (1..31).forEach { d ->
-                            Box(Modifier.weight(1f).aspectRatio(1f)) {
-                                if (d <= ym.lengthOfMonth()) {
-                                    val day = ym.atDay(d)
-                                    if (!day.isAfter(LocalDate.now())) MoodSquare(moods[day], day in moods, 40.dp, selected = day == picked, onClick = if (day in moods) ({ picked = day }) else null)
-                                }
-                            }
+            // D-037: twelve small month calendars (Monday first) in two columns; tapping a month opens it below
+            // as a full-width calendar whose days are real 44 dp+ targets.
+            items((1..12).chunked(2)) { pair ->
+                Row(Modifier.fillMaxWidth().padding(vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    pair.forEach { mo ->
+                        val ym = java.time.YearMonth.of(year, mo)
+                        val future = ym.atDay(1).isAfter(LocalDate.now())
+                        Column(
+                            Modifier.weight(1f).clip(RoundedCornerShape(8.dp))
+                                .clickable(enabled = !future, onClickLabel = "Open ${ym.month.getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.ENGLISH)}") { openMonth = ym }
+                                .padding(vertical = 4.dp),
+                        ) {
+                            Text(
+                                ym.month.getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.ENGLISH) + if (future) " · not yet" else "",
+                                style = Aiimin.type.caption.copy(color = if (openMonth == ym) c.text else c.textMuted), maxLines = 1,
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            MonthGrid(ym, moods, picked, gap = 2.dp, onPick = null)
                         }
                     }
+                }
+            }
+            openMonth?.let { ym ->
+                item {
+                    Spacer(Modifier.height(12.dp))
+                    Hairline()
+                    Text(ym.month.getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.ENGLISH) + " $year", style = Aiimin.type.headline, modifier = Modifier.padding(top = 12.dp, bottom = 8.dp))
+                    MonthGrid(ym, moods, picked, gap = 4.dp, onPick = { picked = it })
                 }
             }
             picked?.let { day ->
@@ -613,6 +636,33 @@ fun MoodYearScreen(vm: JournalViewModel = hiltViewModel()) {
     }
 }
 
+/** A month as a Monday-first calendar of equal cells; future days are blank. [onPick] makes written days tappable. */
+@Composable
+private fun MonthGrid(ym: java.time.YearMonth, moods: Map<LocalDate, Int?>, picked: LocalDate?, gap: androidx.compose.ui.unit.Dp, onPick: ((LocalDate) -> Unit)?) {
+    val lead = ym.atDay(1).dayOfWeek.value - 1
+    val cells: List<Int?> = List(lead) { null } + (1..ym.lengthOfMonth()).toList()
+    Column(verticalArrangement = Arrangement.spacedBy(gap)) {
+        cells.chunked(7).forEach { week ->
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(gap)) {
+                week.forEach { d ->
+                    Box(Modifier.weight(1f).aspectRatio(1f)) {
+                        if (d != null) {
+                            val day = ym.atDay(d)
+                            if (!day.isAfter(LocalDate.now())) {
+                                MoodSquare(
+                                    moods[day], day in moods, 64.dp, selected = day == picked,
+                                    onClick = if (onPick != null && day in moods) ({ onPick(day) }) else null,
+                                )
+                            }
+                        }
+                    }
+                }
+                repeat(7 - week.size) { Spacer(Modifier.weight(1f)) }
+            }
+        }
+    }
+}
+
 @Composable
 private fun JournalCard(e: JournalEntry, onClick: () -> Unit) {
     val c = Aiimin.colors
@@ -621,7 +671,8 @@ private fun JournalCard(e: JournalEntry, onClick: () -> Unit) {
             e.mood?.let { Icon(moodIcon(it), moodLabels[it - 1], tint = c.textMuted, modifier = Modifier.size(16.dp)); Spacer(Modifier.size(6.dp)) }
             Text("${e.words} words" + if (e.qualityOk) "" else " · short", style = Aiimin.type.caption)
         }
-        Text(e.text, style = Aiimin.type.journal.copy(fontSize = 16.sp, lineHeight = 25.sp), maxLines = 4, modifier = Modifier.padding(top = 4.dp))
+        // D-018: a long entry ends with an ellipsis; the card opens the whole entry.
+        Text(e.text, style = Aiimin.type.journal.copy(fontSize = 16.sp, lineHeight = 25.sp), maxLines = 4, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, modifier = Modifier.padding(top = 4.dp))
     }
 }
 

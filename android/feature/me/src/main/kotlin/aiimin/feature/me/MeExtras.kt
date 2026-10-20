@@ -187,7 +187,7 @@ fun PlansScreen(vm: PlansViewModel = hiltViewModel()) {
     var checkout by remember { mutableStateOf<PlanPrices?>(null) }
     val prices = (store as? StoreState.Ready)?.prices.orEmpty()
     Column(Modifier.fillMaxSize().background(c.base)) {
-        TopBar("Plans", onBack = { nav.back() }) { Text("Restore", style = Aiimin.type.label.copy(color = c.accentText, fontSize = 14.sp), modifier = Modifier.pressable({ vm.restore() }).padding(12.dp)) }
+        TopBar("Plans", onBack = { nav.back() }) { Text("Restore", style = Aiimin.type.label.copy(color = c.link, fontSize = 14.sp), modifier = Modifier.pressable({ vm.restore() }).padding(12.dp)) }
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Aiimin.space.gutter)) {
             Text(
                 if (ent.plan == Plan.FREE) "AIIMIN is free for one person, for as long as you like. Plans add more people, all your history and more help." else "You're on ${ent.plan.label}. Thank you for supporting AIIMIN.",
@@ -206,7 +206,7 @@ fun PlansScreen(vm: PlansViewModel = hiltViewModel()) {
                 val pp = prices.firstOrNull { it.plan == plan }
                 PlanBlock(plan, pp, period, current = ent.plan == plan, selected = picked == plan) { if (plan != ent.plan) picked = plan }
             }
-            Text("Compare plans", style = Aiimin.type.label.copy(color = c.accentText, fontSize = 15.sp), modifier = Modifier.padding(vertical = 14.dp).pressable({ compare = true }))
+            Text("Compare plans", style = Aiimin.type.label.copy(color = c.link, fontSize = 15.sp), modifier = Modifier.padding(vertical = 14.dp).pressable({ compare = true }))
             SectionHeader("Plainly")
             Text(
                 "No ads. No lending. We never sell your data. Prices include GST. Cancel anytime in Google Play. If you go back to Free, nothing is deleted.",
@@ -240,7 +240,7 @@ private fun StoreNote(text: String, action: String?, onAction: () -> Unit) {
     val c = Aiimin.colors
     Column(Modifier.fillMaxWidth().padding(top = 12.dp).clip(RoundedCornerShape(12.dp)).background(c.raised).padding(14.dp)) {
         Text(text, style = Aiimin.type.body)
-        if (action != null) Text(action, style = Aiimin.type.label.copy(color = c.accentText, fontSize = 14.sp), modifier = Modifier.padding(top = 8.dp).pressable(onAction))
+        if (action != null) Text(action, style = Aiimin.type.label.copy(color = c.link, fontSize = 14.sp), modifier = Modifier.padding(top = 8.dp).pressable(onAction))
     }
 }
 
@@ -260,11 +260,12 @@ private fun PlanBlock(plan: Plan, pp: PlanPrices?, period: Period, current: Bool
         val price = aiimin.core.data.plan.planPriceLabel(plan, pp?.monthly?.formatted, pp?.yearly?.formatted, pp?.yearlySavingPct, yearly = period == Period.YEARLY)
         Text(price, style = Aiimin.type.headline.copy(fontSize = 18.sp), modifier = Modifier.padding(top = 8.dp))
         Text(plan.hero, style = Aiimin.type.body, modifier = Modifier.padding(top = 6.dp))
-        plan.adds.forEach { Text("· $it", style = Aiimin.type.caption.copy(fontSize = 13.sp, lineHeight = 19.sp), modifier = Modifier.padding(top = 3.dp)) }
+        // D-032: a real list with a hanging indent.
+        aiimin.designsystem.component.BulletList(plan.adds, Modifier.padding(top = 8.dp), style = Aiimin.type.caption.copy(fontSize = 13.sp, lineHeight = 19.sp))
         if (plan.coming.isNotEmpty()) {
             // Planned, shown on purpose, never sold as included today (A-036).
             Text("COMING", style = Aiimin.type.eyebrow, modifier = Modifier.padding(top = 10.dp))
-            plan.coming.forEach { Text("· $it", style = Aiimin.type.caption.copy(fontSize = 13.sp, lineHeight = 19.sp, color = c.textFaint), modifier = Modifier.padding(top = 3.dp)) }
+            aiimin.designsystem.component.BulletList(plan.coming, Modifier.padding(top = 6.dp), style = Aiimin.type.caption.copy(fontSize = 13.sp, lineHeight = 19.sp, color = c.textFaint))
         }
     }
 }
@@ -332,19 +333,19 @@ private fun CheckoutSheet(vm: PlansViewModel, pp: PlanPrices, period: Period, on
         when (outcome) {
             "ok" -> {
                 Text("You're on ${pp.plan.label}.", style = Aiimin.type.title.copy(fontSize = 22.sp))
-                pp.plan.adds.take(3).forEach { Text("· $it", style = Aiimin.type.body, modifier = Modifier.padding(top = 4.dp)) }
+                aiimin.designsystem.component.BulletList(pp.plan.adds.take(3), Modifier.padding(top = 8.dp))
                 Spacer(Modifier.height(14.dp))
                 AppButton("Done", { vm.outcome.value = null; onDismiss(); nav.back() }, Modifier.fillMaxWidth())
             }
             else -> {
                 Text("${price?.formatted ?: "—"} every ${if (period == Period.YEARLY) "year" else "month"}, GST included. Starts today; renews until you cancel in Google Play.", style = Aiimin.type.body)
                 Text("What changes right away: ${pp.plan.adds.first().lowercase()}.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp))
-                outcome?.takeIf { it != "cancelled" }?.let { Text(it, style = Aiimin.type.body.copy(color = Aiimin.colors.accentText), modifier = Modifier.padding(top = 10.dp)) }
+                outcome?.takeIf { it != "cancelled" }?.let { Text(it, style = Aiimin.type.body.copy(color = Aiimin.colors.link), modifier = Modifier.padding(top = 10.dp)) }
                 Spacer(Modifier.height(14.dp))
                 AppButton("Start", { (context as? Activity)?.let { vm.buy(it, pp, period) } }, Modifier.fillMaxWidth(), enabled = price != null && pp.plan != Plan.FAMILY)
                 Row(Modifier.padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Text("Terms", style = Aiimin.type.label.copy(color = Aiimin.colors.accentText), modifier = Modifier.pressable({ open(context, AppContact.TERMS) }))
-                    Text("How to cancel", style = Aiimin.type.label.copy(color = Aiimin.colors.accentText), modifier = Modifier.pressable({ open(context, vm.manageUrl(pp.plan)) }))
+                    Text("Terms", style = Aiimin.type.label.copy(color = Aiimin.colors.link), modifier = Modifier.pressable({ open(context, AppContact.TERMS) }))
+                    Text("How to cancel", style = Aiimin.type.label.copy(color = Aiimin.colors.link), modifier = Modifier.pressable({ open(context, vm.manageUrl(pp.plan)) }))
                 }
             }
         }
@@ -378,7 +379,7 @@ fun SubscriptionScreen(vm: PlansViewModel = hiltViewModel()) {
                 AppButton("Manage or cancel in Google Play", { open(context, vm.manageUrl(ent.plan)) }, Modifier.fillMaxWidth(), kind = ButtonKind.SECONDARY)
                 Text("If you cancel: nothing is deleted. Features beyond Free pause at the end of the period.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 10.dp))
             }
-            Text("Restore purchases", style = Aiimin.type.label.copy(color = c.accentText, fontSize = 14.sp), modifier = Modifier.padding(top = 16.dp).pressable({ vm.restore() }).padding(vertical = 8.dp))
+            Text("Restore purchases", style = Aiimin.type.label.copy(color = c.link, fontSize = 14.sp), modifier = Modifier.padding(top = 16.dp).pressable({ vm.restore() }).padding(vertical = 8.dp))
         }
     }
 }
@@ -437,7 +438,7 @@ fun LinkedDevicesScreen(vm: DevicesViewModel = hiltViewModel()) {
                         Text(deviceName(s.userAgent) + if (mine) " · this phone" else "", style = Aiimin.type.bodyStrong)
                         Text(listOfNotNull(s.ipAddress, s.updatedAt?.take(10)?.let { "active $it" }).joinToString(" · "), style = Aiimin.type.caption)
                     }
-                    if (!mine && s.token != null) Text("Remove", style = Aiimin.type.label.copy(color = c.accentText, fontSize = 14.sp), modifier = Modifier.pressable({ vm.remove(s.token!!) }).padding(10.dp))
+                    if (!mine && s.token != null) Text("Remove", style = Aiimin.type.label.copy(color = c.link, fontSize = 14.sp), modifier = Modifier.pressable({ vm.remove(s.token!!) }).padding(10.dp))
                 }
                 Hairline()
             }

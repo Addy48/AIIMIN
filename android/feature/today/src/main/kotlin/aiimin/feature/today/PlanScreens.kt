@@ -1,5 +1,8 @@
 package aiimin.feature.today
 
+import aiimin.designsystem.component.bleed
+import aiimin.designsystem.component.IconButtonInset
+import aiimin.designsystem.component.CheckInset
 import aiimin.designsystem.theme.LocalReduceMotion
 import aiimin.designsystem.theme.Motion
 import aiimin.core.data.day.DayRepository
@@ -437,9 +440,11 @@ fun MinimumsScreen(vm: MinimumsViewModel = hiltViewModel()) {
             }
             if (list.isEmpty()) item { EmptyState(AppIcons.ListChecks, "No minimums yet", "Try: Read 10 pages · Walk 20 minutes · No phone in bed.", action = "Add one", onAction = { adding = true }) }
             items(list, key = { it.minimum.id }) { m ->
-                Panel(Modifier.padding(vertical = 4.dp), padding = PaddingValues(start = 4.dp, end = 4.dp, top = 4.dp, bottom = 4.dp)) {
+                // D-020: checkbox and camera sit on the page margins like the Pause row below.
+                Panel(Modifier.padding(vertical = 4.dp), padding = PaddingValues(vertical = 4.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        CheckCircle(m.done, { scope.launch { vm.toggle(m.minimum.id) } }, "Keep ${m.minimum.name}")
+                        CheckCircle(m.done, { scope.launch { vm.toggle(m.minimum.id) } }, "Keep ${m.minimum.name}", Modifier.bleed(start = CheckInset))
+                        Spacer(Modifier.width(8.dp))
                         Column(Modifier.weight(1f).clickable { editing = m.minimum }) {
                             Text(m.minimum.name, style = Aiimin.type.bodyStrong)
                             val sub = listOfNotNull(
@@ -452,7 +457,7 @@ fun MinimumsScreen(vm: MinimumsViewModel = hiltViewModel()) {
                         AppIconButton(AppIcons.Camera, "Add proof photo", {
                             proofFor = m.minimum.id
                             picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                        }, tint = c.textFaint)
+                        }, tint = c.textFaint, modifier = Modifier.bleed(end = IconButtonInset))
                     }
                 }
             }
@@ -566,7 +571,7 @@ fun UpcomingScreen(vm: UpcomingViewModel = hiltViewModel()) {
                             t.title,
                             subtitle = listOfNotNull(t.day?.let { Dates.relative(LocalDate.parse(it), today) }, t.time?.let(Dates::clock)).joinToString(" · ").ifBlank { null },
                             onClick = { nav.open(Route.Task(t.id)) },
-                            trailing = { Text("Do today", style = Aiimin.type.label.copy(color = c.accentText), modifier = Modifier.clip(Shapes.small).clickable(onClickLabel = "Move to today") { vm.moveToday(t.id) }.heightIn(min = 48.dp).padding(horizontal = 8.dp, vertical = 14.dp)) },
+                            trailing = { Text("Do today", style = Aiimin.type.label.copy(color = c.link), modifier = Modifier.bleed(end = 8.dp).clip(Shapes.small).clickable(onClickLabel = "Move to today") { vm.moveToday(t.id) }.heightIn(min = 48.dp).padding(horizontal = 8.dp, vertical = 14.dp)) },
                         )
                     }
                 }

@@ -189,10 +189,10 @@ fun SyncSettingsScreen(vm: SyncSettingsViewModel = hiltViewModel()) {
                 ListRow(
                     "${conflicts.size} ${if (conflicts.size == 1) "change" else "changes"} to choose",
                     subtitle = "Edited on this phone and on aiimin.in since the last sync",
-                    leading = { IconTile(AppIcons.WarningCircle, tint = c.accentText) },
+                    leading = { IconTile(AppIcons.WarningCircle, tint = c.warn) },
                     trailing = { Chevron() },
                     onClick = { nav.open(Route.Conflicts) },
-                    titleColor = c.accentText,
+                    titleColor = c.warn,
                 )
                 Hairline()
             }
@@ -223,7 +223,7 @@ fun SyncSettingsScreen(vm: SyncSettingsViewModel = hiltViewModel()) {
                 SectionHeader("Last replace")
                 ListRow(
                     "Undo replace", subtitle = "Bring back the $count ${if (count == 1) "item" else "items"} this phone moved to Trash",
-                    leading = { IconTile(AppIcons.ClockCounter, tint = c.accentText) }, onClick = { vm.undoReplace() },
+                    leading = { IconTile(AppIcons.ClockCounter, tint = c.warn) }, onClick = { vm.undoReplace() },
                 )
                 Hairline()
             }
@@ -312,7 +312,7 @@ fun ConflictsScreen(vm: ConflictsViewModel = hiltViewModel()) {
                 val local = Snap.parse(conflict.local)
                 val remote = Snap.parse(conflict.remote)
                 Column(Modifier.fillMaxWidth().padding(vertical = 14.dp)) {
-                    Text(SyncRepository.kindLabel(conflict.kind).uppercase(), style = Aiimin.type.eyebrow.copy(color = c.accentText))
+                    Text(SyncRepository.kindLabel(conflict.kind).uppercase(), style = Aiimin.type.eyebrow.copy(color = c.textMuted))
                     Text(conflict.title, style = Aiimin.type.headline, modifier = Modifier.padding(top = 4.dp))
                     Snap.diff(conflict.local, conflict.remote).forEach { f ->
                         Text(fieldNames[f] ?: f, style = Aiimin.type.caption.copy(fontWeight = FontWeight.SemiBold), modifier = Modifier.padding(top = 12.dp))
@@ -390,7 +390,7 @@ fun TrashScreen(vm: TrashViewModel = hiltViewModel()) {
                     }
                     Text(
                         "Restore",
-                        style = Aiimin.type.label.copy(color = c.accentText, fontSize = 14.sp),
+                        style = Aiimin.type.label.copy(color = c.link, fontSize = 14.sp),
                         modifier = Modifier.padding(horizontal = 6.dp).heightIn(min = 48.dp).wrapClick { vm.restore(item); toaster.show("Restored") },
                     )
                     Text(

@@ -75,6 +75,22 @@ def grid_check(xml: bytes, width: int, margin_px: float, status_h: int, nav_top:
     return {"margin": margin, "overlap": overlaps}
 
 
+def ours_on_top(serial: str) -> bool:
+    focus = adb(serial, "shell", "dumpsys", "window", "displays").stdout.decode()
+    lines = [l for l in focus.splitlines() if "mCurrentFocus" in l]
+    return bool(lines) and all(PKG in l for l in lines)
+
+
+def is_black(png: bytes) -> bool:
+    from io import BytesIO
+    from PIL import Image
+    try:
+        im = Image.open(BytesIO(png)).convert("L").resize((20, 40))
+    except Exception:
+        return True
+    return sum(im.getdata()) / 800 < 8
+
+
 def sheets(out: Path, per: int = 6, width: int = 420) -> None:
     """Labelled contact sheets (6 screens each) for reading the run by eye."""
     from PIL import Image, ImageDraw
@@ -134,7 +150,16 @@ def main() -> int:
             cmd = ["shell", "am", "start", "-n", COMPONENT] + (["--es", "aiimin_go", extra] if extra else [])
             adb(a.serial, *cmd)
             time.sleep(a.wait)
+            if not ours_on_top(a.serial):  # never save another app's screen (privacy)
+                time.sleep(2.5)
+                if not ours_on_top(a.serial):
+                    print(f"{i:02d} {name:14s} skipped: AIIMIN is not on screen", flush=True)
+                    report["screens"].append({"index": i, "name": name, "skipped": "not on screen"})
+                    continue
             png = adb(a.serial, "exec-out", "screencap", "-p", timeout=60).stdout
+            if is_black(png):  # a frame caught mid-launch: wait and take it again
+                time.sleep(2.5)
+                png = adb(a.serial, "exec-out", "screencap", "-p", timeout=60).stdout
             (out / f"{i:02d}-{name}.png").write_bytes(png)
             adb(a.serial, "shell", "uiautomator", "dump", "/sdcard/aiimin-b1.xml", timeout=60)
             xml = adb(a.serial, "exec-out", "cat", "/sdcard/aiimin-b1.xml").stdout

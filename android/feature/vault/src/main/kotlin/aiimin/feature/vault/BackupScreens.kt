@@ -162,7 +162,7 @@ fun VaultBackupScreen(vm: VaultBackupViewModel = hiltViewModel()) {
             )
             Text(
                 (health.where?.let { "In $it · " } ?: "") + "${health.docs} documents on this phone" + if (health.overdue) " · due for a backup" else "",
-                style = Aiimin.type.caption.copy(color = if (health.overdue) c.accentText else c.textMuted, fontSize = 13.5.sp),
+                style = Aiimin.type.caption.copy(color = if (health.overdue) c.warn else c.textMuted, fontSize = 13.5.sp),
             )
             Spacer(Modifier.height(16.dp))
             AppButton(
@@ -245,7 +245,7 @@ fun EmergencyKitsScreen(vm: VaultBackupViewModel = hiltViewModel()) {
                         Text("For ${k.to}", style = Aiimin.type.bodyStrong)
                         Text(
                             "${k.docIds.size} documents · made " + stamp.format(Instant.ofEpochMilli(k.createdAt).atZone(ZoneId.systemDefault())) + if (k.dueForRefresh) " · refresh it" else "",
-                            style = Aiimin.type.caption.copy(color = if (k.dueForRefresh) c.accentText else c.textMuted),
+                            style = Aiimin.type.caption.copy(color = if (k.dueForRefresh) c.warn else c.textMuted),
                         )
                     }
                     Chevron()

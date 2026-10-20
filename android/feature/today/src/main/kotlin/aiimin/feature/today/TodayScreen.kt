@@ -412,7 +412,7 @@ private fun NowCard(u: TodayUi, vm: TodayViewModel, hour: Int, light: Boolean, o
     val n = u.now
     if (hour >= 18 && !light) {
         card {
-            Text("WRAP UP THE DAY", style = Aiimin.type.eyebrow.copy(color = c.accentText))
+            Text("WRAP UP THE DAY", style = Aiimin.type.eyebrow.copy(color = c.textMuted))
             Spacer(Modifier.height(10.dp))
             val kept = u.minimums.count { it.done }
             Text("$kept of ${u.minimums.size} minimums kept. Close the day kindly.", style = Aiimin.type.cardTitle)
@@ -428,7 +428,7 @@ private fun NowCard(u: TodayUi, vm: TodayViewModel, hour: Int, light: Boolean, o
     }
     if (n == null) {
         card {
-            Text("NOTHING SCHEDULED RIGHT NOW", style = Aiimin.type.eyebrow.copy(color = c.accentText))
+            Text("NOTHING SCHEDULED RIGHT NOW", style = Aiimin.type.eyebrow.copy(color = c.textMuted))
             Spacer(Modifier.height(10.dp))
             Text("Pick one thing?", style = Aiimin.type.cardTitle)
             Spacer(Modifier.height(4.dp))
@@ -451,7 +451,7 @@ private fun NowCard(u: TodayUi, vm: TodayViewModel, hour: Int, light: Boolean, o
             }
             else -> "UP NEXT"
         }
-        Text(eyebrow, style = Aiimin.type.eyebrow.copy(color = c.accentText))
+        Text(eyebrow, style = Aiimin.type.eyebrow.copy(color = c.textMuted))
         Column(Modifier.pressable({ if (it.kind == FlowKind.TASK) nav.open(Route.Task(it.id)) else nav.open(Route.Calendar) })) {
             Spacer(Modifier.height(10.dp))
             Text(it.title, style = Aiimin.type.cardTitle, maxLines = 2, overflow = TextOverflow.Ellipsis)
@@ -605,7 +605,7 @@ private fun QuickAdd(day: java.time.LocalDate, vm: TodayViewModel, modifier: Mod
                 modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Add a task" },
             )
         }
-        if (text.isNotBlank()) aiimin.designsystem.component.AppIconButton(AppIcons.ArrowRight, "Add", { vm.addTask(text, part, day); text = "" }, tint = c.accentText)
+        if (text.isNotBlank()) aiimin.designsystem.component.AppIconButton(AppIcons.ArrowRight, "Add", { vm.addTask(text, part, day); text = "" }, tint = c.link)
     }
 }
 
@@ -694,7 +694,7 @@ private fun PhoneDataCard(vm: TodayViewModel, modifier: Modifier) {
     val c = Aiimin.colors
     val shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp)
     Column(modifier.fillMaxWidth().clip(shape).background(c.surface).border(1.dp, c.border, shape).padding(16.dp)) {
-        Text("MEASURE YOUR DAY", style = Aiimin.type.eyebrow.copy(color = c.accentText))
+        Text("MEASURE YOUR DAY", style = Aiimin.type.eyebrow.copy(color = c.textMuted))
         Text("Let the phone count screen time and steps", style = Aiimin.type.headline, modifier = Modifier.padding(top = 4.dp))
         Text("Measured numbers count more in your score than taps. They're read on this phone and never leave it.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 4.dp, bottom = 8.dp))
         if (!acc.usage) SetupRow(AppIcons.DeviceMobile, "Screen time", "Opens Usage access › AIIMIN › Allow") { runCatching { context.startActivity(vm.usageSettings()) } }
@@ -738,6 +738,6 @@ private fun SetupRow(icon: androidx.compose.ui.graphics.vector.ImageVector, titl
             Text(title, style = Aiimin.type.bodyStrong)
             Text(sub, style = Aiimin.type.caption)
         }
-        Text("Turn on", style = Aiimin.type.label.copy(color = c.accentText, fontSize = 14.sp))
+        Text("Turn on", style = Aiimin.type.label.copy(color = c.link, fontSize = 14.sp))
     }
 }

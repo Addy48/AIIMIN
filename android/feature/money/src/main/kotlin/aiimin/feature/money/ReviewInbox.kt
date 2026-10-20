@@ -1,5 +1,6 @@
 package aiimin.feature.money
 
+import aiimin.core.data.money.payeeLabel
 import aiimin.core.data.money.Categories
 import aiimin.core.data.money.Ledger
 import aiimin.core.data.util.Dates
@@ -148,7 +149,8 @@ fun MoneyInboxScreen(vm: InboxViewModel = hiltViewModel()) {
                     val recent by produceState(emptyList<String>(), front.id) { value = vm.recentItems(front) }
                     ReviewCardBody(
                         front, index, pending.size,
-                        name = names.value[front.id] ?: front.title, onName = { names.value = names.value + (front.id to it) },
+                        // D-043: a bare phone number is not shown as a name; the field starts empty with a masked hint.
+                        name = names.value[front.id] ?: front.title.takeIf { payeeLabel(it) == it }.orEmpty(), onName = { names.value = names.value + (front.id to it) },
                         cat = cats.value[front.id] ?: front.category, onCat = { cats.value = cats.value + (front.id to it) },
                         categories = if (front.direction == "in") incomeCats else spendCats,
                         onNewCategory = { raw -> scope.launch { vm.addCategory(raw, front.direction == "in")?.let { cats.value = cats.value + (front.id to it) } ?: toaster.show("That category already exists") } },
@@ -231,7 +233,8 @@ private fun ReviewCardBody(
         }
         Spacer(Modifier.height(12.dp))
         // Name the place once; the next alert from it arrives with this name (plan §3).
-        AppTextField(name, onName, label = if (d.direction == "in") "From" else "Paid to", placeholder = "Shop or person")
+        val masked = payeeLabel(d.title)
+        AppTextField(name, onName, label = if (d.direction == "in") "From" else "Paid to", placeholder = if (masked != d.title) "$masked · add a name" else "Shop or person")
         Spacer(Modifier.height(8.dp))
         Text(d.raw, style = Aiimin.type.code, maxLines = 3)
         if (d.confidence < 0.75) {
@@ -241,9 +244,10 @@ private fun ReviewCardBody(
         Spacer(Modifier.height(16.dp))
         Text("CATEGORY", style = Aiimin.type.eyebrow)
         Spacer(Modifier.height(8.dp))
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            (categories.ifEmpty { if (d.direction == "in") Categories.INCOME else Categories.SPEND }).forEach { k -> Pill(k, cat == k, { onCat(k) }) }
-            Pill("New", adding, { adding = !adding }, icon = AppIcons.Plus)
+        // D-008 (S9): equal columns, so the chips form a grid instead of ragged rows.
+        val chips = (categories.ifEmpty { if (d.direction == "in") Categories.INCOME else Categories.SPEND }).map { it to false } + ("New" to true)
+        aiimin.designsystem.component.PillGrid(chips, columns = 3) { (k, isNew), m ->
+            if (isNew) Pill("New", adding, { adding = !adding }, m, icon = AppIcons.Plus) else Pill(k, cat == k, { onCat(k) }, m)
         }
         if (adding) Row(Modifier.padding(top = 10.dp), verticalAlignment = Alignment.CenterVertically) {
             AppTextField(newCat, { newCat = it }, Modifier.weight(1f), placeholder = "Pet, Gym, Chai…")

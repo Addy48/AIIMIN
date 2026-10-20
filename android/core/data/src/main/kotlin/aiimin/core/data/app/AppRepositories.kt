@@ -99,9 +99,9 @@ class ActivityRepository @Inject constructor(
             when {
                 l.type.startsWith("task.") -> taskDao.get(id)?.title
                 l.type.startsWith("min.") -> minimumDao.get(id)?.name
-                l.type == "txn.add" -> moneyDao.get(id)?.let { "${it.title} ${aiimin.core.data.util.Money.whole(it.amountPaise)}" }
+                l.type == "txn.add" -> moneyDao.get(id)?.let { "${aiimin.core.data.money.payeeLabel(it.title)} ${aiimin.core.data.util.Money.whole(it.amountPaise)}" }
                 l.type == "txn.detect" -> (moneyDao.draft(id)?.let { it.title to it.amountPaise } ?: moneyDao.get(id)?.let { it.title to it.amountPaise })
-                    ?.let { (t, p) -> "$t ${aiimin.core.data.util.Money.whole(p)}" }
+                    ?.let { (t, p) -> "${aiimin.core.data.money.payeeLabel(t)} ${aiimin.core.data.util.Money.whole(p)}" }
                 l.type.startsWith("doc.") -> vaultDao.get(id)?.title
                 l.type == "note.create" -> noteDao.get(id)?.title
                 else -> null
@@ -127,7 +127,7 @@ class ActivityRepository @Inject constructor(
             "note.create" -> "Wrote a note"
             "ai.apply" -> "Applied ${d["n"]} change${if ((d["n"] as? Number)?.toInt() == 1) "" else "s"} from the assistant"
             "ai.undo" -> "Undid the assistant's changes"
-            "day.settle" -> "Day settled: ${e.ref?.id}"
+            "day.settle" -> daySettledText(e.ref?.id)
             "backfill" -> "Filed an entry to yesterday"
             "intent.change" -> "Changed what a signal means"
             "emergency.request" -> "Requested emergency access"
@@ -327,6 +327,10 @@ class DataControlRepository @Inject constructor(
 }
 
 /** "Added a task · Buy milk": the row's words plus what it was about, cut to fit one line. */
+/** D-029: "Day settled: Sun 18 Oct", not the raw ISO date. */
+fun daySettledText(isoDay: String?): String =
+    isoDay?.let { runCatching { "Day settled: " + aiimin.core.data.util.Dates.short(java.time.LocalDate.parse(it)) }.getOrNull() } ?: "Day settled"
+
 fun withName(text: String, name: String?): String {
     val n = name?.trim().orEmpty()
     if (n.isEmpty()) return text

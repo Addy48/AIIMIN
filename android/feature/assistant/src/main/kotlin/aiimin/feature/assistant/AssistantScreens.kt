@@ -1,5 +1,7 @@
 package aiimin.feature.assistant
 
+import aiimin.designsystem.component.IconButtonInset
+import aiimin.designsystem.component.bleed
 import aiimin.designsystem.theme.LocalReduceMotion
 import aiimin.designsystem.theme.Motion
 import androidx.compose.animation.core.animateFloat
@@ -251,7 +253,8 @@ private fun AssistantMessage(m: ChatMessageEntity, vm: ChatViewModel, onSource: 
 private fun Composer(value: String, onChange: (String) -> Unit, onSend: () -> Unit, onVoice: () -> Unit, enabled: Boolean) {
     val c = Aiimin.colors
     Row(
-        Modifier.fillMaxWidth().background(c.base).navigationBarsPadding().padding(horizontal = 12.dp, vertical = 8.dp),
+        // D-039: the bar sits on the 16 dp page margins like everything above it.
+        Modifier.fillMaxWidth().background(c.base).navigationBarsPadding().padding(horizontal = Aiimin.space.gutter, vertical = 8.dp),
         verticalAlignment = Alignment.Bottom,
     ) {
         Box(Modifier.weight(1f).clip(Shapes.row).background(c.raised).border(1.dp, c.border, Shapes.row).heightIn(min = 48.dp).padding(horizontal = 14.dp, vertical = 13.dp)) {
@@ -320,7 +323,8 @@ fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, v
                         Text("English (India) · on this phone", style = Aiimin.type.label.copy(fontSize = 14.sp))
                     }
                     Spacer(Modifier.weight(1f))
-                    AppIconButton(AppIcons.Close, "Close", onDismiss)
+                    // D-044: the close mark ends on the page margin.
+                    AppIconButton(AppIcons.Close, "Close", onDismiss, modifier = Modifier.bleed(end = IconButtonInset))
                 }
                 Text(
                     if (listening) "Listening. Say anything; it files itself." else "Type or tap the mic. Say anything; it files itself.",
@@ -419,7 +423,7 @@ fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, v
                                     Icon(AppIcons.ArrowBendDownRight, null, tint = c.textMuted, modifier = Modifier.size(16.dp))
                                     Spacer(Modifier.width(8.dp))
                                     Text(destination(a), style = Aiimin.type.body.copy(color = c.textMuted, fontSize = 14.sp), modifier = Modifier.weight(1f))
-                                    Text(if (i in edits) "Edited" else "Edit", style = Aiimin.type.label.copy(color = c.accentText, fontSize = 13.sp))
+                                    Text(if (i in edits) "Edited" else "Edit", style = Aiimin.type.label.copy(color = c.link, fontSize = 13.sp))
                                 }
                             }
                         }
@@ -671,7 +675,7 @@ fun RecentCapturesScreen(vm: RecentCapturesViewModel = hiltViewModel()) {
                             }
                         }
                         if (!r.undone) Text(
-                            "Undo this capture", style = Aiimin.type.label.copy(color = c.accentText, fontSize = 14.sp),
+                            "Undo this capture", style = Aiimin.type.label.copy(color = c.link, fontSize = 14.sp),
                             modifier = Modifier.padding(top = 12.dp).clickable { vm.undo(r.id); toaster.show("Capture undone") }.padding(vertical = 6.dp),
                         )
                     }

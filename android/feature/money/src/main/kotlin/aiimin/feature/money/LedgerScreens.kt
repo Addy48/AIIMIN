@@ -168,7 +168,7 @@ fun AccountsScreen(vm: AccountsViewModel = hiltViewModel()) {
                         val health = if (a.type == AccountType.CASH.name) "Logged by you" else ago(v.lastAlertAt) + if (v.quiet()) " · Check" else ""
                         Text(
                             listOfNotNull(type, Ledger.entries.firstOrNull { it.name == a.ledger }?.label, health, a.trackFrom?.let { "Track from ${Dates.short(LocalDate.parse(it))}" }).joinToString(" · "),
-                            style = Aiimin.type.caption.copy(color = if (v.quiet()) c.accentText else c.textMuted),
+                            style = Aiimin.type.caption.copy(color = if (v.quiet()) c.warn else c.textMuted),
                         )
                     }
                     Chevron()
@@ -310,7 +310,7 @@ private fun BalanceRow(b: Balance, onClick: () -> Unit) {
         // Gap + amount over its words, so a long date never runs into it at 1.3× text (audit A-042).
         Spacer(Modifier.width(12.dp))
         Column(horizontalAlignment = Alignment.End) {
-            Text(Money.whole(kotlin.math.abs(b.netPaise)), style = Aiimin.type.bodyStrong.copy(color = if (b.theyOwe) c.done else c.accentText), maxLines = 1)
+            Text(Money.whole(kotlin.math.abs(b.netPaise)), style = Aiimin.type.bodyStrong.copy(color = if (b.theyOwe) c.done else c.textMuted), maxLines = 1)
             Text(if (b.theyOwe) "owes you" else "you owe", style = Aiimin.type.caption, maxLines = 1)
         }
     }
@@ -385,7 +385,7 @@ fun PersonBalanceScreen(who: String, vm: SplitsViewModel = hiltViewModel()) {
                             copy(context, pay); toaster.show("No UPI app took the amount. UPI ID copied.")
                         }
                     }, Modifier.fillMaxWidth(), icon = AppIcons.ArrowUpRight, enabled = pay != null)
-                    if (pay != null) Text("Copy UPI ID", style = Aiimin.type.label.copy(color = c.accentText, fontSize = 14.sp), modifier = Modifier.padding(top = 10.dp).pressable({ copy(context, pay); toaster.show("Copied $pay") }))
+                    if (pay != null) Text("Copy UPI ID", style = Aiimin.type.label.copy(color = c.link, fontSize = 14.sp), modifier = Modifier.padding(top = 10.dp).pressable({ copy(context, pay); toaster.show("Copied $pay") }))
                 } else {
                     val mine = s?.myUpiId.orEmpty()
                     if (mine.isBlank()) {
@@ -544,11 +544,11 @@ private fun BillRow(b: BillEntity, today: LocalDate, onOpen: () -> Unit, onPaid:
                     when { days < 0 -> "was due ${Dates.short(due)}"; days == 0L -> "due today"; days == 1L -> "due tomorrow"; days < 10 -> "in $days days"; else -> Dates.short(due) },
                     runCatching { Cadence.valueOf(b.cadence).label }.getOrNull(), if (b.remind) "reminder a day before" else null,
                 ).joinToString(" · "),
-                style = Aiimin.type.caption.copy(color = if (days in 0..2) c.accentText else c.textMuted),
+                style = Aiimin.type.caption.copy(color = if (days in 0..2) c.warn else c.textMuted),
             )
         }
         Text(Money.whole(b.amountPaise), style = Aiimin.type.bodyStrong)
-        if (onPaid != null) Text("Paid", style = Aiimin.type.label.copy(color = c.accentText, fontSize = 14.sp), modifier = Modifier.padding(start = 14.dp).heightIn(min = 48.dp).pressable(onPaid).padding(top = 14.dp))
+        if (onPaid != null) Text("Paid", style = Aiimin.type.label.copy(color = c.link, fontSize = 14.sp), modifier = Modifier.padding(start = 14.dp).heightIn(min = 48.dp).pressable(onPaid).padding(top = 14.dp))
     }
     Hairline()
 }

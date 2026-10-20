@@ -251,7 +251,18 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
     // Every screen is the far end of a container transform keyed by its route (Part 26.5).
     val sharedScreenDecorator = remember {
         androidx.navigation3.runtime.NavEntryDecorator<Any>(onPop = { key -> aiimin.designsystem.component.SharedNav.forget(aiimin.designsystem.component.sharedKeyOf(key)) }) { entry ->
-            Box(Modifier.fillMaxSize().background(c.base).sharedContainer(aiimin.designsystem.component.sharedKeyOf(entry.contentKey))) { entry.Content() }
+            // Pushed screens end above the gesture bar (R6 S2); the inset is consumed here, so a screen's own
+            // bottom bar doesn't pad twice. Root tabs end on the dock, which takes the inset itself.
+            val root = ROOTS.any { it.toString() == entry.contentKey.toString() }
+            Box(
+                Modifier.fillMaxSize().background(c.base).sharedContainer(aiimin.designsystem.component.sharedKeyOf(entry.contentKey))
+                    .then(
+                        if (root) Modifier
+                        else Modifier.windowInsetsPadding(
+                            androidx.compose.foundation.layout.WindowInsets.navigationBars.only(androidx.compose.foundation.layout.WindowInsetsSides.Bottom),
+                        ),
+                    ),
+            ) { entry.Content() }
         }
     }
     val reduce = LocalReduceMotion.current

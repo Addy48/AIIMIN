@@ -345,7 +345,7 @@ fun PermissionsPage(
                 Column(Modifier.weight(1f)) {
                     Text(p.title, style = Aiimin.type.body.copy(color = c.text, fontWeight = FontWeight.SemiBold, fontSize = 16.sp))
                     Text(p.line, style = Aiimin.type.caption)
-                    if (p.key == "health") Text("How Health Connect data is used", style = Aiimin.type.caption.copy(color = c.accentText), modifier = Modifier.clickable(onClick = onHealthRationale).padding(vertical = 6.dp))
+                    if (p.key == "health") Text("How Health Connect data is used", style = Aiimin.type.caption.copy(color = c.link), modifier = Modifier.clickable(onClick = onHealthRationale).padding(vertical = 6.dp))
                     if (p.key == "health" && access?.health == HealthAvailability.UNAVAILABLE) Text("Health Connect isn't on this phone.", style = Aiimin.type.caption.copy(color = c.warn))
                     if (p.key == "usage" && !granted && p.key in declined) Text("Not turned on yet.", style = Aiimin.type.caption.copy(color = c.warn))
                 }
@@ -438,7 +438,7 @@ fun VoicePage(
             Spacer(Modifier.height(12.dp))
             Text(if (listening) "Listening…" else "Tap to talk", style = Aiimin.type.label.copy(color = c.text))
             Spacer(Modifier.height(20.dp))
-            Text("or type it", style = Aiimin.type.body.copy(color = c.accentText), modifier = Modifier.clickable { typing = true }.padding(10.dp))
+            Text("or type it", style = Aiimin.type.body.copy(color = c.link), modifier = Modifier.clickable { typing = true }.padding(10.dp))
         }
     }
 }

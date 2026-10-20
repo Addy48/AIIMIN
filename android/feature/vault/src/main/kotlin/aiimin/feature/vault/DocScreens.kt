@@ -709,8 +709,8 @@ private fun LinkChip(text: String, icon: androidx.compose.ui.graphics.vector.Ima
         Modifier.clip(RoundedCornerShape(6.dp)).background(c.raised).clickable(onClick = onClick).heightIn(min = 36.dp).padding(horizontal = 11.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp),
     ) {
-        Icon(icon, null, tint = if (warn) c.accentText else c.text, modifier = Modifier.size(16.dp))
-        Text(text, style = Aiimin.type.label.copy(fontSize = 13.5.sp, color = if (warn) c.accentText else c.text), maxLines = 1)
+        Icon(icon, null, tint = if (warn) c.warn else c.text, modifier = Modifier.size(16.dp))
+        Text(text, style = Aiimin.type.label.copy(fontSize = 13.5.sp, color = if (warn) c.warn else c.text), maxLines = 1)
     }
 }
 
@@ -720,7 +720,7 @@ private fun FoundRow(label: String, value: String, note: String? = null, found: 
     Row(Modifier.fillMaxWidth().heightIn(min = 64.dp), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f).padding(vertical = 10.dp)) {
             Text(label, style = Aiimin.type.caption)
-            Text(value, style = Aiimin.type.headline.copy(fontSize = 17.sp, color = if (warnText) c.accentText else c.text), modifier = Modifier.padding(top = 2.dp))
+            Text(value, style = Aiimin.type.headline.copy(fontSize = 17.sp, color = if (warnText) c.warn else c.text), modifier = Modifier.padding(top = 2.dp))
             if (note != null) Text(note, style = Aiimin.type.caption.copy(fontSize = 12.sp), modifier = Modifier.padding(top = 2.dp))
         }
         if (trailing != null) trailing() else if (found) EvidenceDot('A')

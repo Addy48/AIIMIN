@@ -28,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -146,3 +147,23 @@ fun SurfaceCard(modifier: Modifier = Modifier, content: @Composable androidx.com
         content = content,
     )
 }
+
+/**
+ * Lets a control's touch target hang into the page margin while its visible part sits on the margin (S1):
+ * a 48 dp icon button's icon is 13 dp inside it, a 44 dp checkbox's box 11 dp. Layout width shrinks by the
+ * bleed, so the text beside it does not move.
+ */
+fun Modifier.bleed(start: Dp = 0.dp, end: Dp = 0.dp): Modifier = this.then(
+    androidx.compose.ui.Modifier.layout { measurable, constraints ->
+        val s = start.roundToPx()
+        val e = end.roundToPx()
+        val p = measurable.measure(constraints.copy(maxWidth = if (constraints.hasBoundedWidth) constraints.maxWidth + s + e else constraints.maxWidth))
+        layout((p.width - s - e).coerceAtLeast(0), p.height) { p.place(-s, 0) }
+    },
+)
+
+/** The inset of the icon inside an [AppIconButton] (48 dp target, 22 dp icon). */
+val IconButtonInset: Dp = 13.dp
+
+/** The inset of the box inside a [CheckCircle] (44 dp target, 22 dp box). */
+val CheckInset: Dp = 11.dp

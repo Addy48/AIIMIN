@@ -142,7 +142,7 @@ fun SectionHeader(
                 Modifier.heightIn(min = 48.dp).widthIn(min = 48.dp).clip(Shapes.small).clickable(onClick = onAction!!).padding(horizontal = 6.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(action!!, style = Aiimin.type.label.copy(color = Aiimin.colors.accentText, fontSize = 14.sp, fontWeight = FontWeight.Medium))
+                Text(action!!, style = Aiimin.type.label.copy(color = Aiimin.colors.link, fontSize = 14.sp, fontWeight = FontWeight.Medium))
             }
         }
     }

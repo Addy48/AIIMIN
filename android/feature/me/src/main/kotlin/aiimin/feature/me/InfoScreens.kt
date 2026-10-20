@@ -1,5 +1,7 @@
 package aiimin.feature.me
 
+import aiimin.designsystem.component.bleed
+import aiimin.designsystem.component.IconButtonInset
 import kotlinx.coroutines.launch
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.heightIn
@@ -118,7 +120,8 @@ fun NotificationsScreen(vm: NotificationsViewModel = hiltViewModel()) {
                                 tint = if (n.priority >= 2) Aiimin.colors.accent else Aiimin.colors.textMuted,
                             )
                         },
-                        trailing = { AppIconButton(AppIcons.Close, "Dismiss", { vm.dismiss(n.id) }, tint = Aiimin.colors.textFaint, size = 36.dp) },
+                        // D-028: the close mark ends on the page margin; its 48 dp target hangs into the margin.
+                        trailing = { AppIconButton(AppIcons.Close, "Dismiss", { vm.dismiss(n.id) }, tint = Aiimin.colors.textFaint, modifier = Modifier.bleed(end = IconButtonInset)) },
                         onClick = {
                             when (n.route) {
                                 "doc" -> n.routeArg?.let { nav.open(Route.Doc(it)) }
@@ -267,7 +270,7 @@ fun PhoneDayScreen(vm: PhoneDayViewModel = hiltViewModel()) {
                         val cal = prefs?.screenCalibration
                         val checked = cal != null && kotlin.math.abs(cal - 1.0) <= 0.10
                         Row(Modifier.padding(top = 6.dp).clip(Shapes.small).pressable({ checkSheet = true }).heightIn(min = 40.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Icon(if (checked) AppIcons.SealCheck else AppIcons.Scales, null, tint = if (checked) c.done else c.accentText, modifier = Modifier.size(16.dp))
+                            Icon(if (checked) AppIcons.SealCheck else AppIcons.Scales, null, tint = if (checked) c.done else c.warn, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
                             Text(
                                 when {
@@ -275,7 +278,7 @@ fun PhoneDayScreen(vm: PhoneDayViewModel = hiltViewModel()) {
                                     cal != null -> "Estimated · off by ${(kotlin.math.abs(cal - 1.0) * 100).toInt()}% last check · check again"
                                     else -> "Check against your phone (20 seconds)"
                                 },
-                                style = Aiimin.type.caption.copy(color = if (checked) c.textMuted else c.accentText),
+                                style = Aiimin.type.caption.copy(color = if (checked) c.textMuted else c.warn),
                             )
                         }
                     }

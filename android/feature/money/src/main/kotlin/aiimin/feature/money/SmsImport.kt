@@ -261,7 +261,7 @@ private fun ModeRow(m: SmsMode, selected: Boolean, onClick: () -> Unit) {
             .border(1.dp, if (selected) c.accent else c.border, shape).pressable(onClick).padding(14.dp),
         verticalAlignment = Alignment.Top,
     ) {
-        Icon(if (selected) AppIcons.CheckCircle else AppIcons.Circle, null, tint = if (selected) c.accentText else c.textFaint, modifier = Modifier.padding(top = 2.dp).size(20.dp))
+        Icon(if (selected) AppIcons.CheckCircle else AppIcons.Circle, null, tint = if (selected) c.link else c.textFaint, modifier = Modifier.padding(top = 2.dp).size(20.dp))
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             Text(m.title, style = Aiimin.type.bodyStrong)

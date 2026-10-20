@@ -1,5 +1,6 @@
 package aiimin.feature.money
 
+import aiimin.core.data.money.payeeLabel
 import aiimin.core.data.money.Categories
 import aiimin.core.data.money.Ledger
 import aiimin.core.data.money.MoneyRepository
@@ -224,7 +225,7 @@ fun TxnScreen(id: String, vm: TxnViewModel = hiltViewModel()) {
                         shares.forEach { sh ->
                             ListRow(sh.name.ifBlank { sh.who }, subtitle = if (sh.settled) "Settled" else "Owes you ${Money.whole(sh.paise)}", leading = { IconTile(AppIcons.Users) }, opens = Route.SplitPerson(sh.who), onClick = { nav.open(Route.SplitPerson(sh.who)) })
                         }
-                        Text("Remove split", style = Aiimin.type.label.copy(color = c.accentText), modifier = Modifier.padding(vertical = 8.dp).pressable({ vm.clearSplit() }))
+                        Text("Remove split", style = Aiimin.type.label.copy(color = c.link), modifier = Modifier.padding(vertical = 8.dp).pressable({ vm.clearSplit() }))
                     }
                     if (splitting) SplitSheet(txn.amountPaise, people, { splitting = false }) { picked -> vm.split(picked); splitting = false; toaster.show("Split with ${picked.joinToString { it.second }}") }
                 }

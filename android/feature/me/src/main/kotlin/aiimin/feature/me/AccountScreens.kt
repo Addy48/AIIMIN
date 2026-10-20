@@ -1,5 +1,7 @@
 package aiimin.feature.me
 
+import aiimin.designsystem.component.ListRow
+import aiimin.designsystem.component.IconTile
 import aiimin.core.data.app.DataControlRepository
 import aiimin.core.data.app.ExportRepository
 import aiimin.core.data.app.PreferencesRepository
@@ -172,7 +174,7 @@ fun AccountScreen(vm: AccountViewModel = hiltViewModel()) {
                 )
             }
             Spacer(Modifier.height(24.dp))
-            Text("Privacy and data", style = Aiimin.type.label.copy(color = c.accentText), modifier = Modifier.clickable { nav.open(Route.Privacy) }.padding(vertical = 8.dp))
+            Text("Privacy and data", style = Aiimin.type.label.copy(color = c.link), modifier = Modifier.clickable { nav.open(Route.Privacy) }.padding(vertical = 8.dp))
             Spacer(Modifier.height(32.dp))
         }
     }
@@ -304,13 +306,13 @@ fun PrivacyScreen(vm: AccountViewModel = hiltViewModel(), me: MeViewModel = hilt
             SectionHeader("Protection")
             SwitchRow("Lock the app", st.appLock, { v -> me.update { it.copy(appLock = v) } }, subtitle = "Fingerprint, face or screen lock when opening AIIMIN", icon = AppIcons.Fingerprint)
             SwitchRow("Hide AIIMIN in the app switcher", st.hideInRecents, { v -> me.update { it.copy(hideInRecents = v) } }, subtitle = "Also blocks screenshots", icon = AppIcons.LockSimple)
-            Row(Modifier.fillMaxWidth().clickable { me.verify() }.heightIn(min = 60.dp), verticalAlignment = Alignment.CenterVertically) {
-                Icon(AppIcons.ShieldCheck, null, tint = c.text, modifier = Modifier.padding(end = 16.dp))
-                Column {
-                    Text("Check data integrity", style = Aiimin.type.body.copy(color = c.text, fontSize = 16.sp))
-                    Text(when (integrity) { null -> "Verifies the hash chain of your activity log"; true -> "Intact. Nothing changed outside AIIMIN"; false -> "Data was changed outside AIIMIN" }, style = Aiimin.type.caption)
-                }
-            }
+            // D-035: the same row shape as the switches above, so icon and text share their columns.
+            ListRow(
+                "Check data integrity",
+                subtitle = when (integrity) { null -> "Verifies the hash chain of your activity log"; true -> "Intact. Nothing changed outside AIIMIN"; false -> "Data was changed outside AIIMIN" },
+                leading = { IconTile(AppIcons.ShieldCheck) },
+                onClick = { me.verify() },
+            )
             Hairline()
             SectionHeader("Your copy")
             Row(Modifier.fillMaxWidth().clickable {
@@ -334,8 +336,8 @@ fun PrivacyScreen(vm: AccountViewModel = hiltViewModel(), me: MeViewModel = hilt
                 DangerRow("Delete my aiimin.in account", "Removes your account and its data from aiimin.in, and erases this phone.") { sheet = "account"; pin = ""; err = null }
             }
             Row(Modifier.padding(top = 24.dp, bottom = 32.dp)) {
-                Text("Privacy Policy", style = Aiimin.type.label.copy(color = c.accentText), modifier = Modifier.clickable { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://www.aiimin.in/privacy"))) }.padding(end = 20.dp))
-                Text("Terms", style = Aiimin.type.label.copy(color = c.accentText), modifier = Modifier.clickable { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://www.aiimin.in/terms"))) })
+                Text("Privacy Policy", style = Aiimin.type.label.copy(color = c.link), modifier = Modifier.clickable { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://www.aiimin.in/privacy"))) }.padding(end = 20.dp))
+                Text("Terms", style = Aiimin.type.label.copy(color = c.link), modifier = Modifier.clickable { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://www.aiimin.in/terms"))) })
             }
         }
     }

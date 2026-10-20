@@ -129,7 +129,9 @@ internal fun ScrubBarChartCanvas(
     ) {
         val dp1 = 1.dp.toPx()
         val w = size.width
-        val topPad = 14 * dp1
+        // D-042: with a target line, its label gets its own lane above the bars, so no bar runs under it.
+        val usualLayout = if (usual != null && usualLabel != null) measurer.measure(usualLabel, axis.copy(color = c.textMuted)) else null
+        val topPad = 14 * dp1 + (usualLayout?.let { it.size.height + 6 * dp1 } ?: 0f)
         val bottomPad = if (labels.isEmpty()) 6 * dp1 else 22 * dp1
         val base = size.height - bottomPad
         val plotH = base - topPad
@@ -167,15 +169,16 @@ internal fun ScrubBarChartCanvas(
         }
         // baseline
         drawLine(c.text, Offset(0f, base), Offset(w, base), strokeWidth = dp1)
-        // dashed usual line with a bg-backed label at the right end
+        // dashed usual line; its label is a legend in the top lane (a short dash, then the words), right-aligned
         if (usual != null) {
             val yy = y(usual)
-            drawLine(c.bandLine, Offset(0f, yy), Offset(w, yy), strokeWidth = 1.5f * dp1, pathEffect = PathEffect.dashPathEffect(floatArrayOf(4 * dp1, 4 * dp1)))
-            if (usualLabel != null) {
-                val l = measurer.measure(usualLabel, axis.copy(color = c.textMuted))
-                val lx = w - l.size.width - 4 * dp1
-                val ly = yy - l.size.height - 3 * dp1
-                drawRect(c.base, Offset(lx - 4 * dp1, ly - 1 * dp1), Size(l.size.width + 8 * dp1, l.size.height + 2 * dp1))
+            val dash = PathEffect.dashPathEffect(floatArrayOf(4 * dp1, 4 * dp1))
+            drawLine(c.bandLine, Offset(0f, yy), Offset(w, yy), strokeWidth = 1.5f * dp1, pathEffect = dash)
+            usualLayout?.let { l ->
+                val lx = w - l.size.width
+                val ly = 4 * dp1
+                val my = ly + l.size.height / 2f
+                drawLine(c.bandLine, Offset(lx - 22 * dp1, my), Offset(lx - 6 * dp1, my), strokeWidth = 1.5f * dp1, pathEffect = dash)
                 drawText(l, topLeft = Offset(lx, ly))
             }
         }
@@ -272,7 +275,9 @@ fun ScrubLineChart(
     ) {
         val dp1 = 1.dp.toPx()
         val w = size.width
-        val topPad = 14 * dp1
+        // D-041: the band's label is a legend in its own lane above the line, so it never sits on the line.
+        val bandLayout = if (bandLow != null && bandHigh != null && bandLabel != null) measurer.measure(bandLabel, axis.copy(color = c.violet)) else null
+        val topPad = 14 * dp1 + (bandLayout?.let { it.size.height + 6 * dp1 } ?: 0f)
         val bottomPad = if (labels.isEmpty()) 8 * dp1 else 24 * dp1
         val base = size.height - bottomPad
         val plotH = base - topPad
@@ -287,9 +292,11 @@ fun ScrubLineChart(
         fun x(i: Int) = if (n <= 1) w / 2 else i * (w / (n - 1))
         if (bandLow != null && bandHigh != null) {
             drawRect(c.bandScore, Offset(0f, y(bandHigh)), Size(w, y(bandLow) - y(bandHigh)))
-            if (bandLabel != null) {
-                val l = measurer.measure(bandLabel, axis.copy(color = c.violet))
-                drawText(l, topLeft = Offset(w - l.size.width - 4 * dp1, y(bandHigh) + 3 * dp1))
+            bandLayout?.let { l ->
+                val lx = w - l.size.width
+                val ly = 4 * dp1
+                drawRect(c.bandScore, Offset(lx - 18 * dp1, ly + l.size.height / 2f - 4 * dp1), Size(12 * dp1, 8 * dp1))
+                drawText(l, topLeft = Offset(lx, ly))
             }
         }
         drawLine(c.text, Offset(0f, base), Offset(w, base), strokeWidth = dp1)

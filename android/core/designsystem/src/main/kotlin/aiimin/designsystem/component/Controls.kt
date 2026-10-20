@@ -84,7 +84,7 @@ fun AppButton(
     val (bg, fg, border) = when (kind) {
         ButtonKind.PRIMARY -> Triple(c.text, onInk, null)
         ButtonKind.SECONDARY -> Triple(Color.Transparent, c.text, c.borderStrong)
-        ButtonKind.GHOST -> Triple(Color.Transparent, c.accentText, null)
+        ButtonKind.GHOST -> Triple(Color.Transparent, c.link, null)
         ButtonKind.DANGER -> Triple(Color.Transparent, c.warn, c.warn)
     }
     Row(
@@ -260,7 +260,8 @@ fun Segmented(options: List<String>, selected: Int, onSelect: (Int) -> Unit, mod
     val c = Aiimin.colors
     val inner = RoundedCornerShape(8.dp)
     BoxWithConstraints(
-        modifier.fillMaxWidth().heightIn(min = 48.dp).height(androidx.compose.foundation.layout.IntrinsicSize.Min).clip(Shapes.control).background(c.segmentTrack).padding(3.dp),
+        // A fixed 48 dp target: BoxWithConstraints can't be measured intrinsically, and the labels auto-size to fit.
+        modifier.fillMaxWidth().height(48.dp).clip(Shapes.control).background(c.segmentTrack).padding(3.dp),
     ) {
         val w = maxWidth / options.size
         val x by animateDpAsState(w * selected, Motion.move(LocalReduceMotion.current, Motion.springSoft()), label = "thumb")
@@ -325,7 +326,13 @@ fun AppTextField(
                 Spacer(Modifier.width(10.dp))
             }
             Box(Modifier.weight(1f)) {
-                if (value.isEmpty()) Text(placeholder, style = textStyle.copy(color = c.textFaint))
+                // D-030/D-038: one line, and 3 dp clear of the cursor so the caret never sits on the first letter.
+                if (value.isEmpty()) {
+                    Text(
+                        placeholder, style = textStyle.copy(color = c.textFaint), modifier = Modifier.padding(start = 3.dp),
+                        maxLines = if (singleLine) 1 else Int.MAX_VALUE, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    )
+                }
                 BasicTextField(
                     value = value,
                     onValueChange = onValueChange,
