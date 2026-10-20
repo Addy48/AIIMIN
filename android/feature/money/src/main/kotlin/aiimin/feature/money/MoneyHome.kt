@@ -110,6 +110,7 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
     var pasting by remember { mutableStateOf(false) }
     var exporting by remember { mutableStateOf(false) }
     val extras by vm.extras.collectAsStateWithLifecycle()
+    val found by vm.found.collectAsStateWithLifecycle()
     val prefs by vm.prefs.collectAsStateWithLifecycle()
     val accountFilter by vm.accountFilter.collectAsStateWithLifecycle()
     val quiet by vm.quietAccounts.collectAsStateWithLifecycle()
@@ -174,6 +175,15 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
                 }
             }
         }
+        // Owner, 20 Oct: an account a bank message named that is not added yet; one at a time, newest first.
+        found.firstOrNull()?.let { s ->
+            item(key = "found-${s.last4}") {
+                AccountFoundCard(
+                    s, vm.linkTarget(s), onAdd = { vm.acceptFound(s) }, onNotMine = { vm.dismissFound(s) },
+                    modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 18.dp),
+                )
+            }
+        }
         // accounts (M1 item 6): wrapping chips; tap filters the payments below
         val accts = extras?.accounts.orEmpty().filter { it.ledger == ledger.name || it.type == "CASH" }
         if (accts.isNotEmpty()) item {
@@ -187,7 +197,10 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
                             { vm.accountFilter.value = if (accountFilter == a.id) null else a.id },
                         )
                     }
-                    Text("Manage", style = Aiimin.type.label.copy(color = c.link, fontSize = 14.sp), modifier = Modifier.clip(Shapes.small).pressable({ nav.open(Route.Accounts) }).padding(horizontal = 6.dp, vertical = 8.dp))
+                    // Same 48 dp row height as the chips, text centred in it.
+                    Box(Modifier.heightIn(min = 48.dp).clip(Shapes.small).pressable({ nav.open(Route.Accounts) }).padding(horizontal = 6.dp), contentAlignment = Alignment.Center) {
+                        Text("Manage", style = Aiimin.type.label.copy(color = c.link, fontSize = 14.sp))
+                    }
                 }
             }
         }

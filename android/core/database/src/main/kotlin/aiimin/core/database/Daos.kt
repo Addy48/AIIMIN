@@ -646,7 +646,17 @@ interface LedgerDao {
 
     @Query("SELECT DISTINCT account4 FROM txns WHERE account4 IS NOT NULL UNION SELECT DISTINCT account4 FROM txn_drafts WHERE account4 IS NOT NULL")
     suspend fun knownLast4(): List<String>
+
+    /** Every masked account number bank alerts carried, with the alert text when kept (owner, 20 Oct). */
+    @Query(
+        "SELECT account4, raw, detectedAt AS at FROM txn_drafts WHERE account4 IS NOT NULL " +
+            "UNION ALL SELECT account4, NULL AS raw, at FROM txns WHERE account4 IS NOT NULL AND source IN ('sms', 'notification', 'paste') AND deleted = 0",
+    )
+    suspend fun seenAccounts(): List<SeenAccountRow>
 }
+
+/** One alert's masked account number (see [LedgerDao.seenAccounts]). */
+data class SeenAccountRow(val account4: String, val raw: String?, val at: Long)
 
 @Dao
 interface PulseDao {

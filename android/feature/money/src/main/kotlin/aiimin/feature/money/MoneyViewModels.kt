@@ -73,10 +73,18 @@ class MoneyViewModel @Inject constructor(
             month.value = YearMonth.from(t)
             money.ensureBudgetCarried()
             runCatching { accountsRepo.ensureSeeded() }
+            refreshFound()
             runCatching { bills.refresh() }
             quietAccounts.value = runCatching { accountsRepo.views().filter { it.quiet() }.map { it.account.id }.toSet() }.getOrDefault(emptySet())
         }
     }
+
+    /** Accounts bank messages named that are not added yet (owner, 20 Oct). */
+    val found = MutableStateFlow<List<aiimin.core.data.money.SeenAccount>>(emptyList())
+    private suspend fun refreshFound() { found.value = runCatching { accountsRepo.suggestions() }.getOrDefault(emptyList()) }
+    fun linkTarget(s: aiimin.core.data.money.SeenAccount) = s.linkTarget(extras.value?.accounts.orEmpty())?.name
+    fun acceptFound(s: aiimin.core.data.money.SeenAccount) = viewModelScope.launch { accountsRepo.accept(s); refreshFound() }
+    fun dismissFound(s: aiimin.core.data.money.SeenAccount) = viewModelScope.launch { accountsRepo.dismiss(s.last4); refreshFound() }
 
     fun accountOf(t: TxnEntity): String? = extras.value?.accounts?.let { accountsRepo.accountFor(t, it)?.id }
 

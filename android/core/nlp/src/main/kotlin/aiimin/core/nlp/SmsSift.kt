@@ -149,6 +149,20 @@ object SmsSift {
         return code
     }
 
+    /** A known bank's name for a sender header ("AD-ICICIT-S" → "ICICI Bank"); null for unknown codes and numbers. */
+    fun knownBankOf(address: String): String? {
+        val code = senderCode(address).ifEmpty { return null }
+        BANKS.firstOrNull { (prefix, _) -> code.startsWith(prefix) }?.let { return it.second }
+        return if (code.endsWith("SBI")) "SBI" else null
+    }
+
+    /** A known bank named in a message's text ("from HDFC Bank A/c …" → "HDFC Bank"); null if none. */
+    fun bankNamedIn(body: String): String? {
+        val up = body.uppercase()
+        BANKS.firstOrNull { (_, name) -> up.contains(name.uppercase()) }?.let { return it.second }
+        return BANKS.firstOrNull { (prefix, _) -> prefix.length >= 3 && Regex("\\b$prefix\\b").containsMatchIn(up) }?.second
+    }
+
     fun kind(sender: String, body: String): SmsKind {
         if (!AMOUNT.containsMatchIn(body)) return SmsKind.NOT_MONEY
         if (OTP.containsMatchIn(body)) return SmsKind.OTP

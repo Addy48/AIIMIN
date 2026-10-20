@@ -486,12 +486,16 @@ private fun StatLine(u: TodayUi, modifier: Modifier) {
     val focus = life?.today?.value(Signals.FOCUS)
     @Composable
     fun RowScope.Cell(value: String, label: String, route: Route, trailing: (@Composable () -> Unit)? = null) {
-        Column(Modifier.weight(1f).opensScreen(route).clip(Shapes.small).clickable { armShared(route); nav.open(route) }.padding(vertical = 6.dp)) {
+        // Owner, 20 Oct: each figure and its label centred in its own equal column.
+        Column(
+            Modifier.weight(1f).opensScreen(route).clip(Shapes.small).clickable { armShared(route); nav.open(route) }.padding(vertical = 6.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(value, style = Aiimin.type.numberMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 trailing?.let { Spacer(Modifier.width(4.dp)); it() }
             }
-            Text(label, style = Aiimin.type.caption.copy(color = c.textMuted), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(label, style = Aiimin.type.caption.copy(color = c.textMuted), maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
         }
     }
     Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {

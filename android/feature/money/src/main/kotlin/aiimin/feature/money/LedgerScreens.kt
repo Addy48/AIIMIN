@@ -119,13 +119,19 @@ private fun ago(ms: Long?): String {
 @HiltViewModel
 class AccountsViewModel @Inject constructor(private val repo: AccountRepository) : ViewModel() {
     val views = MutableStateFlow<List<AccountView>?>(null)
+    /** Accounts bank messages named that are not added yet (owner, 20 Oct). */
+    val found = MutableStateFlow<List<aiimin.core.data.money.SeenAccount>>(emptyList())
 
     init {
         viewModelScope.launch {
             repo.ensureSeeded()
-            repo.accounts.collect { views.value = repo.views() }
+            repo.accounts.collect { views.value = repo.views(); found.value = repo.suggestions() }
         }
     }
+
+    fun linkTarget(s: aiimin.core.data.money.SeenAccount) = s.linkTarget(views.value.orEmpty().map { it.account })?.name
+    fun acceptFound(s: aiimin.core.data.money.SeenAccount) = viewModelScope.launch { repo.accept(s) }
+    fun dismissFound(s: aiimin.core.data.money.SeenAccount) = viewModelScope.launch { repo.dismiss(s.last4); found.value = repo.suggestions() }
 
     fun save(a: AccountEntity) = viewModelScope.launch { repo.save(a) }
     fun archive(id: String) = viewModelScope.launch { repo.archive(id) }
@@ -143,9 +149,13 @@ fun AccountsScreen(vm: AccountsViewModel = hiltViewModel()) {
     Column(Modifier.fillMaxSize().background(c.base)) {
         TopBar("Accounts", onBack = { nav.back() }) { AppIconButton(AppIcons.Plus, "Add account", { adding = true }) }
         val items = list ?: return@Column
+        val found by vm.found.collectAsStateWithLifecycle()
         LazyColumn(contentPadding = PaddingValues(start = Aiimin.space.gutter, end = Aiimin.space.gutter, bottom = 40.dp)) {
-            if (items.isEmpty()) item {
-                EmptyState(AppIcons.Bank, "No accounts yet", "Add the bank accounts, cards and wallets you pay from. Bank alerts fill in the last four digits for you.", action = "Add account", onAction = { adding = true }, sidePadding = 0.dp)
+            items(found, key = { "found-" + it.last4 }) { s ->
+                AccountFoundCard(s, vm.linkTarget(s), onAdd = { vm.acceptFound(s) }, onNotMine = { vm.dismissFound(s) }, modifier = Modifier.padding(vertical = 6.dp))
+            }
+            if (items.isEmpty() && found.isEmpty()) item {
+                EmptyState(AppIcons.Bank, "No accounts yet", "Add the bank accounts, cards and wallets you pay from. When a bank message names an account, AIIMIN offers to add it.", action = "Add account", onAction = { adding = true }, sidePadding = 0.dp)
             }
             items(items, key = { it.account.id }) { v ->
                 val a = v.account
