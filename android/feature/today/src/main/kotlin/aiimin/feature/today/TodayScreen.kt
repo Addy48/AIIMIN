@@ -220,6 +220,7 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
                 nowMinute = now.hour * 60 + now.minute,
                 ticks = later.filter { it.time != null }.map { HorizonTick(it.time!!.hour * 60 + it.time.minute, Dates.clockPlain(it.time)) },
                 horizon = Horizons.at(hour, Aiimin.colors.isDark),
+                wakeMinute = u.wakeMin, sleepMinute = u.sleepMin,
                 modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 8.dp),
             )
         }

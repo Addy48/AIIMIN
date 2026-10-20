@@ -146,6 +146,8 @@ data class TodayUi(
     val raahiMode: RaahiMode = RaahiMode.QUIET,
     val mini: RaahiPose = RaahiPose.IDLE,
     val miniMotion: RaahiMotion? = null,
+    val wakeMin: Int = 7 * 60,
+    val sleepMin: Int = 23 * 60,
 ) {
     val tasksOpen get() = flow.values.flatten().count { it.kind == FlowKind.TASK && !it.done }
 }
@@ -302,6 +304,8 @@ class TodayViewModel @Inject constructor(
             whatNow = pick,
             greeting = if (sessionGreetDay == b.date) sessionGreeting?.lines.orEmpty() else emptyList(),
             raahiMode = mode,
+            wakeMin = s.wakeMin,
+            sleepMin = s.sleepMin,
             mini = mini,
             miniMotion = miniMotion(mini, mode, s.reduceMotion, b.date, s.raahiBudget),
             dayEnd = dayEnd,

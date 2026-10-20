@@ -64,7 +64,10 @@ data class AppSettings(
     val syncScope: Set<String> = SyncKinds.DEFAULT,
     /** Background sync only on Wi-Fi or other unmetered networks. */
     val syncWifiOnly: Boolean = false,
-    val dob: String? = null,
+    /** Age band only (PRD 4.7): the date of birth is used once and never stored. */
+    val ageBand: String? = null,
+    /** Country (ISO 3166 alpha-2) confirmed on onboarding screen 1; India is the first-cut market. */
+    val country: String = "IN",
     val primaryBank: String? = null,
     val banks: List<String> = emptyList(),
     /** Masked account numbers the person marked "Not mine" (never offered again). */
@@ -73,6 +76,9 @@ data class AppSettings(
     val lastBootDay: String? = null,
     /** The first day this install opened (first-week card, Quick doors learning). */
     val installDay: String? = null,
+    /** Wake and sleep from onboarding screen 2 (PRD 1.6): Today's arc runs from one to the other. */
+    val wakeMin: Int = 7 * 60,
+    val sleepMin: Int = 23 * 60,
     /** Day-end hour in minutes after midnight (PRD 1.2): drives "Wrap up" and the Evening section only. */
     val dayEndMin: Int = 22 * 60,
     /** SET (from onboarding), LEARNING (after "Yes" on the card), PINNED (edited by hand). */
@@ -184,13 +190,18 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         val syncScope = stringSetPreferencesKey("sync_scope")
         val syncScopeV2 = booleanPreferencesKey("sync_scope_v2")
         val syncWifiOnly = booleanPreferencesKey("sync_wifi_only")
+        /** Old builds stored the full date of birth; read once into a band, then removed. */
         val dob = stringPreferencesKey("dob")
+        val ageBand = stringPreferencesKey("age_band")
+        val country = stringPreferencesKey("country")
         val primaryBank = stringPreferencesKey("primary_bank")
         val banks = stringPreferencesKey("banks")
         val dismissedAccounts = stringSetPreferencesKey("dismissed_accounts")
         val lastBootDay = stringPreferencesKey("last_boot_day")
         val installDay = stringPreferencesKey("install_day")
         val dayEndMin = intPreferencesKey("day_end_min")
+        val wakeMin = intPreferencesKey("wake_min")
+        val sleepMin = intPreferencesKey("sleep_min")
         val dayEndMode = stringPreferencesKey("day_end_mode")
         val dayEndChangedOn = stringPreferencesKey("day_end_changed_on")
         val dayEndAskedOn = stringPreferencesKey("day_end_asked_on")
@@ -257,13 +268,16 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         // Scopes saved before v2 only knew tasks/notes/money; the kinds added later start on.
         syncScope = p[K.syncScope]?.let { if (p[K.syncScopeV2] == true) it else it + SyncKinds.ADDED_V2 } ?: SyncKinds.DEFAULT,
         syncWifiOnly = p[K.syncWifiOnly] ?: false,
-        dob = p[K.dob],
+        ageBand = p[K.ageBand] ?: p[K.dob]?.let { runCatching { aiimin.core.engine.profile.AgeBand.of(LocalDate.parse(it), LocalDate.now()) }.getOrNull() },
+        country = p[K.country] ?: "IN",
         primaryBank = p[K.primaryBank],
         banks = p[K.banks]?.split("|")?.filter { it.isNotBlank() }.orEmpty(),
         dismissedAccounts = p[K.dismissedAccounts] ?: emptySet(),
         lastBootDay = p[K.lastBootDay],
         installDay = p[K.installDay],
         dayEndMin = p[K.dayEndMin] ?: 22 * 60,
+        wakeMin = p[K.wakeMin] ?: 7 * 60,
+        sleepMin = p[K.sleepMin] ?: 23 * 60,
         dayEndMode = p[K.dayEndMode] ?: "SET",
         dayEndChangedOn = p[K.dayEndChangedOn],
         dayEndAskedOn = p[K.dayEndAskedOn],
@@ -332,13 +346,17 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
             p[K.syncScope] = s.syncScope
             p[K.syncScopeV2] = true
             p[K.syncWifiOnly] = s.syncWifiOnly
-            s.dob?.let { p[K.dob] = it } ?: p.remove(K.dob)
+            s.ageBand?.let { p[K.ageBand] = it } ?: p.remove(K.ageBand)
+            p.remove(K.dob)
+            p[K.country] = s.country
             s.primaryBank?.let { p[K.primaryBank] = it } ?: p.remove(K.primaryBank)
             p[K.banks] = s.banks.joinToString("|")
             p[K.dismissedAccounts] = s.dismissedAccounts
             s.lastBootDay?.let { p[K.lastBootDay] = it } ?: p.remove(K.lastBootDay)
             s.installDay?.let { p[K.installDay] = it } ?: p.remove(K.installDay)
             p[K.dayEndMin] = s.dayEndMin
+            p[K.wakeMin] = s.wakeMin
+            p[K.sleepMin] = s.sleepMin
             p[K.dayEndMode] = s.dayEndMode
             s.dayEndChangedOn?.let { p[K.dayEndChangedOn] = it } ?: p.remove(K.dayEndChangedOn)
             s.dayEndAskedOn?.let { p[K.dayEndAskedOn] = it } ?: p.remove(K.dayEndAskedOn)

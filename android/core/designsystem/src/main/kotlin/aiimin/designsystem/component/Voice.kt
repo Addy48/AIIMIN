@@ -13,7 +13,10 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
@@ -47,10 +50,17 @@ fun rememberVoiceInput(
     val mic = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
         if (ok) session.start(language, text.value, partial.value, level.value, listening.value, unavailable.value) else unavailable.value()
     }
+    // Part 23: the microphone text comes first, then Android's own prompt; Not now means no.
+    var asking by remember { mutableStateOf(false) }
+    if (asking) ConsentSheet(
+        ConsentText.MICROPHONE,
+        onAllow = { asking = false; mic.launch(Manifest.permission.RECORD_AUDIO) },
+        onNotNow = { asking = false; unavailable.value() },
+    )
     return {
         when {
             session.active -> session.stop()
-            ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED -> mic.launch(Manifest.permission.RECORD_AUDIO)
+            ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED -> asking = true
             else -> session.start(language, text.value, partial.value, level.value, listening.value, unavailable.value)
         }
     }

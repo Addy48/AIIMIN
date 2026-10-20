@@ -28,58 +28,52 @@ import org.json.JSONObject
 /** A minimum with its tiny version (the one used on a low-battery day). */
 data class MinPick(val title: String, val tiny: String = "")
 
-/** Everything the ten pages collect. Saved on every change so a killed app resumes where it was. */
+/**
+ * Everything the seven screens collect (PRD 1.6). Saved on every change so a killed app or Back resumes in place.
+ * The date of birth lives only here, on the phone, until onboarding ends; then the draft is erased and only the
+ * age band is kept (4.7). Under 18, the draft is erased at once (Part 23: "I haven't saved anything").
+ */
 data class Draft(
     val step: Int = 0,
+    /** Screen 1's second half (name, country, date of birth) is open. */
+    val helloOpen: Boolean = false,
     val name: String = "",
     val dob: String? = null,
-    val role: String? = null,
+    val country: String = "IN",
+    val wakeMin: Int = 7 * 60,
+    val sleepMin: Int = 23 * 60,
     val mins: List<MinPick> = emptyList(),
     val minsTouched: Boolean = false,
-    val battery: String = "GENTLE",
-    val banks: List<String> = emptyList(),
-    val cash: Boolean = true,
-    val plan: String = "",
     val firstWin: String? = null,
-    /** Shift workers: the repeating roster, D (day) · N (night) · O (off), starting today. */
-    val roster: String = "",
+    /** FULL, QUIET (default) or OFF, chosen on screen 6 and applied live. */
+    val raahiMode: String = "QUIET",
 ) {
-    val battery_: BatteryMode get() = runCatching { BatteryMode.valueOf(battery) }.getOrDefault(BatteryMode.GENTLE)
     val dobDate: LocalDate? get() = dob?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
 
     fun toJson(): String = JSONObject().apply {
-        put("step", step); put("name", name); put("dob", dob); put("role", role); put("minsTouched", minsTouched)
-        put("battery", battery); put("cash", cash); put("plan", plan); put("firstWin", firstWin); put("roster", roster)
+        put("v", 2); put("step", step); put("helloOpen", helloOpen); put("name", name); put("dob", dob); put("country", country)
+        put("wake", wakeMin); put("sleep", sleepMin); put("minsTouched", minsTouched); put("firstWin", firstWin); put("raahi", raahiMode)
         put("mins", JSONArray(mins.map { JSONObject().put("t", it.title).put("y", it.tiny) }))
-        put("banks", JSONArray(banks))
     }.toString()
 
     companion object {
+        const val LAST = 6
+
         fun fromJson(s: String): Draft? = runCatching {
             val o = JSONObject(s)
-            fun str(k: String) = if (o.isNull(k)) null else o.getString(k)
+            fun str(k: String) = if (o.isNull(k)) null else o.optString(k).takeIf { o.has(k) }
             Draft(
-                step = o.optInt("step"), name = o.optString("name"), dob = str("dob"), role = str("role"),
-                mins = o.optJSONArray("mins")?.let { a -> (0 until a.length()).map { MinPick(a.getJSONObject(it).getString("t"), a.getJSONObject(it).optString("y")) } }.orEmpty(),
-                minsTouched = o.optBoolean("minsTouched"), battery = o.optString("battery", "GENTLE"),
-                banks = o.optJSONArray("banks")?.let { a -> (0 until a.length()).map { a.getString(it) } }.orEmpty(),
-                cash = o.optBoolean("cash", true), plan = o.optString("plan"), firstWin = str("firstWin"), roster = o.optString("roster"),
+                // A draft from the old ten-page flow keeps what it can and resumes on screen 1's details.
+                step = if (o.optInt("v") == 2) o.optInt("step").coerceIn(0, LAST) else 0,
+                helloOpen = o.optBoolean("helloOpen", o.optInt("v") != 2 && o.optString("name").isNotBlank()),
+                name = o.optString("name"), dob = str("dob"), country = o.optString("country", "IN"),
+                wakeMin = o.optInt("wake", 7 * 60), sleepMin = o.optInt("sleep", 23 * 60),
+                mins = o.optJSONArray("mins")?.let { a -> (0 until a.length()).map { MinPick(a.getJSONObject(it).getString("t"), a.getJSONObject(it).optString("y")) } }.orEmpty().take(3),
+                minsTouched = o.optBoolean("minsTouched"), firstWin = str("firstWin"), raahiMode = o.optString("raahi", "QUIET"),
             )
         }.getOrNull()
     }
 }
-
-internal val UI_ROLES = listOf(
-    Triple("student", "Student", "Study focus, assignments, pocket money"),
-    Triple("default", "Working professional", "Meetings, focus time, salary and UPI spends"),
-    Triple("freelancer", "Freelancer or creator", "Billable focus, irregular income, runway"),
-    Triple("business", "Business owner", "Business books kept apart from personal money"),
-    Triple("shift", "Shift worker", "Your day runs on your roster, not midnight"),
-    Triple("homemaker", "Running the home", "Household money, family papers, everyone's tasks"),
-    Triple("creator", "Social media or screen-heavy work", "Work screen time isn't counted against you"),
-    Triple("manual", "Hands-on or field work", "Steps don't count; rest and sleep do"),
-    Triple("blank", "Something else", "Start from a blank slate"),
-)
 
 internal val SUGGESTED_MINS = listOf(
     MinPick("Walk 20 minutes", "Walk to the gate"),
@@ -92,20 +86,11 @@ internal val SUGGESTED_MINS = listOf(
     MinPick("Plan tomorrow", "Pick tomorrow's one thing"),
 )
 
-/** Role → the minimums pre-ticked on O4. */
-internal fun defaultMinsFor(role: String?): List<MinPick> = when (role) {
-    "student" -> listOf("Read 10 pages", "Plan tomorrow", "Drink 2 litres of water")
-    "freelancer", "business" -> listOf("Plan tomorrow", "Log every spend", "Walk 20 minutes")
-    "manual" -> listOf("One stretch", "Drink 2 litres of water", "Journal 3 lines")
-    "shift" -> listOf("Walk 20 minutes", "No phone in bed", "Plan tomorrow")
-    "homemaker" -> listOf("Log every spend", "Plan tomorrow", "Walk 20 minutes")
-    else -> listOf("Walk 20 minutes", "Read 10 pages", "Plan tomorrow")
-}.mapNotNull { t -> SUGGESTED_MINS.firstOrNull { it.title == t } }
+/** The first suggestion, pre-ticked on screen 3 (PRD 1.6: "a pre-filled first suggestion"). */
+internal val FIRST_MIN: MinPick = SUGGESTED_MINS.first()
 
-internal val BANKS = listOf(
-    "HDFC", "SBI", "ICICI", "Axis", "Kotak", "PNB", "Bank of Baroda", "IDFC First",
-    "Yes", "IndusInd", "Federal", "AU", "Paytm Payments", "Airtel Payments",
-)
+/** Up to three minimums (1.6 screen 3). */
+const val MAX_MINS = 3
 
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
@@ -132,7 +117,17 @@ class OnboardingViewModel @Inject constructor(
         prefs.edit().putString("d", _draft.value.toJson()).apply()
     }
 
-    fun go(step: Int) = update { it.copy(step = step.coerceIn(0, 9)) }
+    fun go(step: Int) = update { it.copy(step = step.coerceIn(0, Draft.LAST)) }
+
+    /** Under 18: nothing is kept, not even the name (Part 23). */
+    fun forget() {
+        prefs.edit().clear().apply()
+        _draft.value = Draft()
+    }
+
+    fun smsGranted(): Boolean = androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.READ_SMS) == android.content.pm.PackageManager.PERMISSION_GRANTED
+    fun notificationsGranted(): Boolean = android.os.Build.VERSION.SDK_INT < 33 ||
+        androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) == android.content.pm.PackageManager.PERMISSION_GRANTED
 
     fun recheck() { viewModelScope.launch { access.value = device.access() } }
 
@@ -171,18 +166,28 @@ class OnboardingViewModel @Inject constructor(
         val d = _draft.value
         saving.value = true
         viewModelScope.launch {
+            val today = LocalDate.now()
+            val sleep = java.time.LocalTime.of((d.sleepMin / 60) % 24, d.sleepMin % 60)
+            val dayEnd = aiimin.core.engine.today.DayEndLearner.fromSleep(sleep)
+            // Screen 2 sets the day end and the arc; screen 6 sets Raahi. Written before setup flips to Today.
+            settings.update {
+                it.copy(
+                    country = d.country, wakeMin = d.wakeMin, sleepMin = d.sleepMin,
+                    dayEndMin = dayEnd.hour * 60 + dayEnd.minute, dayEndMode = "SET", dayEndChangedOn = today.toString(),
+                    raahiMode = aiimin.core.engine.raahi.RaahiMode.of(d.raahiMode).name,
+                    installDay = it.installDay ?: today.toString(),
+                    // The capture tried on screen 4 counts for the first-week card.
+                    firstCaptureDone = it.firstCaptureDone || d.firstWin != null,
+                )
+            }
             setup.complete(
                 SetupRepository.SetupInput(
-                    name = d.name, dob = d.dobDate, role = (d.role ?: "default").let { if (it == "blank") "default" else it },
-                    mins = d.mins.map { it.title to it.tiny }, battery = d.battery_, banks = d.banks,
-                    primaryBank = d.banks.firstOrNull(), cash = d.cash, monthlyPlanRupees = d.plan.filter(Char::isDigit).toLongOrNull(),
+                    name = d.name, ageBand = d.dobDate?.let { aiimin.core.engine.profile.AgeBand.of(it, today) }, role = "default",
+                    mins = d.mins.map { it.title to it.tiny }, battery = aiimin.core.engine.BatteryMode.GENTLE, banks = emptyList(),
+                    primaryBank = null, cash = true, monthlyPlanRupees = null,
                 ),
             )
-            // The roster picked on the role page becomes the day mode from today (§4.70 SE3).
-            if (d.role == "shift" && d.roster.isNotBlank()) {
-                val today = java.time.LocalDate.now()
-                settings.update { it.copy(dayMode = aiimin.core.engine.DayMode.Roster(d.roster.toList(), today), dayModeChangedOn = today) }
-            }
+            // The draft (and the date of birth in it) is erased; only the band was kept.
             prefs.edit().clear().apply()
             sync.refreshState()
             onDone()

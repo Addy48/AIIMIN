@@ -241,7 +241,8 @@ class SetupRepository @Inject constructor(
     /** Everything onboarding gathered. Nothing here needs an account. */
     data class SetupInput(
         val name: String,
-        val dob: java.time.LocalDate?,
+        /** The age band only; the date of birth itself never reaches storage (PRD 4.7). */
+        val ageBand: String?,
         val role: String,
         /** (minimum, tiny version) */
         val mins: List<Pair<String, String>>,
@@ -256,7 +257,7 @@ class SetupRepository @Inject constructor(
         val preset = RolePreset.byKey(i.role)
         settings.update {
             it.copy(
-                name = i.name.trim(), role = i.role, dob = i.dob?.toString(),
+                name = i.name.trim(), role = i.role, ageBand = i.ageBand,
                 batteryMode = preset?.suggestsBattery ?: i.battery,
                 batteryModeChangedOn = null,
                 intentions = preset?.applyTo(aiimin.core.engine.IntentionSet.default()) ?: it.intentions,

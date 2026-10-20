@@ -51,7 +51,9 @@ android {
             buildConfigField("String", "API_BASE_URL", "\"https://api.aiimin.in/api\"")
         }
         release {
-            applicationIdSuffix = ".v4"
+            // -Paiimin.idSuffix=.v4.fresh installs a second copy beside the main one, so onboarding can be
+            // checked from a fresh install without clearing any data.
+            applicationIdSuffix = (project.findProperty("aiimin.idSuffix") as String?) ?: ".v4"
             isMinifyEnabled = true
             isShrinkResources = true
             buildConfigField("String", "API_BASE_URL", "\"https://api.aiimin.in/api\"")

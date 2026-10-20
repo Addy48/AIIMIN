@@ -1,8 +1,14 @@
 package aiimin.feature.onboarding
 
 import aiimin.designsystem.theme.LocalReduceMotion
+import aiimin.core.engine.profile.AgeBand
+import aiimin.core.engine.raahi.RaahiMode
+import aiimin.designsystem.component.ConsentSheet
+import aiimin.designsystem.component.ConsentText
+import aiimin.designsystem.component.LocalRaahiMode
+import androidx.compose.animation.core.Animatable
+import androidx.compose.runtime.CompositionLocalProvider
 import aiimin.core.data.sync.MergePreview
-import aiimin.core.sensing.HealthAvailability
 import aiimin.designsystem.component.AppButton
 import aiimin.designsystem.component.AppTextField
 import aiimin.designsystem.component.AppIconButton
@@ -18,7 +24,6 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -65,102 +70,90 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import java.time.LocalDate
-import java.time.Period
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-private enum class Overlay { SIGN_IN, SIGN_UP, HEALTH, UNDER_AGE }
-
-private const val LAST = 9
+private enum class Overlay { SIGN_IN, SIGN_UP, UNDER_AGE }
 
 /**
- * The ten onboarding pages (plan §4.1). One decision each, skippable from O3 to O9, and no account
- * needed before the first win. The draft is saved on every change, so a killed app resumes in place.
+ * Onboarding in seven screens (PRD 1.6, 1.6b): Hello, Your day, Minimums, Try capture, Bank SMS, Raahi, Done.
+ * Raahi speaks one fixed line per screen. One permission per screen, each after its Part 23 text. No account is
+ * needed. The draft is saved on every change, so Back and a killed app keep what was entered.
  */
 @Composable
 fun OnboardingScreen(onDone: () -> Unit, vm: OnboardingViewModel = hiltViewModel()) {
     val c = Aiimin.colors
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
     val d by vm.draft.collectAsStateWithLifecycle()
     val session by vm.session.collectAsStateWithLifecycle(null)
-    val access by vm.access.collectAsStateWithLifecycle()
     val saving by vm.saving.collectAsStateWithLifecycle()
     val merge by vm.merge.collectAsStateWithLifecycle()
     var overlay by remember { mutableStateOf<Overlay?>(null) }
-    var toast by remember { mutableStateOf<String?>(null) }
-    val signedInAs = session?.takeIf { it.signedIn }?.let { it.osId ?: it.label ?: it.email }
-
-    val health = rememberLauncherForActivityResult(vm.healthContract()) { vm.recheck() }
-    val notify = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { vm.recheck() }
-    // Android's own screens are left to come back from; re-read what is allowed each time we return.
-    val owner = LocalLifecycleOwner.current
-    DisposableEffect(owner) {
-        val obs = LifecycleEventObserver { _, e -> if (e == Lifecycle.Event.ON_RESUME) vm.recheck() }
-        owner.lifecycle.addObserver(obs)
-        onDispose { owner.lifecycle.removeObserver(obs) }
-    }
-    LaunchedEffect(toast) { if (toast != null) { delay(2600); toast = null } }
+    var under18 by remember { mutableStateOf<LocalDate?>(null) }
+    var askNotify by remember { mutableStateOf(false) }
+    var smsGranted by remember { mutableStateOf(vm.smsGranted()) }
+    var smsAnswered by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val shrink = remember { Animatable(0f) }
+    val reduce = LocalReduceMotion.current
 
     fun next() = vm.go(d.step + 1)
-    fun back() { if (d.step > 0) vm.go(d.step - 1) }
-    BackHandler(enabled = overlay != null || d.step > 0) { if (overlay != null) overlay = null else back() }
+    fun back() { if (d.step > 0) vm.go(d.step - 1) else if (d.helloOpen) vm.update { it.copy(helloOpen = false) } }
+    BackHandler(enabled = overlay != null || d.step > 0 || d.helloOpen) { if (overlay != null) overlay = null else back() }
 
-    // Signing in on O9 moves on by itself, after the person has seen the check mark.
-    LaunchedEffect(signedInAs, d.step) {
-        if (signedInAs != null && d.step == 8 && overlay == null) { delay(800); next() }
-    }
-    // A first sign-in from O1 resumes at O2 with the name filled from the account.
+    val notify = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { next() }
+    val sms = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok -> smsGranted = ok; smsAnswered = true }
+
+    // A first sign-in from screen 1 fills the name from the account.
     LaunchedEffect(session?.name) {
         val n = session?.name
-        if (session?.signedIn == true && !n.isNullOrBlank() && d.name.isBlank()) vm.update { it.copy(name = n.substringBefore(' ')) }
+        if (session?.signedIn == true && !n.isNullOrBlank() && d.name.isBlank()) vm.update { it.copy(name = n.substringBefore(' '), helloOpen = true) }
     }
+    // Screen 1 confirms a guessed country (SIM, then network, then the phone's language).
+    LaunchedEffect(Unit) { guessCountry(context)?.let { g -> if (d.country == "IN" && g != "IN") vm.update { it.copy(country = g) } } }
 
     when (overlay) {
         Overlay.SIGN_IN, Overlay.SIGN_UP -> {
             AuthFlow(
                 vm.auth, if (overlay == Overlay.SIGN_UP) AuthMode.SIGN_UP else AuthMode.SIGN_IN,
                 onBack = { overlay = null },
-                onSignedIn = {
-                    val from = d.step
-                    overlay = null
-                    if (from == 0) vm.go(1)
-                },
+                onSignedIn = { overlay = null; vm.update { it.copy(helloOpen = true) } },
                 prefillName = d.name,
             )
             merge?.takeIf { it.webHasData }?.let { MergeSheet(it, { vm.planReplace() }) { choice -> vm.mergeDone(choice) } }
             return
         }
-        Overlay.HEALTH -> { HealthPrivacyScreen(onBack = { overlay = null }); return }
         Overlay.UNDER_AGE -> {
-            UnderAgePage { vm.update { Draft() }; (context as? Activity)?.finish() }
+            CompositionLocalProvider(LocalRaahiMode provides RaahiMode.QUIET) {
+                Box(Modifier.fillMaxSize().background(c.base).statusBarsPadding().navigationBarsPadding()) {
+                    Column(Modifier.verticalScroll(rememberScrollState())) {
+                        UnderAgePage(
+                            under18,
+                            onPrint = { StartSmallPlanner.print(context) },
+                            onRemind = { day -> remindOn(context, day) },
+                            onClose = { (context as? Activity)?.finish() },
+                        )
+                    }
+                }
+            }
             return
         }
         null -> Unit
     }
-    // The merge choice can appear after sign-in even when the overlay has closed.
     merge?.takeIf { it.webHasData }?.let { MergeSheet(it, { vm.planReplace() }) { choice -> vm.mergeDone(choice) } }
 
+    // Screen 6 applies Raahi's mode at once: Off hides Raahi on every following screen too.
+    CompositionLocalProvider(LocalRaahiMode provides RaahiMode.of(d.raahiMode)) {
     Column(Modifier.fillMaxSize().background(c.base).statusBarsPadding().navigationBarsPadding().imePadding()) {
-        // Ten thin segments, no "step 3 of 10" text.
+        // Seven thin segments, no "step 3 of 7" text.
         Row(Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(top = 14.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            (0..LAST).forEach { i -> Box(Modifier.weight(1f).height(3.dp).clip(RoundedCornerShape(2.dp)).background(if (i <= d.step) c.text else c.border)) }
+            (0..Draft.LAST).forEach { i -> Box(Modifier.weight(1f).height(3.dp).clip(RoundedCornerShape(2.dp)).background(if (i <= d.step) c.text else c.border)) }
         }
         Row(Modifier.fillMaxWidth().height(52.dp).padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            if (d.step >= 2) AppIconButton(AppIcons.ArrowLeft, "Back", { back() }) else Spacer(Modifier.width(48.dp))
-            Spacer(Modifier.weight(1f))
-            if (d.step in 2..8) Text("Skip", style = Aiimin.type.label.copy(color = c.textMuted, fontSize = 15.sp), modifier = Modifier.clickable {
-                // Skipping fills a sensible default; nothing blocks.
-                when (d.step) {
-                    2 -> vm.update { it.copy(role = it.role ?: "default") }
-                    3 -> vm.update { it.copy(mins = if (it.minsTouched) it.mins else defaultMinsFor(it.role)) }
-                }
-                next()
-            }.padding(12.dp))
+            if (d.step >= 1 || d.helloOpen) AppIconButton(AppIcons.ArrowLeft, "Back", { back() }) else Spacer(Modifier.width(48.dp))
         }
-        val reduce = LocalReduceMotion.current
+        val page = d.step * 2 + if (d.step == 0 && d.helloOpen) 1 else 0
         AnimatedContent(
-            d.step,
+            page,
             transitionSpec = {
                 val fwd = targetState > initialState
                 if (reduce) fadeIn(Motion.reducedFade()).togetherWith(fadeOut(Motion.reducedFade()))
@@ -168,139 +161,89 @@ fun OnboardingScreen(onDone: () -> Unit, vm: OnboardingViewModel = hiltViewModel
                     .togetherWith(slideOutHorizontally(Motion.exit()) { if (fwd) -it / 5 else it / 5 } + fadeOut(Motion.exit()))
             },
             label = "onboarding", modifier = Modifier.weight(1f),
-        ) { step ->
+        ) { p ->
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp)) {
-                when (step) {
-                    0 -> Welcome()
-                    1 -> NamePage(d, { n -> vm.update { it.copy(name = n) } }, { dob -> vm.update { it.copy(dob = dob.toString()) } })
-                    2 -> RolePage(d, { k -> vm.update { it.copy(role = k, mins = if (it.minsTouched) it.mins else defaultMinsFor(k)) } }, { r -> vm.update { it.copy(roster = r) } })
-                    3 -> {
-                        LaunchedEffect(Unit) { if (!d.minsTouched && d.mins.isEmpty()) vm.update { it.copy(mins = defaultMinsFor(it.role)) } }
+                when (p) {
+                    0 -> HelloPage()
+                    1 -> AboutYouPage(d, { n -> vm.update { it.copy(name = n) } }, { dob -> vm.update { it.copy(dob = dob.toString()) } }, { code -> vm.update { it.copy(country = code) } })
+                    2 -> YourDayPage(d, { m -> vm.update { it.copy(wakeMin = m) } }, { m -> vm.update { it.copy(sleepMin = m) } })
+                    4 -> {
+                        LaunchedEffect(Unit) { if (!d.minsTouched && d.mins.isEmpty()) vm.update { it.copy(mins = listOf(FIRST_MIN)) } }
                         MinimumsPage(d) { list -> vm.update { it.copy(mins = list, minsTouched = true) } }
                     }
-                    4 -> BatteryPage(d) { m -> vm.update { it.copy(battery = m.name) } }
-                    5 -> MoneyPage(d, { b -> vm.update { it.copy(banks = b) } }, { cash -> vm.update { it.copy(cash = cash) } }, { p -> vm.update { it.copy(plan = p) } })
-                    6 -> {
-                        LaunchedEffect(Unit) { vm.recheck() }
-                        PermissionsPage(
-                            access,
-                            onRequest = { key ->
-                                when (key) {
-                                    "usage" -> context.startActivity(vm.usageIntent().addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK))
-                                    "health" -> if (access?.health == HealthAvailability.UNAVAILABLE) runCatching { context.startActivity(vm.healthInstallIntent().addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)) } else runCatching { health.launch(vm.healthPermissions) }
-                                    "listener" -> context.startActivity(vm.listenerIntent())
-                                    else -> if (Build.VERSION.SDK_INT >= 33) notify.launch(Manifest.permission.POST_NOTIFICATIONS)
-                                }
-                            },
-                            onHealthRationale = { overlay = Overlay.HEALTH },
-                        )
-                    }
-                    7 -> VoicePage(d.firstWin, vm::preview, vm::saveWin, { label -> vm.update { it.copy(firstWin = label) } }, { toast = it })
-                    8 -> KeepSafePage(signedInAs)
-                    else -> ReadyPage(d, signedInAs, access) { vm.go(it) }
+                    6 -> TryCapturePage(d.firstWin, vm::preview, vm::saveWin) { label -> vm.update { it.copy(firstWin = label) } }
+                    8 -> BankSmsPage(smsGranted)
+                    10 -> ChattinessPage(RaahiMode.of(d.raahiMode)) { m -> vm.update { it.copy(raahiMode = m.name) } }
+                    else -> DonePage(d, shrink.value)
                 }
                 Spacer(Modifier.height(24.dp))
             }
         }
         // Bottom action
         Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            toast?.let { Text(it, style = Aiimin.type.caption.copy(color = c.warn), modifier = Modifier.padding(bottom = 8.dp)) }
             when (d.step) {
-                0 -> {
-                    AppButton("Get started", { next() }, Modifier.fillMaxWidth())
+                0 -> if (!d.helloOpen) {
+                    AppButton("Get started", { vm.update { it.copy(helloOpen = true) } }, Modifier.fillMaxWidth())
                     Spacer(Modifier.height(8.dp))
                     Row(Modifier.clickable { overlay = Overlay.SIGN_IN }.padding(10.dp)) {
                         Text("I already use aiimin.in · ", style = Aiimin.type.body.copy(color = c.textMuted))
                         Text("Sign in", style = Aiimin.type.body.copy(color = c.link, fontWeight = FontWeight.SemiBold))
                     }
+                } else AppButton("Continue", {
+                    val dob = d.dobDate ?: return@AppButton
+                    // Under 18: stop here, keep nothing (1.6, Part 23). The date stays in memory only for the reminder.
+                    if (!AgeBand.isAdult(dob, LocalDate.now())) {
+                        under18 = AgeBand.eighteenth(dob).takeIf { !dob.isAfter(LocalDate.now()) }
+                        vm.forget()
+                        overlay = Overlay.UNDER_AGE
+                    } else next()
+                }, Modifier.fillMaxWidth(), enabled = d.dob != null && d.name.isNotBlank())
+                3 -> AppButton(if (d.firstWin != null) "Continue" else "Skip for now", {
+                    // Notifications are asked at the first useful moment, after the first capture (1.6).
+                    if (!vm.notificationsGranted()) askNotify = true else next()
+                }, Modifier.fillMaxWidth(), kind = if (d.firstWin != null) ButtonKind.PRIMARY else ButtonKind.SECONDARY)
+                4 -> if (smsGranted || smsAnswered) AppButton("Continue", { next() }, Modifier.fillMaxWidth())
+                else {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        AppButton("Not now", { next() }, Modifier.weight(1f), kind = ButtonKind.SECONDARY)
+                        AppButton("Allow", { sms.launch(Manifest.permission.READ_SMS) }, Modifier.weight(1f))
+                    }
+                    Text(ConsentText.FOOTER, style = Aiimin.type.caption, modifier = Modifier.padding(top = 10.dp))
                 }
-                1 -> AppButton("Continue", {
-                    val age = d.dobDate?.let { Period.between(it, LocalDate.now()).years } ?: 0
-                    if (age < 18) overlay = Overlay.UNDER_AGE else next()
-                }, Modifier.fillMaxWidth(), enabled = d.dob != null)
-                3 -> AppButton(if (d.mins.isEmpty()) "Skip for now" else "Continue", { next() }, Modifier.fillMaxWidth())
-                7 -> AppButton(if (d.firstWin != null) "Continue" else "Skip for now", { next() }, Modifier.fillMaxWidth(), kind = if (d.firstWin != null) ButtonKind.PRIMARY else ButtonKind.SECONDARY)
-                8 -> {
-                    if (signedInAs == null) {
-                        AppButton("Sign in", { overlay = Overlay.SIGN_IN }, Modifier.fillMaxWidth())
-                        Spacer(Modifier.height(8.dp))
-                        AppButton("Create an account", { overlay = Overlay.SIGN_UP }, Modifier.fillMaxWidth(), kind = ButtonKind.SECONDARY)
-                        Spacer(Modifier.height(4.dp))
-                        Text("Stay on this phone only", style = Aiimin.type.label.copy(color = c.link), modifier = Modifier.clickable { next() }.padding(12.dp))
-                    } else AppButton("Continue", { next() }, Modifier.fillMaxWidth())
-                }
-                LAST -> AppButton(if (saving) "Setting up…" else "Start my day", { if (!saving) vm.finish(onDone) }, Modifier.fillMaxWidth(), enabled = !saving)
+                Draft.LAST -> AppButton(if (saving) "Setting up…" else "Start my day", {
+                    if (!saving) scope.launch {
+                        shrink.animateTo(1f, Motion.move(reduce, Motion.arc()))
+                        vm.finish(onDone)
+                    }
+                }, Modifier.fillMaxWidth(), enabled = !saving)
                 else -> AppButton("Continue", { next() }, Modifier.fillMaxWidth())
             }
         }
     }
+    }
+    if (askNotify) ConsentSheet(
+        ConsentText.NOTIFICATIONS,
+        onAllow = { askNotify = false; if (Build.VERSION.SDK_INT >= 33) notify.launch(Manifest.permission.POST_NOTIFICATIONS) else next() },
+        onNotNow = { askNotify = false; next() },
+    )
 }
 
-@Composable
-private fun Welcome() {
-    val c = Aiimin.colors
-    Spacer(Modifier.height(8.dp))
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        aiimin.designsystem.component.BrandMark(size = 26.dp)
-        Spacer(Modifier.width(8.dp))
-        Text("AIIMIN", style = Aiimin.type.headline.copy(fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.8.sp))
-    }
-    Spacer(Modifier.height(20.dp))
-    // Hero: the day as an arc under a dawn sky, the sun a little past sunrise. The same arc lives on Today.
-    val shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp)
-    val sky = androidx.compose.ui.graphics.Brush.verticalGradient(listOf(c.accentSoft, c.surface))
-    androidx.compose.foundation.Canvas(
-        Modifier.fillMaxWidth().height(180.dp).clip(shape).background(sky).border(1.dp, c.border, shape),
-    ) {
-        val w = size.width
-        val h = size.height
-        val base = h * 0.80f
-        val arc = androidx.compose.ui.graphics.Path().apply {
-            moveTo(w * 0.08f, base)
-            cubicTo(w * 0.30f, h * 0.10f, w * 0.70f, h * 0.10f, w * 0.92f, base)
-        }
-        drawLine(c.border, androidx.compose.ui.geometry.Offset(w * 0.06f, base), androidx.compose.ui.geometry.Offset(w * 0.94f, base), strokeWidth = 2f)
-        drawPath(arc, c.text.copy(alpha = 0.85f), style = androidx.compose.ui.graphics.drawscope.Stroke(width = 5f, cap = androidx.compose.ui.graphics.StrokeCap.Round))
-        // A point on the arc's cubic curve at t, so markers sit exactly on the line.
-        fun on(t: Float): androidx.compose.ui.geometry.Offset {
-            val u = 1f - t
-            val x = u * u * u * w * 0.08f + 3 * u * u * t * w * 0.30f + 3 * u * t * t * w * 0.70f + t * t * t * w * 0.92f
-            val y = u * u * u * base + 3 * u * u * t * h * 0.10f + 3 * u * t * t * h * 0.10f + t * t * t * base
-            return androidx.compose.ui.geometry.Offset(x, y)
-        }
-        // three moments of a day sit on the arc
-        listOf(0.2f, 0.5f, 0.8f).forEach { t ->
-            drawCircle(c.surface, 9f, on(t))
-            drawCircle(c.text.copy(alpha = 0.55f), 9f, on(t), style = androidx.compose.ui.graphics.drawscope.Stroke(3f))
-        }
-        val sun = on(0.32f)
-        drawCircle(c.accent.copy(alpha = 0.18f), 34f, sun)
-        drawCircle(c.accent, 18f, sun)
-    }
-    Spacer(Modifier.height(24.dp))
-    Text(
-        "Your day, your money and your family's papers, in one calm place.",
-        style = Aiimin.type.title.copy(fontSize = 28.sp, lineHeight = 34.sp, letterSpacing = (-0.6).sp),
-    )
-    Text(
-        "It only ever compares you with you.",
-        style = Aiimin.type.body.copy(fontSize = 16.sp, color = c.textMuted), modifier = Modifier.padding(top = 8.dp),
-    )
-    Spacer(Modifier.height(22.dp))
-    listOf(
-        Triple(AppIcons.Mic, "Say it once", "Tasks, money and notes land in the right place."),
-        Triple(AppIcons.DeviceMobile, "Your phone counts", "Screen time and steps fill in by themselves."),
-        Triple(AppIcons.Lock, "Private by default", "Bank alerts are read on your phone. No ads, no loans, nothing sold."),
-    ).forEach { (icon, title, line) ->
-        Row(Modifier.padding(bottom = 14.dp), verticalAlignment = Alignment.CenterVertically) {
-            aiimin.designsystem.component.IconTile(icon)
-            Spacer(Modifier.width(14.dp))
-            Column(Modifier.weight(1f)) {
-                Text(title, style = Aiimin.type.bodyStrong)
-                Text(line, style = Aiimin.type.caption.copy(fontSize = 14.sp, lineHeight = 19.sp))
-            }
-        }
-    }
+/** SIM country, then network country, then the phone's region; null when none is known. */
+private fun guessCountry(context: android.content.Context): String? {
+    val tm = context.getSystemService(android.content.Context.TELEPHONY_SERVICE) as? android.telephony.TelephonyManager
+    return listOfNotNull(tm?.simCountryIso, tm?.networkCountryIso, java.util.Locale.getDefault().country)
+        .map { it.uppercase() }.firstOrNull { it.length == 2 }
+}
+
+/** Opens the phone's own calendar with an all-day reminder on the 18th birthday; AIIMIN stores nothing. */
+private fun remindOn(context: android.content.Context, day: LocalDate) {
+    val start = day.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+    val intent = android.content.Intent(android.content.Intent.ACTION_INSERT)
+        .setData(android.provider.CalendarContract.Events.CONTENT_URI)
+        .putExtra(android.provider.CalendarContract.EXTRA_EVENT_BEGIN_TIME, start)
+        .putExtra(android.provider.CalendarContract.EXTRA_EVENT_ALL_DAY, true)
+        .putExtra(android.provider.CalendarContract.Events.TITLE, "Set up AIIMIN")
+    runCatching { context.startActivity(intent) }
 }
 
 enum class MergeChoice { MERGE, REPLACE, SEPARATE }

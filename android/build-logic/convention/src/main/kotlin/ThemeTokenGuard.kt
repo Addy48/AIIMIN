@@ -72,6 +72,8 @@ abstract class ThemeTokenGuard : DefaultTask() {
         // PRD 13.2 / 8.3: no guilt words in anything a person reads. Parser vocabularies and wire names are not copy.
         private val COPY_EXEMPT = listOf("/core/nlp/", "/core/network/", "/core/database/")
         private val GUILT = Regex("""\b(miss|missed|misses|streaks?|overdue|behind|fail|failed|fails|forgot|don't break)\b""", RegexOption.IGNORE_CASE)
+        /** Part 23's fixed notification consent says what AIIMIN will never do: "no streak warnings". */
+        private val PROMISE = Regex("""\bno streak warnings\b""", RegexOption.IGNORE_CASE)
         private val TIME_OF_DAY = Regex("""\blate[- ]night|\bit's late\b|\blate entries\b""", RegexOption.IGNORE_CASE)
         private val LATENESS = Regex("""\b(late|lateness)\b""", RegexOption.IGNORE_CASE)
         private val LITERAL = Regex(""""((?:[^"\\]|\\.)*)"""")
@@ -79,7 +81,7 @@ abstract class ThemeTokenGuard : DefaultTask() {
 
         /** True when a string literal on the line (templates removed) contains a guilt word. */
         fun guiltIn(code: String): Boolean = LITERAL.findAll(stripTemplates(code)).any { m ->
-            val text = TEMPLATE.replace(m.groupValues[1], " ")
+            val text = PROMISE.replace(TEMPLATE.replace(m.groupValues[1], " "), " ")
             // A space-less lowercase literal is a key, regex or wire name ("streak:", "a|b"), not copy, unless it is
             // exactly a guilt word ("late", "missed"): those are shown as labels.
             val whole = text.trim()

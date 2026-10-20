@@ -128,7 +128,8 @@ fun EditProfileScreen(vm: ProfileViewModel = hiltViewModel()) {
     val st = s ?: return
     var name by remember { mutableStateOf(st.name) }
     var role by remember { mutableStateOf(st.role) }
-    var dob by remember { mutableStateOf(st.dob) }
+    var band by remember { mutableStateOf(st.ageBand) }
+    var under by remember { mutableStateOf(false) }
     var city by remember { mutableStateOf(st.city) }
     var upi by remember { mutableStateOf(st.myUpiId) }
     var pickDob by remember { mutableStateOf(false) }
@@ -144,20 +145,27 @@ fun EditProfileScreen(vm: ProfileViewModel = hiltViewModel()) {
             PillRow { ROLES.forEach { (k, label) -> Pill(label, role == k, { role = k }) } }
             if (role != st.role) Text("Your intentions stay as they are. Change them in What counts for you if this role should count different things.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp))
             SectionHeader("Optional")
-            ListRow("Date of birth", subtitle = dob?.let { runCatching { DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH).format(LocalDate.parse(it)) }.getOrNull() } ?: "Not set", trailing = { Chevron() }, onClick = { pickDob = true })
+            // PRD 4.7: only the age band is kept; a new date of birth is turned into a band and dropped.
+            ListRow("Age", subtitle = band ?: "Not set", trailing = { Chevron() }, onClick = { pickDob = true })
+            if (under) Text("AIIMIN accounts are for people 18 and over.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 4.dp))
             AppTextField(city, { city = it }, label = "City", placeholder = "Only used for greetings")
             Spacer(Modifier.height(10.dp))
             AppTextField(upi, { upi = it.trim() }, label = "Your UPI ID", placeholder = "you@bank")
             Text("Used to build pay links when someone owes you. AIIMIN never sends UPI collect requests and never sees your PIN.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 4.dp))
             Spacer(Modifier.height(20.dp))
             AppButton("Save", {
-                vm.save { it.copy(name = name.trim(), role = role, dob = dob, city = city.trim(), myUpiId = upi) }
+                vm.save { it.copy(name = name.trim(), role = role, ageBand = band, city = city.trim(), myUpiId = upi) }
                 toaster.show("Saved"); nav.back()
             }, Modifier.fillMaxWidth(), enabled = name.isNotBlank() && (upi.isBlank() || upi.contains('@')))
             Spacer(Modifier.height(32.dp))
         }
     }
-    if (pickDob) DatePick(dob?.let { runCatching { LocalDate.parse(it) }.getOrNull() } ?: LocalDate.now().minusYears(25), { dob = it.toString(); pickDob = false }, { pickDob = false })
+    if (pickDob) DatePick(LocalDate.now().minusYears(25), { d ->
+        val b = aiimin.core.engine.profile.AgeBand.of(d, LocalDate.now())
+        under = b == null
+        if (b != null) band = b
+        pickDob = false
+    }, { pickDob = false })
 }
 
 // =================================================================== P3 Plans · P3a Compare · P4 Checkout · P5 Subscription

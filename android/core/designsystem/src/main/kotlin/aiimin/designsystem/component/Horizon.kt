@@ -41,7 +41,16 @@ data class HorizonTick(val minute: Int, val label: String)
  * On the first open the sun slides along the arc to now (600 ms, Part 26.5), then rests.
  */
 @Composable
-fun DayHorizon(nowMinute: Int, ticks: List<HorizonTick>, horizon: Horizon, modifier: Modifier = Modifier, description: String = "Your day so far") {
+fun DayHorizon(
+    nowMinute: Int,
+    ticks: List<HorizonTick>,
+    horizon: Horizon,
+    modifier: Modifier = Modifier,
+    description: String = "Your day so far",
+    /** The arc runs from waking to sleep (PRD 1.6 screen 2); a sleep time after midnight runs into the next day. */
+    wakeMinute: Int = 7 * 60,
+    sleepMinute: Int = 23 * 60,
+) {
     val measurer = rememberTextMeasurer()
     val axis = Aiimin.type.axis
     val reduce = LocalReduceMotion.current
@@ -57,12 +66,14 @@ fun DayHorizon(nowMinute: Int, ticks: List<HorizonTick>, horizon: Horizon, modif
         val w = size.width
         val dp = 1.dp.toPx()
         val base = 50 * dp
-        val start = 7 * 60
-        val end = 23 * 60
+        val start = wakeMinute
+        val end = if (sleepMinute > wakeMinute) sleepMinute else sleepMinute + 24 * 60
+        // After midnight on a late day, the small hours belong to the evening before.
+        fun onDay(min: Int) = if (end > 24 * 60 && min < start) min + 24 * 60 else min
         fun frac(min: Int) = ((min - start).toFloat() / (end - start)).coerceIn(0f, 1f)
         fun px(min: Int) = frac(min) * w
         fun py(min: Int): Float = base - (40 * dp) * sin(PI.toFloat() * frac(min)).toDouble().pow(1.3).toFloat()
-        val target = nowMinute.coerceIn(start, end)
+        val target = onDay(nowMinute).coerceIn(start, end)
         val now = (start + (target - start) * travel.value).toInt()
         fun path(a: Int, b: Int): Path = Path().apply {
             var m = a
@@ -87,9 +98,10 @@ fun DayHorizon(nowMinute: Int, ticks: List<HorizonTick>, horizon: Horizon, modif
         // ticks + labels
         // A label shows only if it clears the one before it by 8 dp at the current text size.
         var lastRight = -1000f
-        ticks.sortedBy { it.minute }.forEach { t ->
-            if (t.minute <= target || t.minute > end) return@forEach
-            val x = px(t.minute)
+        ticks.sortedBy { onDay(it.minute) }.forEach { t ->
+            val tm = onDay(t.minute)
+            if (tm <= target || tm > end) return@forEach
+            val x = px(tm)
             drawLine(horizon.line, Offset(x, base - 1 * dp), Offset(x, base + 7 * dp), strokeWidth = 2 * dp)
             val layout = measurer.measure(t.label, axis)
             val tx = (x - layout.size.width / 2f).coerceIn(0f, w - layout.size.width)
