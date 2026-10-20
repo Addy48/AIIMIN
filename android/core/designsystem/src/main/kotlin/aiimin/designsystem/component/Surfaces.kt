@@ -38,6 +38,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -65,6 +67,27 @@ fun Modifier.pressable(onClick: (() -> Unit)?, role: Role = Role.Button, onClick
 }
 
 /**
+ * List entry (Part 26.5): the item fades in and rises 12 dp, 30 ms after the one before it (first 8 only),
+ * once per screen visit; reduce motion shows it at once.
+ */
+@Composable
+fun Modifier.enterStagger(index: Int): Modifier {
+    val reduce = LocalReduceMotion.current
+    var shown by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf(reduce) }
+    val p = remember { androidx.compose.animation.core.Animatable(if (shown) 1f else 0f) }
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        if (!shown) {
+            p.animateTo(1f, Motion.standard(delay = Motion.staggerDelay(index)))
+            shown = true
+        }
+    }
+    return this.graphicsLayer {
+        alpha = p.value
+        translationY = (1f - p.value) * Motion.RISE_DP * density
+    }
+}
+
+/**
  * A group of content. Per the spec (hairlines, not boxes) it sits flat on the paper with a hairline
  * under it; pass a [color] and [bordered] only for the few true surfaces (Now card, review card).
  */
@@ -76,13 +99,17 @@ fun Panel(
     color: Color = Color.Transparent,
     shape: Shape = Shapes.card,
     bordered: Boolean = false,
+    /** The route this panel opens, so it grows into that screen (Part 26.5 container transform). */
+    opens: Any? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val c = Aiimin.colors
+    val key = opens?.let(::sharedKeyOf)
     Column(
         modifier
             .fillMaxWidth()
-            .pressable(onClick)
+            .sharedContainer(key)
+            .pressable(onClick?.let { click -> { key?.let(SharedNav::arm); click() } })
             .clip(shape)
             .background(color)
             .then(if (bordered) Modifier.border(1.dp, c.border, shape) else Modifier)
@@ -140,12 +167,16 @@ fun ListRow(
     titleColor: Color = Aiimin.colors.text,
     // Two lines by default: at 1.15× and 1.3× text one line cut targets and instructions mid-word (audit A-018).
     maxSubtitleLines: Int = 2,
+    /** The route this row opens, so it grows into that screen (Part 26.5 container transform). */
+    opens: Any? = null,
 ) {
+    val key = opens?.let(::sharedKeyOf)
     Row(
         modifier
             .fillMaxWidth()
             .heightIn(min = 52.dp)
-            .then(if (onClick != null) Modifier.clip(Shapes.row).clickable(onClick = onClick) else Modifier)
+            .sharedContainer(key)
+            .then(if (onClick != null) Modifier.clip(Shapes.row).clickable { key?.let(SharedNav::arm); onClick() } else Modifier)
             .padding(vertical = 10.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

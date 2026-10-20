@@ -61,4 +61,13 @@ class MotionTest {
         assertEquals(210, Motion.staggerDelay(7))
         assertEquals(210, Motion.staggerDelay(40))
     }
+
+    @Test fun day_arc_dot_slides_600ms_standard() {
+        assertEquals(600, tween(Motion.arc<Float>()).durationMillis)
+        assertEquals(CubicBezierEasing(0.2f, 0f, 0f, 1f), tween(Motion.arc<Float>()).easing)
+    }
+
+    @Test fun list_items_rise_12dp() = assertEquals(12f, Motion.RISE_DP)
+
+    @Test fun plus_turns_45_degrees() = assertEquals(45f, Motion.PLUS_OPEN_DEGREES)
 }

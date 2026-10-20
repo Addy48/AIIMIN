@@ -1,0 +1,77 @@
+package aiimin.designsystem.component
+
+import aiimin.designsystem.theme.LocalReduceMotion
+import aiimin.designsystem.theme.Motion
+import aiimin.designsystem.theme.Shapes
+import androidx.compose.animation.BoundsTransform
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.Modifier
+import androidx.navigation3.ui.LocalNavAnimatedContentScope
+
+/**
+ * Screen to screen (PRD Part 26.5): the tapped card grows into the screen it opens (container transform)
+ * and back shrinks it again, including the predictive back gesture. The shell wraps every screen in
+ * [sharedContainer] keyed by its route; a card that opens a screen passes the same route as `sharedKey`.
+ */
+@OptIn(ExperimentalSharedTransitionApi::class)
+val LocalSharedScope = staticCompositionLocalOf<SharedTransitionScope?> { null }
+
+/** The key that joins a card to the screen it opens. */
+fun sharedKeyOf(route: Any): String = "screen:$route"
+
+/**
+ * Which navigation is a container transform: the shell cross-fades screens for these instead of sliding,
+ * so the growing card carries the movement on its own.
+ */
+object SharedNav {
+    private var armedKey: String? = null
+    private var armedAt = 0L
+    private val opened = mutableSetOf<String>()
+
+    /** Called by a card just before it opens [key]. */
+    fun arm(key: String) {
+        armedKey = key
+        armedAt = System.nanoTime()
+    }
+
+    /** True once if the screen being opened was opened by its card (within half a second of the tap). */
+    fun opening(key: String): Boolean {
+        val hit = armedKey == key && System.nanoTime() - armedAt < 500_000_000L
+        if (hit) {
+            armedKey = null
+            opened += key
+        }
+        return hit
+    }
+
+    /** True if the screen being closed was opened by a card, so it shrinks back into it. */
+    fun closing(key: String): Boolean = opened.remove(key)
+}
+
+/** Joins this card or screen to its partner under [key]; no-op without a shell or with reduce motion. */
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+fun Modifier.sharedContainer(key: String?): Modifier {
+    if (key == null || LocalReduceMotion.current) return this
+    val scope = LocalSharedScope.current ?: return this
+    val anim = LocalNavAnimatedContentScope.current
+    return with(scope) {
+        this@sharedContainer.sharedBounds(
+            sharedContentState = rememberSharedContentState(key),
+            animatedVisibilityScope = anim,
+            boundsTransform = BoundsTransform { _, _ -> Motion.emphasised() },
+            resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
+            clipInOverlayDuringTransition = OverlayClip(Shapes.card),
+        )
+    }
+}
+
+/** A card that opens [route]: it grows into that screen. Pair with [armShared] in the click. */
+@Composable
+fun Modifier.opensScreen(route: Any): Modifier = sharedContainer(sharedKeyOf(route))
+
+/** Marks the next navigation to [route] as a container transform. */
+fun armShared(route: Any) = SharedNav.arm(sharedKeyOf(route))

@@ -208,7 +208,7 @@ fun TxnScreen(id: String, vm: TxnViewModel = hiltViewModel()) {
             item {
                 SectionHeader("Receipt")
                 if (receipt != null && txn.receiptDocId != null) {
-                    ListRow(receipt!!, subtitle = "In your vault", leading = { IconTile(AppIcons.Receipt) }, onClick = { nav.open(Route.Doc(txn.receiptDocId!!)) })
+                    ListRow(receipt!!, subtitle = "In your vault", leading = { IconTile(AppIcons.Receipt) }, opens = Route.Doc(txn.receiptDocId!!), onClick = { nav.open(Route.Doc(txn.receiptDocId!!)) })
                 } else {
                     ListRow("Attach a receipt or warranty", subtitle = "Photo or PDF — saved to the vault and linked here", leading = { IconTile(AppIcons.Paperclip) }, onClick = { picker.launch(arrayOf("image/*", "application/pdf")) })
                 }
@@ -222,7 +222,7 @@ fun TxnScreen(id: String, vm: TxnViewModel = hiltViewModel()) {
                         ListRow("Split with…", subtitle = "Equal parts; they show in Splits until settled", leading = { IconTile(AppIcons.Users) }, onClick = { splitting = true })
                     } else {
                         shares.forEach { sh ->
-                            ListRow(sh.name.ifBlank { sh.who }, subtitle = if (sh.settled) "Settled" else "Owes you ${Money.whole(sh.paise)}", leading = { IconTile(AppIcons.Users) }, onClick = { nav.open(Route.SplitPerson(sh.who)) })
+                            ListRow(sh.name.ifBlank { sh.who }, subtitle = if (sh.settled) "Settled" else "Owes you ${Money.whole(sh.paise)}", leading = { IconTile(AppIcons.Users) }, opens = Route.SplitPerson(sh.who), onClick = { nav.open(Route.SplitPerson(sh.who)) })
                         }
                         Text("Remove split", style = Aiimin.type.label.copy(color = c.accentText), modifier = Modifier.padding(vertical = 8.dp).pressable({ vm.clearSplit() }))
                     }

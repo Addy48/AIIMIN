@@ -248,11 +248,11 @@ fun VaultScreen(vm: VaultViewModel = hiltViewModel()) {
                 aiimin.designsystem.component.ToolGrid(
                     "Vault tools",
                     listOf(
-                        aiimin.designsystem.component.Tool(AppIcons.Users, "Family") { nav.open(Route.Family) },
-                        aiimin.designsystem.component.Tool(AppIcons.FirstAid, "Emergency card") { nav.open(Route.EmergencyCard(ME)) },
-                        aiimin.designsystem.component.Tool(AppIcons.CloudArrowUp, "Backups") { nav.open(Route.VaultBackup) },
-                        aiimin.designsystem.component.Tool(AppIcons.FirstAidKit, "Emergency kits") { nav.open(Route.EmergencyKits) },
-                        aiimin.designsystem.component.Tool(AppIcons.Eye, "Who saw what") { nav.open(Route.Activity) },
+                        aiimin.designsystem.component.Tool(AppIcons.Users, "Family", opens = Route.Family) { nav.open(Route.Family) },
+                        aiimin.designsystem.component.Tool(AppIcons.FirstAid, "Emergency card", opens = Route.EmergencyCard(ME)) { nav.open(Route.EmergencyCard(ME)) },
+                        aiimin.designsystem.component.Tool(AppIcons.CloudArrowUp, "Backups", opens = Route.VaultBackup) { nav.open(Route.VaultBackup) },
+                        aiimin.designsystem.component.Tool(AppIcons.FirstAidKit, "Emergency kits", opens = Route.EmergencyKits) { nav.open(Route.EmergencyKits) },
+                        aiimin.designsystem.component.Tool(AppIcons.Eye, "Who saw what", opens = Route.Activity) { nav.open(Route.Activity) },
                     ),
                     Modifier.padding(horizontal = Aiimin.space.gutter),
                 )

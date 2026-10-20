@@ -254,7 +254,7 @@ fun CalendarScreen(vm: CalendarViewModel = hiltViewModel()) {
             if (timed.isNotEmpty()) {
                 item { SectionHeader("Timed tasks") }
                 items(timed, key = { "t" + it.id }) { t ->
-                    ListRow(t.title, subtitle = Dates.clock(t.time), leading = { IconTile(AppIcons.ListChecks) }, onClick = { nav.open(Route.Task(t.id)) })
+                    ListRow(t.title, subtitle = Dates.clock(t.time), leading = { IconTile(AppIcons.ListChecks) }, opens = Route.Task(t.id), onClick = { nav.open(Route.Task(t.id)) })
                 }
             }
         }

@@ -135,7 +135,7 @@ data class DockItem(
  * The centre button is a 56 dp square (radius 12), ink fill, white plus.
  */
 @Composable
-fun Dock(items: List<DockItem>, onPlus: () -> Unit, onPlusLong: () -> Unit, modifier: Modifier = Modifier) {
+fun Dock(items: List<DockItem>, onPlus: () -> Unit, onPlusLong: () -> Unit, modifier: Modifier = Modifier, plusOpen: Boolean = false) {
     val c = Aiimin.colors
     val onInk = c.onInk
     Column(modifier.fillMaxWidth().background(c.base)) {
@@ -149,7 +149,14 @@ fun Dock(items: List<DockItem>, onPlus: () -> Unit, onPlusLong: () -> Unit, modi
             Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
                 val source = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
                 val pressed by source.collectIsPressedAsState()
-                val sc by androidx.compose.animation.core.animateFloatAsState(if (pressed && !LocalReduceMotion.current) Motion.PRESS_SCALE else 1f, Motion.tap(), label = "plus")
+                val reduce = LocalReduceMotion.current
+                val sc by androidx.compose.animation.core.animateFloatAsState(if (pressed && !reduce) Motion.PRESS_SCALE else 1f, Motion.tap(), label = "plus")
+                // Part 26.5: the "+" turns 45 degrees while its sheet is open, on the sheet's own token.
+                val turn by androidx.compose.animation.core.animateFloatAsState(
+                    if (plusOpen) Motion.PLUS_OPEN_DEGREES else 0f,
+                    Motion.move(reduce, if (plusOpen) Motion.emphasised() else Motion.exit()),
+                    label = "plusTurn",
+                )
                 Box(
                     Modifier
                         .size(56.dp)
@@ -160,7 +167,7 @@ fun Dock(items: List<DockItem>, onPlus: () -> Unit, onPlusLong: () -> Unit, modi
                         .semantics { contentDescription = "Capture" },
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(AppIcons.Plus, null, tint = onInk, modifier = Modifier.size(26.dp))
+                    Icon(AppIcons.Plus, null, tint = onInk, modifier = Modifier.size(26.dp).graphicsLayer { rotationZ = turn })
                 }
             }
             items.drop(half).forEach { DockButton(it) }
@@ -182,7 +189,12 @@ private fun RowScope.DockButton(item: DockItem) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box {
-            Icon(if (item.selected) item.iconFill else item.icon, null, tint = color, modifier = Modifier.size(25.dp))
+            // Part 26.5: the selected icon fills over 160 ms (outline and fill cross-fade; opacity only).
+            val fill by androidx.compose.animation.core.animateFloatAsState(
+                if (item.selected) 1f else 0f, Motion.fade(LocalReduceMotion.current, Motion.quick()), label = "tabFill",
+            )
+            Icon(item.icon, null, tint = color, modifier = Modifier.size(25.dp).graphicsLayer { alpha = 1f - fill })
+            Icon(item.iconFill, null, tint = color, modifier = Modifier.size(25.dp).graphicsLayer { alpha = fill })
             if (item.count > 0) {
                 Box(
                     Modifier.align(Alignment.TopEnd).offset(x = 9.dp, y = (-5).dp).heightIn(min = 16.dp).widthIn(min = 16.dp)

@@ -1,5 +1,7 @@
 package aiimin.feature.today
 
+import aiimin.designsystem.component.armShared
+import aiimin.designsystem.component.opensScreen
 import aiimin.core.data.day.DayRepository
 import aiimin.core.data.plan.MinimumToday
 import aiimin.core.data.util.Dates
@@ -268,7 +270,7 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
             item {
                 Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
                     SectionHeader("Pinned note")
-                    Column(Modifier.fillMaxWidth().pressable({ nav.open(Route.Note(n.id)) })) {
+                    Column(Modifier.fillMaxWidth().opensScreen(Route.Note(n.id)).pressable({ armShared(Route.Note(n.id)); nav.open(Route.Note(n.id)) })) {
                         Text(n.title.ifBlank { "Untitled" }, style = Aiimin.type.headline)
                         Text(aiimin.core.data.notes.notePreview(n.body), style = Aiimin.type.caption.copy(fontSize = 14.sp, lineHeight = 20.sp), maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 3.dp))
                     }
@@ -471,8 +473,8 @@ private fun StatLine(u: TodayUi, modifier: Modifier) {
     val score = life?.readout?.score
     val focus = life?.today?.value(Signals.FOCUS)
     @Composable
-    fun RowScope.Cell(value: String, label: String, onClick: () -> Unit, trailing: (@Composable () -> Unit)? = null) {
-        Column(Modifier.weight(1f).clip(Shapes.small).clickable(onClick = onClick).padding(vertical = 6.dp)) {
+    fun RowScope.Cell(value: String, label: String, route: Route, trailing: (@Composable () -> Unit)? = null) {
+        Column(Modifier.weight(1f).opensScreen(route).clip(Shapes.small).clickable { armShared(route); nav.open(route) }.padding(vertical = 6.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(value, style = Aiimin.type.numberMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 trailing?.let { Spacer(Modifier.width(4.dp)); it() }
@@ -482,17 +484,17 @@ private fun StatLine(u: TodayUi, modifier: Modifier) {
     }
     Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
         when {
-            u.hideScore -> Cell("—", "Score hidden", { nav.open(Route.Score) })
+            u.hideScore -> Cell("—", "Score hidden", Route.Score)
             score == null -> {
                 val left = life?.readout?.calibrating?.values?.sorted()?.getOrNull(3)
-                Cell(if (left != null && left > 0) "$left d" else "Soon", "Score", { nav.open(Route.Score) })
+                Cell(if (left != null && left > 0) "$left d" else "Soon", "Score", Route.Score)
             }
-            else -> Cell(score.toString(), life.readout.band.label, { nav.open(Route.Score) }) {
+            else -> Cell(score.toString(), life.readout.band.label, Route.Score) {
                 Icon(when (momentum(life.readout.series.mapNotNull { it.score })) { 1 -> AppIcons.ArrowUp; -1 -> AppIcons.ArrowDown; else -> AppIcons.ArrowRight }, null, tint = c.textMuted, modifier = Modifier.size(14.dp))
             }
         }
-        Cell("${u.minimums.count { it.done }}/${u.minimums.size}", "Minimums", { nav.open(Route.Minimums) })
-        Cell(Dates.minutes((focus ?: 0.0).toLong()), "Focus", { nav.open(Route.Focus()) })
+        Cell("${u.minimums.count { it.done }}/${u.minimums.size}", "Minimums", Route.Minimums)
+        Cell(Dates.minutes((focus ?: 0.0).toLong()), "Focus", Route.Focus())
     }
 }
 

@@ -494,7 +494,7 @@ fun PersonScreen(id: String, vm: PersonViewModel = hiltViewModel()) {
                 Spacer(Modifier.height(16.dp))
             }
             item {
-                Panel(onClick = { nav.open(Route.EmergencyCard(person.id)) }) {
+                Panel(opens = Route.EmergencyCard(person.id), onClick = { nav.open(Route.EmergencyCard(person.id)) }) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         IconTile(AppIcons.FirstAid, tint = c.danger, background = c.dangerSoft)
                         Spacer(Modifier.width(12.dp))
@@ -511,12 +511,12 @@ fun PersonScreen(id: String, vm: PersonViewModel = hiltViewModel()) {
                 if (docs.isEmpty()) Text(if (person.linked && person.id != ME) "Their documents are private. They can share items with you." else "Nothing here yet.", style = Aiimin.type.caption)
             }
             items(docs, key = { it.doc.id }) { d ->
-                ListRow(d.doc.title, subtitle = d.doc.category, leading = { IconTile(kindIcon(d.doc.ext, d.doc.mime)) }, trailing = { ExpiryTag(d.daysToExpiry) }, onClick = { nav.open(Route.Doc(d.doc.id)) })
+                ListRow(d.doc.title, subtitle = d.doc.category, leading = { IconTile(kindIcon(d.doc.ext, d.doc.mime)) }, trailing = { ExpiryTag(d.daysToExpiry) }, opens = Route.Doc(d.doc.id), onClick = { nav.open(Route.Doc(d.doc.id)) })
             }
             if (person.id != ME) {
                 item {
                     SectionHeader("Tasks for ${person.name}")
-                    tasks.forEach { t -> ListRow(t.title, subtitle = t.day?.let { Dates.relative(LocalDate.parse(it), LocalDate.now()) }, leading = { IconTile(AppIcons.ListChecks) }, onClick = { nav.open(Route.Task(t.id)) }) }
+                    tasks.forEach { t -> ListRow(t.title, subtitle = t.day?.let { Dates.relative(LocalDate.parse(it), LocalDate.now()) }, leading = { IconTile(AppIcons.ListChecks) }, opens = Route.Task(t.id), onClick = { nav.open(Route.Task(t.id)) }) }
                     AppTextField(newTask, { newTask = it }, placeholder = "Remind ${person.name} to…", leading = AppIcons.Plus, onDone = { vm.addTask(newTask); newTask = "" })
                 }
                 if (role == Role.ELDER) {

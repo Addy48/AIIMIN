@@ -141,9 +141,9 @@ fun SettingsScreen(vm: MeViewModel = hiltViewModel()) {
                     true -> "Intact — nothing changed outside AIIMIN"
                     false -> "Data was changed outside AIIMIN. Your score is greyed until you re-baseline."
                 }, leading = { IconTile(AppIcons.ShieldCheck) }, maxSubtitleLines = 2, onClick = { vm.verify() })
-                ListRow("Privacy and data", subtitle = "Where your data lives, export, erase, delete", leading = { IconTile(AppIcons.ShieldCheck) }, trailing = { Chevron() }, onClick = { nav.open(Route.Privacy) })
-                ListRow("Sync", subtitle = "What goes to aiimin.in, when, and changes to choose", leading = { IconTile(AppIcons.ArrowsClockwise) }, trailing = { Chevron() }, onClick = { nav.open(Route.SyncSettings) })
-                ListRow("Trash", subtitle = "Deleted items, kept 30 days", leading = { IconTile(AppIcons.Trash) }, trailing = { Chevron() }, onClick = { nav.open(Route.Trash) })
+                ListRow("Privacy and data", subtitle = "Where your data lives, export, erase, delete", leading = { IconTile(AppIcons.ShieldCheck) }, trailing = { Chevron() }, opens = Route.Privacy, onClick = { nav.open(Route.Privacy) })
+                ListRow("Sync", subtitle = "What goes to aiimin.in, when, and changes to choose", leading = { IconTile(AppIcons.ArrowsClockwise) }, trailing = { Chevron() }, opens = Route.SyncSettings, onClick = { nav.open(Route.SyncSettings) })
+                ListRow("Trash", subtitle = "Deleted items, kept 30 days", leading = { IconTile(AppIcons.Trash) }, trailing = { Chevron() }, opens = Route.Trash, onClick = { nav.open(Route.Trash) })
                 ListRow("Export everything", subtitle = "A zip of your log, tasks, notes and vault files", leading = { IconTile(AppIcons.Export) }, onClick = {
                     scope.launch {
                         val f = vm.exportAll(journal = false)
@@ -287,7 +287,7 @@ fun AiSettingsScreen(vm: MeViewModel = hiltViewModel()) {
         LazyColumn(contentPadding = PaddingValues(Aiimin.space.gutter)) {
             item {
                 Text("The assistant proposes and you approve. It never changes anything silently, never edits settled days, never touches your score, and never writes your journal.", style = Aiimin.type.body)
-                ListRow("Recent captures", subtitle = "The last 24 hours of ＋, with undo per capture", leading = { IconTile(AppIcons.Waveform) }, trailing = { Chevron() }, onClick = { nav.open(Route.RecentCaptures) })
+                ListRow("Recent captures", subtitle = "The last 24 hours of ＋, with undo per capture", leading = { IconTile(AppIcons.Waveform) }, trailing = { Chevron() }, opens = Route.RecentCaptures, onClick = { nav.open(Route.RecentCaptures) })
                 SectionHeader("What it may read")
             }
             items(AiModule.entries) { m ->

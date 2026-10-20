@@ -2,10 +2,19 @@ package aiimin.designsystem.component
 
 import aiimin.designsystem.theme.Aiimin
 import aiimin.designsystem.theme.Horizon
+import aiimin.designsystem.theme.LocalReduceMotion
+import aiimin.designsystem.theme.Motion
+import androidx.compose.animation.core.Animatable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
@@ -29,11 +38,21 @@ data class HorizonTick(val minute: Int, val label: String)
  * Solid ink up to now, dotted after; baseline at y = 78; sun r=8 at now;
  * 2 dp ticks at the next items, labels skipped when closer than 40 dp.
  * Only the sun, horizon and dotted arc change with the hour; the background never does.
+ * On the first open the sun slides along the arc to now (600 ms, Part 26.5), then rests.
  */
 @Composable
 fun DayHorizon(nowMinute: Int, ticks: List<HorizonTick>, horizon: Horizon, modifier: Modifier = Modifier, description: String = "Your day so far") {
     val measurer = rememberTextMeasurer()
     val axis = Aiimin.type.axis
+    val reduce = LocalReduceMotion.current
+    var slid by rememberSaveable { mutableStateOf(false) }
+    val travel = remember { Animatable(if (slid || reduce) 1f else 0f) }
+    LaunchedEffect(Unit) {
+        if (!slid) {
+            travel.animateTo(1f, Motion.move(reduce, Motion.arc()))
+            slid = true
+        }
+    }
     Canvas(modifier.fillMaxWidth().height(96.dp).semantics { contentDescription = description }) {
         val w = size.width
         val dp = 1.dp.toPx()
@@ -43,16 +62,17 @@ fun DayHorizon(nowMinute: Int, ticks: List<HorizonTick>, horizon: Horizon, modif
         fun frac(min: Int) = ((min - start).toFloat() / (end - start)).coerceIn(0f, 1f)
         fun px(min: Int) = frac(min) * w
         fun py(min: Int): Float = base - (70 * dp) * sin(PI.toFloat() * frac(min)).toDouble().pow(1.3).toFloat()
-        val now = nowMinute.coerceIn(start, end)
+        val target = nowMinute.coerceIn(start, end)
+        val now = (start + (target - start) * travel.value).toInt()
         fun path(a: Int, b: Int): Path = Path().apply {
             var m = a
             moveTo(px(a), py(a))
             while (m < b) { m = (m + 6).coerceAtMost(b); lineTo(px(m), py(m)) }
         }
         // dotted future arc: dots every 6 dp along the curve (a dash PathEffect on a long polyline drops out on some GPUs)
-        var m = now.toFloat()
+        var m = target.toFloat()
         var carry = 0f
-        var prev = Offset(px(now), py(now))
+        var prev = Offset(px(target), py(target))
         while (m < end) {
             m = (m + 3f).coerceAtMost(end.toFloat())
             val cur = Offset(px(m.toInt()), py(m.toInt()))
@@ -67,7 +87,7 @@ fun DayHorizon(nowMinute: Int, ticks: List<HorizonTick>, horizon: Horizon, modif
         // ticks + labels
         var lastX = -1000f
         ticks.sortedBy { it.minute }.forEach { t ->
-            if (t.minute <= now || t.minute > end) return@forEach
+            if (t.minute <= target || t.minute > end) return@forEach
             val x = px(t.minute)
             drawLine(horizon.line, Offset(x, base - 1 * dp), Offset(x, base + 7 * dp), strokeWidth = 2 * dp)
             if (x - lastX >= 40 * dp) {

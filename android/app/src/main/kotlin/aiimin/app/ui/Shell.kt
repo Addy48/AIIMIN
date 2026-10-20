@@ -1,5 +1,6 @@
 package aiimin.app.ui
 
+import aiimin.designsystem.component.sharedContainer
 import aiimin.designsystem.theme.LocalReduceMotion
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -247,6 +248,12 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
     }
 
     val top = stack.last()
+    // Every screen is the far end of a container transform keyed by its route (Part 26.5).
+    val sharedScreenDecorator = remember {
+        androidx.navigation3.runtime.NavEntryDecorator<Any>(onPop = {}) { entry ->
+            Box(Modifier.fillMaxSize().background(c.base).sharedContainer(aiimin.designsystem.component.sharedKeyOf(entry.contentKey))) { entry.Content() }
+        }
+    }
     val reduce = LocalReduceMotion.current
     BackHandler(enabled = stack.size == 1 && top != Route.Today) { navigator.tab(Tab.TODAY) }
 
@@ -273,15 +280,21 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
                             .only(androidx.compose.foundation.layout.WindowInsetsSides.Horizontal),
                     ),
             ) {
+                androidx.compose.animation.SharedTransitionLayout(Modifier.weight(1f)) {
+                CompositionLocalProvider(aiimin.designsystem.component.LocalSharedScope provides this) {
                 NavDisplay(
                     backStack = stack,
                     onBack = { navigator.back() },
-                    modifier = Modifier.weight(1f),
-                    entryDecorators = listOf(rememberSaveableStateHolderNavEntryDecorator(), rememberViewModelStoreNavEntryDecorator()),
-                    // Part 26.5: push = standard, back = exit (faster), tabs cross-fade; reduce motion = 200 ms fade.
+                    modifier = Modifier.fillMaxSize(),
+                    sharedTransitionScope = this,
+                    entryDecorators = listOf(rememberSaveableStateHolderNavEntryDecorator(), rememberViewModelStoreNavEntryDecorator(), sharedScreenDecorator),
+                    // Part 26.5: push = standard, back = exit (faster), tabs cross-fade; a card that opens its screen
+                    // grows into it (container transform) while the screens cross-fade; reduce motion = 200 ms fade.
                     transitionSpec = {
                         when {
                             reduce -> fadeIn(Motion.reducedFade()).togetherWith(fadeOut(Motion.reducedFade()))
+                            aiimin.designsystem.component.SharedNav.opening(sharedKeyOfScene(targetState)) ->
+                                fadeIn(Motion.standard()).togetherWith(fadeOut(Motion.quick()))
                             tabSwitch -> fadeIn(Motion.quick()).togetherWith(fadeOut(Motion.tap()))
                             else -> slideInHorizontally(Motion.standard()) { it }
                                 .togetherWith(slideOutHorizontally(Motion.standard()) { -it / 3 } + fadeOut(Motion.standard(), targetAlpha = 0.6f))
@@ -289,11 +302,13 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
                     },
                     popTransitionSpec = {
                         if (reduce) fadeIn(Motion.reducedFade()).togetherWith(fadeOut(Motion.reducedFade()))
+                        else if (aiimin.designsystem.component.SharedNav.closing(sharedKeyOfScene(initialState))) fadeIn(Motion.quick()).togetherWith(fadeOut(Motion.exit()))
                         else (slideInHorizontally(Motion.standard()) { -it / 3 } + fadeIn(Motion.standard(), initialAlpha = 0.6f))
                             .togetherWith(slideOutHorizontally(Motion.exit()) { it })
                     },
                     predictivePopTransitionSpec = {
                         if (reduce) fadeIn(Motion.reducedFade()).togetherWith(fadeOut(Motion.reducedFade()))
+                        else if (aiimin.designsystem.component.SharedNav.closing(sharedKeyOfScene(initialState))) fadeIn(Motion.quick()).togetherWith(fadeOut(Motion.exit()))
                         else (slideInHorizontally(Motion.standard()) { -it / 3 } + fadeIn(Motion.standard(), initialAlpha = 0.6f))
                             .togetherWith(slideOutHorizontally(Motion.exit()) { it })
                     },
@@ -375,6 +390,8 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
                         entry<Route.Assistant> { AssistantScreen(it) }
                     },
                 )
+                }
+                }
                 AnimatedVisibility(
                     visible = top in ROOTS,
                     enter = if (reduce) fadeIn(Motion.reducedFade()) else slideInVertically(Motion.standard()) { it } + fadeIn(Motion.quick()),
@@ -389,6 +406,7 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
                         ),
                         onPlus = { navigator.capture() },
                         onPlusLong = { navigator.capture(voice = true) },
+                        plusOpen = capture != null,
                     )
                 }
             }
@@ -469,3 +487,6 @@ private fun SyncSheet(
 
 /** The widest a screen's content gets; wider windows centre it (same as Material's bottom sheets). */
 private val CONTENT_MAX_WIDTH = 640.dp
+
+private fun sharedKeyOfScene(scene: androidx.navigation3.scene.Scene<*>): String =
+    aiimin.designsystem.component.sharedKeyOf(scene.entries.last().contentKey)

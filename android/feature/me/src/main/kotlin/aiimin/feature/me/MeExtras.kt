@@ -468,12 +468,12 @@ fun MoneySettingsScreen(vm: ProfileViewModel = hiltViewModel()) {
             Text("Payments below this roll up per payee per week on Money (each still counts once in your budget).", style = Aiimin.type.caption)
             PillRow { listOf(50, 100, 200, 500).forEach { r -> Pill("Under ₹$r", st.rollupBelow == r, { vm.save { it.copy(rollupBelow = r) } }) } }
             SectionHeader("More")
-            ListRow("Bank messages", subtitle = "Bring in past SMS, choose which banks and payments count", leading = { IconTile(AppIcons.ChatText) }, trailing = { Chevron() }, onClick = { nav.open(Route.SmsImport) })
-            ListRow("Accounts", subtitle = "Banks, cards, wallets, cash · primary per ledger", leading = { IconTile(AppIcons.Bank) }, trailing = { Chevron() }, onClick = { nav.open(Route.Accounts) })
-            ListRow("Places and categories", subtitle = "Shops AIIMIN remembers, what you bought, your own categories", leading = { IconTile(AppIcons.Tag) }, trailing = { Chevron() }, onClick = { nav.open(Route.PayeeMemory) })
-            ListRow("Recurring and bills", subtitle = "Subscriptions, rent, AutoPay", leading = { IconTile(AppIcons.Repeat) }, trailing = { Chevron() }, onClick = { nav.open(Route.Recurring) })
-            ListRow("Splits", subtitle = "Who owes whom", leading = { IconTile(AppIcons.Handshake) }, trailing = { Chevron() }, onClick = { nav.open(Route.Splits) })
-            ListRow("Monthly plan", subtitle = "Total, fixed costs and category caps", leading = { IconTile(AppIcons.Target) }, trailing = { Chevron() }, onClick = { nav.open(Route.Budget) })
+            ListRow("Bank messages", subtitle = "Bring in past SMS, choose which banks and payments count", leading = { IconTile(AppIcons.ChatText) }, trailing = { Chevron() }, opens = Route.SmsImport, onClick = { nav.open(Route.SmsImport) })
+            ListRow("Accounts", subtitle = "Banks, cards, wallets, cash · primary per ledger", leading = { IconTile(AppIcons.Bank) }, trailing = { Chevron() }, opens = Route.Accounts, onClick = { nav.open(Route.Accounts) })
+            ListRow("Places and categories", subtitle = "Shops AIIMIN remembers, what you bought, your own categories", leading = { IconTile(AppIcons.Tag) }, trailing = { Chevron() }, opens = Route.PayeeMemory, onClick = { nav.open(Route.PayeeMemory) })
+            ListRow("Recurring and bills", subtitle = "Subscriptions, rent, AutoPay", leading = { IconTile(AppIcons.Repeat) }, trailing = { Chevron() }, opens = Route.Recurring, onClick = { nav.open(Route.Recurring) })
+            ListRow("Splits", subtitle = "Who owes whom", leading = { IconTile(AppIcons.Handshake) }, trailing = { Chevron() }, opens = Route.Splits, onClick = { nav.open(Route.Splits) })
+            ListRow("Monthly plan", subtitle = "Total, fixed costs and category caps", leading = { IconTile(AppIcons.Target) }, trailing = { Chevron() }, opens = Route.Budget, onClick = { nav.open(Route.Budget) })
             Text("Currency is ₹. Bank messages are read on this phone and their text stays here.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 14.dp, bottom = 32.dp))
         }
     }
@@ -593,11 +593,11 @@ fun AboutScreen() {
             }
             Text("Your day, your money and your family's papers, in one calm place.", style = Aiimin.type.bodyStrong, modifier = Modifier.padding(top = 16.dp))
             Text("No ads, no lending, no selling data. It only ever compares you with you.", style = Aiimin.type.body, modifier = Modifier.padding(top = 4.dp))
-            ListRow("How AIIMIN is running", subtitle = "Background jobs and when each last ran", leading = { IconTile(AppIcons.Pulse) }, trailing = { Chevron() }, onClick = { nav.open(Route.Running) }, modifier = Modifier.padding(top = 12.dp))
+            ListRow("How AIIMIN is running", subtitle = "Background jobs and when each last ran", leading = { IconTile(AppIcons.Pulse) }, trailing = { Chevron() }, opens = Route.Running, onClick = { nav.open(Route.Running) }, modifier = Modifier.padding(top = 12.dp))
             SectionHeader("Legal")
             ListRow("Privacy Policy", leading = { IconTile(AppIcons.ShieldCheck) }, trailing = { Chevron() }, onClick = { open(context, AppContact.PRIVACY) })
             ListRow("Terms", leading = { IconTile(AppIcons.Scroll) }, trailing = { Chevron() }, onClick = { open(context, AppContact.TERMS) })
-            ListRow("Health Connect data use", subtitle = "Steps and sleep are read to score your own day and never leave this phone", leading = { IconTile(AppIcons.Heartbeat) }, trailing = { Chevron() }, onClick = { nav.open(Route.HealthPrivacy) }, maxSubtitleLines = 2)
+            ListRow("Health Connect data use", subtitle = "Steps and sleep are read to score your own day and never leave this phone", leading = { IconTile(AppIcons.Heartbeat) }, trailing = { Chevron() }, opens = Route.HealthPrivacy, onClick = { nav.open(Route.HealthPrivacy) }, maxSubtitleLines = 2)
             ListRow("Open-source licences", leading = { IconTile(AppIcons.Code) }, trailing = { Chevron() }, onClick = { licences = true })
             Text("Wellness information, not medical advice. For personal budgeting only; not investment, tax or credit advice.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 16.dp, bottom = 32.dp))
         }

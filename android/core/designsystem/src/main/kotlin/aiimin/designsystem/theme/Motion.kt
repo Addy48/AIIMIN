@@ -41,8 +41,14 @@ object Motion {
     const val STAGGER = 30
     const val STAGGER_MAX_ITEMS = 8
 
+    /** Today's day-arc dot slides to now on open (Part 26.5 moment table). */
+    const val ARC = 600
     /** Press scale on cards and buttons (0.97). */
     const val PRESS_SCALE = 0.97f
+    /** List items rise this far as they fade in. */
+    const val RISE_DP = 12f
+    /** The "+" turns this far while its sheet is open. */
+    const val PLUS_OPEN_DEGREES = 45f
 
     fun <T> tap(): TweenSpec<T> = tween(TAP, easing = LinearOut)
     fun <T> quick(delay: Int = 0): TweenSpec<T> = tween(QUICK, delay, Standard)
@@ -52,6 +58,7 @@ object Motion {
     fun <T> ambient(ms: Int = AMBIENT_MIN): TweenSpec<T> = tween(ms.coerceIn(AMBIENT_MIN, AMBIENT_MAX), easing = Sine)
     fun <T> springSoft(): SpringSpec<T> = spring(dampingRatio = 0.8f, stiffness = 300f)
     fun <T> reducedFade(): TweenSpec<T> = tween(REDUCED_FADE, easing = LinearEasing)
+    fun <T> arc(): TweenSpec<T> = tween(ARC, easing = Standard)
 
     /** List entry: 30 ms per item, only the first 8 items are staggered. */
     fun staggerDelay(index: Int): Int = STAGGER * index.coerceIn(0, STAGGER_MAX_ITEMS - 1)
