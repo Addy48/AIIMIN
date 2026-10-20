@@ -458,7 +458,9 @@ class SyncRepository @Inject constructor(
         val toPush = mutableListOf<NoteEntity>()
 
         // Phone edits to notes the web also has: three-way check before anything is sent.
+        // Locked notes stay on this phone until encrypted note sync exists (Part 11.7 Q-3): never sent, never overwritten.
         for (n in notes.dirty()) {
+            if (n.locked && !n.deleted) continue
             val rid = n.remoteId
             val dto = rid?.let { byId[it] }
             if (n.deleted || dto == null) { toPush += n; continue }
@@ -522,6 +524,7 @@ class SyncRepository @Inject constructor(
             val rid = dto.id!!
             if (rid in linkedNow) continue
             val local = notes.byRemote(rid) ?: notes.get(rid)
+            if (local?.locked == true) continue
             if (local == null) {
                 val at = remoteAt(dto.updatedAt)
                 notes.upsert(NoteEntity(rid, dto.title?.ifBlank { null } ?: "Untitled", dto.content.orEmpty(), pinned = dto.pinned == true, createdAt = at, updatedAt = at, remoteId = rid, dirty = false))

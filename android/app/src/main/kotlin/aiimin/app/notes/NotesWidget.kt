@@ -16,6 +16,8 @@ import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.glance.appwidget.updateAll
 import androidx.glance.background
 import androidx.glance.layout.Alignment
@@ -58,9 +60,11 @@ internal fun openIntent(context: Context, go: String, arg: String? = null): Inte
 class NotesWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val dao = EntryPointAccessors.fromApplication(context.applicationContext, NotesWidgetDeps::class.java).notes()
-        val recent = dao.all().first().filter { !it.locked }.take(3)
         val p = LightPalette
         provideContent {
+            // Collected inside the session so the list follows the database while the widget is alive.
+            val all by dao.all().collectAsState(initial = emptyList())
+            val recent = all.filter { !it.locked }.take(3)
             Column(GlanceModifier.fillMaxSize().background(ColorProvider(p.surface)).cornerRadius(16.dp).padding(14.dp)) {
                 Row(GlanceModifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Text("Notes", style = TextStyle(color = ColorProvider(p.text), fontSize = 16.sp, fontWeight = FontWeight.Medium), modifier = GlanceModifier.defaultWeight().clickable(actionStartActivity(openIntent(context, "notes"))))

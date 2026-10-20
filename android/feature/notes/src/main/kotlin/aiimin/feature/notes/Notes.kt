@@ -145,9 +145,11 @@ class NoteViewModel @Inject constructor(private val notes: NoteRepository, priva
     val pictureDir get() = notes.pictureDir
 
     fun load(noteId: String?) {
-        if (started) return
+        // A locked note asks again on every entry, even when this ViewModel is reused.
+        if (started && note.value?.locked != true) return
         started = true
         id = noteId
+        if (note.value?.locked == true) { gated.value = true; text.value = null }
         viewModelScope.launch {
             val n = noteId?.let { notes.get(it) }
             // A locked note is gated before anything of it reaches the screen; only unlock() reads its text.
@@ -173,7 +175,9 @@ class NoteViewModel @Inject constructor(private val notes: NoteRepository, priva
         if (gated.value) return
         if (title.isBlank() && body.isBlank() && id == null) return
         val t = text.value
-        if (t != null && t.title == title && t.body == body && t.note.pinned == pinned) return
+        if (t?.unreadable == true) return
+        // Opening a note with no title of its own must not re-save it: compare with the title the note would get.
+        if (t != null && (t.title == title || t.title == notes.titleFor(title, body)) && t.body == body && t.note.pinned == pinned) return
         id = notes.save(id, title, body, pinned)
         refresh()
     }
@@ -194,8 +198,9 @@ class NoteViewModel @Inject constructor(private val notes: NoteRepository, priva
 
     fun setColor(c: String, title: String, body: String, pinned: Boolean) = viewModelScope.launch { notes.setColor(ensure(title, body, pinned), c); refresh() }
     fun setReminder(at: Long?, title: String, body: String, pinned: Boolean) = viewModelScope.launch { notes.setReminder(ensure(title, body, pinned), at); refresh() }
-    fun setArchived(a: Boolean, title: String, body: String, pinned: Boolean) = viewModelScope.launch { notes.setArchived(ensure(title, body, pinned), a); refresh() }
-    fun lock(title: String, body: String, pinned: Boolean) = viewModelScope.launch {
+    // Archive and lock finish even when the screen closes right after: they must not be lost to a cancelled scope.
+    fun setArchived(a: Boolean, title: String, body: String, pinned: Boolean) = viewModelScope.launch(kotlinx.coroutines.NonCancellable) { notes.setArchived(ensure(title, body, pinned), a); refresh() }
+    fun lock(title: String, body: String, pinned: Boolean) = viewModelScope.launch(kotlinx.coroutines.NonCancellable) {
         val nid = ensure(title, body, pinned)
         notes.save(nid, title, body, pinned)
         notes.lock(nid); refresh()
@@ -207,7 +212,7 @@ class NoteViewModel @Inject constructor(private val notes: NoteRepository, priva
     }
     fun removePicture(file: String) = viewModelScope.launch { id?.let { notes.removePicture(it, file) }; refresh() }
 
-    suspend fun delete() = id?.let { notes.delete(it) }
+    suspend fun delete() = id?.let { kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) { notes.delete(it) } }
 }
 
 @HiltViewModel
@@ -317,6 +322,24 @@ private fun LockedGate(onUnlock: () -> Unit, hasLock: Boolean, onBack: () -> Uni
     }
 }
 
+/** A locked note whose key is gone (for example after a phone reset): said plainly, never shown as an empty note to type over. */
+@Composable
+private fun UnreadableNote(onBack: () -> Unit) {
+    val c = Aiimin.colors
+    Column(Modifier.fillMaxSize().background(c.base)) {
+        TopBar("Note", onBack = onBack)
+        Column(Modifier.fillMaxSize().padding(horizontal = 32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+            Icon(AppIcons.Lock, null, tint = c.textMuted, modifier = Modifier.size(40.dp))
+            Spacer(Modifier.height(14.dp))
+            Text("This note can't be opened", style = Aiimin.type.cardTitle)
+            Text(
+                "Its key on this phone is gone, so the text stays sealed. Nothing was changed.",
+                style = Aiimin.type.caption, textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.padding(top = 6.dp),
+            )
+        }
+    }
+}
+
 private class NLine(val id: Int, val text: String)
 
 private val CHECK = Regex("^- \\[( |x)] ?")
@@ -418,6 +441,10 @@ fun NoteScreen(id: String?, vm: NoteViewModel = hiltViewModel()) {
     }
     if (ready && (gated || (note?.locked == true && text == null))) {
         LockedGate(onUnlock = unlock, hasLock = hasScreenLock(context), onBack = { nav.back() })
+        return
+    }
+    if (ready && text?.unreadable == true) {
+        UnreadableNote(onBack = { nav.back() })
         return
     }
     LaunchedEffect(wantFocus, lines.size) {
@@ -611,7 +638,7 @@ fun NoteScreen(id: String?, vm: NoteViewModel = hiltViewModel()) {
         if (note?.locked == true) ListRow("Unlock this note", subtitle = "It shows in search and lists again", leading = { IconTile(AppIcons.LockOpen) }, onClick = { more = false; unlockForGood() })
         else ListRow(
             "Lock this note", subtitle = if (hasScreenLock(context)) "Opens with your fingerprint or screen lock; hidden from search, lists and notices" else "Hidden from search, lists and notices. Add a screen lock in Android to be asked before it opens",
-            leading = { IconTile(AppIcons.Lock) }, onClick = { more = false; vm.lock(title, body, pinned); toaster.show("Note locked") },
+            leading = { IconTile(AppIcons.Lock) }, onClick = { more = false; vm.lock(title, body, pinned); toaster.show("Note locked"); nav.back() },
         )
         ListRow(if (note?.archived == true) "Move back to notes" else "Archive", leading = { IconTile(AppIcons.Archive) }, onClick = {
             more = false

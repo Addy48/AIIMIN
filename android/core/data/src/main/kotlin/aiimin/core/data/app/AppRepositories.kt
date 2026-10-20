@@ -293,7 +293,8 @@ class ExportRepository @Inject constructor(
             }
             put("events.jsonl", db.events().all().joinToString("\n") { "{\"seq\":${it.seq},\"at\":${it.at},\"day\":\"${it.day}\",\"type\":\"${it.type}\",\"data\":${it.data},\"tier\":\"${it.tier}\",\"hash\":\"${it.hash}\"}" })
             put("tasks.csv", "day,time,title,done\n" + db.tasks().search("%").joinToString("\n") { "${it.day},${it.time.orEmpty()},\"${it.title.replace("\"", "'")}\",${it.done}" })
-            put("notes.md", db.notes().search("%").joinToString("\n\n---\n\n") { "# ${it.title}\n\n${it.body}" })
+            // Every kept note; a locked note's text stays locked here (Notes › Save all notes exports it after the screen lock).
+            put("notes.md", db.notes().keptNow().joinToString("\n\n---\n\n") { if (it.locked) "# Locked note\n\n(Locked. Export it from Notes › Bring in and save notes.)" else "# ${it.title}\n\n${it.body}" })
             if (includeJournal) put("journal.md", journal.entries.first().joinToString("\n\n---\n\n") { "## ${it.day}${it.mood?.let { m -> " · mood $m/5" } ?: ""}\n\n${it.text}" })
             File(context.filesDir, "vault").listFiles()?.filter { !it.name.endsWith(".enc") }?.forEach { f ->
                 z.putNextEntry(ZipEntry("vault/${f.name}")); f.inputStream().use { it.copyTo(z) }; z.closeEntry()

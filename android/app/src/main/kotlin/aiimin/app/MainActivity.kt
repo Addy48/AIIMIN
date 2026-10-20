@@ -86,7 +86,8 @@ class MainActivity : FragmentActivity() {
         // The opening animation plays once per cold start; rotation or returning from the background skips it.
         val coldStart = savedInstanceState == null
         var bootDone by mutableStateOf(false)
-        handle(intent)
+        // A recreated activity (rotation, process restore) has already handled its share; doing it again doubles the note.
+        if (savedInstanceState == null) handle(intent)
         // Opened to a specific screen (launcher shortcut, notification, deep link): go straight there, no opening (audit A-034).
         val openedToScreen = request != null
         setContent {

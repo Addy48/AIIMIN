@@ -85,7 +85,7 @@ class NoteFilesTest {
     @Test fun `export then re-import gives back the same note`() {
         val note = NoteEntity(
             id = "n-1", title = "Groceries", body = "- [x] Milk\n- [ ] Bread\n#home", tags = "[\"home\"]", pinned = true,
-            createdAt = 1729400000000L, updatedAt = 1729412345000L, color = "leaf", archived = false,
+            createdAt = 1729400000000L, updatedAt = 1729412345000L, color = "leaf", archived = false, reminderAt = 1729500000000L,
         )
         val text = MarkdownNote.export(note)
         assertThat(text).startsWith("---\n")
@@ -97,6 +97,7 @@ class NoteFilesTest {
         assertThat(back.createdAt).isEqualTo(note.createdAt)
         assertThat(back.updatedAt).isEqualTo(note.updatedAt)
         assertThat(back.id).isEqualTo("n-1")
+        assertThat(back.reminderAt).isEqualTo(1729500000000L)
         assertThat(back.sourceApp).isEqualTo("aiimin")
         // the note is already here: nothing new
         assertThat(NoteImport.plan(listOf(back), emptySet(), existingIds = setOf("n-1")).fresh).isEmpty()

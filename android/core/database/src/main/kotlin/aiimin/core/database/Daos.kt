@@ -323,7 +323,7 @@ interface NoteDao {
     suspend fun withReminders(): List<NoteEntity>
 
     /** Locked notes never match: their text is not in [title] or [body]. */
-    @Query("SELECT * FROM notes WHERE deleted = 0 AND locked = 0 AND (title LIKE :q OR body LIKE :q OR attachments LIKE :q) ORDER BY updatedAt DESC LIMIT 30")
+    @Query("SELECT * FROM notes WHERE deleted = 0 AND locked = 0 AND (title LIKE :q OR body LIKE :q) ORDER BY updatedAt DESC LIMIT 30")
     suspend fun search(q: String): List<NoteEntity>
 
     @Query("SELECT * FROM notes WHERE deleted = 0 AND body LIKE :needle")

@@ -42,6 +42,8 @@ data class ImportedNote(
     val attachments: List<String> = emptyList(),
     /** An AIIMIN export keeps the note's own id, so re-importing on a new phone gives the same note. */
     val id: String? = null,
+    /** A reminder the note had when it was saved out. */
+    val reminderAt: Long? = null,
 )
 
 internal fun sha1(s: String): String = MessageDigest.getInstance("SHA-1").digest(s.toByteArray()).joinToString("") { "%02x".format(it) }.take(20)
@@ -142,6 +144,7 @@ object MarkdownNote {
             importKey = if (id != null) "aiimin:$id" else "file:" + sha1(fileName + "|" + body),
             sourceApp = if (id != null) "aiimin" else "file", id = id,
             attachments = m["attachments"]?.split(',')?.map { it.trim() }?.filter { it.isNotEmpty() }.orEmpty(),
+            reminderAt = time("remind"),
         )
     }
 
@@ -156,6 +159,7 @@ object MarkdownNote {
         if (n.color.isNotEmpty()) append("color: ").append(n.color).append('\n')
         append("created: ").append(Instant.ofEpochMilli(n.createdAt)).append('\n')
         append("updated: ").append(Instant.ofEpochMilli(n.updatedAt)).append('\n')
+        n.reminderAt?.let { append("remind: ").append(Instant.ofEpochMilli(it)).append('\n') }
         val files = Attachments.decode(n.attachments).map { it.file }
         if (files.isNotEmpty()) append("attachments: ").append(files.joinToString(", ")).append('\n')
         append("---\n")
