@@ -148,6 +148,7 @@ fun SettingsScreen(vm: MeViewModel = hiltViewModel()) {
             }
             item {
                 SectionHeader("Privacy & data")
+                SwitchRow("Show task titles on widget", st.widgetTitles, { v -> vm.update { it.copy(widgetTitles = v) } }, subtitle = "Off: the home-screen widget shows only times and counts. Money and documents never show there.")
                 SwitchRow("Lock the app", st.appLock, { v -> vm.update { it.copy(appLock = v) } }, subtitle = "Fingerprint or screen lock when opening AIIMIN", icon = AppIcons.Fingerprint)
                 ListRow("Check data integrity", subtitle = when (integrity) {
                     null -> "Verifies the hash chain of your activity log"

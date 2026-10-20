@@ -187,6 +187,8 @@ class MainActivity : FragmentActivity() {
         if (intent.getStringExtra("aiimin_demo") == "load") lifecycleScope.launch { runCatching { demo.load() } }
         // Capture test hook: opens the + sheet with this text (UTF-8 safe, unlike `adb input text`). Nothing is saved.
         intent.getStringExtra("aiimin_capture")?.let { request = LaunchRequest.Capture(it); return }
+        // The Today widget's "+" opens the capture sheet empty.
+        if (intent.getStringExtra("aiimin_go") == "capture") { request = LaunchRequest.Capture(""); return }
         intent.getStringExtra("aiimin_go")?.let { go ->
             request = LaunchRequest.Open(
                 when (go) {

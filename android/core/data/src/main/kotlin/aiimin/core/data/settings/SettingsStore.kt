@@ -47,6 +47,8 @@ data class AppSettings(
     val xp: XpState = XpState.fresh(),
     val hideScore: Boolean = false,
     val hideXp: Boolean = false,
+    /** Home-screen widget shows task and event titles (PRD 1.4); off by default, so only times and counts show. */
+    val widgetTitles: Boolean = false,
     val workApps: Set<String> = emptySet(),
     /** Apps that don't count as distraction during focus (a music player, a reference app). */
     val focusAllowedApps: Set<String> = emptySet(),
@@ -183,6 +185,7 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         val xp = stringPreferencesKey("xp")
         val hideScore = booleanPreferencesKey("hide_score")
         val hideXp = booleanPreferencesKey("hide_xp")
+        val widgetTitles = booleanPreferencesKey("widget_titles")
         val workApps = stringSetPreferencesKey("work_apps")
         val focusAllowedApps = stringSetPreferencesKey("focus_allowed_apps")
         val screenStrategy = stringPreferencesKey("screen_strategy")
@@ -275,6 +278,7 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         xp = p[K.xp]?.let { runCatching { Codecs.decodeXp(it) }.getOrNull() } ?: XpState.fresh(),
         hideScore = p[K.hideScore] ?: false,
         hideXp = p[K.hideXp] ?: false,
+        widgetTitles = p[K.widgetTitles] ?: false,
         workApps = p[K.workApps] ?: emptySet(),
         focusAllowedApps = p[K.focusAllowedApps] ?: emptySet(),
         screenStrategy = p[K.screenStrategy],
@@ -362,6 +366,7 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
             p[K.xp] = Codecs.encodeXp(s.xp)
             p[K.hideScore] = s.hideScore
             p[K.hideXp] = s.hideXp
+            p[K.widgetTitles] = s.widgetTitles
             p[K.workApps] = s.workApps
             p[K.focusAllowedApps] = s.focusAllowedApps
             s.screenStrategy?.let { p[K.screenStrategy] = it } ?: p.remove(K.screenStrategy)

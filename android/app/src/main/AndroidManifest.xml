@@ -132,6 +132,13 @@
             </intent-filter>
         </activity-alias>
 
+        <!-- PRD 1.4: the Today widget, 2x2 and 4x2 in one resizable provider. -->
+        <receiver android:name=".today.TodayWidgetReceiver" android:exported="true" android:label="Today">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/today_widget" />
+        </receiver>
         <!-- Part 11: Notes widget and the "New note" quick-settings tile. -->
         <receiver android:name=".notes.NotesWidgetReceiver" android:exported="true" android:label="Notes">
             <intent-filter>

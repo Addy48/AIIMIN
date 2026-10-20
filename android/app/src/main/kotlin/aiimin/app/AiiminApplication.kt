@@ -56,6 +56,13 @@ class AiiminApplication : Application() {
             override fun onStop(owner: androidx.lifecycle.LifecycleOwner) = deps.pulse().setForeground(false)
         })
         PulseWorker.schedule(this)
+        // Home-screen widgets (PRD 1.4): Pulse refreshes them every 30 minutes (1 in front), and a change to
+        // today's tasks, minimums or settings refreshes the Today widget at once.
+        deps.pulse().register(aiimin.core.engine.pulse.Job.WIDGET) {
+            aiimin.app.today.TodayWidget.refresh(this)
+            aiimin.app.notes.NotesWidget.refresh(this)
+        }
+        appScope.launch { deps.widgets().changes.collect { aiimin.app.today.TodayWidget.refresh(this@AiiminApplication) } }
         // Sync has its own job: network constraint (Wi-Fi only if asked) and exponential retry.
         appScope.launch {
             val wifiOnly = runCatching { deps.settings().current().syncWifiOnly }.getOrDefault(false)
@@ -68,6 +75,7 @@ class AiiminApplication : Application() {
 @InstallIn(SingletonComponent::class)
 interface AppDeps {
     fun pulse(): Pulse
+    fun widgets(): aiimin.core.data.today.WidgetSource
     fun money(): MoneyRepository
     fun auth(): AuthRepository
     fun settings(): aiimin.core.data.settings.SettingsStore
