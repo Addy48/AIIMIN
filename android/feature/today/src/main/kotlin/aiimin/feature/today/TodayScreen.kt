@@ -109,6 +109,7 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val scope = rememberCoroutineScope()
     var minimumSheet by remember { mutableStateOf<MinimumToday?>(null) }
+    var pockets by remember { mutableStateOf(false) }
     var earlierOpen by remember { mutableStateOf(false) }
     var nowMs by remember { mutableLongStateOf(System.currentTimeMillis()) }
     LaunchedEffect(Unit) {
@@ -182,7 +183,7 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
                     val nodKey by vm.nod.collectAsStateWithLifecycle()
                     Raahi(
                         u.mini, RaahiSize.CARD,
-                        m.pressable({ nav.open(Route.Assistant()) }, onClickLabel = "Talk to Raahi"),
+                        m.pressable({ pockets = true }, onClickLabel = "Open Raahi's pockets"),
                         motion = if (reduceMotion) null else if (nodKey != null) aiimin.core.engine.raahi.RaahiMotion.NOD else u.miniMotion,
                         motionKey = nodKey ?: u.miniMotionKey,
                         description = "Raahi",
@@ -416,6 +417,33 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
         }
     }
 
+    // Raahi's pockets (owner, 21 Oct; 13.5 idea 4): what Raahi noticed today, read from this phone's activity log only.
+    if (pockets) {
+        AppSheet(onDismiss = { pockets = false }, title = "Raahi's pockets", subtitle = "What I noticed today. It stays on this phone.") {
+            val todays = u.activity.filter { java.time.Instant.ofEpochMilli(it.at).atZone(java.time.ZoneId.systemDefault()).toLocalDate() == u.date }
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 8.dp)) {
+                Raahi(aiimin.core.engine.raahi.RaahiPose.SATCHEL_OPEN, RaahiSize.CARD, description = "Raahi with its satchel open")
+                Spacer(Modifier.width(12.dp))
+                Text(
+                    if (todays.isEmpty()) "Nothing in my pockets yet today. I'll keep note as you go." else "${todays.size} ${if (todays.size == 1) "thing" else "things"} so far today.",
+                    style = Aiimin.type.body.copy(color = Aiimin.colors.textMuted), modifier = Modifier.weight(1f),
+                )
+            }
+            todays.take(8).forEach { a ->
+                Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text(Dates.clockPlain(java.time.Instant.ofEpochMilli(a.at).atZone(java.time.ZoneId.systemDefault()).toLocalTime()), style = Aiimin.type.caption.copy(fontFeatureSettings = "tnum"), modifier = Modifier.width(64.dp))
+                    Text(a.text, style = Aiimin.type.body, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                }
+                Hairline()
+            }
+            Spacer(Modifier.height(16.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                AppButton("Ask Raahi", { pockets = false; nav.open(Route.Assistant()) }, Modifier.weight(1f), icon = AppIcons.ChatText)
+                AppButton("Raahi settings", { pockets = false; nav.open(Route.RaahiSettings) }, Modifier.weight(1f), kind = ButtonKind.SECONDARY)
+            }
+            Spacer(Modifier.height(8.dp))
+        }
+    }
     minimumSheet?.let { m ->
         AppSheet(onDismiss = { minimumSheet = null }, title = m.minimum.name, subtitle = m.minimum.tiny.takeIf { it.isNotBlank() }?.let { "Tiny version: $it" }) {
             if (u.yesterdayOpen) {

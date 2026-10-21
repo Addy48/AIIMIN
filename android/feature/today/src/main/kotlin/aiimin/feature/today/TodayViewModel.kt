@@ -222,7 +222,7 @@ class TodayViewModel @Inject constructor(
         ) { t, e, m, st, exp -> Plan(t, e, m, st.first, exp.firstOrNull(), st.second) }
         // Score, phone numbers and unread come from Pulse's one snapshot, the same one the widget and reminders read.
         val live = pulse.liveDay.filterNotNull().filter { it.date == day }
-        val ambient = combine(live, focus.active, activity.recent(4)) { l, f, a -> Ambient(l.life, l.device, l.unread, f, a) }
+        val ambient = combine(live, focus.active, activity.recent(12)) { l, f, a -> Ambient(l.life, l.device, l.unread, f, a) }
         // At a glance: this month's personal spend, payments waiting for review, today's journal.
         val glanceIn = combine(
             money.month(java.time.YearMonth.from(day), aiimin.core.data.money.Ledger.PERSONAL, day),

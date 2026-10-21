@@ -121,7 +121,8 @@ fun AssistantScreen(route: Route.Assistant, vm: ChatViewModel = hiltViewModel())
     val voice = rememberVoiceInput("Say it — “spent 200 on lunch and remind me to call Mom at 7”", onText = { vm.send(it) }, onUnavailable = { toaster.show("Speech input isn't available on this phone") })
 
     Column(Modifier.fillMaxSize().background(c.base).imePadding()) {
-        TopBar("Assistant", onBack = { nav.back() }) {
+        // The assistant is Raahi (PRD 1.1 scope 4; owner, 22 Oct): its name and face on the bar and on every reply.
+        TopBar("Raahi", onBack = { nav.back() }) {
             AppIconButton(AppIcons.Rows, "Conversations", { threadsOpen = true })
             AppIconButton(AppIcons.Pencil, "New conversation", { vm.newChat() })
         }
@@ -129,9 +130,14 @@ fun AssistantScreen(route: Route.Assistant, vm: ChatViewModel = hiltViewModel())
             if (messages.isEmpty()) {
                 item {
                     Column(Modifier.padding(top = 24.dp)) {
-                        Text("Tell it what happened, or ask.", style = Aiimin.type.title)
+                        aiimin.designsystem.component.Raahi(aiimin.core.engine.raahi.RaahiPose.WAVING, aiimin.designsystem.component.RaahiSize.CARD, motion = aiimin.core.engine.raahi.RaahiMotion.WAVE, description = "Raahi waving")
+                        Spacer(Modifier.height(12.dp))
+                        Text("Hi, I'm Raahi. Tell me what happened, or ask.", style = Aiimin.type.title)
                         Spacer(Modifier.height(8.dp))
-                        Text("It turns one sentence into payments, tasks, calendar blocks and ticked minimums — shown to you first. It answers from your own data and says what it read.", style = Aiimin.type.body.copy(color = c.textMuted))
+                        Text("I turn one sentence into payments, tasks, calendar blocks and ticked minimums, and show them to you first. I answer from what's on this phone and say what I read.", style = Aiimin.type.body.copy(color = c.textMuted))
+                        // 4.7b: the first-chat notice, said plainly.
+                        Spacer(Modifier.height(12.dp))
+                        Text("Raahi is an AI and can be wrong. Check the numbers before you act on them.", style = Aiimin.type.caption.copy(color = c.textMuted))
                         Spacer(Modifier.height(20.dp))
                         starters.forEach { s ->
                             Row(
@@ -157,7 +163,13 @@ fun AssistantScreen(route: Route.Assistant, vm: ChatViewModel = hiltViewModel())
                     })
                 }
             }
-            if (busy) item { ThinkingDots() }
+            if (busy) item {
+                Row(Modifier.padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    aiimin.designsystem.component.Raahi(aiimin.core.engine.raahi.RaahiPose.THINKING, aiimin.designsystem.component.RaahiSize.MINI, description = "Raahi is thinking")
+                    Spacer(Modifier.width(8.dp))
+                    ThinkingDots()
+                }
+            }
         }
         Composer(input, { input = it }, onSend = { vm.send(input); input = "" }, onVoice = voice, enabled = !busy)
     }
@@ -202,7 +214,14 @@ private fun AssistantMessage(m: ChatMessageEntity, vm: ChatViewModel, onSource: 
     val sources = vm.sources(m)
     val saw = vm.saw(m)
     var showSaw by remember { mutableStateOf(false) }
+    val context = androidx.compose.ui.platform.LocalContext.current
     Column(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+        // Byline: Raahi's face and name on every reply (1.1).
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 4.dp)) {
+            aiimin.designsystem.component.Raahi(aiimin.core.engine.raahi.RaahiPose.IDLE, aiimin.designsystem.component.RaahiSize.MINI)
+            Spacer(Modifier.width(8.dp))
+            Text("Raahi", style = Aiimin.type.label.copy(color = c.textMuted))
+        }
         Text(m.text, style = Aiimin.type.body)
         if (actions.isNotEmpty()) {
             Spacer(Modifier.height(12.dp))
@@ -239,18 +258,28 @@ private fun AssistantMessage(m: ChatMessageEntity, vm: ChatViewModel, onSource: 
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 sources.forEach { s ->
                     Text(
-                        s.label, style = Aiimin.type.label.copy(color = c.accent), maxLines = 1,
-                        modifier = Modifier.clip(Shapes.tag).border(1.dp, c.accent.copy(alpha = 0.35f), Shapes.tag).clickable { onSource(s) }.padding(horizontal = 8.dp, vertical = 4.dp),
+                        s.label, style = Aiimin.type.label.copy(color = c.text), maxLines = 1,
+                        modifier = Modifier.clip(Shapes.tag).border(1.dp, c.borderStrong, Shapes.tag).clickable { onSource(s) }.padding(horizontal = 8.dp, vertical = 4.dp),
                     )
                 }
             }
         }
+        // 4.7b: every reply can be reported. It opens an email the person sends themselves; nothing goes on its own.
+        Text(
+            "Report this reply", style = Aiimin.type.caption.copy(color = c.textFaint),
+            modifier = Modifier.padding(top = 8.dp).clickable {
+                val mail = android.content.Intent(android.content.Intent.ACTION_SENDTO, android.net.Uri.parse("mailto:support@aiimin.in"))
+                    .putExtra(android.content.Intent.EXTRA_SUBJECT, "Raahi reply report")
+                    .putExtra(android.content.Intent.EXTRA_TEXT, "This reply looked wrong:\n\n" + m.text.take(600))
+                runCatching { context.startActivity(mail) }
+            }.padding(vertical = 4.dp),
+        )
         val follow = vm.followups(m)
         if (follow.isNotEmpty() || saw.isNotEmpty()) {
             Spacer(Modifier.height(8.dp))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 follow.forEach { f -> Text(f, style = Aiimin.type.label.copy(color = c.textMuted), modifier = Modifier.clip(Shapes.tag).clickable { onFollow(f) }.padding(vertical = 4.dp)) }
-                if (saw.isNotEmpty()) Text(if (showSaw) "Read: " + saw.joinToString(" · ") else "What it read", style = Aiimin.type.caption, modifier = Modifier.clickable { showSaw = !showSaw }.padding(vertical = 4.dp))
+                if (saw.isNotEmpty()) Text(if (showSaw) "Read: " + saw.joinToString(" · ") else "What I read", style = Aiimin.type.caption, modifier = Modifier.clickable { showSaw = !showSaw }.padding(vertical = 4.dp))
             }
         }
     }
@@ -265,14 +294,14 @@ private fun Composer(value: String, onChange: (String) -> Unit, onSend: () -> Un
         verticalAlignment = Alignment.Bottom,
     ) {
         Box(Modifier.weight(1f).clip(Shapes.row).background(c.raised).border(1.dp, c.border, Shapes.row).heightIn(min = 48.dp).padding(horizontal = 16.dp, vertical = 12.dp)) {
-            if (value.isEmpty()) Text("Log or ask anything", style = Aiimin.type.body.copy(color = c.textFaint))
+            if (value.isEmpty()) Text("Tell Raahi or ask", style = Aiimin.type.body.copy(color = c.textFaint))
             BasicTextField(value, onChange, textStyle = Aiimin.type.body, cursorBrush = SolidColor(c.accent), maxLines = 5, modifier = Modifier.fillMaxWidth())
         }
         Spacer(Modifier.width(8.dp))
         if (value.isBlank()) {
-            AppIconButton(AppIcons.Mic, "Speak", onVoice, tint = c.onAccent, background = c.accent, size = 48.dp)
+            AppIconButton(AppIcons.Mic, "Speak", onVoice, tint = c.onInk, background = c.text, size = 48.dp)
         } else {
-            AppIconButton(AppIcons.Send, "Send", { if (enabled) onSend() }, tint = c.onAccent, background = if (enabled) c.accent else c.textFaint, size = 48.dp)
+            AppIconButton(AppIcons.Send, "Send", { if (enabled) onSend() }, tint = c.onInk, background = if (enabled) c.text else c.textFaint, size = 48.dp)
         }
     }
 }
