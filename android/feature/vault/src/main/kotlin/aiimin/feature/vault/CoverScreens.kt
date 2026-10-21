@@ -196,7 +196,7 @@ fun DocInfoScreen(id: String, vm: CoverViewModel = hiltViewModel()) {
                         style = Aiimin.type.caption,
                     )
                     if (Covers.lapsed(type, current.expires.day(), today) && life != null && (life == Lifecycle.B || life == Lifecycle.C)) {
-                        Spacer(Modifier.height(10.dp))
+                        Spacer(Modifier.height(12.dp))
                         // Lapsed uses the warn colour: the brand has no red (30.A, 21 Oct).
                         Tag("Lapsed since ${Dates.short(current.expires.day()!!)}", color = c.warn, background = c.warnSoft)
                     }
@@ -248,7 +248,7 @@ fun DocInfoScreen(id: String, vm: CoverViewModel = hiltViewModel()) {
             }
         }
         if (askDelete) AppSheet({ askDelete = false }, title = "Delete the whole cover?", subtitle = "All ${all.size} versions of ${type?.name ?: d.title} leave the vault. You can undo for a few seconds.") {
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 AppButton("Keep it", { askDelete = false }, Modifier.weight(1f), kind = ButtonKind.SECONDARY)
                 AppButton("Delete all", {
                     scope.launch {
@@ -279,8 +279,8 @@ private fun TimelineEntry(v: DocEntity, row: TimelineRow, last: Boolean, isThis:
     Row(Modifier.fillMaxWidth().pressable(onClick).padding(horizontal = Aiimin.space.gutter).heightIn(min = 72.dp)) {
         // The rail: a dot per version, a line down to the older one.
         Box(Modifier.width(24.dp).fillMaxHeight().heightIn(min = 72.dp)) {
-            if (!last) Box(Modifier.align(Alignment.TopCenter).padding(top = 22.dp).width(2.dp).fillMaxHeight().background(c.border))
-            Box(Modifier.align(Alignment.TopCenter).padding(top = 14.dp).size(10.dp).clip(CircleShape).background(if (v.current) c.text else c.surface).border(2.dp, if (v.current) c.text else c.borderStrong, CircleShape))
+            if (!last) Box(Modifier.align(Alignment.TopCenter).padding(top = 24.dp).width(2.dp).fillMaxHeight().background(c.border))
+            Box(Modifier.align(Alignment.TopCenter).padding(top = 16.dp).size(12.dp).clip(CircleShape).background(if (v.current) c.text else c.surface).border(2.dp, if (v.current) c.text else c.borderStrong, CircleShape))
         }
         Spacer(Modifier.width(8.dp))
         Column(Modifier.weight(1f).padding(top = 8.dp, bottom = 12.dp)) {
@@ -322,11 +322,11 @@ internal fun VersionPrompt(r: ImportResult, choice: String?, instant: Boolean = 
         val picked = choice == old.cover
         // In the save sheet the buttons show the choice; on a document page they act at once, so "join" leads.
         fun kind(join: Boolean) = if (instant) (if (join) ButtonKind.PRIMARY else ButtonKind.SECONDARY) else if (join == picked) ButtonKind.PRIMARY else ButtonKind.SECONDARY
-        Column(Modifier.fillMaxWidth().padding(bottom = 8.dp).clip(Shapes.control).border(1.dp, if (picked) c.text else c.border, Shapes.control).padding(14.dp)) {
+        Column(Modifier.fillMaxWidth().padding(bottom = 8.dp).clip(Shapes.control).border(1.dp, if (picked) c.text else c.border, Shapes.control).padding(16.dp)) {
             Text("${old.title}${old.provider?.let { " · $it" } ?: ""}", style = Aiimin.type.bodyStrong, maxLines = 2, overflow = TextOverflow.Ellipsis)
             Text(old.expires.day()?.let { "Current version ends ${Dates.short(it)} ${it.year}" } ?: "Current version, no end date", style = Aiimin.type.caption)
             renewalLine(renewal)?.let { Text(it, style = Aiimin.type.caption.copy(color = c.warn), modifier = Modifier.padding(top = 4.dp)) }
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(12.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (ask) {
                     AppButton("Keep both active", { onChoice(null) }, Modifier.weight(1f), kind = kind(false), compact = true)

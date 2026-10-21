@@ -72,7 +72,7 @@ fun BulletList(items: List<String>, modifier: Modifier = Modifier, style: TextSt
                 // The dot sits on the first line's x-height centre.
                 val lineHeight = with(LocalDensity.current) { if (style.lineHeight.isSp) style.lineHeight.toDp() else 20.dp }
                 Box(Modifier.width(16.dp).heightIn(min = lineHeight), contentAlignment = Alignment.CenterStart) {
-                    Box(Modifier.size(5.dp).clip(RoundedCornerShape(50)).background(c.textMuted))
+                    Box(Modifier.size(4.dp).clip(RoundedCornerShape(50)).background(c.textMuted))
                 }
                 Text(item, style = style, modifier = Modifier.weight(1f))
             }
@@ -91,12 +91,12 @@ fun CountBadge(count: Int, modifier: Modifier = Modifier, fill: Color = Aiimin.c
     val shape = RoundedCornerShape(6.dp)
     Box(
         modifier.clip(shape).background(c.base).padding(2.dp).heightIn(min = 16.dp).widthIn(min = 16.dp)
-            .clip(RoundedCornerShape(4.dp)).background(fill).padding(horizontal = 3.dp),
+            .clip(RoundedCornerShape(4.dp)).background(fill).padding(horizontal = 4.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             if (count > 9) "9+" else count.toString(),
-            style = Aiimin.type.caption.copy(color = c.onInk, fontSize = 10.sp, lineHeight = 14.sp, fontWeight = FontWeight.SemiBold),
+            style = Aiimin.type.caption.copy(color = c.onInk, fontWeight = FontWeight.SemiBold),
             maxLines = 1,
         )
     }

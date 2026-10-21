@@ -180,24 +180,24 @@ fun VaultBackupScreen(vm: VaultBackupViewModel = hiltViewModel()) {
             val health = h ?: return@Column
             Text(
                 health.lastAt?.let { "Last backup " + stamp.format(Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault())) } ?: "No backup yet",
-                style = Aiimin.type.title.copy(fontSize = 22.sp), modifier = Modifier.padding(top = 8.dp),
+                style = Aiimin.type.cardTitle, modifier = Modifier.padding(top = 8.dp),
             )
             Text(
                 (health.where?.let { "In $it · " } ?: "") + "${health.docs} documents on this phone" + if (health.overdue) " · due for a backup" else "",
-                style = Aiimin.type.caption.copy(color = if (health.overdue) c.warn else c.textMuted, fontSize = 13.5.sp),
+                style = Aiimin.type.note.copy(color = if (health.overdue) c.warn else c.textMuted),
             )
             health.failAt?.let { at ->
                 Text(
                     "The backup on ${stamp.format(Instant.ofEpochMilli(at).atZone(ZoneId.systemDefault()))} wasn't saved: ${health.failWhy ?: "the folder couldn't be written"}. Choose the folder again.",
-                    style = Aiimin.type.caption.copy(color = c.warn, fontSize = 13.5.sp), modifier = Modifier.padding(top = 6.dp),
+                    style = Aiimin.type.note.copy(color = c.warn), modifier = Modifier.padding(top = 8.dp),
                 )
             }
             SectionHeader("Every week")
             if (health.weekly) {
                 SwitchRow("Weekly backup", true, { vm.setWeekly(it) }, subtitle = "Written with the app closed, about once a week. Last good backup: ${health.lastAt?.let { stamp.format(Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault())) } ?: "none yet"}")
             } else {
-                Text("Set a passphrase once. AIIMIN then writes an encrypted backup to your folder every week, even with the app closed. You also get a recovery code in case you forget the passphrase.", style = Aiimin.type.caption.copy(fontSize = 13.5.sp, lineHeight = 20.sp))
-                Spacer(Modifier.height(10.dp))
+                Text("Set a passphrase once. AIIMIN then writes an encrypted backup to your folder every week, even with the app closed. You also get a recovery code in case you forget the passphrase.", style = Aiimin.type.note)
+                Spacer(Modifier.height(12.dp))
                 AppButton("Set up weekly backup", { if (!health.folderSet) folder.launch(null) else ask = "weekly" }, Modifier.fillMaxWidth(), kind = ButtonKind.SECONDARY, enabled = busy == null)
             }
             Spacer(Modifier.height(16.dp))
@@ -219,7 +219,7 @@ fun VaultBackupScreen(vm: VaultBackupViewModel = hiltViewModel()) {
                 "Your documents live only on your phones. AIIMIN can't see, scan or recover them. Keep a backup somewhere you trust.",
                 "Each backup is one encrypted file (AES-256-GCM, key from your passphrase). Without the passphrase nobody can open it, including AIIMIN.",
                 "Sensitive documents are decrypted for the backup and encrypted again with the new phone's key when restored.",
-            ).forEach { Text(it, style = Aiimin.type.caption.copy(fontSize = 13.5.sp, lineHeight = 20.sp), modifier = Modifier.padding(bottom = 8.dp)) }
+            ).forEach { Text(it, style = Aiimin.type.note, modifier = Modifier.padding(bottom = 8.dp)) }
             Spacer(Modifier.height(32.dp))
         }
     }
@@ -234,9 +234,9 @@ fun VaultBackupScreen(vm: VaultBackupViewModel = hiltViewModel()) {
     }
     code?.let { k ->
         AppSheet({}, title = "Your recovery code", subtitle = "Shown once. It opens your backups if you forget the passphrase. Save it as a PDF or print it, and keep it apart from this phone.") {
-            Text(k.replace("-", "  "), style = Aiimin.type.title.copy(fontFamily = aiimin.designsystem.theme.Mono, fontSize = 22.sp, lineHeight = 34.sp), modifier = Modifier.padding(vertical = 8.dp))
+            Text(k.replace("-", "  "), style = Aiimin.type.cardTitle.copy(fontFamily = aiimin.designsystem.theme.Mono), modifier = Modifier.padding(vertical = 8.dp))
             Text("If you lose both the passphrase and this code, the backup can't be opened by anyone.", style = Aiimin.type.caption.copy(color = c.warn))
-            Spacer(Modifier.height(14.dp))
+            Spacer(Modifier.height(16.dp))
             AppButton("Save as PDF or print", { scope.launch { share(context, vm.recoverySheet(k), "application/pdf", "Recovery code") } }, Modifier.fillMaxWidth(), kind = ButtonKind.SECONDARY, icon = AppIcons.Export)
             Spacer(Modifier.height(8.dp))
             AppButton("I've saved it", { vm.recovery.value = null }, Modifier.fillMaxWidth())
@@ -251,10 +251,10 @@ private fun PassSheet(title: String, hint: String, confirm: Boolean, onDismiss: 
     AppSheet(onDismiss, title = title, subtitle = hint) {
         AppTextField(a, { a = it }, label = "Passphrase", keyboardType = KeyboardType.Password)
         if (confirm) {
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(12.dp))
             AppTextField(b, { b = it }, label = "Type it again", keyboardType = KeyboardType.Password)
         }
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(16.dp))
         val ok = if (confirm) a.length >= 10 && a == b else a.isNotEmpty()
         AppButton("Continue", { onOk(a) }, Modifier.fillMaxWidth(), enabled = ok)
     }
@@ -287,7 +287,7 @@ fun EmergencyKitsScreen(vm: VaultBackupViewModel = hiltViewModel()) {
                 style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(top = 8.dp),
             )
             SectionHeader("Your kits", action = "New kit", onAction = { newKit = true })
-            if (kits.isEmpty()) Text("No kits yet.", style = Aiimin.type.caption, modifier = Modifier.padding(vertical = 6.dp))
+            if (kits.isEmpty()) Text("No kits yet.", style = Aiimin.type.caption, modifier = Modifier.padding(vertical = 8.dp))
             kits.forEach { k ->
                 Row(Modifier.fillMaxWidth().pressable({ building = k }).heightIn(min = 60.dp).padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                     IconTile(AppIcons.FirstAidKit)
@@ -306,7 +306,7 @@ fun EmergencyKitsScreen(vm: VaultBackupViewModel = hiltViewModel()) {
             SectionHeader("Sent to you")
             ListRow("Open an emergency kit", subtitle = "Pick the kit file someone sent you and type the code from their sheet", leading = { IconTile(AppIcons.Key) }, trailing = { Chevron() }, onClick = { pickKit.launch(arrayOf("*/*")) }, maxSubtitleLines = 2)
             Hairline()
-            Text("Anyone with both the kit file and the code can open it. Keep the printed sheet somewhere safe, like a home locker.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 14.dp, bottom = 32.dp))
+            Text("Anyone with both the kit file and the code can open it. Keep the printed sheet somewhere safe, like a home locker.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 16.dp, bottom = 32.dp))
         }
     }
     if (newKit || building != null) {
@@ -335,7 +335,7 @@ fun EmergencyKitsScreen(vm: VaultBackupViewModel = hiltViewModel()) {
         var code by remember(u) { mutableStateOf("") }
         AppSheet({ openUri = null }, title = "Open the kit", subtitle = "Type the code from the printed emergency sheet.") {
             AppTextField(code, { code = it }, label = "Kit code", placeholder = "ABCDE-FGHJK-…")
-            Spacer(Modifier.height(14.dp))
+            Spacer(Modifier.height(16.dp))
             AppButton(if (busy != null) busy!! else "Open", { vm.restore(u, code, kit = true); openUri = null }, Modifier.fillMaxWidth(), enabled = Seal.normalizeCode(code).length >= 35 && busy == null)
         }
     }
@@ -356,11 +356,11 @@ private fun KitSheet(k: Kit?, docs: List<DocEntity>, people: List<PersonEntity>,
             val on = d.id in picked
             Row(Modifier.fillMaxWidth().pressable({ picked = if (on) picked - d.id else picked + d.id }).heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
                 aiimin.designsystem.component.CheckCircle(on, { picked = if (on) picked - d.id else picked + d.id }, "Include ${d.title}")
-                Spacer(Modifier.width(10.dp))
+                Spacer(Modifier.width(12.dp))
                 Text(d.title, style = Aiimin.type.body, modifier = Modifier.weight(1f), maxLines = 1)
             }
         }
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(16.dp))
         AppButton(if (k == null) "Build the kit" else "Refresh the kit", { onBuild(to.trim(), picked.toList()) }, Modifier.fillMaxWidth(), enabled = to.isNotBlank() && picked.isNotEmpty())
         if (onDelete != null) {
             Spacer(Modifier.height(8.dp))

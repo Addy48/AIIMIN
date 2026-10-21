@@ -38,9 +38,9 @@ fun ToolGrid(title: String, tools: List<Tool>, modifier: Modifier = Modifier) {
     val c = Aiimin.colors
     Column(modifier) {
         SectionHeader(title)
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             tools.chunked(2).forEach { pair ->
-                Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     pair.forEach { t ->
                         val key = t.opens?.let(::sharedKeyOf)
                         Row(
@@ -49,9 +49,9 @@ fun ToolGrid(title: String, tools: List<Tool>, modifier: Modifier = Modifier) {
                                 .pressable({ key?.let(SharedNav::arm); t.onClick() }).padding(horizontal = 12.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Icon(t.icon, null, tint = c.text, modifier = Modifier.size(18.dp))
+                            Icon(t.icon, null, tint = c.text, modifier = Modifier.size(20.dp))
                             Spacer(Modifier.width(8.dp))
-                            Text(t.label, style = Aiimin.type.bodyStrong.copy(fontSize = 14.sp, lineHeight = 18.sp), maxLines = 2)
+                            Text(t.label, style = Aiimin.type.bodyStrong, maxLines = 2)
                         }
                     }
                     if (pair.size == 1) Spacer(Modifier.weight(1f))

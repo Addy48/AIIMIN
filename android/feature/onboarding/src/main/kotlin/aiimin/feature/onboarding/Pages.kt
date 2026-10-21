@@ -73,7 +73,7 @@ internal fun RaahiSays(pose: RaahiPose, line: String, motion: RaahiMotion? = nul
     Row(Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 20.dp), verticalAlignment = Alignment.CenterVertically) {
         Raahi(pose, RaahiSize.CARD, motion = motion)
         if (aiimin.core.engine.raahi.RaahiRules.showsArt(aiimin.designsystem.component.LocalRaahiMode.current)) Spacer(Modifier.width(12.dp))
-        Text(line, style = Aiimin.type.headline.copy(fontSize = 20.sp, lineHeight = 26.sp), modifier = Modifier.weight(1f).semantics { heading() })
+        Text(line, style = Aiimin.type.cardTitle, modifier = Modifier.weight(1f).semantics { heading() })
     }
 }
 
@@ -88,12 +88,12 @@ fun ColumnScope.HelloPage() {
     Row(verticalAlignment = Alignment.CenterVertically) {
         aiimin.designsystem.component.BrandMark(size = 26.dp)
         Spacer(Modifier.width(8.dp))
-        Text("AIIMIN", style = Aiimin.type.headline.copy(fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.8.sp))
+        Text("AIIMIN", style = Aiimin.type.headline.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.8.sp))
     }
     Raahi(RaahiPose.WAVING, RaahiSize.HERO, Modifier.align(Alignment.CenterHorizontally).padding(top = 16.dp), motion = RaahiMotion.WAVE)
     Text(
         "Welcome to AIIMIN. I'm Raahi, an AI that walks your day with you.",
-        style = Aiimin.type.title.copy(fontSize = 26.sp, lineHeight = 32.sp, letterSpacing = (-0.4).sp),
+        style = Aiimin.type.title.copy(letterSpacing = (-0.4).sp),
         modifier = Modifier.padding(top = 16.dp).semantics { heading() },
     )
     Text("It only ever compares you with you.", style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(top = 8.dp))
@@ -107,7 +107,7 @@ fun AboutYouPage(d: Draft, onName: (String) -> Unit, onDob: (LocalDate) -> Unit,
     val guessed = remember { d.country }
     RaahiSays(RaahiPose.WAVING, "What should I call you?")
     AppTextField(d.name, { onName(it.split(" ").joinToString(" ") { w -> w.replaceFirstChar(Char::uppercase) }) }, label = "First name", placeholder = "Meera")
-    Text("Just a first name is fine.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp))
+    Text("Just a first name is fine.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp))
     // Country is guessed from the SIM, network or language; the screen only confirms it (1.6).
     Row(Modifier.fillMaxWidth().padding(top = 16.dp).heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
         Text("Country", style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.width(96.dp))
@@ -125,7 +125,7 @@ fun AboutYouPage(d: Draft, onName: (String) -> Unit, onDob: (LocalDate) -> Unit,
         Spacer(Modifier.width(12.dp))
         Text(d.dobDate?.let { Dates.dayMonthOf(it) + " " + it.year } ?: "Choose a date", style = Aiimin.type.body.copy(color = if (d.dob == null) c.textFaint else c.text))
     }
-    Text("AIIMIN is for people 18 and over. Only your age group is kept, never the date.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp))
+    Text("AIIMIN is for people 18 and over. Only your age group is kept, never the date.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp))
     if (picking) DatePick(d.dobDate ?: LocalDate.now().minusYears(25), { onDob(it); picking = false }, { picking = false })
     if (country) AppSheet({ country = false }, title = "Country") {
         Text("AIIMIN is set up for India first. Other countries open one at a time, each after its own review.", style = Aiimin.type.body)
@@ -158,10 +158,10 @@ fun YourDayPage(d: Draft, onWake: (Int) -> Unit, onSleep: (Int) -> Unit) {
     Spacer(Modifier.height(12.dp))
     listOf("wake" to ("I wake up" to d.wakeMin), "sleep" to ("I go to sleep" to d.sleepMin)).forEach { (k, v) ->
         Row(Modifier.fillMaxWidth().clickable { pick = k }.heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(if (k == "wake") AppIcons.Sun else AppIcons.MoonStars, null, tint = c.text, modifier = Modifier.size(22.dp))
-            Spacer(Modifier.width(14.dp))
-            Text(v.first, style = Aiimin.type.body.copy(fontSize = 16.sp), modifier = Modifier.weight(1f))
-            Text(Dates.clock(clockOf(v.second)), style = Aiimin.type.bodyStrong.copy(fontSize = 16.sp))
+            Icon(if (k == "wake") AppIcons.Sun else AppIcons.MoonStars, null, tint = c.text, modifier = Modifier.size(24.dp))
+            Spacer(Modifier.width(16.dp))
+            Text(v.first, style = Aiimin.type.body, modifier = Modifier.weight(1f))
+            Text(Dates.clock(clockOf(v.second)), style = Aiimin.type.bodyStrong)
         }
         Hairline()
     }
@@ -202,27 +202,27 @@ fun MinimumsPage(d: Draft, onChange: (List<MinPick>) -> Unit) {
                 Modifier.size(24.dp).clip(RoundedCornerShape(6.dp)).background(if (on) c.text else c.base).border(1.5.dp, if (on) c.text else c.textFaint, RoundedCornerShape(6.dp)),
                 contentAlignment = Alignment.Center,
             ) { if (on) Icon(AppIcons.Check, null, tint = c.base, modifier = Modifier.size(16.dp)) }
-            Spacer(Modifier.width(14.dp))
+            Spacer(Modifier.width(16.dp))
             Column {
-                Text(m.title, style = Aiimin.type.body.copy(color = c.text, fontSize = 16.sp, fontWeight = FontWeight.Medium))
+                Text(m.title, style = Aiimin.type.body.copy(color = c.text, fontWeight = FontWeight.Medium))
                 if (m.tiny.isNotBlank()) Text("Tiny version: ${m.tiny}", style = Aiimin.type.caption)
             }
         }
         Hairline()
     }
-    if (note != null) Text(note!!, style = Aiimin.type.caption.copy(color = c.warn, fontSize = 13.sp), modifier = Modifier.padding(top = 10.dp))
+    if (note != null) Text(note!!, style = Aiimin.type.note.copy(color = c.warn), modifier = Modifier.padding(top = 12.dp))
     if (!adding) {
         Row(Modifier.fillMaxWidth().clickable { adding = true }.heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(AppIcons.Plus, null, tint = c.text, modifier = Modifier.size(22.dp))
-            Spacer(Modifier.width(14.dp))
-            Text("Your own…", style = Aiimin.type.body.copy(color = c.text, fontSize = 16.sp))
+            Icon(AppIcons.Plus, null, tint = c.text, modifier = Modifier.size(24.dp))
+            Spacer(Modifier.width(16.dp))
+            Text("Your own…", style = Aiimin.type.body.copy(color = c.text))
         }
     } else {
         Column(Modifier.padding(top = 12.dp)) {
             AppTextField(own, { own = it }, label = "Minimum", placeholder = "Call Mom")
             Spacer(Modifier.height(8.dp))
             AppTextField(ownTiny, { ownTiny = it }, label = "Tiny version (optional)", placeholder = "Send a message")
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(12.dp))
             AppButton("Add", {
                 if (own.isNotBlank()) {
                     if (d.mins.size >= MAX_MINS) note = "Three is the most. Untick one first."
@@ -270,7 +270,7 @@ fun TryCapturePage(
             Icon(AppIcons.CheckCircle, null, tint = c.done, modifier = Modifier.size(24.dp))
             Spacer(Modifier.width(12.dp))
             Column {
-                Text(saved, style = Aiimin.type.headline.copy(fontSize = 17.sp))
+                Text(saved, style = Aiimin.type.headline)
                 Text("It's on your Today. Everything can be undone.", style = Aiimin.type.caption)
             }
         }
@@ -280,11 +280,11 @@ fun TryCapturePage(
         AppTextField(text, { text = it }, placeholder = "Type or say it", singleLine = false, modifier = Modifier.weight(1f))
         AppIconButton(AppIcons.Mic, if (listening) "Stop listening" else "Speak", { voice() })
     }
-    if (text.isBlank()) Pill("Use the example", false, { text = TRY_EXAMPLE }, modifier = Modifier.padding(top = 10.dp))
+    if (text.isBlank()) Pill("Use the example", false, { text = TRY_EXAMPLE }, modifier = Modifier.padding(top = 12.dp))
     if (cards.isNotEmpty()) {
-        FlowRow(Modifier.padding(top = 14.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(Modifier.padding(top = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             cards.forEach { a ->
-                Column(Modifier.clip(RoundedCornerShape(12.dp)).background(c.paper).border(1.dp, c.border, RoundedCornerShape(12.dp)).padding(horizontal = 14.dp, vertical = 10.dp)) {
+                Column(Modifier.clip(RoundedCornerShape(12.dp)).background(c.paper).border(1.dp, c.border, RoundedCornerShape(12.dp)).padding(horizontal = 16.dp, vertical = 12.dp)) {
                     Text(a.headline, style = Aiimin.type.bodyStrong)
                     Text(a.label, style = Aiimin.type.caption)
                 }
@@ -309,8 +309,8 @@ fun BankSmsPage(granted: Boolean) {
     // Part 23, word for word, before Android's own prompt.
     Text(ConsentText.READ_SMS, style = Aiimin.type.body)
     if (granted) Row(Modifier.padding(top = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-        Icon(AppIcons.Check, null, tint = c.done, modifier = Modifier.size(18.dp))
-        Spacer(Modifier.width(6.dp))
+        Icon(AppIcons.Check, null, tint = c.done, modifier = Modifier.size(20.dp))
+        Spacer(Modifier.width(8.dp))
         Text("Allowed. New bank accounts are offered to you, never added on their own.", style = Aiimin.type.label.copy(color = c.done))
     }
 }
@@ -351,9 +351,9 @@ fun ColumnScope.DonePage(d: Draft, shrink: Float) {
     )
     // With Raahi Off there is nothing beside the clock, so the line does not promise it.
     val off = !aiimin.core.engine.raahi.RaahiRules.showsArt(aiimin.designsystem.component.LocalRaahiMode.current)
-    Text(if (off) "That's it. Your day is ready." else "That's it. I'll be here beside the clock.", style = Aiimin.type.title.copy(fontSize = 26.sp, lineHeight = 32.sp), modifier = Modifier.padding(top = 16.dp).semantics { heading() })
+    Text(if (off) "That's it. Your day is ready." else "That's it. I'll be here beside the clock.", style = Aiimin.type.title, modifier = Modifier.padding(top = 16.dp).semantics { heading() })
     val dayEnd = DayEndLearner.fromSleep(clockOf(d.sleepMin))
-    Column(Modifier.padding(top = 16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+    Column(Modifier.padding(top = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text("Your day: ${Dates.clock(clockOf(d.wakeMin))} to ${Dates.clock(clockOf(d.sleepMin))}, closing at ${Dates.clock(dayEnd)}.", style = Aiimin.type.body.copy(color = c.textMuted))
         Text(if (d.mins.isEmpty()) "No minimums yet. Add them any time." else "Minimums: " + d.mins.joinToString(", ") { it.title } + ".", style = Aiimin.type.body.copy(color = c.textMuted))
         d.firstWin?.let { Text("On your Today: $it.", style = Aiimin.type.body.copy(color = c.textMuted)) }
@@ -376,15 +376,15 @@ fun UnderAgePage(eighteenth: LocalDate?, onPrint: () -> Unit, onRemind: (LocalDa
     Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(top = 48.dp)) {
         Raahi(RaahiPose.IDLE, RaahiSize.HERO, Modifier.align(Alignment.CenterHorizontally))
         // Part 23, word for word.
-        Text(ConsentText.UNDER_18, style = Aiimin.type.title.copy(fontSize = 22.sp, lineHeight = 30.sp), modifier = Modifier.padding(top = 16.dp))
+        Text(ConsentText.UNDER_18, style = Aiimin.type.cardTitle, modifier = Modifier.padding(top = 16.dp))
         Text("For a parent: nothing about your child was saved on this phone.", style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(top = 12.dp))
         Spacer(Modifier.height(24.dp))
         AppButton("Print the Start Small planner", onPrint, Modifier.fillMaxWidth(), kind = ButtonKind.SECONDARY)
         if (eighteenth != null) {
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(12.dp))
             AppButton("Remind me on my 18th birthday", { onRemind(eighteenth) }, Modifier.fillMaxWidth(), kind = ButtonKind.SECONDARY)
         }
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(12.dp))
         AppButton("Close", onClose, Modifier.fillMaxWidth())
     }
 }

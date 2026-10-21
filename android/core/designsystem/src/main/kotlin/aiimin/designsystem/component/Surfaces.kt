@@ -139,10 +139,10 @@ fun SectionHeader(
         trailing?.invoke(this)
         if (hasAction) {
             Box(
-                Modifier.heightIn(min = 48.dp).widthIn(min = 48.dp).clip(Shapes.small).clickable(onClick = onAction!!).padding(horizontal = 6.dp),
+                Modifier.heightIn(min = 48.dp).widthIn(min = 48.dp).clip(Shapes.small).clickable(onClick = onAction!!).padding(horizontal = 8.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(action!!, style = Aiimin.type.label.copy(color = Aiimin.colors.link, fontSize = 14.sp, fontWeight = FontWeight.Medium))
+                Text(action!!, style = Aiimin.type.labelLarge.copy(color = Aiimin.colors.link, fontWeight = FontWeight.Medium))
             }
         }
     }
@@ -180,7 +180,7 @@ fun ListRow(
             .heightIn(min = 52.dp)
             .sharedContainer(key)
             .then(if (onClick != null) Modifier.clip(Shapes.row).clickable { key?.let(SharedNav::arm); onClick() } else Modifier)
-            .padding(vertical = 10.dp),
+            .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         // S1: one row shape everywhere. No side padding, so the leading icon starts and the trailing item ends
@@ -231,12 +231,12 @@ fun Avatar(name: String, hueIndex: Int, modifier: Modifier = Modifier, size: Dp 
 @Composable
 fun Tag(text: String, color: Color = Aiimin.colors.textMuted, background: Color = Aiimin.colors.raised, icon: ImageVector? = null) {
     Row(
-        Modifier.clip(Shapes.tag).background(background).padding(horizontal = 7.dp, vertical = 3.dp),
+        Modifier.clip(Shapes.tag).background(background).padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         if (icon != null) Icon(icon, null, tint = color, modifier = Modifier.size(12.dp))
-        Text(text, style = Aiimin.type.caption.copy(color = color, fontWeight = FontWeight.SemiBold, fontSize = 11.sp), maxLines = 1)
+        Text(text, style = Aiimin.type.caption.copy(color = color, fontWeight = FontWeight.SemiBold), maxLines = 1)
     }
 }
 
@@ -298,9 +298,9 @@ fun ExpiryVial(percentLeft: Float?, modifier: Modifier = Modifier) {
 fun DocThumb(modifier: Modifier = Modifier, locked: Boolean = false, tint: Color? = null) {
     val c = Aiimin.colors
     val shape = RoundedCornerShape(5.dp)
-    Box(modifier.size(width = 40.dp, height = 52.dp).clip(shape).background(tint ?: c.paper).border(1.dp, c.borderStrong, shape).padding(horizontal = 6.dp, vertical = 8.dp)) {
+    Box(modifier.size(width = 40.dp, height = 52.dp).clip(shape).background(tint ?: c.paper).border(1.dp, c.borderStrong, shape).padding(horizontal = 8.dp, vertical = 8.dp)) {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Box(Modifier.fillMaxWidth(0.55f).height(3.dp).background(c.text))
+            Box(Modifier.fillMaxWidth(0.55f).height(4.dp).background(c.text))
             Box(Modifier.fillMaxWidth().height(2.dp).background(c.borderStrong))
             Box(Modifier.fillMaxWidth(0.8f).height(2.dp).background(c.borderStrong))
             Box(Modifier.fillMaxWidth(0.6f).height(2.dp).background(c.borderStrong))

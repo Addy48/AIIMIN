@@ -191,7 +191,7 @@ private fun Pick(text: String, selected: Boolean, onClick: () -> Unit) {
     Text(
         text, style = Aiimin.type.body,
         modifier = Modifier.fillMaxWidth().clip(Shapes.card).background(if (selected) c.raised else c.surface)
-            .border(1.dp, if (selected) c.text else c.border, Shapes.card).pressable(onClick).padding(14.dp),
+            .border(1.dp, if (selected) c.text else c.border, Shapes.card).pressable(onClick).padding(16.dp),
     )
 }
 

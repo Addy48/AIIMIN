@@ -199,7 +199,7 @@ fun PlanDayScreen(tomorrow: Boolean, vm: PlanDayViewModel = hiltViewModel()) {
                 Column {
                     Row(Modifier.fillMaxWidth().heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f).padding(vertical = 8.dp)) {
-                            Text(t.title, style = Aiimin.type.body.copy(color = c.text, fontSize = 16.sp))
+                            Text(t.title, style = Aiimin.type.body.copy(color = c.text))
                             Text(
                                 when {
                                     t.day == null -> "Someday"
@@ -212,8 +212,8 @@ fun PlanDayScreen(tomorrow: Boolean, vm: PlanDayViewModel = hiltViewModel()) {
                             if (t.day == null || LocalDate.parse(t.day!!) != u.day) {
                                 Text(
                                     "Do it ${if (tomorrow) "tomorrow" else "today"}",
-                                    style = Aiimin.type.label.copy(color = c.link, fontSize = 13.sp),
-                                    modifier = Modifier.clickable { vm.pullTo(t, u.day) }.heightIn(min = 40.dp).padding(top = 10.dp, bottom = 10.dp, end = 8.dp),
+                                    style = Aiimin.type.label.copy(color = c.link),
+                                    modifier = Modifier.clickable { vm.pullTo(t, u.day) }.heightIn(min = 40.dp).padding(top = 12.dp, bottom = 12.dp, end = 8.dp),
                                 )
                             }
                         }
@@ -234,7 +234,7 @@ fun PlanDayScreen(tomorrow: Boolean, vm: PlanDayViewModel = hiltViewModel()) {
                     }
                     AppIconButton(AppIcons.Mic, "Speak", voice, tint = c.accent)
                 }
-                if (u.candidates.size > 8) Text("That's a lot. Three is a day.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 10.dp))
+                if (u.candidates.size > 8) Text("That's a lot. Three is a day.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 12.dp))
             }
         }
         Hairline()
@@ -305,7 +305,7 @@ fun DebriefScreen(vm: DebriefViewModel = hiltViewModel()) {
     Column(Modifier.fillMaxSize().background(c.base)) {
         TopBar("Evening debrief", onBack = { nav.back() })
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Aiimin.space.gutter)) {
-            Text("How did today go?", style = Aiimin.type.title.copy(fontSize = 30.sp, lineHeight = 36.sp), modifier = Modifier.padding(top = 4.dp))
+            Text("How did today go?", style = Aiimin.type.title, modifier = Modifier.padding(top = 4.dp))
             Text(Dates.dayMonth(LocalDate.now()), style = Aiimin.type.body.copy(color = c.textMuted))
             val u = s
             if (u != null) {
@@ -313,16 +313,16 @@ fun DebriefScreen(vm: DebriefViewModel = hiltViewModel()) {
                 Text("${u.done} ${if (u.done == 1) "task" else "tasks"} done · ${u.mins} · ${u.focus}", style = Aiimin.type.headline.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Normal, lineHeight = 26.sp))
             }
             SectionHeader("Mood")
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 MOODS.forEachIndexed { i, label ->
                     val on = mood == i + 1
                     Column(
                         Modifier.weight(1f).heightIn(min = 64.dp).clip(RoundedCornerShape(8.dp))
-                            .background(if (on) c.text else c.raised).clickable { mood = if (on) null else i + 1 }.padding(vertical = 10.dp),
+                            .background(if (on) c.text else c.raised).clickable { mood = if (on) null else i + 1 }.padding(vertical = 12.dp),
                         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
                     ) {
-                        Text("${i + 1}", style = Aiimin.type.title.copy(fontSize = 20.sp, color = if (on) c.base else c.text))
-                        Text(label, style = Aiimin.type.caption.copy(fontSize = 11.5.sp, color = if (on) c.base else c.textMuted))
+                        Text("${i + 1}", style = Aiimin.type.cardTitle.copy(color = if (on) c.base else c.text))
+                        Text(label, style = Aiimin.type.caption.copy(color = if (on) c.base else c.textMuted))
                     }
                 }
             }
@@ -331,7 +331,7 @@ fun DebriefScreen(vm: DebriefViewModel = hiltViewModel()) {
                 Box(Modifier.weight(1f)) { AppTextField(line, { line = it }, placeholder = "One line about today", singleLine = false) }
                 AppIconButton(AppIcons.Mic, "Speak", voiceLine, tint = c.accent)
             }
-            Text("Write as much or as little as you like. It stays private and encrypted.${if (words > 0) " $words words so far." else ""}", style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp))
+            Text("Write as much or as little as you like. It stays private and encrypted.${if (words > 0) " $words words so far." else ""}", style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp))
             SectionHeader("Tomorrow's first task")
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.weight(1f)) { AppTextField(tomorrow, { tomorrow = it }, placeholder = "What comes first tomorrow?") }

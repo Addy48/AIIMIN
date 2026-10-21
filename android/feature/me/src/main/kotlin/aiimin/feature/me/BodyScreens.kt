@@ -129,7 +129,7 @@ private fun MetricBlock(
         labels = listOf(AxisLabel(0, days.first().day.let { Dates.shortDm(it) }), AxisLabel(days.lastIndex, "Today")),
         height = 190.dp, description = "$unit by day",
     )
-    Text("Tap a bar to read that day.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp))
+    Text("Tap a bar to read that day.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp))
 }
 
 // ------------------------------------------------------------------ patterns
@@ -189,19 +189,19 @@ fun PatternsScreen(vm: MeViewModel = hiltViewModel()) {
             }
             items(found.size) { i ->
                 val p = found[i]
-                Column(Modifier.padding(top = 22.dp)) {
+                Column(Modifier.padding(top = 24.dp)) {
                     Text(p.sentence, style = Aiimin.type.headline.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Normal, lineHeight = 26.sp))
-                    Text("${p.confidence} · ${p.n} days", style = Aiimin.type.caption, modifier = Modifier.padding(top = 4.dp, bottom = 10.dp))
+                    Text("${p.confidence} · ${p.n} days", style = Aiimin.type.caption, modifier = Modifier.padding(top = 4.dp, bottom = 12.dp))
                     val top = maxOf(p.a, p.b).coerceAtLeast(1.0)
                     listOf(p.aLabel to p.a, p.bLabel to p.b).forEachIndexed { k, (label, v) ->
-                        Row(Modifier.fillMaxWidth().padding(vertical = 3.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                             Text(label, style = Aiimin.type.caption, maxLines = 1, softWrap = false, modifier = Modifier.widthIn(min = 96.dp))
                             Box(Modifier.weight(1f).height(8.dp).clip(RoundedCornerShape(2.dp)).background(c.border)) {
                                 Box(Modifier.fillMaxWidth((v / top).toFloat().coerceIn(0.03f, 1f)).height(8.dp).background(if (k == 0) c.text else c.chartInactive))
                             }
                         }
                     }
-                    Spacer(Modifier.height(18.dp))
+                    Spacer(Modifier.height(20.dp))
                     Hairline()
                 }
             }
@@ -262,7 +262,7 @@ fun WhyScoreScreen(vm: MeViewModel = hiltViewModel()) {
                 val def = life.intentions.def(key)
                 val tier = day.snapshot.tier(key)
                 Column {
-                    Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) {
                             Text(def?.name ?: key, style = Aiimin.type.headline.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Normal))
                             Text(valueText(key, v!!) + " · " + when (tier.name) { "A" -> "measured"; "B" -> "backed"; "C" -> "your tap"; else -> "unverified" }, style = Aiimin.type.body.copy(color = c.textMuted))

@@ -66,6 +66,10 @@ data class AppType(
     val eyebrow: TextStyle,
     /** meta: row subtitles 12.5/18, muted. */
     val caption: TextStyle,
+    /** Explanatory paragraphs under a heading or in a sheet: a step above caption, still muted. */
+    val note: TextStyle,
+    /** Chips, pills and inline actions that must read at arm's length. */
+    val labelLarge: TextStyle,
     /** chartAxis: 11.5/14. */
     val axis: TextStyle,
     /** Journal and Pour writing: Golos at a reading size (owner, 20 Oct). */
@@ -103,11 +107,13 @@ internal fun appType(p: Palette): AppType {
     val label = s(Golos, 13.0, 18.0, FontWeight.Medium, num = true)
     val eyebrow = s(Golos, 12.0, 16.0, sb, 0.08).copy(color = p.textMuted)
     val caption = s(Golos, 12.5, 18.0, FontWeight.Normal, num = true).copy(color = p.textMuted)
+    val note = s(Golos, 14.0, 20.0, FontWeight.Normal, num = true).copy(color = p.textMuted)
+    val labelLarge = s(Golos, 14.0, 20.0, FontWeight.Medium, num = true)
     val axis = s(Golos, 11.5, 14.0, FontWeight.Normal, num = true).copy(color = p.textMuted)
     val journal = s(Golos, 18.0, 29.0, FontWeight.Normal)
     val code = s(Mono, 12.0, 17.0, FontWeight.Normal).copy(color = p.textMuted)
     return AppType(
-        display, heroNumber, numberLarge, numberMedium, numberSmall, title, cardTitle, headline, body, bodyStrong, label, eyebrow, caption, axis, journal, code,
+        display, heroNumber, numberLarge, numberMedium, numberSmall, title, cardTitle, headline, body, bodyStrong, label, eyebrow, caption, note, labelLarge, axis, journal, code,
         material = Typography(
             displayLarge = display, headlineLarge = title, headlineMedium = cardTitle,
             titleLarge = headline, titleMedium = headline, titleSmall = bodyStrong,

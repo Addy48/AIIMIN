@@ -140,7 +140,7 @@ fun Bars(
             drawRect(c.text, Offset(0f, base), Size(this.size.width, 1.dp.toPx()))
         }
         if (labels != null) {
-            Row(Modifier.fillMaxWidth().padding(top = 6.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+            Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                 labels.forEach { Text(it, style = Aiimin.type.caption.copy(fontFeatureSettings = "tnum")) }
             }
         }

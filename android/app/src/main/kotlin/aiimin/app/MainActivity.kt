@@ -287,15 +287,15 @@ private fun Locked(card: aiimin.core.database.PersonEntity?, onUnlock: () -> Uni
                 Text("Emergency card · ${card.name.ifBlank { "Owner" }}", style = Aiimin.type.title)
                 if (card.blood.isNotBlank()) { Text("Blood group", style = Aiimin.type.caption, modifier = Modifier.padding(top = 16.dp)); Text(card.blood, style = Aiimin.type.display) }
                 listOf("Allergies" to card.allergies, "Medicines" to card.meds, "Doctor" to card.doctor).filter { it.second.isNotBlank() }.forEach { (k, v) ->
-                    Text(k, style = Aiimin.type.caption, modifier = Modifier.padding(top = 14.dp)); Text(v, style = Aiimin.type.body.copy(fontSize = 18.sp))
+                    Text(k, style = Aiimin.type.caption, modifier = Modifier.padding(top = 16.dp)); Text(v, style = Aiimin.type.body)
                 }
                 val contacts = remember(card.contacts) {
                     runCatching { org.json.JSONArray(card.contacts).let { a -> (0 until a.length()).map { a.getJSONObject(it).let { o -> o.optString("n") to o.optString("p") } } } }.getOrDefault(emptyList())
                 }
                 run {
                     contacts.forEach { (name, phone) ->
-                        Text(name, style = Aiimin.type.bodyStrong, modifier = Modifier.padding(top = 14.dp))
-                        Text(phone, style = Aiimin.type.body.copy(color = c.link, fontSize = 18.sp), modifier = Modifier.clickable {
+                        Text(name, style = Aiimin.type.bodyStrong, modifier = Modifier.padding(top = 16.dp))
+                        Text(phone, style = Aiimin.type.body.copy(color = c.link), modifier = Modifier.clickable {
                             runCatching { context.startActivity(Intent(Intent.ACTION_DIAL, android.net.Uri.parse("tel:$phone"))) }
                         })
                     }

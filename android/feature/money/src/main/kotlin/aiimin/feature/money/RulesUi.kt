@@ -46,7 +46,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 internal fun RuleRow(r: MoneyRuleEntity, first: Boolean, last: Boolean, onOpen: () -> Unit, onMove: (Boolean) -> Unit) {
     Row(Modifier.fillMaxWidth().heightIn(min = 64.dp), verticalAlignment = Alignment.CenterVertically) {
-        Column(Modifier.weight(1f).pressable(onOpen).padding(vertical = 10.dp)) {
+        Column(Modifier.weight(1f).pressable(onOpen).padding(vertical = 12.dp)) {
             Text(r.name, style = Aiimin.type.bodyStrong.copy(color = if (r.enabled) Aiimin.colors.text else Aiimin.colors.textMuted), maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(SmartRules.describe(r), style = Aiimin.type.caption, maxLines = 2, overflow = TextOverflow.Ellipsis)
             Text(

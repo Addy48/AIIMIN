@@ -130,12 +130,12 @@ fun AssistantScreen(route: Route.Assistant, vm: ChatViewModel = hiltViewModel())
                 item {
                     Column(Modifier.padding(top = 24.dp)) {
                         Text("Tell it what happened, or ask.", style = Aiimin.type.title)
-                        Spacer(Modifier.height(6.dp))
+                        Spacer(Modifier.height(8.dp))
                         Text("It turns one sentence into payments, tasks, calendar blocks and ticked minimums — shown to you first. It answers from your own data and says what it read.", style = Aiimin.type.body.copy(color = c.textMuted))
                         Spacer(Modifier.height(20.dp))
                         starters.forEach { s ->
                             Row(
-                                Modifier.fillMaxWidth().padding(vertical = 3.dp).clip(Shapes.row).border(1.dp, c.border, Shapes.row).clickable { vm.send(s) }.padding(14.dp),
+                                Modifier.fillMaxWidth().padding(vertical = 4.dp).clip(Shapes.row).border(1.dp, c.border, Shapes.row).clickable { vm.send(s) }.padding(16.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Text(s, style = Aiimin.type.body, modifier = Modifier.weight(1f))
@@ -189,8 +189,8 @@ private fun openSource(nav: aiimin.designsystem.nav.AppNavigator, s: Source) = w
 @Composable
 private fun UserBubble(text: String) {
     val c = Aiimin.colors
-    Box(Modifier.fillMaxWidth().padding(vertical = 6.dp), contentAlignment = Alignment.CenterEnd) {
-        Text(text, style = Aiimin.type.body, modifier = Modifier.widthIn(max = 300.dp).clip(Shapes.row).background(c.raised).padding(horizontal = 14.dp, vertical = 10.dp))
+    Box(Modifier.fillMaxWidth().padding(vertical = 8.dp), contentAlignment = Alignment.CenterEnd) {
+        Text(text, style = Aiimin.type.body, modifier = Modifier.widthIn(max = 300.dp).clip(Shapes.row).background(c.raised).padding(horizontal = 16.dp, vertical = 12.dp))
     }
 }
 
@@ -205,20 +205,20 @@ private fun AssistantMessage(m: ChatMessageEntity, vm: ChatViewModel, onSource: 
     Column(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
         Text(m.text, style = Aiimin.type.body)
         if (actions.isNotEmpty()) {
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(12.dp))
             Column(Modifier.fillMaxWidth().clip(Shapes.row).border(1.dp, c.border, Shapes.row)) {
                 actions.forEachIndexed { i, a ->
                     if (i > 0) Box(Modifier.fillMaxWidth().height(1.dp).background(c.border))
-                    Row(Modifier.padding(horizontal = 12.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Icon(iconFor(a), null, tint = c.textMuted, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(10.dp))
+                    Row(Modifier.padding(horizontal = 12.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(iconFor(a), null, tint = c.textMuted, modifier = Modifier.size(20.dp))
+                        Spacer(Modifier.width(12.dp))
                         Column(Modifier.weight(1f)) {
                             Text(a.headline, style = Aiimin.type.bodyStrong)
                             Text(a.label, style = Aiimin.type.caption)
                         }
                     }
                 }
-                Row(Modifier.fillMaxWidth().background(c.surface).padding(10.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.fillMaxWidth().background(c.surface).padding(12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                     when (m.proposalState) {
                         "proposed" -> {
                             AppButton("Apply", onApply, compact = true, icon = AppIcons.Check)
@@ -236,18 +236,18 @@ private fun AssistantMessage(m: ChatMessageEntity, vm: ChatViewModel, onSource: 
         }
         if (sources.isNotEmpty()) {
             Spacer(Modifier.height(8.dp))
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 sources.forEach { s ->
                     Text(
                         s.label, style = Aiimin.type.label.copy(color = c.accent), maxLines = 1,
-                        modifier = Modifier.clip(Shapes.tag).border(1.dp, c.accent.copy(alpha = 0.35f), Shapes.tag).clickable { onSource(s) }.padding(horizontal = 8.dp, vertical = 5.dp),
+                        modifier = Modifier.clip(Shapes.tag).border(1.dp, c.accent.copy(alpha = 0.35f), Shapes.tag).clickable { onSource(s) }.padding(horizontal = 8.dp, vertical = 4.dp),
                     )
                 }
             }
         }
         val follow = vm.followups(m)
         if (follow.isNotEmpty() || saw.isNotEmpty()) {
-            Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(8.dp))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 follow.forEach { f -> Text(f, style = Aiimin.type.label.copy(color = c.textMuted), modifier = Modifier.clip(Shapes.tag).clickable { onFollow(f) }.padding(vertical = 4.dp)) }
                 if (saw.isNotEmpty()) Text(if (showSaw) "Read: " + saw.joinToString(" · ") else "What it read", style = Aiimin.type.caption, modifier = Modifier.clickable { showSaw = !showSaw }.padding(vertical = 4.dp))
@@ -264,7 +264,7 @@ private fun Composer(value: String, onChange: (String) -> Unit, onSend: () -> Un
         Modifier.fillMaxWidth().background(c.base).navigationBarsPadding().padding(horizontal = Aiimin.space.gutter, vertical = 8.dp),
         verticalAlignment = Alignment.Bottom,
     ) {
-        Box(Modifier.weight(1f).clip(Shapes.row).background(c.raised).border(1.dp, c.border, Shapes.row).heightIn(min = 48.dp).padding(horizontal = 14.dp, vertical = 13.dp)) {
+        Box(Modifier.weight(1f).clip(Shapes.row).background(c.raised).border(1.dp, c.border, Shapes.row).heightIn(min = 48.dp).padding(horizontal = 16.dp, vertical = 12.dp)) {
             if (value.isEmpty()) Text("Log or ask anything", style = Aiimin.type.body.copy(color = c.textFaint))
             BasicTextField(value, onChange, textStyle = Aiimin.type.body, cursorBrush = SolidColor(c.accent), maxLines = 5, modifier = Modifier.fillMaxWidth())
         }
@@ -378,24 +378,24 @@ fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, i
                     .clip(RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp)).background(c.sheet)
                     // Taps on the sheet itself don't reach the scrim (no extra button for TalkBack).
                     .pointerInput(Unit) { detectTapGestures { } }
-                    .navigationBarsPadding().imePadding().padding(horizontal = Aiimin.space.gutter).padding(top = 10.dp, bottom = 12.dp),
+                    .navigationBarsPadding().imePadding().padding(horizontal = Aiimin.space.gutter).padding(top = 12.dp, bottom = 12.dp),
             ) {
-                Box(Modifier.align(Alignment.CenterHorizontally).size(width = 38.dp, height = 4.dp).clip(RoundedCornerShape(2.dp)).background(c.borderStrong))
-                Spacer(Modifier.height(14.dp))
+                Box(Modifier.align(Alignment.CenterHorizontally).size(width = 40.dp, height = 4.dp).clip(RoundedCornerShape(2.dp)).background(c.borderStrong))
+                Spacer(Modifier.height(16.dp))
                 // Field with the mic beside it.
                 Row(verticalAlignment = Alignment.Bottom) {
-                    Box(Modifier.weight(1f).clip(Shapes.row).background(c.raised).border(1.dp, c.border, Shapes.row).heightIn(min = 52.dp).padding(horizontal = 14.dp, vertical = 14.dp)) {
+                    Box(Modifier.weight(1f).clip(Shapes.row).background(c.raised).border(1.dp, c.border, Shapes.row).heightIn(min = 52.dp).padding(horizontal = 16.dp, vertical = 16.dp)) {
                         val shown = if (listening && heard.isNotBlank()) (if (text.isBlank()) "" else "$text ") + heard else null
                         if (text.isEmpty() && shown == null) Text(
                             if (listening) "Listening…" else "Spent 240 on lunch, call Ravi at 5",
-                            style = Aiimin.type.body.copy(color = c.textFaint, fontSize = 17.sp), maxLines = 1, overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.padding(start = 3.dp),
+                            style = Aiimin.type.body.copy(color = c.textFaint), maxLines = 1, overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.padding(start = 4.dp),
                         )
-                        if (shown != null) Text(shown, style = Aiimin.type.body.copy(fontSize = 17.sp))
+                        if (shown != null) Text(shown, style = Aiimin.type.body)
                         else BasicTextField(
                             // A type picked on the "not sure" card is for that text only; a quick type stays.
                             text, { text = it; if (chooserPick) { vm.forced.value = null; chooserPick = false } },
-                            textStyle = Aiimin.type.body.copy(fontSize = 17.sp, color = c.text), cursorBrush = SolidColor(c.text), maxLines = 5,
+                            textStyle = Aiimin.type.body.copy(color = c.text), cursorBrush = SolidColor(c.text), maxLines = 5,
                             modifier = Modifier.fillMaxWidth().focusRequester(focus).semantics { contentDescription = "Capture" },
                         )
                     }
@@ -407,7 +407,7 @@ fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, i
                 }
                 if (listening) Meter18(true, level)
                 // Six quick types (1.2b); picking one files the text as that type.
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(12.dp))
                 androidx.compose.foundation.lazy.LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(QUICK_TYPES.size) { i ->
                         val (label, key) = QUICK_TYPES[i]
@@ -419,7 +419,7 @@ fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, i
                 }
                 // Live chips; tap one to change it.
                 if (items.isNotEmpty()) {
-                    Spacer(Modifier.height(10.dp))
+                    Spacer(Modifier.height(12.dp))
                     @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
                     androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         items.forEachIndexed { i, a ->
@@ -430,19 +430,19 @@ fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, i
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Icon(iconFor(a), null, tint = c.text, modifier = Modifier.size(16.dp))
-                                Spacer(Modifier.width(6.dp))
-                                Text(chipText(a), style = Aiimin.type.label.copy(fontSize = 14.sp), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                Spacer(Modifier.width(8.dp))
+                                Text(chipText(a), style = Aiimin.type.labelLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
                             }
                         }
                     }
                 }
                 items.filterIsInstance<Action.Choose>().firstOrNull()?.let { a ->
-                    Spacer(Modifier.height(10.dp))
+                    Spacer(Modifier.height(12.dp))
                     ChooserCard(a) { vm.forced.value = it; chooserPick = true }
                 }
                 // Up to three suggestions: features named in the text.
                 if (goTo.isNotEmpty()) {
-                    Spacer(Modifier.height(6.dp))
+                    Spacer(Modifier.height(8.dp))
                     goTo.forEach { f ->
                         Row(
                             Modifier.fillMaxWidth().clip(Shapes.row).clickable { close { nav.go(f.route) } }.heightIn(min = 48.dp),
@@ -510,7 +510,7 @@ internal fun chipText(a: Action): String = when (a) {
 private fun ChooserCard(a: Action.Choose, onPick: (aiimin.core.nlp.Kind) -> Unit) {
     val c = Aiimin.colors
     Column(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp)).background(c.surface).border(1.dp, c.border, RoundedCornerShape(10.dp)).padding(horizontal = 16.dp, vertical = 14.dp),
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp)).background(c.surface).border(1.dp, c.border, RoundedCornerShape(10.dp)).padding(horizontal = 16.dp, vertical = 16.dp),
     ) {
         Text("Not sure what this is", style = Aiimin.type.bodyStrong)
         Text("“${a.text.take(60)}”", style = Aiimin.type.caption, maxLines = 1, modifier = Modifier.padding(top = 2.dp))
@@ -555,26 +555,26 @@ private fun CardEditor(start: Action, onDismiss: () -> Unit, onRemove: (() -> Un
                 .navigationBarsPadding().imePadding().padding(horizontal = Aiimin.space.gutter),
         ) {
             Box(Modifier.padding(top = 12.dp).align(Alignment.CenterHorizontally).size(36.dp, 4.dp).clip(RoundedCornerShape(2.dp)).background(c.border))
-            Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(top = 18.dp)) {
+            Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(top = 20.dp)) {
                 Text("Edit item", style = Aiimin.type.title)
                 if (editable) {
                     SectionHeader("Type")
                     PillRow { listOf("Task", "Event", "Expense", "Income", "Note").forEach { t -> Pill(t, type == t, { type = t }) } }
                 }
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(12.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     AppTextField(title, { title = it }, label = if (type == "Expense" || type == "Income") "Payee or what for" else "Title", modifier = Modifier.weight(1f))
                     AppIconButton(AppIcons.Mic, "Re-speak this item", { respeak() })
                 }
                 when (type) {
                     "Expense", "Income" -> {
-                        Spacer(Modifier.height(10.dp))
+                        Spacer(Modifier.height(12.dp))
                         AppTextField(amount, { v -> amount = cleanAmount(v) }, label = if (startCurrency == "INR") "Amount (₹)" else "Amount ($startCurrency)", keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal)
                         SectionHeader("Category")
                         PillRow { (if (type == "Expense") aiimin.core.data.money.Categories.SPEND else aiimin.core.data.money.Categories.INCOME).forEach { k -> Pill(k, category == k, { category = k }) } }
                     }
                     "Note" -> {
-                        Spacer(Modifier.height(10.dp))
+                        Spacer(Modifier.height(12.dp))
                         AppTextField(body, { body = it }, label = "Text", singleLine = false, minLines = 4)
                     }
                 }
@@ -711,13 +711,13 @@ fun RecentCapturesScreen(vm: RecentCapturesViewModel = hiltViewModel()) {
             list.forEach { r ->
                 item(key = r.id) {
                     var open by remember { mutableStateOf(false) }
-                    Column(Modifier.fillMaxWidth().padding(vertical = 14.dp)) {
+                    Column(Modifier.fillMaxWidth().padding(vertical = 16.dp)) {
                         Text(
                             aiimin.core.data.util.Dates.clock(java.time.Instant.ofEpochMilli(r.at).atZone(java.time.ZoneId.systemDefault()).toLocalTime()) + " · ${r.created.size} ${if (r.created.size == 1) "item" else "items"}" + if (r.undone) " · undone" else "",
                             style = Aiimin.type.caption,
                         )
                         Text(
-                            "“${r.text.ifBlank { "—" }}”", style = Aiimin.type.body.copy(fontSize = 16.sp), maxLines = if (open) 20 else 2,
+                            "“${r.text.ifBlank { "—" }}”", style = Aiimin.type.body, maxLines = if (open) 20 else 2,
                             modifier = Modifier.padding(top = 4.dp).clickable { open = !open },
                         )
                         r.created.forEach { s ->
@@ -733,8 +733,8 @@ fun RecentCapturesScreen(vm: RecentCapturesViewModel = hiltViewModel()) {
                             }
                         }
                         if (!r.undone) Text(
-                            "Undo this capture", style = Aiimin.type.label.copy(color = c.link, fontSize = 14.sp),
-                            modifier = Modifier.padding(top = 12.dp).clickable { vm.undo(r.id); toaster.show("Capture undone") }.padding(vertical = 6.dp),
+                            "Undo this capture", style = Aiimin.type.labelLarge.copy(color = c.link),
+                            modifier = Modifier.padding(top = 12.dp).clickable { vm.undo(r.id); toaster.show("Capture undone") }.padding(vertical = 8.dp),
                         )
                     }
                     aiimin.designsystem.component.Hairline()

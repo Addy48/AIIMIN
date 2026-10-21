@@ -192,7 +192,7 @@ fun PourScreen(id: String?, prefill: String? = null, tool: String? = null, vm: P
                     Text(
                         when (timerMin) { 0 -> "Timer"; else -> "$timerMin min" },
                         style = Aiimin.type.label.copy(color = c.textMuted),
-                        modifier = Modifier.clip(Shapes.control).pressable({ timerMin = when (timerMin) { 0 -> 5; 5 -> 10; else -> 0 } }).padding(horizontal = 12.dp, vertical = 10.dp),
+                        modifier = Modifier.clip(Shapes.control).pressable({ timerMin = when (timerMin) { 0 -> 5; 5 -> 10; else -> 0 } }).padding(horizontal = 12.dp, vertical = 12.dp),
                     )
                 }
                 AppIconButton(AppIcons.EyeSlash, "Hide now", { (context as? Activity)?.moveTaskToBack(true) }, tint = c.textMuted)
@@ -212,7 +212,7 @@ fun PourScreen(id: String?, prefill: String? = null, tool: String? = null, vm: P
                     PourStep.WRITE, PourStep.PUT_DOWN -> Column(Modifier.fillMaxSize()) {
                         Row(Modifier.padding(horizontal = 24.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                             Raahi(RaahiPose.LISTENING, RaahiSize.MINI)
-                            Spacer(Modifier.width(10.dp))
+                            Spacer(Modifier.width(12.dp))
                             Text(PourLines.pick(PourLines.OPEN, today), style = Aiimin.type.caption.copy(color = c.textMuted))
                         }
                         if (supportOpen) SupportCard(Modifier.padding(horizontal = 16.dp, vertical = 8.dp), onOkay = { supportOpen = false })
@@ -314,7 +314,7 @@ private fun GentleTimer(minutes: Int, reduce: Boolean) {
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
     LaunchedEffect(minutes) { while (true) { now = System.currentTimeMillis(); delay(if (reduce) 5_000 else 500) } }
     val f = ((now - start) / (minutes * 60_000f)).coerceIn(0f, 1f)
-    Canvas(Modifier.fillMaxWidth().height(6.dp).padding(horizontal = 24.dp)) {
+    Canvas(Modifier.fillMaxWidth().height(8.dp).padding(horizontal = 24.dp)) {
         val y = size.height / 2
         drawLine(c.border, Offset(0f, y), Offset(size.width, y), 2.dp.toPx(), StrokeCap.Round)
         drawLine(c.textMuted, Offset(0f, y), Offset(size.width * f, y), 2.dp.toPx(), StrokeCap.Round)
@@ -343,10 +343,10 @@ internal fun HoldToTalk(onText: (String) -> Unit, label: String = "Hold to talk"
                     cap.cancel(); hold.stop()
                 })
             }
-            .padding(horizontal = 14.dp, vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(AppIcons.Mic, null, tint = if (listening) c.accentText else c.text, modifier = Modifier.size(18.dp))
+        Icon(AppIcons.Mic, null, tint = if (listening) c.accentText else c.text, modifier = Modifier.size(20.dp))
         Spacer(Modifier.width(8.dp))
         Text(if (listening) "Listening…" else label, style = Aiimin.type.label)
     }

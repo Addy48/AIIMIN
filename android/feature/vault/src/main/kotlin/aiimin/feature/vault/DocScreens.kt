@@ -165,11 +165,11 @@ fun DocScreen(id: String, vm: DocViewModel = hiltViewModel()) {
             Box(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 16.dp).fillMaxWidth().height(360.dp).clip(RoundedCornerShape(6.dp)).background(c.paper).border(1.dp, c.borderStrong, RoundedCornerShape(6.dp)).clickable { full = true }) {
                 val f = file
                 if (f == null) Skeleton(Modifier.fillMaxSize()) else FirstPage(d, f)
-                if (d.pages > 1) Box(Modifier.align(Alignment.BottomEnd).padding(10.dp).clip(RoundedCornerShape(4.dp)).background(c.text).padding(horizontal = 8.dp, vertical = 3.dp)) {
+                if (d.pages > 1) Box(Modifier.align(Alignment.BottomEnd).padding(12.dp).clip(RoundedCornerShape(4.dp)).background(c.text).padding(horizontal = 8.dp, vertical = 4.dp)) {
                     Text("1 / ${d.pages}", style = Aiimin.type.caption.copy(color = c.onInk, fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold))
                 }
             }
-            Text("Tap to open full size. Double-tap or pinch to zoom.", style = Aiimin.type.caption.copy(fontSize = 12.sp), modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 6.dp))
+            Text("Tap to open full size. Double-tap or pinch to zoom.", style = Aiimin.type.caption, modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 8.dp))
             Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
                 SectionHeader("Found in the document")
                 FoundRow("Number", d.number?.let { if (d.sensitive) "••••••${it.takeLast(4)}" else it } ?: "Not found", found = d.number != null)
@@ -189,7 +189,7 @@ fun DocScreen(id: String, vm: DocViewModel = hiltViewModel()) {
                     leading = { IconTile(AppIcons.ClockCounter) }, onClick = { nav.open(Route.DocInfo(d.id)) },
                 )
                 Spacer(Modifier.height(16.dp))
-                Text("Stored only on this phone · ${if (d.sizeBytes < 1_048_576) "${maxOf(1, d.sizeBytes / 1024)} KB" else "%.1f MB".format(d.sizeBytes / 1_048_576.0)}", style = Aiimin.type.caption.copy(fontSize = 12.sp))
+                Text("Stored only on this phone · ${if (d.sizeBytes < 1_048_576) "${maxOf(1, d.sizeBytes / 1024)} KB" else "%.1f MB".format(d.sizeBytes / 1_048_576.0)}", style = Aiimin.type.caption)
                 Spacer(Modifier.height(24.dp))
             }
         }
@@ -252,7 +252,7 @@ fun DocScreen(id: String, vm: DocViewModel = hiltViewModel()) {
             ListRow("Expires", subtitle = date?.let(Dates::longYear) ?: "Not set", leading = { IconTile(AppIcons.Hourglass) }, onClick = { pick = true })
             SwitchRow("Renewal task two weeks before", task, { task = it })
             Spacer(Modifier.height(12.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (d.expires != null) AppButton("Clear", { vm.setExpiry(d, null, false); remind = false }, Modifier.weight(1f), kind = ButtonKind.SECONDARY)
                 AppButton("Save", { vm.setExpiry(d, date, task); remind = false; toaster.show("Reminders set") }, Modifier.weight(1f), enabled = date != null)
             }
@@ -287,10 +287,10 @@ private fun whyText(a: Access): String = when (a) {
 
 @Composable
 private fun BarAction(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, onClick: () -> Unit) {
-    Column(Modifier.clip(Shapes.row).clickable(onClick = onClick).padding(horizontal = 14.dp, vertical = 6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Icon(icon, null, tint = Aiimin.colors.text, modifier = Modifier.size(22.dp))
+    Column(Modifier.clip(Shapes.row).clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Icon(icon, null, tint = Aiimin.colors.text, modifier = Modifier.size(24.dp))
         Spacer(Modifier.height(4.dp))
-        Text(label, style = Aiimin.type.caption.copy(color = Aiimin.colors.text, fontSize = 12.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Medium))
+        Text(label, style = Aiimin.type.caption.copy(color = Aiimin.colors.text, fontWeight = androidx.compose.ui.text.font.FontWeight.Medium))
     }
 }
 
@@ -341,7 +341,7 @@ private fun PdfPages(f: File) {
     val c = Aiimin.colors
     if (pages == 0) return
     Zoomable {
-        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             items((0 until pages).toList()) { i ->
                 val bmp by produceState<Bitmap?>(null, f, i) {
                     value = withContext(Dispatchers.IO) {
@@ -379,7 +379,7 @@ private fun ReadingView(text: String) {
         return
     }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp, vertical = 16.dp)) {
-        Text(text, style = Aiimin.type.body.copy(fontSize = 16.sp, lineHeight = 26.sp))
+        Text(text, style = Aiimin.type.body)
     }
 }
 
@@ -444,7 +444,7 @@ private fun ShareSheet(
             Panel(Modifier.padding(vertical = 4.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Avatar(p.name, p.hue, size = 32.dp)
-                    Spacer(Modifier.width(10.dp))
+                    Spacer(Modifier.width(12.dp))
                     Text(p.name, style = Aiimin.type.bodyStrong, modifier = Modifier.weight(1f))
                     Text(level?.lowercase()?.replaceFirstChar { it.uppercase() } ?: "No access", style = Aiimin.type.caption)
                 }
@@ -495,7 +495,7 @@ fun PersonScreen(id: String, vm: PersonViewModel = hiltViewModel()) {
             item {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Avatar(person.name, person.hue, size = 64.dp)
-                    Spacer(Modifier.width(14.dp))
+                    Spacer(Modifier.width(16.dp))
                     Column {
                         Text(person.name, style = Aiimin.type.title)
                         Text(listOf(person.relation, role.label).filter { it.isNotBlank() }.joinToString(" · "), style = Aiimin.type.caption)
@@ -569,7 +569,7 @@ fun PersonScreen(id: String, vm: PersonViewModel = hiltViewModel()) {
         AppSheet({ delegate = false }, title = "Caregiver for ${person.name}", subtitle = "${person.name} agrees to let you manage these categories. Re-confirmed every year.") {
             PillRow { listOf("Insurance", "Health", "Identity", "Vehicle", "Finance & Tax", "Property").forEach { k -> Pill(k, k in cats, { cats = if (k in cats) cats - k else cats + k }) } }
             Spacer(Modifier.height(12.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (person.delegateTo != null) AppButton("Remove", { vm.setDelegate(null, emptySet()); delegate = false }, Modifier.weight(1f), kind = ButtonKind.SECONDARY)
                 AppButton("Confirm", { vm.setDelegate(ME, cats); delegate = false }, Modifier.weight(1f), enabled = cats.isNotEmpty())
             }
@@ -599,7 +599,7 @@ fun EmergencyCardScreen(id: String, vm: PersonViewModel = hiltViewModel()) {
             Spacer(Modifier.height(16.dp))
             if (!empty) listOf("Blood group" to person.blood, "Allergies" to person.allergies, "Medicines" to person.meds, "Doctor" to person.doctor).forEach { (k, v) ->
                 Text(k.uppercase(), style = Aiimin.type.eyebrow)
-                Text(v.ifBlank { "—" }, style = Aiimin.type.headline.copy(fontSize = 22.sp), modifier = Modifier.padding(bottom = 14.dp))
+                Text(v.ifBlank { "—" }, style = Aiimin.type.cardTitle, modifier = Modifier.padding(bottom = 16.dp))
             }
             Codecs.decodeList(person.contacts).forEach { contact ->
                 val phone = Regex("[+\\d][\\d\\s-]{6,}").find(contact)?.value?.filter { it.isDigit() || it == '+' }
@@ -665,7 +665,7 @@ fun FamilyScreen(vm: FamilyViewModel = hiltViewModel()) {
                             "Life Scores are private unless the owner shares the number.",
                             "Every access outside a share is logged and notified.",
                         ),
-                        style = Aiimin.type.caption.copy(fontSize = 13.5.sp, lineHeight = 19.sp),
+                        style = Aiimin.type.note,
                     )
                 }
                 Spacer(Modifier.height(8.dp))
@@ -725,11 +725,11 @@ fun FamilyScreen(vm: FamilyViewModel = hiltViewModel()) {
 private fun LinkChip(text: String, icon: androidx.compose.ui.graphics.vector.ImageVector, warn: Boolean = false, onClick: () -> Unit) {
     val c = Aiimin.colors
     Row(
-        Modifier.clip(RoundedCornerShape(6.dp)).background(c.raised).clickable(onClick = onClick).heightIn(min = 36.dp).padding(horizontal = 11.dp),
-        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp),
+        Modifier.clip(RoundedCornerShape(6.dp)).background(c.raised).clickable(onClick = onClick).heightIn(min = 36.dp).padding(horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Icon(icon, null, tint = if (warn) c.warn else c.text, modifier = Modifier.size(16.dp))
-        Text(text, style = Aiimin.type.label.copy(fontSize = 13.5.sp, color = if (warn) c.warn else c.text), maxLines = 1)
+        Text(text, style = Aiimin.type.label.copy(color = if (warn) c.warn else c.text), maxLines = 1)
     }
 }
 
@@ -737,10 +737,10 @@ private fun LinkChip(text: String, icon: androidx.compose.ui.graphics.vector.Ima
 private fun FoundRow(label: String, value: String, note: String? = null, found: Boolean, warnText: Boolean = false, trailing: (@Composable () -> Unit)? = null) {
     val c = Aiimin.colors
     Row(Modifier.fillMaxWidth().heightIn(min = 64.dp), verticalAlignment = Alignment.CenterVertically) {
-        Column(Modifier.weight(1f).padding(vertical = 10.dp)) {
+        Column(Modifier.weight(1f).padding(vertical = 12.dp)) {
             Text(label, style = Aiimin.type.caption)
-            Text(value, style = Aiimin.type.headline.copy(fontSize = 17.sp, color = if (warnText) c.warn else c.text), modifier = Modifier.padding(top = 2.dp))
-            if (note != null) Text(note, style = Aiimin.type.caption.copy(fontSize = 12.sp), modifier = Modifier.padding(top = 2.dp))
+            Text(value, style = Aiimin.type.headline.copy(color = if (warnText) c.warn else c.text), modifier = Modifier.padding(top = 2.dp))
+            if (note != null) Text(note, style = Aiimin.type.caption, modifier = Modifier.padding(top = 2.dp))
         }
         if (trailing != null) trailing() else if (found) EvidenceDot('A')
     }

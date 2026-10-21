@@ -223,7 +223,7 @@ fun ScrubBarChart(
                 Canvas(Modifier.size(width = 16.dp, height = 8.dp)) {
                     drawLine(c.bandLine, Offset(0f, size.height / 2), Offset(size.width, size.height / 2), strokeWidth = 1.5.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(4.dp.toPx(), 3.dp.toPx())))
                 }
-                Text(text, style = Aiimin.type.axis, modifier = Modifier.padding(start = 6.dp, end = 4.dp))
+                Text(text, style = Aiimin.type.axis, modifier = Modifier.padding(start = 8.dp, end = 4.dp))
             }
         }
     }

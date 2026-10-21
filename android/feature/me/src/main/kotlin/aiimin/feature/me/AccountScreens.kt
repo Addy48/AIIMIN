@@ -160,13 +160,13 @@ fun AccountScreen(vm: AccountViewModel = hiltViewModel()) {
             if (sess?.signedIn == true) {
                 SignedIn(sess, s, state, busy, vm, onSignOut = { signOut = true })
             } else {
-                Text("Keep it safe, and on the web too", style = Aiimin.type.title.copy(fontSize = 26.sp, lineHeight = 32.sp), modifier = Modifier.padding(top = 8.dp))
+                Text("Keep it safe, and on the web too", style = Aiimin.type.title, modifier = Modifier.padding(top = 8.dp))
                 Text(
                     "Sign in to aiimin.in to back up your tasks, notes and payments and see them on the website. The app works fully without an account, and you can sign in any time.",
-                    style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(top = 10.dp, bottom = 24.dp),
+                    style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(top = 12.dp, bottom = 24.dp),
                 )
                 AppButton("Sign in", { nav.open(Route.SignIn(false)) }, Modifier.fillMaxWidth())
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(12.dp))
                 AppButton("Create an account", { nav.open(Route.SignIn(true)) }, Modifier.fillMaxWidth(), kind = ButtonKind.SECONDARY)
                 Text(
                     "Only what you allow leaves the phone: tasks, notes and payments. Documents, bank-message text and health samples never do.",
@@ -202,9 +202,9 @@ fun AccountScreen(vm: AccountViewModel = hiltViewModel()) {
 private fun SignedIn(sess: Session, s: AppSettings?, state: SyncState, busy: Boolean, vm: AccountViewModel, onSignOut: () -> Unit) {
     val c = Aiimin.colors
     val context = LocalContext.current
-    Text(sess.name?.takeIf { it.isNotBlank() } ?: sess.osId ?: sess.label.orEmpty(), style = Aiimin.type.title.copy(fontSize = 26.sp), modifier = Modifier.padding(top = 8.dp))
+    Text(sess.name?.takeIf { it.isNotBlank() } ?: sess.osId ?: sess.label.orEmpty(), style = Aiimin.type.title, modifier = Modifier.padding(top = 8.dp))
     listOfNotNull(sess.osId?.let { "OS-ID $it" }, sess.email).forEach { Text(it, style = Aiimin.type.body.copy(color = c.textMuted)) }
-    if (!sess.verified) Text("Your email isn't verified yet. Check your inbox for the link from aiimin.in.", style = Aiimin.type.caption.copy(color = c.warn, fontSize = 13.sp), modifier = Modifier.padding(top = 8.dp))
+    if (!sess.verified) Text("Your email isn't verified yet. Check your inbox for the link from aiimin.in.", style = Aiimin.type.note.copy(color = c.warn), modifier = Modifier.padding(top = 8.dp))
     SectionHeader("Sync")
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
         Column(Modifier.weight(1f)) {
@@ -242,22 +242,22 @@ private fun SignedIn(sess: Session, s: AppSettings?, state: SyncState, busy: Boo
     Row(Modifier.fillMaxWidth().clickable { nav.open(Route.SyncSettings) }.heightIn(min = 60.dp), verticalAlignment = Alignment.CenterVertically) {
         Icon(AppIcons.Sliders, null, tint = c.text, modifier = Modifier.padding(end = 16.dp))
         Column(Modifier.weight(1f)) {
-            Text("Sync settings", style = Aiimin.type.body.copy(color = c.text, fontSize = 16.sp))
+            Text("Sync settings", style = Aiimin.type.body.copy(color = c.text))
             Text(if (on.isEmpty()) "Nothing syncs. Everything stays on this phone." else on.joinToString(", ").replaceFirstChar { it.uppercase() }, style = Aiimin.type.caption)
         }
         Icon(AppIcons.CaretRight, null, tint = c.textMuted)
     }
     Hairline()
-    Text("Documents, emergency cards and health samples never sync. What syncs is stored on aiimin.in as plain text.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 10.dp))
+    Text("Documents, emergency cards and health samples never sync. What syncs is stored on aiimin.in as plain text.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 12.dp))
     SectionHeader("Account")
     Row(Modifier.fillMaxWidth().clickable { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://www.aiimin.in"))) }.heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
         Icon(AppIcons.Export, null, tint = c.text, modifier = Modifier.padding(end = 16.dp))
-        Text("Open aiimin.in", style = Aiimin.type.body.copy(color = c.text, fontSize = 16.sp))
+        Text("Open aiimin.in", style = Aiimin.type.body.copy(color = c.text))
     }
     Hairline()
     Row(Modifier.fillMaxWidth().clickable(onClick = onSignOut).heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
         Icon(AppIcons.Lock, null, tint = c.text, modifier = Modifier.padding(end = 16.dp))
-        Text("Sign out", style = Aiimin.type.body.copy(color = c.text, fontSize = 16.sp))
+        Text("Sign out", style = Aiimin.type.body.copy(color = c.text))
     }
     Hairline()
 }
@@ -300,7 +300,7 @@ fun PrivacyScreen(vm: AccountViewModel = hiltViewModel(), me: MeViewModel = hilt
                 "Never leaves the phone" to "Document files, bank-message text, emergency cards and health samples.",
                 "Never done" to "Selling your data, ads, lending, or credit scoring.",
             ).forEach { (h, b) ->
-                Text(h, style = Aiimin.type.headline, modifier = Modifier.padding(top = 14.dp))
+                Text(h, style = Aiimin.type.headline, modifier = Modifier.padding(top = 16.dp))
                 Text(b, style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(top = 2.dp))
             }
             SectionHeader("Protection")
@@ -327,7 +327,7 @@ fun PrivacyScreen(vm: AccountViewModel = hiltViewModel(), me: MeViewModel = hilt
             }.heightIn(min = 60.dp), verticalAlignment = Alignment.CenterVertically) {
                 Icon(AppIcons.Export, null, tint = c.text, modifier = Modifier.padding(end = 16.dp))
                 Column {
-                    Text("Export everything", style = Aiimin.type.body.copy(color = c.text, fontSize = 16.sp))
+                    Text("Export everything", style = Aiimin.type.body.copy(color = c.text))
                     Text("A zip of your log, tasks, notes and vault files", style = Aiimin.type.caption)
                 }
             }
@@ -377,8 +377,8 @@ fun PrivacyScreen(vm: AccountViewModel = hiltViewModel(), me: MeViewModel = hilt
 @Composable
 private fun DangerRow(title: String, sub: String, onClick: () -> Unit) {
     val c = Aiimin.colors
-    Column(Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 14.dp)) {
-        Text(title, style = Aiimin.type.body.copy(color = c.warn, fontSize = 16.sp, fontWeight = FontWeight.Medium))
+    Column(Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 16.dp)) {
+        Text(title, style = Aiimin.type.body.copy(color = c.warn, fontWeight = FontWeight.Medium))
         Text(sub, style = Aiimin.type.caption)
     }
     Hairline()
@@ -415,19 +415,19 @@ fun YourRightsScreen(me: MeViewModel = hiltViewModel()) {
             Hairline()
             ListRow("Erase this phone or delete your account", subtitle = "Settings > Privacy > Erase", leading = { IconTile(AppIcons.Trash) }, onClick = { nav.open(Route.Privacy) })
             SectionHeader("Withdraw consent")
-            Text(Rights.WITHDRAW, style = Aiimin.type.caption.copy(fontSize = 14.sp, lineHeight = 21.sp))
+            Text(Rights.WITHDRAW, style = Aiimin.type.note)
             SectionHeader("Ask us")
-            Text(Rights.IDENTIFIER, style = Aiimin.type.caption.copy(fontSize = 14.sp, lineHeight = 21.sp))
-            Text("Reply time: ${Rights.REPLY}", style = Aiimin.type.caption.copy(fontSize = 14.sp, lineHeight = 21.sp), modifier = Modifier.padding(top = 6.dp))
-            Spacer(Modifier.height(10.dp))
+            Text(Rights.IDENTIFIER, style = Aiimin.type.note)
+            Text("Reply time: ${Rights.REPLY}", style = Aiimin.type.note, modifier = Modifier.padding(top = 8.dp))
+            Spacer(Modifier.height(12.dp))
             AppButton("Write to ${Rights.EMAIL}", { mail("My data rights") }, Modifier.fillMaxWidth(), kind = ButtonKind.SECONDARY, icon = AppIcons.EnvelopeSimple)
             SectionHeader("Nominate someone")
-            Text(Rights.NOMINATE, style = Aiimin.type.caption.copy(fontSize = 14.sp, lineHeight = 21.sp))
-            AppButton("Name a nominee by email", { mail("Nominee for my AIIMIN account") }, Modifier.padding(top = 10.dp), kind = ButtonKind.GHOST, compact = true)
+            Text(Rights.NOMINATE, style = Aiimin.type.note)
+            AppButton("Name a nominee by email", { mail("Nominee for my AIIMIN account") }, Modifier.padding(top = 12.dp), kind = ButtonKind.GHOST, compact = true)
             SectionHeader("Complain")
-            Text(Rights.BOARD, style = Aiimin.type.caption.copy(fontSize = 14.sp, lineHeight = 21.sp))
+            Text(Rights.BOARD, style = Aiimin.type.note)
             SectionHeader("If there is a breach")
-            Text(Rights.BREACH, style = Aiimin.type.caption.copy(fontSize = 14.sp, lineHeight = 21.sp))
+            Text(Rights.BREACH, style = Aiimin.type.note)
             Text("Grievance contact: ${Rights.EMAIL}", style = Aiimin.type.label, modifier = Modifier.padding(top = 20.dp, bottom = 32.dp))
         }
     }

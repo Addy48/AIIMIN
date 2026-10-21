@@ -275,8 +275,8 @@ fun NotesScreen(vm: NotesViewModel = hiltViewModel()) {
                 Row(Modifier.fillMaxWidth().enterStagger(i).background(tint).clickable { nav.open(Route.Note(n.id)) }.padding(horizontal = Aiimin.space.gutter, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            if (n.pinned) Icon(AppIcons.PushPin, "Pinned", tint = c.accent, modifier = Modifier.size(14.dp).padding(end = 4.dp))
-                            if (n.locked) Icon(AppIcons.Lock, null, tint = c.textMuted, modifier = Modifier.size(14.dp).padding(end = 4.dp))
+                            if (n.pinned) Icon(AppIcons.PushPin, "Pinned", tint = c.accent, modifier = Modifier.size(16.dp).padding(end = 4.dp))
+                            if (n.locked) Icon(AppIcons.Lock, null, tint = c.textMuted, modifier = Modifier.size(16.dp).padding(end = 4.dp))
                             // A locked note shows nothing of itself in the list (Part 11.6).
                             Text(if (n.locked) "Locked note" else n.title, style = Aiimin.type.bodyStrong, modifier = Modifier.weight(1f), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                             Text(Dates.relative(java.time.Instant.ofEpochMilli(n.updatedAt).atZone(java.time.ZoneId.systemDefault()).toLocalDate(), LocalDate.now()), style = Aiimin.type.caption)
@@ -310,11 +310,11 @@ private fun LockedGate(onUnlock: () -> Unit, hasLock: Boolean, onBack: () -> Uni
         TopBar("Note", onBack = onBack)
         Column(Modifier.fillMaxSize().padding(horizontal = 32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
             Icon(AppIcons.Lock, null, tint = c.textMuted, modifier = Modifier.size(40.dp))
-            Spacer(Modifier.height(14.dp))
+            Spacer(Modifier.height(16.dp))
             Text("This note is locked", style = Aiimin.type.cardTitle)
             Text(
                 if (hasLock) "Open it with your fingerprint, face or screen lock." else "This phone has no screen lock, so anyone holding it can open the note. Add one in Android settings to be asked.",
-                style = Aiimin.type.caption, textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.padding(top = 6.dp),
+                style = Aiimin.type.caption, textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.padding(top = 8.dp),
             )
             Spacer(Modifier.height(20.dp))
             AppButton("Open note", onUnlock, icon = AppIcons.LockOpen)
@@ -330,11 +330,11 @@ private fun UnreadableNote(onBack: () -> Unit) {
         TopBar("Note", onBack = onBack)
         Column(Modifier.fillMaxSize().padding(horizontal = 32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
             Icon(AppIcons.Lock, null, tint = c.textMuted, modifier = Modifier.size(40.dp))
-            Spacer(Modifier.height(14.dp))
+            Spacer(Modifier.height(16.dp))
             Text("This note can't be opened", style = Aiimin.type.cardTitle)
             Text(
                 "Its key on this phone is gone, so the text stays sealed. Nothing was changed.",
-                style = Aiimin.type.caption, textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.padding(top = 6.dp),
+                style = Aiimin.type.caption, textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.padding(top = 8.dp),
             )
         }
     }
@@ -475,7 +475,7 @@ fun NoteScreen(id: String?, vm: NoteViewModel = hiltViewModel()) {
     val voice = rememberVoiceInput(onText = { insertAtEnd((if (lines.getOrNull(focused)?.text.orEmpty().isBlank()) "" else " ") + it) }, onUnavailable = { toaster.show("Speech input isn't available on this phone") })
     val hasLinks = Regex("\\[\\[").containsMatchIn(body)
     val transform = remember(c) { MentionTransform(c.linkChip, c.linkChipText) }
-    val bodyStyle = Aiimin.type.body.copy(fontSize = 16.sp, lineHeight = 26.sp, color = c.text)
+    val bodyStyle = Aiimin.type.body.copy(color = c.text)
 
     Column(Modifier.fillMaxSize().background(c.base).imePadding()) {
         TopBar("Note", onBack = { nav.back() }) {
@@ -488,11 +488,11 @@ fun NoteScreen(id: String?, vm: NoteViewModel = hiltViewModel()) {
                     "Pinned to Today".takeIf { pinned }, "Locked".takeIf { note?.locked == true }, "Archived".takeIf { note?.archived == true },
                     note?.reminderAt?.takeIf { it > System.currentTimeMillis() }?.let(::reminderText), "Saved".takeIf { note != null },
                 ).joinToString(" · "),
-                style = Aiimin.type.body.copy(color = c.textMuted, fontSize = 14.sp),
+                style = Aiimin.type.body.copy(color = c.textMuted),
             )
-            Box(Modifier.padding(top = 6.dp)) {
-                if (title.isEmpty()) Text("Title", style = Aiimin.type.title.copy(fontSize = 30.sp, lineHeight = 36.sp, color = c.textFaint))
-                BasicTextField(title, { title = it.replace("\n", " ") }, textStyle = Aiimin.type.title.copy(fontSize = 30.sp, lineHeight = 36.sp), cursorBrush = SolidColor(c.accent), modifier = Modifier.fillMaxWidth())
+            Box(Modifier.padding(top = 8.dp)) {
+                if (title.isEmpty()) Text("Title", style = Aiimin.type.title.copy(color = c.textFaint))
+                BasicTextField(title, { title = it.replace("\n", " ") }, textStyle = Aiimin.type.title, cursorBrush = SolidColor(c.accent), modifier = Modifier.fillMaxWidth())
             }
             Spacer(Modifier.height(16.dp))
             lines.forEachIndexed { i, line ->
@@ -504,7 +504,7 @@ fun NoteScreen(id: String?, vm: NoteViewModel = hiltViewModel()) {
                     Row(Modifier.fillMaxWidth().padding(vertical = if (check) 8.dp else 6.dp), verticalAlignment = Alignment.Top) {
                         if (check) {
                             Box(
-                                Modifier.padding(top = 2.dp, end = 14.dp).size(24.dp).clip(RoundedCornerShape(6.dp))
+                                Modifier.padding(top = 2.dp, end = 16.dp).size(24.dp).clip(RoundedCornerShape(6.dp))
                                     .background(if (done) c.text else Color.Transparent)
                                     .border(1.5.dp, if (done) c.text else c.textFaint, RoundedCornerShape(6.dp))
                                     .clickable { setLine(i, (if (done) "- [ ] " else "- [x] ") + text) },
@@ -563,7 +563,7 @@ fun NoteScreen(id: String?, vm: NoteViewModel = hiltViewModel()) {
                         append("Type "); withStyle(SpanStyle(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)) { append("[[") }
                         append(" to link a task, document, person or payment. Linked items open from here, and show this note back.")
                     },
-                    style = Aiimin.type.body.copy(fontSize = 15.sp, lineHeight = 22.sp),
+                    style = Aiimin.type.body,
                 )
             }
             if (links.isNotEmpty() || backlinks.isNotEmpty()) {
@@ -591,7 +591,7 @@ fun NoteScreen(id: String?, vm: NoteViewModel = hiltViewModel()) {
         }
         Hairline()
         Row(Modifier.fillMaxWidth().padding(horizontal = Aiimin.space.gutter, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(48.dp).clickable { insertAtEnd("[["); picking = true }, contentAlignment = Alignment.Center) { Text("[[", style = Aiimin.type.title.copy(fontSize = 20.sp)) }
+            Box(Modifier.size(48.dp).clickable { insertAtEnd("[["); picking = true }, contentAlignment = Alignment.Center) { Text("[[", style = Aiimin.type.cardTitle) }
             AppIconButton(AppIcons.ListChecks, "Checklist", { toggleChecklist() })
             AppIconButton(AppIcons.Camera, "Add a picture or scan", { adding = true })
             AppIconButton(AppIcons.Sparkle, "Sort it", { sorting = true })
@@ -725,7 +725,7 @@ fun JournalScreen(vm: JournalViewModel = hiltViewModel()) {
             Tag(if (syncs) "Encrypted on this phone · a plain-text copy syncs to aiimin.in" else "Private · encrypted on this phone", icon = AppIcons.Lock)
         }
         entries?.let { all ->
-            MoodMonth(all, Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 14.dp)) { nav.open(Route.MoodYear) }
+            MoodMonth(all, Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 16.dp)) { nav.open(Route.MoodYear) }
         }
         val list = entries
         if (list != null && list.isEmpty()) {
@@ -772,7 +772,7 @@ private fun MoodMonth(all: List<JournalEntry>, modifier: Modifier, onOpen: () ->
     Column(modifier.fillMaxWidth().clickable(onClick = onOpen)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(ym.month.getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.ENGLISH), style = Aiimin.type.caption, modifier = Modifier.weight(1f))
-            Text("Mood year", style = Aiimin.type.label.copy(color = Aiimin.colors.link, fontSize = 13.sp))
+            Text("Mood year", style = Aiimin.type.label.copy(color = Aiimin.colors.link))
         }
         Spacer(Modifier.height(8.dp))
         // D-018: two rows of equal columns, so the second row lines up with the first; the strip as a whole
@@ -812,26 +812,26 @@ fun MoodYearScreen(vm: JournalViewModel = hiltViewModel()) {
             item {
                 val inYear = moods.filterKeys { it.year == year }
                 val withMood = inYear.values.filterNotNull()
-                Text("$year", style = Aiimin.type.title.copy(fontSize = 26.sp))
+                Text("$year", style = Aiimin.type.title)
                 Text(
                     if (inYear.isEmpty()) "No entries this year." else "${inYear.size} ${if (inYear.size == 1) "day" else "days"} written" + if (withMood.isNotEmpty()) " · mostly ${moodLabels[(withMood.average().roundToInt() - 1).coerceIn(0, 4)].lowercase()}" else "",
                     style = Aiimin.type.caption,
                 )
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(12.dp))
                 // Legend in words.
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
                     (1..5).forEach { m ->
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            MoodSquare(m, true, 12.dp); Spacer(Modifier.width(4.dp)); Text(moodLabels[m - 1], style = Aiimin.type.caption.copy(fontSize = 11.5.sp))
+                            MoodSquare(m, true, 12.dp); Spacer(Modifier.width(4.dp)); Text(moodLabels[m - 1], style = Aiimin.type.caption)
                         }
                     }
                 }
-                Spacer(Modifier.height(14.dp))
+                Spacer(Modifier.height(16.dp))
             }
             // D-037: twelve small month calendars (Monday first) in two columns; tapping a month opens it below
             // as a full-width calendar whose days are real 44 dp+ targets.
             items((1..12).chunked(2)) { pair ->
-                Row(Modifier.fillMaxWidth().padding(vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     pair.forEach { mo ->
                         val ym = java.time.YearMonth.of(year, mo)
                         val future = ym.atDay(1).isAfter(LocalDate.now())
@@ -901,9 +901,9 @@ private fun MonthGrid(ym: java.time.YearMonth, moods: Map<LocalDate, Int?>, pick
 @Composable
 private fun JournalCard(e: JournalEntry, onClick: () -> Unit) {
     val c = Aiimin.colors
-    Column(Modifier.fillMaxWidth().padding(vertical = 6.dp).clickable(onClick = onClick)) {
+    Column(Modifier.fillMaxWidth().padding(vertical = 8.dp).clickable(onClick = onClick)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            e.mood?.let { Icon(moodIcon(it), moodLabels[it - 1], tint = c.textMuted, modifier = Modifier.size(16.dp)); Spacer(Modifier.size(6.dp)) }
+            e.mood?.let { Icon(moodIcon(it), moodLabels[it - 1], tint = c.textMuted, modifier = Modifier.size(16.dp)); Spacer(Modifier.size(8.dp)) }
             Text("${e.words} words" + if (e.qualityOk) "" else " · short", style = Aiimin.type.caption)
         }
         // D-018: a long entry ends with an ellipsis; the card opens the whole entry.

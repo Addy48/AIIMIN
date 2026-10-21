@@ -135,7 +135,7 @@ fun SettingsScreen(vm: MeViewModel = hiltViewModel()) {
                 SectionHeader("Notifications")
                 SwitchRow("Quiet hours", st.quiet.enabled, { v -> vm.update { it.copy(quiet = it.quiet.copy(enabled = v)) } }, subtitle = "Nudges wait for the morning. Your reminders still arrive, without sound; safety alerts always ring.")
                 if (st.quiet.enabled) {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         ListRow("From", subtitle = Dates.clock(LocalTime.of(st.quiet.fromMin / 60, st.quiet.fromMin % 60)), modifier = Modifier.weight(1f), onClick = { quietPick = "from" })
                         ListRow("Until", subtitle = Dates.clock(LocalTime.of(st.quiet.toMin / 60, st.quiet.toMin % 60)), modifier = Modifier.weight(1f), onClick = { quietPick = "to" })
                     }
@@ -165,7 +165,7 @@ fun SettingsScreen(vm: MeViewModel = hiltViewModel()) {
                         context.startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).setType("application/zip").putExtra(Intent.EXTRA_STREAM, uri).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION), "Export"))
                     }
                 })
-                Text("No lending, no credit scoring, no selling data. SMS and documents are read on this phone.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 10.dp))
+                Text("No lending, no credit scoring, no selling data. SMS and documents are read on this phone.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 12.dp))
             }
         }
     }
@@ -175,12 +175,12 @@ fun SettingsScreen(vm: MeViewModel = hiltViewModel()) {
         var mode by remember { mutableStateOf(when (st.dayMode) { DayMode.Midnight -> 0; is DayMode.FixedEnd -> 1; is DayMode.Roster -> 2 }) }
         AppSheet({ dayMode = false }, title = "When your day ends", subtitle = "Applies from tomorrow; can change once every 14 days, so nobody moves midnight to save a day.") {
             Segmented(listOf("Midnight", "Later", "Shift roster"), mode, { mode = it })
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(12.dp))
             when (mode) {
                 1 -> PillRow { (1..5).forEach { h -> Pill("$h AM", end == h, { end = h }) } }
                 2 -> AppTextField(roster, { roster = it.uppercase() }, label = "Pattern from today (D day · N night · O off)")
             }
-            Spacer(Modifier.height(14.dp))
+            Spacer(Modifier.height(16.dp))
             AppButton("Save", {
                 scope.launch {
                     val m = when (mode) {

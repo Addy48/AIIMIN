@@ -143,7 +143,7 @@ fun AppIconButton(
             .semantics { this.contentDescription = contentDescription },
         contentAlignment = Alignment.Center,
     ) {
-        Icon(icon, null, tint = tint, modifier = Modifier.size(22.dp))
+        Icon(icon, null, tint = tint, modifier = Modifier.size(24.dp))
     }
 }
 
@@ -183,15 +183,15 @@ fun CheckCircle(
     ) {
         Box(
             Modifier
-                .size(22.dp)
-                .then(if (proof && checked) Modifier.border(1.5.dp, color, RoundedCornerShape(8.dp)).padding(2.5.dp) else Modifier)
+                .size(24.dp)
+                .then(if (proof && checked) Modifier.border(1.5.dp, color, RoundedCornerShape(8.dp)).padding(4.dp) else Modifier)
                 .clip(shape)
                 .background(fill)
                 .then(if (checked) Modifier else Modifier.border(1.5.dp, c.textFaint, shape)),
             contentAlignment = Alignment.Center,
         ) {
             if (tick > 0.01f) {
-                Icon(AppIcons.Check, null, tint = c.onInk, modifier = Modifier.size(15.dp).scale(0.6f + 0.4f * tick).alpha(tick))
+                Icon(AppIcons.Check, null, tint = c.onInk, modifier = Modifier.size(16.dp).scale(0.6f + 0.4f * tick).alpha(tick))
             }
         }
     }
@@ -237,10 +237,10 @@ fun Pill(
             .heightIn(min = 40.dp)
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         if (icon != null) Icon(icon, null, tint = fg, modifier = Modifier.size(16.dp))
-        Text(text, style = Aiimin.type.label.copy(color = fg, fontSize = 14.sp), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+        Text(text, style = Aiimin.type.labelLarge.copy(color = fg), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
         if (count != null) Text(count.toString(), style = Aiimin.type.caption.copy(color = fg.copy(alpha = 0.7f)))
     }
 }
@@ -265,7 +265,7 @@ fun Segmented(options: List<String>, selected: Int, onSelect: (Int) -> Unit, mod
     val inner = RoundedCornerShape(8.dp)
     BoxWithConstraints(
         // A fixed 48 dp target: BoxWithConstraints can't be measured intrinsically, and the labels auto-size to fit.
-        modifier.fillMaxWidth().height(48.dp).clip(Shapes.control).background(c.segmentTrack).padding(3.dp),
+        modifier.fillMaxWidth().height(48.dp).clip(Shapes.control).background(c.segmentTrack).padding(4.dp),
     ) {
         val w = maxWidth / options.size
         val x by animateDpAsState(w * selected, Motion.move(LocalReduceMotion.current, Motion.springSoft()), label = "thumb")
@@ -283,7 +283,7 @@ fun Segmented(options: List<String>, selected: Int, onSelect: (Int) -> Unit, mod
                     // Equal widths; at large text a long label steps its size down instead of touching its neighbour (D-007).
                     val st = Aiimin.type.label.copy(color = c.text, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center)
                     androidx.compose.foundation.text.BasicText(
-                        o, style = st, maxLines = 1, modifier = Modifier.padding(horizontal = 6.dp),
+                        o, style = st, maxLines = 1, modifier = Modifier.padding(horizontal = 8.dp),
                         autoSize = androidx.compose.foundation.text.TextAutoSize.StepBased(minFontSize = 10.sp, maxFontSize = st.fontSize, stepSize = 0.5.sp),
                     )
                 }
@@ -313,7 +313,7 @@ fun AppTextField(
     val c = Aiimin.colors
     androidx.compose.foundation.layout.Column(modifier) {
         if (label != null) {
-            Text(label, style = Aiimin.type.caption, modifier = Modifier.padding(start = 4.dp, bottom = 6.dp))
+            Text(label, style = Aiimin.type.caption, modifier = Modifier.padding(start = 4.dp, bottom = 8.dp))
         }
         Row(
             Modifier
@@ -322,18 +322,18 @@ fun AppTextField(
                 .background(c.surface)
                 .border(1.dp, c.borderStrong, Shapes.control)
                 .heightIn(min = 48.dp)
-                .padding(horizontal = 14.dp, vertical = 12.dp),
+                .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = if (singleLine) Alignment.CenterVertically else Alignment.Top,
         ) {
             if (leading != null) {
-                Icon(leading, null, tint = c.textFaint, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.width(10.dp))
+                Icon(leading, null, tint = c.textFaint, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.width(12.dp))
             }
             Box(Modifier.weight(1f)) {
                 // D-030/D-038: one line, and 3 dp clear of the cursor so the caret never sits on the first letter.
                 if (value.isEmpty()) {
                     Text(
-                        placeholder, style = textStyle.copy(color = c.textFaint), modifier = Modifier.padding(start = 3.dp),
+                        placeholder, style = textStyle.copy(color = c.textFaint), modifier = Modifier.padding(start = 4.dp),
                         maxLines = if (singleLine) 1 else Int.MAX_VALUE, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                     )
                 }
@@ -370,9 +370,9 @@ fun SwitchRow(title: String, checked: Boolean, onChange: (Boolean) -> Unit, subt
             val x by animateDpAsState(if (checked) 16.dp else 0.dp, Motion.move(LocalReduceMotion.current, Motion.quick()), label = "knob")
             val track = if (checked) c.text else c.borderStrong
             Box(
-                Modifier.width(46.dp).height(28.dp).clip(Shapes.control).background(track).padding(3.dp),
+                Modifier.width(48.dp).height(28.dp).clip(Shapes.control).background(track).padding(4.dp),
             ) {
-                Box(Modifier.offset(x = x + 2.dp).size(22.dp).clip(RoundedCornerShape(6.dp)).background(c.paper))
+                Box(Modifier.offset(x = x + 2.dp).size(24.dp).clip(RoundedCornerShape(6.dp)).background(c.paper))
             }
         },
     )

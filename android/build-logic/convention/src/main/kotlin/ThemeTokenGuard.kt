@@ -55,6 +55,8 @@ abstract class ThemeTokenGuard : DefaultTask() {
         private val COLOUR = setOf("designsystem/theme/Palette.kt")
         private val FONT = setOf("designsystem/theme/Type.kt", "designsystem/theme/Palette.kt")
         private val MOTION = setOf("designsystem/theme/Motion.kt")
+        // The boot scene scales its type with the screen; buttons pick between two scale sizes.
+        private val TYPE_OK = FONT + setOf("designsystem/component/BootScene.kt", "designsystem/component/Controls.kt")
         // The printable emergency sheet is a PDF drawn with android.graphics, not a screen.
         private val PRINT = setOf("core/data/vault/VaultBackup.kt") + FONT
         val RULES = listOf(
@@ -67,6 +69,10 @@ abstract class ThemeTokenGuard : DefaultTask() {
             Rule("raw keyframes", Regex("""\bkeyframes(<[^>]*>)?\s*\{"""), MOTION),
             Rule("colour animation", Regex("""\banimateColorAsState\b"""), MOTION),
             Rule("size animation", Regex("""\banimateContentSize\b"""), MOTION),
+            // PRD 4.4: an 8 dp grid with 4 dp half-steps. Spacing and small sizes off it read as misalignment.
+            Rule("off-grid spacing", Regex("""\b(padding|spacedBy|height|width|size|heightIn|widthIn)\([^()]*(?<![\w.])(3|5|6|7|9|10|11|13|14|15|17|18|19|21|22|23|25|26|27|29|30|31|33|34|35|37|38|39|41|42|43|45|46|47|49|50|51|53|54|55|57|58|59|61|62|63)\.dp"""), emptySet()),
+            // PRD 4.4: text sizes come from the type scale (Type.kt); one-off sizes are how screens drift apart.
+            Rule("one-off text size", Regex("""Aiimin\.type\.(caption|label|body|bodyStrong|title|headline)\.copy\([^)]*fontSize"""), TYPE_OK),
         )
 
         // PRD 13.2 / 8.3: no guilt words in anything a person reads. Parser vocabularies and wire names are not copy.

@@ -116,7 +116,7 @@ internal fun WhatNowCard(
         AppSheet(onDismiss = { why = false }, title = "Why this?", subtitle = WhatNowText.why(line, h24)) {
             Text(
                 "Today picks one line in a fixed order: focus, the next 90 minutes, bills due, wrapping up, a fresh start, an evening minimum, your top task. Nothing is sent anywhere.",
-                style = Aiimin.type.caption.copy(fontSize = 14.sp, lineHeight = 20.sp),
+                style = Aiimin.type.note,
             )
             Spacer(Modifier.height(16.dp))
             if (line.kind != NowKind.CLEAR) {
@@ -213,8 +213,8 @@ internal fun QuickDoorsRow(keys: List<String>, pinned: List<String>, onPin: (Str
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) {
-                Icon(d.icon, null, tint = c.text, modifier = Modifier.size(22.dp))
-                Spacer(Modifier.height(6.dp))
+                Icon(d.icon, null, tint = c.text, modifier = Modifier.size(24.dp))
+                Spacer(Modifier.height(8.dp))
                 Text(d.title, style = Aiimin.type.label, maxLines = 2, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center)
             }
         }

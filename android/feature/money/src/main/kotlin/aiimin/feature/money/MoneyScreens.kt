@@ -92,7 +92,7 @@ internal val monthFmt = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH)
 internal fun TxnRow(t: TxnEntity, onClick: () -> Unit) {
     val c = Aiimin.colors
     Row(
-        Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = Aiimin.space.gutter, vertical = 10.dp),
+        Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = Aiimin.space.gutter, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(Modifier.size(36.dp).clip(CircleShape).background(c.raised), contentAlignment = Alignment.Center) {
@@ -133,24 +133,24 @@ internal fun AddPaymentSheet(
         Spacer(Modifier.height(16.dp))
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
             Text("₹", style = Aiimin.type.numberLarge.copy(color = c.textMuted))
-            Spacer(Modifier.width(6.dp))
+            Spacer(Modifier.width(8.dp))
             Box(Modifier.weight(1f)) {
-                if (amount.isEmpty()) Text("0", style = Aiimin.type.numberLarge.copy(color = c.textFaint, fontSize = 40.sp))
+                if (amount.isEmpty()) Text("0", style = Aiimin.type.numberLarge.copy(color = c.textFaint))
                 BasicTextField(
                     amount, { v -> amount = v.filter { it.isDigit() || it == '.' }.take(10) },
-                    textStyle = Aiimin.type.numberLarge.copy(fontSize = 40.sp), singleLine = true, cursorBrush = SolidColor(c.accent),
+                    textStyle = Aiimin.type.numberLarge, singleLine = true, cursorBrush = SolidColor(c.accent),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), modifier = Modifier.fillMaxWidth(),
                 )
             }
         }
         Spacer(Modifier.height(12.dp))
         AppTextField(title, { title = it }, placeholder = if (income) "From (e.g. Salary, Client)" else "Where (e.g. Swiggy, Auto)")
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(12.dp))
         PillRow { (if (income) incomeCategories else spendCategories).forEach { k -> Pill(k, cat == k, { cat = k }) } }
         PillRow { Ledger.entries.forEach { e -> Pill(e.label, l == e, { l = e }) } }
         ListRow("Date", subtitle = Dates.relative(day, today), leading = { IconTile(AppIcons.Calendar) }, onClick = { pickDay = true })
         AppTextField(note, { note = it }, placeholder = if (income) "Note (optional)" else "What did you buy? (optional)")
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(16.dp))
         val paise = ((amount.toDoubleOrNull() ?: 0.0) * 100).toLong()
         AppButton("Save", { onSave(paise, if (income) "in" else "out", title.ifBlank { cat }, cat, l, day, note) }, Modifier.fillMaxWidth(), enabled = paise > 0)
     }
@@ -194,13 +194,13 @@ fun TxnScreen(id: String, vm: TxnViewModel = hiltViewModel()) {
                 Text("${Dates.long(LocalDate.parse(txn.day))} · ${txn.method}" + if (txn.source != "manual") " · from ${txn.source}" else "", style = Aiimin.type.caption)
                 Spacer(Modifier.height(16.dp))
                 AppTextField(title, { title = it }, label = if (txn.direction == "in") "From" else "Paid to")
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(12.dp))
                 SectionHeader("Category")
                 val cats by (if (txn.direction == "in") vm.categoriesIn else vm.categoriesOut).collectAsStateWithLifecycle()
                 PillRow { (cats.ifEmpty { if (txn.direction == "in") Categories.INCOME else Categories.SPEND } + listOf(cat)).distinct().forEach { k -> Pill(k, cat == k, { cat = k }) } }
                 SectionHeader("Ledger")
                 Segmented(Ledger.entries.map { it.label }, Ledger.entries.indexOf(ledger), { ledger = Ledger.entries[it] })
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(12.dp))
                 SwitchRow("Apply to this payee from now on", learn, { learn = it })
                 AppTextField(note, { note = it }, label = if (txn.direction == "in") "Note" else "What did you buy? (or a note)", singleLine = false, minLines = 2)
                 Spacer(Modifier.height(12.dp))

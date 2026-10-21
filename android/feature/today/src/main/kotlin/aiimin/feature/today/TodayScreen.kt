@@ -192,7 +192,7 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
                 if (LocalDensity.current.fontScale < 1.5f) {
                     Row(Modifier.fillMaxWidth().semantics(mergeDescendants = true) { contentDescription = "It is ${Dates.clock(now)}.$said" }) {
                         Text(Dates.clockPlain(now), style = Aiimin.type.display, modifier = Modifier.alignBy(LastBaseline))
-                        Spacer(Modifier.width(10.dp))
+                        Spacer(Modifier.width(12.dp))
                         Column(Modifier.weight(1f).alignBy(LastBaseline)) { meridiem(); greeting() }
                         // Raahi stands on the clock's baseline.
                         mini(Modifier.alignBy { it.measuredHeight }.padding(start = 8.dp))
@@ -226,7 +226,7 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
         stopAsk?.let { cat ->
             item { aiimin.designsystem.component.StopTheseCard(cat.label, onStop = { vm.answerStop(cat, true) }, onKeep = { vm.answerStop(cat, false) }, modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 12.dp)) }
         }
-        item { StatLine(u, Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 14.dp, bottom = 4.dp)) }
+        item { StatLine(u, Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 16.dp, bottom = 4.dp)) }
         item {
             DayHorizon(
                 nowMinute = now.hour * 60 + now.minute,
@@ -270,9 +270,9 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
         }
         if (u.minimums.isEmpty()) {
             item {
-                Column(Modifier.padding(horizontal = Aiimin.space.gutter).padding(bottom = 6.dp)) {
+                Column(Modifier.padding(horizontal = Aiimin.space.gutter).padding(bottom = 8.dp)) {
                     Text("The floor for a day you keep: small things you'd do even on a bad day.", style = Aiimin.type.caption)
-                    Spacer(Modifier.height(10.dp))
+                    Spacer(Modifier.height(12.dp))
                     AppButton("Add minimums", { nav.open(Route.Minimums) }, kind = ButtonKind.SECONDARY, compact = true)
                 }
             }
@@ -302,7 +302,7 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
                 Text(
                     "${later.count { it.kind == FlowKind.TASK }} tasks are tucked away. Turn off light day to see them.",
                     style = Aiimin.type.caption,
-                    modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(bottom = 6.dp),
+                    modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(bottom = 8.dp),
                 )
             }
         } else {
@@ -356,7 +356,7 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
                     }
                 }
             }
-            item { QuickAdd(u.date, vm, Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 10.dp)) }
+            item { QuickAdd(u.date, vm, Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 12.dp)) }
         }
 
         // ---- Pinned note
@@ -366,17 +366,17 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
                     SectionHeader("Pinned note")
                     Column(Modifier.fillMaxWidth().opensScreen(Route.Note(n.id)).pressable({ armShared(Route.Note(n.id)); nav.open(Route.Note(n.id)) })) {
                         Text(n.title.ifBlank { "Untitled" }, style = Aiimin.type.headline)
-                        Text(aiimin.core.data.notes.notePreview(n.body), style = Aiimin.type.caption.copy(fontSize = 14.sp, lineHeight = 20.sp), maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 3.dp))
+                        Text(aiimin.core.data.notes.notePreview(n.body), style = Aiimin.type.note, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 4.dp))
                     }
                 }
             }
         }
         // ---- Body of the day (streak and battery live in You, PRD 1.2)
-        item { PhoneBody(u, Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 14.dp)) }
+        item { PhoneBody(u, Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 16.dp)) }
         // At a glance: Money review, Vault and Journal one tap from Today (findability audit, plan §2.3.3).
         if (u.glance.isNotEmpty()) {
             item {
-                Column(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 14.dp)) {
+                Column(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 16.dp)) {
                     SectionHeader("At a glance")
                     u.glance.forEach { g ->
                         Row(
@@ -386,7 +386,7 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
                             val warn = g.area == GlanceArea.VAULT
                             Icon(
                                 when (g.area) { GlanceArea.MONEY -> AppIcons.Wallet; GlanceArea.VAULT -> AppIcons.WarningCircle; GlanceArea.JOURNAL -> AppIcons.BookOpen },
-                                null, tint = if (warn) Aiimin.colors.warn else Aiimin.colors.text, modifier = Modifier.size(22.dp),
+                                null, tint = if (warn) Aiimin.colors.warn else Aiimin.colors.text, modifier = Modifier.size(24.dp),
                             )
                             Spacer(Modifier.width(12.dp))
                             Text(g.text, style = Aiimin.type.body, modifier = Modifier.weight(1f), maxLines = 2, overflow = TextOverflow.Ellipsis)
@@ -451,12 +451,12 @@ internal fun ago(at: Long): String {
 @Composable
 private fun TodaySkeleton() {
     Column(Modifier.fillMaxSize().background(Aiimin.colors.base).padding(Aiimin.space.gutter).padding(top = 64.dp)) {
-        Skeleton(Modifier.width(160.dp).height(26.dp))
+        Skeleton(Modifier.width(160.dp).height(28.dp))
         Spacer(Modifier.height(24.dp))
         Skeleton(Modifier.width(150.dp).height(60.dp))
-        Spacer(Modifier.height(18.dp))
+        Spacer(Modifier.height(20.dp))
         Skeleton(Modifier.fillMaxWidth().height(84.dp))
-        Spacer(Modifier.height(22.dp))
+        Spacer(Modifier.height(24.dp))
         Skeleton(Modifier.fillMaxWidth().height(150.dp))
     }
 }
@@ -476,7 +476,7 @@ private fun StatLine(u: TodayUi, modifier: Modifier) {
     fun RowScope.Cell(value: String, label: String, route: Route, trailing: (@Composable () -> Unit)? = null) {
         // Owner, 20 Oct: each figure and its label centred in its own equal column.
         Column(
-            Modifier.weight(1f).opensScreen(route).clip(Shapes.small).clickable { armShared(route); nav.open(route) }.padding(vertical = 6.dp),
+            Modifier.weight(1f).opensScreen(route).clip(Shapes.small).clickable { armShared(route); nav.open(route) }.padding(vertical = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -495,7 +495,7 @@ private fun StatLine(u: TodayUi, modifier: Modifier) {
                 Cell(if (left != null && left > 0) (if (left == 1) "1 day" else "$left days") else "Soon", "Until your score", Route.Score)
             }
             else -> Cell(score.toString(), life.readout.band.label, Route.Score) {
-                Icon(when (momentum(life.readout.series.mapNotNull { it.score })) { 1 -> AppIcons.ArrowUp; -1 -> AppIcons.ArrowDown; else -> AppIcons.ArrowRight }, null, tint = c.textMuted, modifier = Modifier.size(14.dp))
+                Icon(when (momentum(life.readout.series.mapNotNull { it.score })) { 1 -> AppIcons.ArrowUp; -1 -> AppIcons.ArrowDown; else -> AppIcons.ArrowRight }, null, tint = c.textMuted, modifier = Modifier.size(16.dp))
             }
         }
         Cell("${u.minimums.count { it.done }}/${u.minimums.size}", "Minimums", Route.Minimums)
@@ -552,7 +552,7 @@ private fun MinimumRow(m: MinimumToday, lowBattery: Boolean, onToggle: () -> Uni
         Modifier
             .fillMaxWidth()
             .combinedClickable(onClick = onToggle, onLongClick = onLong, onClickLabel = if (m.done) "Untick" else "Keep")
-            .padding(start = Aiimin.space.gutter - 10.dp, end = Aiimin.space.gutter - 4.dp)
+            .padding(start = Aiimin.space.gutter - 12.dp, end = Aiimin.space.gutter - 4.dp)
             .heightIn(min = 56.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -583,11 +583,11 @@ private fun QuickAdd(day: java.time.LocalDate, vm: TodayViewModel, modifier: Mod
     var text by remember { mutableStateOf("") }
     val part = aiimin.core.data.plan.DayPart.now()
     Row(
-        modifier.fillMaxWidth().clip(Shapes.control).border(1.dp, c.borderStrong, Shapes.control).padding(horizontal = 14.dp).heightIn(min = 48.dp),
+        modifier.fillMaxWidth().clip(Shapes.control).border(1.dp, c.borderStrong, Shapes.control).padding(horizontal = 16.dp).heightIn(min = 48.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(AppIcons.Plus, null, tint = c.textFaint, modifier = Modifier.size(16.dp))
-        Spacer(Modifier.width(10.dp))
+        Spacer(Modifier.width(12.dp))
         Box(Modifier.weight(1f)) {
             if (text.isEmpty()) Text("Add a task for ${part.label.lowercase()}", style = Aiimin.type.body.copy(color = c.textFaint))
             BasicTextField(
@@ -605,9 +605,9 @@ private fun QuickAdd(day: java.time.LocalDate, vm: TodayViewModel, modifier: Mod
 internal fun BatteryMeter(fraction: Float, low: Boolean, segments: Int = 10, modifier: Modifier = Modifier) {
     val c = Aiimin.colors
     val on = (fraction.coerceIn(0f, 1f) * segments).let { kotlin.math.round(it).toInt() }
-    Row(modifier.semantics { contentDescription = "Battery ${(fraction * 100).toInt()} percent" }, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+    Row(modifier.semantics { contentDescription = "Battery ${(fraction * 100).toInt()} percent" }, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
         repeat(segments) { i ->
-            Box(Modifier.size(width = 7.dp, height = 12.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(1.5.dp)).background(if (i < on) (if (low) c.warn else c.text) else c.overlay))
+            Box(Modifier.size(width = 8.dp, height = 12.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(1.5.dp)).background(if (i < on) (if (low) c.warn else c.text) else c.overlay))
         }
     }
 }
@@ -622,7 +622,7 @@ private fun PhoneBody(u: TodayUi, modifier: Modifier) {
             // Total matches Android's Digital Wellbeing (calendar day); the caption says what the score counts.
             val sum = d?.screenMs?.let { ScreenSummary.of(it, d.screenPersonalMs ?: it, emptyList(), 0) }
             Text("Screen time", style = Aiimin.type.caption)
-            Text(sum?.let { ScreenSummary.fmt(it.totalMs) } ?: "—", style = Aiimin.type.numberSmall, modifier = Modifier.padding(top = 3.dp))
+            Text(sum?.let { ScreenSummary.fmt(it.totalMs) } ?: "—", style = Aiimin.type.numberSmall, modifier = Modifier.padding(top = 4.dp))
             Text(
                 sum?.countedLine ?: d?.pickups?.let { ScreenSummary.pickupLine(it, d.pickupsLabel) } ?: d?.unlocks?.let { ScreenSummary.pickupLine(it, "unlocks") } ?: "Turn on screen time",
                 style = Aiimin.type.caption,
@@ -631,7 +631,7 @@ private fun PhoneBody(u: TodayUi, modifier: Modifier) {
         Box(Modifier.width(1.dp).height(72.dp).background(c.border))
         Column(Modifier.weight(1f).clickable { nav.open(Route.Body) }.padding(vertical = 12.dp, horizontal = 16.dp)) {
             Text("Sleep · steps", style = Aiimin.type.caption)
-            Text(d?.sleepMin?.let { Dates.minutes(it.toLong()) } ?: "—", style = Aiimin.type.numberSmall, modifier = Modifier.padding(top = 3.dp))
+            Text(d?.sleepMin?.let { Dates.minutes(it.toLong()) } ?: "—", style = Aiimin.type.numberSmall, modifier = Modifier.padding(top = 4.dp))
             Text(d?.steps?.let { "%,d steps".format(it) } ?: "Connect sensors", style = Aiimin.type.caption)
         }
     }
@@ -679,10 +679,10 @@ private fun KeepAliveCard(vm: TodayViewModel, modifier: Modifier) {
     val shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp)
     Column(modifier.fillMaxWidth().clip(shape).background(c.surface).border(1.dp, c.border, shape).padding(16.dp)) {
         Text("Your phone is pausing AIIMIN in the background", style = Aiimin.type.headline)
-        Text("So screen time, steps and reminders pause until you open the app. $text", style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp))
+        Text("So screen time, steps and reminders pause until you open the app. $text", style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp))
         // Primary action full width; the two quiet ones share a row. Fits any phone width and text size.
-        AppButton("Open App info", { runCatching { context.startActivity(vm.appDetails()) } }, Modifier.fillMaxWidth().padding(top = 14.dp))
-        Row(Modifier.fillMaxWidth().padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        AppButton("Open App info", { runCatching { context.startActivity(vm.appDetails()) } }, Modifier.fillMaxWidth().padding(top = 16.dp))
+        Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             AppButton("What's running", { nav.open(aiimin.designsystem.nav.Route.Running) }, Modifier.weight(1f), kind = ButtonKind.GHOST, compact = true)
             AppButton("Later", { vm.dismissKeepAlive() }, Modifier.weight(1f), kind = ButtonKind.GHOST, compact = true)
         }
@@ -692,13 +692,13 @@ private fun KeepAliveCard(vm: TodayViewModel, modifier: Modifier) {
 @Composable
 private fun SetupRow(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, sub: String, onClick: () -> Unit) {
     val c = Aiimin.colors
-    Row(Modifier.fillMaxWidth().clip(androidx.compose.foundation.shape.RoundedCornerShape(10.dp)).clickable(onClick = onClick).heightIn(min = 56.dp).padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-        Icon(icon, null, tint = c.text, modifier = Modifier.size(22.dp))
+    Row(Modifier.fillMaxWidth().clip(androidx.compose.foundation.shape.RoundedCornerShape(10.dp)).clickable(onClick = onClick).heightIn(min = 56.dp).padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+        Icon(icon, null, tint = c.text, modifier = Modifier.size(24.dp))
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             Text(title, style = Aiimin.type.bodyStrong)
             Text(sub, style = Aiimin.type.caption)
         }
-        Text("Turn on", style = Aiimin.type.label.copy(color = c.link, fontSize = 14.sp))
+        Text("Turn on", style = Aiimin.type.labelLarge.copy(color = c.link))
     }
 }

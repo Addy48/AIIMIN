@@ -472,7 +472,7 @@ private fun FocusPill(f: ActiveFocus, modifier: Modifier, onClick: () -> Unit) {
     val left = f.plannedMin * 60_000L - f.elapsedMs(now)
     val ms = kotlin.math.abs(left)
     Row(
-        modifier.clip(Shapes.control).background(c.overlay).border(1.dp, c.borderStrong, Shapes.control).clickable(onClick = onClick).padding(horizontal = 14.dp, vertical = 10.dp),
+        modifier.clip(Shapes.control).background(c.overlay).border(1.dp, c.borderStrong, Shapes.control).clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(if (f.running) AppIcons.Timer else AppIcons.Pause, null, tint = c.accent, modifier = Modifier.size(16.dp))

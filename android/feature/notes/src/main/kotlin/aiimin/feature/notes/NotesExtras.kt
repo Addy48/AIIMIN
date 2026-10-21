@@ -174,7 +174,7 @@ fun PictureStrip(items: List<NoteAttachment>, dir: File, onRemove: (NoteAttachme
                 Thumb(File(dir, a.file), Modifier.fillMaxWidth().heightIn(max = 360.dp), crop = false)
                 Spacer(Modifier.height(12.dp))
                 Text(if (a.text.isBlank()) "No text found in this picture." else "Text read on this phone, searchable:", style = Aiimin.type.caption)
-                if (a.text.isNotBlank()) Text(a.text, style = Aiimin.type.body, modifier = Modifier.padding(top = 6.dp))
+                if (a.text.isNotBlank()) Text(a.text, style = Aiimin.type.body, modifier = Modifier.padding(top = 8.dp))
                 Spacer(Modifier.height(16.dp))
                 AppButton("Remove picture", { onRemove(a); open = null }, Modifier.fillMaxWidth(), kind = ButtonKind.GHOST)
             }
@@ -218,7 +218,7 @@ fun SortItSheet(body: String, onDismiss: () -> Unit, onPick: (String) -> Unit) {
                     aiimin.core.nlp.Kind.INCOME -> "Money in"
                     else -> "Payment"
                 },
-                trailing = { Text("Add", style = Aiimin.type.label.copy(color = Aiimin.colors.link, fontSize = 14.sp)) },
+                trailing = { Text("Add", style = Aiimin.type.labelLarge.copy(color = Aiimin.colors.link)) },
                 onClick = { onPick(ch.line) },
             )
             Hairline()
@@ -272,7 +272,7 @@ fun ClipboardBanner(onPaste: (String) -> Unit) {
     SurfaceCard(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 8.dp)) {
         Text("You copied some text", style = Aiimin.type.bodyStrong)
         Text("Make it a note? It's read only when you tap Paste.", style = Aiimin.type.caption)
-        Row(Modifier.padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             AppButton("Paste as note", {
                 val t = runCatching { cm?.primaryClip?.getItemAt(0)?.coerceToText(ctx)?.toString() }.getOrNull().orEmpty()
                 seen()
@@ -341,7 +341,7 @@ fun NotesImportScreen(vm: NotesImportViewModel = hiltViewModel()) {
                 SurfaceCard(Modifier.padding(top = 16.dp)) {
                     Text("$n brought in, $k skipped", style = Aiimin.type.bodyStrong)
                     Text(if (k > 0) "Skipped notes were already here, so nothing is doubled." else "They are in Notes now, with their labels as #tags.", style = Aiimin.type.caption)
-                    AppButton("Open Notes", { nav.back() }, Modifier.padding(top = 10.dp), compact = true)
+                    AppButton("Open Notes", { nav.back() }, Modifier.padding(top = 12.dp), compact = true)
                 }
             }
             preview?.let { p ->

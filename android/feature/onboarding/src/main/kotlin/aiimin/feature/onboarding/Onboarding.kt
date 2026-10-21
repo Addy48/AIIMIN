@@ -145,8 +145,8 @@ fun OnboardingScreen(onDone: () -> Unit, vm: OnboardingViewModel = hiltViewModel
     CompositionLocalProvider(LocalRaahiMode provides RaahiMode.of(d.raahiMode)) {
     Column(Modifier.fillMaxSize().background(c.base).statusBarsPadding().navigationBarsPadding().imePadding()) {
         // Seven thin segments, no "step 3 of 7" text.
-        Row(Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(top = 14.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            (0..Draft.LAST).forEach { i -> Box(Modifier.weight(1f).height(3.dp).clip(RoundedCornerShape(2.dp)).background(if (i <= d.step) c.text else c.border)) }
+        Row(Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(top = 16.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            (0..Draft.LAST).forEach { i -> Box(Modifier.weight(1f).height(4.dp).clip(RoundedCornerShape(2.dp)).background(if (i <= d.step) c.text else c.border)) }
         }
         Row(Modifier.fillMaxWidth().height(52.dp).padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             if (d.step >= 1 || d.helloOpen) AppIconButton(AppIcons.ArrowLeft, "Back", { back() }) else Spacer(Modifier.width(48.dp))
@@ -188,7 +188,7 @@ fun OnboardingScreen(onDone: () -> Unit, vm: OnboardingViewModel = hiltViewModel
                 0 -> if (!d.helloOpen) {
                     AppButton("Get started", { vm.update { it.copy(helloOpen = true) } }, Modifier.fillMaxWidth())
                     Spacer(Modifier.height(8.dp))
-                    Row(Modifier.clickable { overlay = Overlay.SIGN_IN }.padding(10.dp)) {
+                    Row(Modifier.clickable { overlay = Overlay.SIGN_IN }.padding(12.dp)) {
                         Text("I already use aiimin.in · ", style = Aiimin.type.body.copy(color = c.textMuted))
                         Text("Sign in", style = Aiimin.type.body.copy(color = c.link, fontWeight = FontWeight.SemiBold))
                     }
@@ -211,7 +211,7 @@ fun OnboardingScreen(onDone: () -> Unit, vm: OnboardingViewModel = hiltViewModel
                         AppButton("Not now", { next() }, Modifier.weight(1f), kind = ButtonKind.SECONDARY)
                         AppButton("Allow", { sms.launch(Manifest.permission.READ_SMS) }, Modifier.weight(1f))
                     }
-                    Text(ConsentText.FOOTER, style = Aiimin.type.caption, modifier = Modifier.padding(top = 10.dp))
+                    Text(ConsentText.FOOTER, style = Aiimin.type.caption, modifier = Modifier.padding(top = 12.dp))
                 }
                 Draft.LAST -> AppButton(if (saving) "Setting up…" else "Start my day", {
                     if (!saving) scope.launch {
@@ -276,7 +276,7 @@ fun MergeSheet(p: MergePreview, plan: suspend () -> aiimin.core.data.sync.SyncRe
             AppButton("Replace this phone's data", { confirmReplace = true }, Modifier.fillMaxWidth(), kind = ButtonKind.SECONDARY)
             Spacer(Modifier.height(8.dp))
             AppButton("Keep this phone separate for now", { onChoose(MergeChoice.SEPARATE) }, Modifier.fillMaxWidth(), kind = ButtonKind.GHOST)
-            Text("You can turn sync on later in You › Sync.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 10.dp))
+            Text("You can turn sync on later in You › Sync.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 12.dp))
         } else {
             // Measured fresh from the phone and aiimin.in before anything moves.
             val r by androidx.compose.runtime.produceState<aiimin.core.data.sync.SyncRepository.ReplacePlan?>(null) { value = plan() }
@@ -314,7 +314,7 @@ fun HealthPrivacyScreen(onBack: () -> Unit) {
     Column(Modifier.fillMaxSize().background(c.base).statusBarsPadding().navigationBarsPadding()) {
         Row(Modifier.fillMaxWidth().padding(8.dp)) { AppIconButton(AppIcons.ArrowLeft, "Back", onBack) }
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 24.dp)) {
-            Text("How AIIMIN uses Health Connect", style = Aiimin.type.title.copy(fontSize = 28.sp, lineHeight = 34.sp))
+            Text("How AIIMIN uses Health Connect", style = Aiimin.type.title)
             Spacer(Modifier.height(20.dp))
             listOf(
                 "What it reads" to "Steps, sleep sessions and resting heart rate. Nothing else, and only when you allow it.",
@@ -323,7 +323,7 @@ fun HealthPrivacyScreen(onBack: () -> Unit) {
                 "Never" to "Sold, shared with advertisers, used for ads or used to set insurance or loan terms.",
                 "Taking it back" to "Turn any permission off in Health Connect, or in You → Sensors and permissions. AIIMIN stops reading at once and keeps what it already measured until you delete it.",
             ).forEach { (h, b) ->
-                Text(h, style = Aiimin.type.headline, modifier = Modifier.padding(top = 14.dp))
+                Text(h, style = Aiimin.type.headline, modifier = Modifier.padding(top = 16.dp))
                 Text(b, style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(top = 4.dp))
             }
             Text("Wellness information only. Not a medical device and not for diagnosis. In an emergency call 112.", style = Aiimin.type.caption, modifier = Modifier.padding(vertical = 28.dp))

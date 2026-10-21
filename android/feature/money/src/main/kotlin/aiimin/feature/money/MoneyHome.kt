@@ -141,7 +141,7 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
         item {
             val selected = selection.value
             val bar = selected?.let { s.bars.getOrNull(it) }
-            Column(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 22.dp)) {
+            Column(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 24.dp)) {
                 Headline(s, bar, d.budget?.totalPaise, d.remaining, ledger, monthIsCurrent, d.paceLine, today)
                 Spacer(Modifier.height(12.dp))
                 PeriodNav(s, offset, onPage = { vm.page(it) })
@@ -156,9 +156,9 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
                     )
                     pc.footnote?.let {
                         // D-005: the chevron stays on the first line when the line wraps.
-                        Row(Modifier.padding(top = 4.dp).fillMaxWidth().clip(Shapes.small).pressable({ nav.open(Route.Budget) }).heightIn(min = 48.dp).padding(vertical = 6.dp), verticalAlignment = Alignment.Top) {
+                        Row(Modifier.padding(top = 4.dp).fillMaxWidth().clip(Shapes.small).pressable({ nav.open(Route.Budget) }).heightIn(min = 48.dp).padding(vertical = 8.dp), verticalAlignment = Alignment.Top) {
                             Text(it, style = Aiimin.type.caption, modifier = Modifier.weight(1f))
-                            Icon(AppIcons.CaretRight, "Open budget", tint = c.textFaint, modifier = Modifier.padding(top = 2.dp, start = 8.dp).size(14.dp))
+                            Icon(AppIcons.CaretRight, "Open budget", tint = c.textFaint, modifier = Modifier.padding(top = 2.dp, start = 8.dp).size(16.dp))
                         }
                     }
                 } else {
@@ -185,8 +185,8 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
         // 4.4: one "Needs you" row; the list itself is the Review screen.
         if (d.pending.isNotEmpty()) item(key = "needs") {
             Row(
-                Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 18.dp).fillMaxWidth().clip(Shapes.row).background(c.surface)
-                    .pressable({ nav.open(Route.MoneyInbox) }).heightIn(min = 64.dp).padding(horizontal = 16.dp, vertical = 10.dp),
+                Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 20.dp).fillMaxWidth().clip(Shapes.row).background(c.surface)
+                    .pressable({ nav.open(Route.MoneyInbox) }).heightIn(min = 64.dp).padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column(Modifier.weight(1f)) {
@@ -202,7 +202,7 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
             item(key = "found-${s.last4}") {
                 AccountFoundCard(
                     s, vm.linkTarget(s), onAdd = { vm.acceptFound(s) }, onNotMine = { vm.dismissFound(s) },
-                    modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 18.dp),
+                    modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 20.dp),
                 )
             }
         }
@@ -225,7 +225,7 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
             }
             Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
                 SectionHeader(title, action = if (bar == null) "All payments" else null, onAction = { nav.open(Route.Payments) })
-                if (list.isEmpty()) Text(if (bar?.future == true) "Nothing yet." else "No payments here.", style = Aiimin.type.caption, modifier = Modifier.padding(vertical = 6.dp))
+                if (list.isEmpty()) Text(if (bar?.future == true) "Nothing yet." else "No payments here.", style = Aiimin.type.caption, modifier = Modifier.padding(vertical = 8.dp))
                 val biggest = if (bar == null && s.range != MoneyRange.D) list.firstOrNull()?.id else null
                 list.forEach { t ->
                     PaymentRow(t, t.id == biggest) { nav.open(Route.Txn(t.id)) }
@@ -244,8 +244,8 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(cat.category, style = Aiimin.type.bodyStrong, modifier = Modifier.weight(1f))
                                 Text(Money.format(cat.paise), style = Aiimin.type.bodyStrong)
-                                Spacer(Modifier.width(10.dp))
-                                Text(if (d.spent > 0) "${(cat.paise * 100 / d.spent)}%" else "", style = Aiimin.type.caption, maxLines = 1, softWrap = false, textAlign = androidx.compose.ui.text.style.TextAlign.End, modifier = Modifier.widthIn(min = 34.dp))
+                                Spacer(Modifier.width(12.dp))
+                                Text(if (d.spent > 0) "${(cat.paise * 100 / d.spent)}%" else "", style = Aiimin.type.caption, maxLines = 1, softWrap = false, textAlign = androidx.compose.ui.text.style.TextAlign.End, modifier = Modifier.widthIn(min = 36.dp))
                             }
                             Spacer(Modifier.height(8.dp))
                             Box(Modifier.fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)).background(c.overlay)) {
@@ -281,7 +281,7 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
                 SectionHeader("Owed")
                 Text(
                     owed.take(3).joinToString(" · ") { b -> if (b.theyOwe) "${b.name} owes you ${Money.whole(b.netPaise)}" else "You owe ${b.name} ${Money.whole(-b.netPaise)}" },
-                    style = Aiimin.type.body, modifier = Modifier.fillMaxWidth().pressable({ nav.open(Route.Splits) }).padding(vertical = 10.dp),
+                    style = Aiimin.type.body, modifier = Modifier.fillMaxWidth().pressable({ nav.open(Route.Splits) }).padding(vertical = 12.dp),
                 )
                 Hairline()
             }
@@ -290,7 +290,7 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
         item {
             Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
                 SectionHeader("Coming up", action = "Bills", onAction = { nav.open(Route.Recurring) })
-                if (coming.isEmpty()) Text("No bills in the next 10 days.", style = Aiimin.type.caption, modifier = Modifier.padding(vertical = 6.dp))
+                if (coming.isEmpty()) Text("No bills in the next 10 days.", style = Aiimin.type.caption, modifier = Modifier.padding(vertical = 8.dp))
                 coming.take(4).forEach { b ->
                     val due = LocalDate.parse(b.nextDue)
                     val days = java.time.temporal.ChronoUnit.DAYS.between(today, due)
@@ -323,8 +323,8 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
             )
             Text(
                 "For personal budgeting only. Not investment, tax or credit advice. AIIMIN is not registered with SEBI.",
-                style = Aiimin.type.caption.copy(fontSize = 11.5.sp),
-                modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 14.dp, bottom = 8.dp),
+                style = Aiimin.type.caption,
+                modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 16.dp, bottom = 8.dp),
             )
         }
     }
@@ -333,7 +333,7 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
         shownLedgers.forEach { l ->
             aiimin.designsystem.component.ListRow(
                 l.label, subtitle = when (l) { Ledger.PERSONAL -> "Your own money"; Ledger.HOUSEHOLD -> "Shared at home"; Ledger.BUSINESS -> "Kept apart, never in your Life Score" },
-                trailing = { if (l == ledger) Icon(AppIcons.Check, "Selected", tint = c.text, modifier = Modifier.size(18.dp)) },
+                trailing = { if (l == ledger) Icon(AppIcons.Check, "Selected", tint = c.text, modifier = Modifier.size(20.dp)) },
                 onClick = { vm.ledger.value = l; picking = false },
             )
         }
@@ -379,9 +379,9 @@ private fun LedgerPicker(ledger: Ledger, onClick: () -> Unit) {
             .semantics(mergeDescendants = true) { contentDescription = "Ledger: ${ledger.label}. Change" },
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(ledger.label, style = Aiimin.type.label.copy(fontSize = 15.sp))
+        Text(ledger.label, style = Aiimin.type.labelLarge)
         Spacer(Modifier.width(4.dp))
-        Icon(AppIcons.CaretDown, null, tint = Aiimin.colors.textMuted, modifier = Modifier.size(14.dp))
+        Icon(AppIcons.CaretDown, null, tint = Aiimin.colors.textMuted, modifier = Modifier.size(16.dp))
     }
 }
 
@@ -422,7 +422,7 @@ private fun Headline(s: aiimin.core.data.money.SpendSeries, bar: SpendBar?, plan
                         .joinToString(" · ") { it.replace(' ', '\u00A0') }
                 } else if (monthIsCurrent && ledger == Ledger.PERSONAL) "Set a monthly plan to see your pace" else "${Money.whole(s.usualPaise)} a ${s.unit} on average"
                 // D-005: the parts wrap as whole parts; no "·" is left at a line end.
-                aiimin.designsystem.component.MetaLine(sub, style = Aiimin.type.caption.copy(fontSize = 14.sp, lineHeight = 20.sp))
+                aiimin.designsystem.component.MetaLine(sub, style = Aiimin.type.note)
             }
         }
     }
@@ -432,14 +432,14 @@ private fun Headline(s: aiimin.core.data.money.SpendSeries, bar: SpendBar?, plan
 private fun PeriodNav(s: aiimin.core.data.money.SpendSeries, offset: Int, onPage: (Int) -> Unit) {
     val c = Aiimin.colors
     Row(Modifier.fillMaxWidth().heightIn(min = 36.dp), verticalAlignment = Alignment.CenterVertically) {
-        Row(Modifier.clip(Shapes.small).pressable({ onPage(-1) }).padding(end = 10.dp).heightIn(min = 36.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(AppIcons.CaretLeft, null, tint = c.textMuted, modifier = Modifier.size(14.dp))
+        Row(Modifier.clip(Shapes.small).pressable({ onPage(-1) }).padding(end = 12.dp).heightIn(min = 36.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(AppIcons.CaretLeft, null, tint = c.textMuted, modifier = Modifier.size(16.dp))
             Text("Earlier", style = Aiimin.type.caption)
         }
         Spacer(Modifier.weight(1f))
-        if (offset < 0) Row(Modifier.clip(Shapes.small).pressable({ onPage(1) }).padding(start = 10.dp).heightIn(min = 36.dp), verticalAlignment = Alignment.CenterVertically) {
+        if (offset < 0) Row(Modifier.clip(Shapes.small).pressable({ onPage(1) }).padding(start = 12.dp).heightIn(min = 36.dp), verticalAlignment = Alignment.CenterVertically) {
             Text("Later", style = Aiimin.type.caption)
-            Icon(AppIcons.CaretRight, null, tint = c.textMuted, modifier = Modifier.size(14.dp))
+            Icon(AppIcons.CaretRight, null, tint = c.textMuted, modifier = Modifier.size(16.dp))
         }
     }
 }
@@ -455,7 +455,7 @@ internal fun PaymentRow(t: aiimin.core.database.TxnEntity, biggest: Boolean, onC
                 Text(if (t.giftHideFrom != null) "Gift" else payeeLabel(t.title), style = Aiimin.type.bodyStrong, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
                 if (biggest) {
                     Spacer(Modifier.width(8.dp))
-                    Text("Biggest", style = Aiimin.type.caption.copy(color = c.textMuted, fontWeight = FontWeight.SemiBold, fontSize = 11.5.sp))
+                    Text("Biggest", style = Aiimin.type.caption.copy(color = c.textMuted, fontWeight = FontWeight.SemiBold))
                 }
             }
             aiimin.designsystem.component.MetaLine(

@@ -65,7 +65,7 @@ class NotesWidget : GlanceAppWidget() {
             // Collected inside the session so the list follows the database while the widget is alive.
             val all by dao.all().collectAsState(initial = emptyList())
             val recent = all.filter { !it.locked }.take(3)
-            Column(GlanceModifier.fillMaxSize().background(ColorProvider(p.surface)).cornerRadius(16.dp).padding(14.dp)) {
+            Column(GlanceModifier.fillMaxSize().background(ColorProvider(p.surface)).cornerRadius(16.dp).padding(16.dp)) {
                 Row(GlanceModifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Text("Notes", style = TextStyle(color = ColorProvider(p.text), fontSize = 16.sp, fontWeight = FontWeight.Medium), modifier = GlanceModifier.defaultWeight().clickable(actionStartActivity(openIntent(context, "notes"))))
                     Text(
@@ -78,7 +78,7 @@ class NotesWidget : GlanceAppWidget() {
                 Spacer(GlanceModifier.height(8.dp))
                 if (recent.isEmpty()) Text("Nothing written yet.", style = TextStyle(color = ColorProvider(p.textMuted), fontSize = 13.sp))
                 recent.forEach { n ->
-                    Column(GlanceModifier.fillMaxWidth().padding(vertical = 5.dp).clickable(actionStartActivity(openIntent(context, "note", n.id)))) {
+                    Column(GlanceModifier.fillMaxWidth().padding(vertical = 4.dp).clickable(actionStartActivity(openIntent(context, "note", n.id)))) {
                         Text(n.title, style = TextStyle(color = ColorProvider(p.text), fontSize = 14.sp, fontWeight = FontWeight.Medium), maxLines = 1)
                         val preview = aiimin.core.data.notes.notePreview(n.body)
                         if (preview.isNotBlank()) Text(preview, style = TextStyle(color = ColorProvider(p.textMuted), fontSize = 12.sp), maxLines = 1)

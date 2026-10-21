@@ -83,7 +83,7 @@ import kotlinx.coroutines.delay
 fun TopBar(title: String, onBack: (() -> Unit)?, modifier: Modifier = Modifier, actions: @Composable RowScope.() -> Unit = {}) {
     Row(
         // 3 dp + the 48 dp button's 13 dp inset puts back and action icons on the 16 dp margin (S1).
-        modifier.fillMaxWidth().statusBarsPadding().height(56.dp).padding(start = 3.dp, end = 3.dp),
+        modifier.fillMaxWidth().statusBarsPadding().height(56.dp).padding(start = 4.dp, end = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (onBack != null) AppIconButton(AppIcons.ArrowLeft, "Back", onBack) else Spacer(Modifier.width(16.dp))
@@ -105,10 +105,10 @@ fun TopBar(title: String, onBack: (() -> Unit)?, modifier: Modifier = Modifier, 
 @Composable
 fun LargeHeader(title: String, modifier: Modifier = Modifier, overline: String? = null, actions: @Composable RowScope.() -> Unit = {}) {
     Row(
-        modifier.fillMaxWidth().statusBarsPadding().heightIn(min = 56.dp).padding(start = Aiimin.space.gutter, end = 3.dp),
+        modifier.fillMaxWidth().statusBarsPadding().heightIn(min = 56.dp).padding(start = Aiimin.space.gutter, end = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Column(Modifier.weight(1f).padding(vertical = 6.dp)) {
+        Column(Modifier.weight(1f).padding(vertical = 8.dp)) {
             Text(title, style = Aiimin.type.title, modifier = Modifier.semantics { heading() })
             // One line: a status, not a paragraph (D-001).
             if (overline != null) Text(overline, style = Aiimin.type.caption, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -171,7 +171,7 @@ fun Dock(items: List<DockItem>, onPlus: () -> Unit, onPlusLong: () -> Unit, modi
                         .semantics { contentDescription = "Capture" },
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(AppIcons.Plus, null, tint = onInk, modifier = Modifier.size(26.dp).graphicsLayer { rotationZ = turn })
+                    Icon(AppIcons.Plus, null, tint = onInk, modifier = Modifier.size(28.dp).graphicsLayer { rotationZ = turn })
                 }
             }
             items.drop(half).forEach { DockButton(it) }
@@ -197,8 +197,8 @@ private fun RowScope.DockButton(item: DockItem) {
             if (item.selected) 1f else 0f, Motion.fade(LocalReduceMotion.current, Motion.quick()), label = "tabFill",
         )
         Box {
-            Icon(item.icon, null, tint = color, modifier = Modifier.size(25.dp).graphicsLayer { alpha = 1f - fill })
-            Icon(item.iconFill, null, tint = color, modifier = Modifier.size(25.dp).graphicsLayer { alpha = fill })
+            Icon(item.icon, null, tint = color, modifier = Modifier.size(24.dp).graphicsLayer { alpha = 1f - fill })
+            Icon(item.iconFill, null, tint = color, modifier = Modifier.size(24.dp).graphicsLayer { alpha = fill })
             if (item.count > 0) {
                 // Anchored on the icon's top-right corner, ringed in the page colour, mostly outside the icon (S5, D-004).
                 // A zero-size anchor: the badge never changes the icon's layout (so labels stay level at any text size).
@@ -206,14 +206,14 @@ private fun RowScope.DockButton(item: DockItem) {
                     CountBadge(item.count, Modifier.wrapContentSize(Alignment.TopStart, unbounded = true).offset(x = (-6).dp, y = (-8).dp))
                 }
             } else if (item.badge) {
-                Box(Modifier.align(Alignment.TopEnd).offset(x = 6.dp, y = (-3).dp).size(7.dp).clip(CircleShape).background(c.accent))
+                Box(Modifier.align(Alignment.TopEnd).offset(x = 6.dp, y = (-3).dp).size(8.dp).clip(CircleShape).background(c.accent))
             }
         }
-        Spacer(Modifier.height(3.dp))
+        Spacer(Modifier.height(4.dp))
         // Part 26.5: the selected label fades in over 160 ms (two layers cross-fade; opacity only).
         Box(contentAlignment = Alignment.Center) {
-            Text(item.label, style = Aiimin.type.caption.copy(color = c.textMuted, fontWeight = FontWeight.Medium, fontSize = 11.5.sp), modifier = Modifier.graphicsLayer { alpha = 1f - fill })
-            Text(item.label, style = Aiimin.type.caption.copy(color = c.accentText, fontWeight = FontWeight.SemiBold, fontSize = 11.5.sp), modifier = Modifier.graphicsLayer { alpha = fill })
+            Text(item.label, style = Aiimin.type.caption.copy(color = c.textMuted, fontWeight = FontWeight.Medium), modifier = Modifier.graphicsLayer { alpha = 1f - fill })
+            Text(item.label, style = Aiimin.type.caption.copy(color = c.accentText, fontWeight = FontWeight.SemiBold), modifier = Modifier.graphicsLayer { alpha = fill })
         }
     }
 }
@@ -255,7 +255,7 @@ fun AppSheet(
         shape = Shapes.sheet,
         contentWindowInsets = { WindowInsets(0) },
         dragHandle = {
-            Box(Modifier.padding(top = 10.dp, bottom = 8.dp).size(width = 38.dp, height = 4.dp).clip(RoundedCornerShape(2.dp)).background(c.borderStrong))
+            Box(Modifier.padding(top = 12.dp, bottom = 8.dp).size(width = 40.dp, height = 4.dp).clip(RoundedCornerShape(2.dp)).background(c.borderStrong))
         },
     ) {
         Column(Modifier.fillMaxWidth().navigationBarsPadding().imePadding().padding(horizontal = 20.dp).padding(bottom = 16.dp)) {
@@ -316,7 +316,7 @@ fun ToastHost(toaster: Toaster, modifier: Modifier = Modifier) {
                 .background(c.text)
                 .semantics { contentDescription = toast.text },
         ) {
-            Row(Modifier.padding(start = 16.dp, end = 6.dp).heightIn(min = 52.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.padding(start = 16.dp, end = 8.dp).heightIn(min = 52.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(toast.text, style = Aiimin.type.body.copy(color = c.onInk), modifier = Modifier.weight(1f), maxLines = 2)
                 if (toast.actionLabel != null && toast.action != null) {
                     Text(
@@ -325,7 +325,7 @@ fun ToastHost(toaster: Toaster, modifier: Modifier = Modifier) {
                         modifier = Modifier.clip(Shapes.small).clickable {
                             toast.action.invoke()
                             toaster.dismiss(toast.id)
-                        }.padding(horizontal = 12.dp, vertical = 10.dp),
+                        }.padding(horizontal = 12.dp, vertical = 12.dp),
                     )
                 }
             }
@@ -359,9 +359,9 @@ fun EmptyState(
         if (raahi != null && aiimin.core.engine.raahi.RaahiRules.showsArt(LocalRaahiMode.current)) Raahi(raahi, RaahiSize.CARD)
         else Icon(icon, null, tint = c.textFaint, modifier = Modifier.size(32.dp))
         Spacer(Modifier.height(16.dp))
-        Text(title, style = Aiimin.type.cardTitle.copy(fontSize = 20.sp))
+        Text(title, style = Aiimin.type.cardTitle)
         Spacer(Modifier.height(8.dp))
-        Text(body, style = Aiimin.type.caption.copy(fontSize = 14.sp, lineHeight = 20.sp))
+        Text(body, style = Aiimin.type.note)
         if (action != null && onAction != null) {
             Spacer(Modifier.height(16.dp))
             AppButton(action, onAction, kind = ButtonKind.SECONDARY, compact = true)
@@ -393,14 +393,14 @@ fun Skeleton(modifier: Modifier) {
 fun ThinkingDots() {
     val c = Aiimin.colors
     val reduce = LocalReduceMotion.current
-    Row(horizontalArrangement = Arrangement.spacedBy(5.dp), modifier = Modifier.padding(8.dp).semantics { contentDescription = "Thinking" }) {
+    Row(horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.padding(8.dp).semantics { contentDescription = "Thinking" }) {
         if (reduce) {
-            repeat(3) { Box(Modifier.size(6.dp).graphicsLayer { alpha = 0.7f }.clip(CircleShape).background(c.textMuted)) }
+            repeat(3) { Box(Modifier.size(8.dp).graphicsLayer { alpha = 0.7f }.clip(CircleShape).background(c.textMuted)) }
         } else {
             val t = rememberInfiniteTransition(label = "dots")
             repeat(3) { i ->
                 val a by t.animateFloat(0.3f, 1f, infiniteRepeatable(Motion.ambient(), RepeatMode.Reverse, StartOffset(i * Motion.STAGGER * 10)), label = "d$i")
-                Box(Modifier.size(6.dp).graphicsLayer { alpha = a }.clip(CircleShape).background(c.textMuted))
+                Box(Modifier.size(8.dp).graphicsLayer { alpha = a }.clip(CircleShape).background(c.textMuted))
             }
         }
     }

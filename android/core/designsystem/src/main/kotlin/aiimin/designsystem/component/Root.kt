@@ -56,8 +56,8 @@ fun RowScope.RootActions(unread: Int, sync: SyncUi = LocalSyncUi.current.ui, onS
     }
     if (sync != SyncUi.SYNCED && sync != SyncUi.SIGNED_OUT) Box {
         AppIconButton(syncIcon, syncLabel, onSync, tint = if (sync == SyncUi.SYNCED || sync == SyncUi.SIGNED_OUT) c.textMuted else c.text)
-        if (sync == SyncUi.OFFLINE) Box(Modifier.align(Alignment.TopEnd).padding(10.dp).size(7.dp).clip(androidx.compose.foundation.shape.CircleShape).background(c.warn))
-        if (sync == SyncUi.ATTENTION) Box(Modifier.align(Alignment.TopEnd).padding(10.dp).size(7.dp).clip(androidx.compose.foundation.shape.CircleShape).background(c.danger))
+        if (sync == SyncUi.OFFLINE) Box(Modifier.align(Alignment.TopEnd).padding(12.dp).size(8.dp).clip(androidx.compose.foundation.shape.CircleShape).background(c.warn))
+        if (sync == SyncUi.ATTENTION) Box(Modifier.align(Alignment.TopEnd).padding(12.dp).size(8.dp).clip(androidx.compose.foundation.shape.CircleShape).background(c.danger))
     }
     AppIconButton(AppIcons.Search, "Search", { nav.open(Route.Search) })
     Box {

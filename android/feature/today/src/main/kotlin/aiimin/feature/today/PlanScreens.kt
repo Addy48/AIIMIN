@@ -128,10 +128,10 @@ fun TaskScreen(id: String, vm: TaskViewModel = hiltViewModel()) {
             item {
                 Row(verticalAlignment = Alignment.Top) {
                     CheckCircle(task.done, { scope.launch { vm.toggle(task)?.let { if (it.done) toaster.show(if (it.xp > 0) "Done · +${it.xp} XP" else "Done") } } }, "Mark done")
-                    Box(Modifier.weight(1f).padding(top = 10.dp)) {
+                    Box(Modifier.weight(1f).padding(top = 12.dp)) {
                         BasicTextField(
                             title, { title = it; vm.setTitle(task, it) },
-                            textStyle = Aiimin.type.title.copy(fontSize = 24.sp), cursorBrush = SolidColor(Aiimin.colors.accent),
+                            textStyle = Aiimin.type.cardTitle, cursorBrush = SolidColor(Aiimin.colors.accent),
                             modifier = Modifier.fillMaxWidth(),
                         )
                     }
@@ -179,7 +179,7 @@ fun TaskScreen(id: String, vm: TaskViewModel = hiltViewModel()) {
                 if (notes != task.notes) AppButton("Save notes", { vm.setNotes(task, notes) }, kind = ButtonKind.SECONDARY, compact = true, modifier = Modifier.padding(top = 8.dp))
             }
         }
-        Row(Modifier.fillMaxWidth().navigationBarsPadding().padding(Aiimin.space.gutter), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(Modifier.fillMaxWidth().navigationBarsPadding().padding(Aiimin.space.gutter), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             AppButton("Focus on this", { nav.open(Route.Focus(taskId = task.id, label = task.title)) }, Modifier.weight(1f), kind = ButtonKind.SECONDARY, icon = AppIcons.Timer)
             AppButton(if (task.done) "Reopen" else "Mark done", { scope.launch { vm.toggle(task)?.let { if (it.done) { toaster.show(if (it.xp > 0) "Done · +${it.xp} XP" else "Done"); nav.back() } } } }, Modifier.weight(1f), icon = AppIcons.Check)
         }
@@ -297,18 +297,18 @@ private fun EventSheet(
     var pick by remember { mutableStateOf<String?>(null) }
     AppSheet(onDismiss, title = if (initial == null) "New event" else "Edit event") {
         AppTextField(title, { title = it }, placeholder = "What's happening")
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(12.dp))
         ListRow("Date", subtitle = Dates.long(day), leading = { IconTile(AppIcons.Calendar) }, onClick = { pick = "date" })
         SwitchRow("All day", allDay, { allDay = it })
         if (!allDay) {
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 ListRow("Starts", subtitle = Dates.clock(start), modifier = Modifier.weight(1f), onClick = { pick = "start" })
                 ListRow("Ends", subtitle = Dates.clock(end), modifier = Modifier.weight(1f), onClick = { pick = "end" })
             }
         }
         AppTextField(location, { location = it }, placeholder = "Place (optional)", leading = AppIcons.Compass)
         Spacer(Modifier.height(16.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             if (onDelete != null) AppButton("Delete", onDelete, kind = ButtonKind.DANGER, modifier = Modifier.weight(1f))
             AppButton("Save", { if (title.isNotBlank()) onSave(title, day, start, end, allDay, location) }, Modifier.weight(1f), enabled = title.isNotBlank())
         }
@@ -483,7 +483,7 @@ fun MinimumsScreen(vm: MinimumsViewModel = hiltViewModel()) {
         var domain by remember { mutableStateOf(e?.domain ?: "discipline") }
         AppSheet({ adding = false; editing = null }, title = if (e == null) "New minimum" else "Edit minimum", subtitle = if (e == null && list.isNotEmpty()) "Joins your plan tomorrow." else null) {
             AppTextField(name, { name = it }, placeholder = "e.g. Read 10 pages")
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(12.dp))
             AppTextField(tiny, { tiny = it }, placeholder = "Tiny version for low days, e.g. Read 1 page")
             Spacer(Modifier.height(12.dp))
             PillRow {
@@ -492,7 +492,7 @@ fun MinimumsScreen(vm: MinimumsViewModel = hiltViewModel()) {
                 }
             }
             Spacer(Modifier.height(16.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (e != null) AppButton("Archive", { vm.archive(e.id); editing = null }, kind = ButtonKind.DANGER, modifier = Modifier.weight(1f))
                 AppButton("Save", {
                     if (e == null) vm.add(name, tiny, domain) else vm.edit(e.copy(name = name.trim(), tiny = tiny.trim(), domain = domain))
@@ -528,7 +528,7 @@ private fun Heat(history: Map<String, Int>, today: LocalDate, total: Int) {
                 week.forEach { d ->
                     val share = (history[d.toString()] ?: 0).toFloat() / total
                     Box(
-                        Modifier.weight(1f).height(22.dp).clip(Shapes.small)
+                        Modifier.weight(1f).height(24.dp).clip(Shapes.small)
                             .background(if (share <= 0f) c.raised else c.done.copy(alpha = 0.25f + 0.75f * share.coerceAtMost(1f)))
                             .then(if (d == today) Modifier.border(1.dp, c.accent, Shapes.small) else Modifier),
                     )
@@ -571,7 +571,7 @@ fun UpcomingScreen(vm: UpcomingViewModel = hiltViewModel()) {
                             t.title,
                             subtitle = listOfNotNull(t.day?.let { Dates.relative(LocalDate.parse(it), today) }, t.time?.let(Dates::clock)).joinToString(" · ").ifBlank { null },
                             onClick = { nav.open(Route.Task(t.id)) },
-                            trailing = { Text("Do today", style = Aiimin.type.label.copy(color = c.link), modifier = Modifier.bleed(end = 8.dp).clip(Shapes.small).clickable(onClickLabel = "Move to today") { vm.moveToday(t.id) }.heightIn(min = 48.dp).padding(horizontal = 8.dp, vertical = 14.dp)) },
+                            trailing = { Text("Do today", style = Aiimin.type.label.copy(color = c.link), modifier = Modifier.bleed(end = 8.dp).clip(Shapes.small).clickable(onClickLabel = "Move to today") { vm.moveToday(t.id) }.heightIn(min = 48.dp).padding(horizontal = 8.dp, vertical = 16.dp)) },
                         )
                     }
                 }
@@ -596,11 +596,11 @@ private fun WeekList(selected: LocalDate, byDay: Map<LocalDate, List<CalendarEve
             (0..6).map { start.plusDays(it.toLong()) }.forEach { d ->
                 item(key = d.toString()) {
                     val evs = byDay[d].orEmpty()
-                    Column(Modifier.fillMaxWidth().padding(vertical = 10.dp)) {
+                    Column(Modifier.fillMaxWidth().padding(vertical = 12.dp)) {
                         Text(Dates.short(d), style = Aiimin.type.bodyStrong.copy(color = if (d == LocalDate.now()) c.accentText else c.text), modifier = Modifier.clickable { onPick(d) })
                         if (evs.isEmpty()) Text("Free", style = Aiimin.type.caption)
                         evs.forEach { e ->
-                            Row(Modifier.fillMaxWidth().clickable { onOpen(e) }.padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Row(Modifier.fillMaxWidth().clickable { onOpen(e) }.padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                                 Text(if (e.allDay) "all day" else Dates.clock(vm.instant(e.startAt).toLocalTime()), style = Aiimin.type.caption, maxLines = 1, softWrap = false, modifier = Modifier.widthIn(min = 64.dp))
                                 Text(e.title, style = Aiimin.type.body, maxLines = 1)
                             }

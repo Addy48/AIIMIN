@@ -109,7 +109,7 @@ fun GoalsScreen(vm: GoalsViewModel = hiltViewModel()) {
                     AppTextField(title, { title = it }, placeholder = "What do you want to reach?", onDone = {
                         if (title.isNotBlank()) { val id = vm.create(title); title = ""; adding = false; nav.open(Route.Goal(id)) }
                     })
-                    Row(Modifier.padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         AppButton("Create", { if (title.isNotBlank()) { val id = vm.create(title); title = ""; adding = false; nav.open(Route.Goal(id)) } }, compact = true, enabled = title.isNotBlank())
                         AppButton("Cancel", { adding = false; title = "" }, kind = ButtonKind.SECONDARY, compact = true)
                     }
@@ -130,7 +130,7 @@ fun GoalsScreen(vm: GoalsViewModel = hiltViewModel()) {
                             next?.let { "next: ${it.t}" },
                             g.due?.let { "by ${Dates.shortDm(LocalDate.parse(it))}" },
                         ).joinToString(" · "),
-                        style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp),
+                        style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp),
                     )
                 }
                 Hairline()
@@ -168,10 +168,10 @@ fun GoalScreen(id: String?, vm: GoalsViewModel = hiltViewModel()) {
             var why by remember(g.id) { mutableStateOf(g.why) }
             AppTextField(why, { why = it; vm.update(g.id) { x -> x.copy(why = it) } }, placeholder = "Why it matters, in one line")
             Spacer(Modifier.height(16.dp))
-            Box(Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)).background(c.border)) {
-                Box(Modifier.fillMaxWidth((progress ?: 0f).coerceIn(0f, 1f)).height(6.dp).background(c.text))
+            Box(Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(3.dp)).background(c.border)) {
+                Box(Modifier.fillMaxWidth((progress ?: 0f).coerceIn(0f, 1f)).height(8.dp).background(c.text))
             }
-            Text(progress?.let { "${(it * 100).toInt()}% · from ${g.milestones.count { m -> m.done }} of ${g.milestones.size} milestones and ${linked.count { t -> t.done }} of ${linked.size} tasks" } ?: "Progress appears once you add a milestone or link a task.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp))
+            Text(progress?.let { "${(it * 100).toInt()}% · from ${g.milestones.count { m -> m.done }} of ${g.milestones.size} milestones and ${linked.count { t -> t.done }} of ${linked.size} tasks" } ?: "Progress appears once you add a milestone or link a task.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp))
             Row(Modifier.fillMaxWidth().clickable { datePick = true }.heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text("Target date", style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.weight(1f))
                 Text(g.due?.let { Dates.dayMonth(LocalDate.parse(it)) } ?: "Not set", style = Aiimin.type.body.copy(color = c.text))
@@ -281,13 +281,13 @@ fun WeeklyReviewScreen(vm: WeeklyReviewViewModel = hiltViewModel()) {
         val w = u
         if (w == null) { Skeleton(Modifier.padding(Aiimin.space.gutter).fillMaxWidth().height(220.dp)); return@Column }
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Aiimin.space.gutter)) {
-            Text("The week in one line", style = Aiimin.type.eyebrow.copy(color = c.textMuted), modifier = Modifier.padding(top = 8.dp, bottom = 6.dp))
+            Text("The week in one line", style = Aiimin.type.eyebrow.copy(color = c.textMuted), modifier = Modifier.padding(top = 8.dp, bottom = 8.dp))
             AppTextField(line, { line = it }, placeholder = "One line about your week", singleLine = false)
             SectionHeader("Score")
             val pts = w.scores
             if (pts.count { it != null } >= 2) {
                 Sparkline(pts, height = 80.dp, color = c.text)
-                Text("${pts.filterNotNull().first().toInt()} → ${pts.filterNotNull().last().toInt()} over the week", style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp))
+                Text("${pts.filterNotNull().first().toInt()} → ${pts.filterNotNull().last().toInt()} over the week", style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp))
             } else Text("Not enough days yet.", style = Aiimin.type.caption)
             SectionHeader("Kept days")
             Text("${w.kept} of ${w.days}", style = Aiimin.type.title)

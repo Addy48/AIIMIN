@@ -103,10 +103,10 @@ fun MoneyInboxScreen(vm: InboxViewModel = hiltViewModel()) {
         if (pending.isEmpty() && offer == null) {
             Column(Modifier.fillMaxSize().padding(horizontal = 32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                 Icon(AppIcons.CheckCircleFill, null, tint = c.done, modifier = Modifier.size(56.dp))
-                Spacer(Modifier.height(18.dp))
+                Spacer(Modifier.height(20.dp))
                 Text("All caught up", style = Aiimin.type.cardTitle)
-                Spacer(Modifier.height(6.dp))
-                Text("New bank alerts land here as they arrive. Want older ones? Bring in this month's messages, or start from an earlier month.", style = Aiimin.type.caption.copy(fontSize = 14.sp), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                Spacer(Modifier.height(8.dp))
+                Text("New bank alerts land here as they arrive. Want older ones? Bring in this month's messages, or start from an earlier month.", style = Aiimin.type.note, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                 Spacer(Modifier.height(24.dp))
                 AppButton("Bring in past messages", { nav.open(Route.SmsImport) }, compact = true)
                 Spacer(Modifier.height(8.dp))
@@ -160,7 +160,7 @@ fun MoneyInboxScreen(vm: InboxViewModel = hiltViewModel()) {
         }
         // While one payment is open its own Confirm is the action; "Confirm all" waits until it is closed.
         if (pending.size > 1 && open == null) {
-            Box(Modifier.fillMaxWidth().background(c.base).navigationBarsPadding().padding(horizontal = Aiimin.space.gutter).padding(top = 8.dp, bottom = 14.dp)) {
+            Box(Modifier.fillMaxWidth().background(c.base).navigationBarsPadding().padding(horizontal = Aiimin.space.gutter).padding(top = 8.dp, bottom = 16.dp)) {
                 AppButton(
                     "Confirm all ${pending.size}",
                     {
@@ -188,7 +188,7 @@ private fun DraftRow(d: TxnDraftEntity, place: String, category: String, ledger:
     val whenText = Instant.ofEpochMilli(d.detectedAt).atZone(ZoneId.systemDefault()).let { Dates.relative(it.toLocalDate(), java.time.LocalDate.now()) + " " + Dates.clock(it.toLocalTime()) }
     val unclear = d.confidence < 0.75
     Row(
-        Modifier.fillMaxWidth().clip(Shapes.row).clickable(onClickLabel = if (expanded) "Close" else "Change") { onClick() }.heightIn(min = 64.dp).padding(vertical = 10.dp),
+        Modifier.fillMaxWidth().clip(Shapes.row).clickable(onClickLabel = if (expanded) "Close" else "Change") { onClick() }.heightIn(min = 64.dp).padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(Modifier.weight(1f)) {
@@ -235,7 +235,7 @@ private fun DraftEditor(
         aiimin.designsystem.component.PillGrid(chips, columns = if (chips.any { it.first.length > 9 } || LocalDensity.current.fontScale >= 1.5f) 2 else 3) { (k, isNew), m ->
             if (isNew) Pill("New", adding, { adding = !adding }, m, icon = AppIcons.Plus) else Pill(k, cat == k, { onCat(k) }, m)
         }
-        if (adding) Row(Modifier.padding(top = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+        if (adding) Row(Modifier.padding(top = 12.dp), verticalAlignment = Alignment.CenterVertically) {
             AppTextField(newCat, { newCat = it }, Modifier.weight(1f), placeholder = "Pet, Gym, Chai…")
             Spacer(Modifier.width(8.dp))
             AppButton("Add", { onNewCategory(newCat); newCat = ""; adding = false }, compact = true, enabled = newCat.isNotBlank())
@@ -256,15 +256,15 @@ private fun DraftEditor(
         Spacer(Modifier.height(8.dp))
         Row(Modifier.fillMaxWidth().clickable { onRemember(!rememberIt) }, verticalAlignment = Alignment.CenterVertically) {
             CheckCircle(rememberIt, { onRemember(!rememberIt) }, "Remember ${name.ifBlank { d.title }}")
-            Text("Remember ${name.ifBlank { payeeLabel(d.title) }} as $cat · next time it fills in by itself", style = Aiimin.type.body.copy(fontSize = 14.sp, lineHeight = 20.sp), modifier = Modifier.weight(1f))
+            Text("Remember ${name.ifBlank { payeeLabel(d.title) }} as $cat · next time it fills in by itself", style = Aiimin.type.body, modifier = Modifier.weight(1f))
         }
         // The bank's own words sit behind a tap (improvement plan §3).
         Box(Modifier.heightIn(min = 48.dp).clip(Shapes.small).clickable { showRaw = !showRaw }.semantics { contentDescription = if (showRaw) "Hide message" else "Show message" }, contentAlignment = Alignment.CenterStart) {
-            Text(if (showRaw) "Hide message" else "Show message", style = Aiimin.type.label.copy(color = Aiimin.colors.link, fontSize = 14.sp))
+            Text(if (showRaw) "Hide message" else "Show message", style = Aiimin.type.labelLarge.copy(color = Aiimin.colors.link))
         }
-        if (showRaw) Text(d.raw, style = Aiimin.type.code, modifier = Modifier.clip(RoundedCornerShape(6.dp)).background(Aiimin.colors.raised).padding(10.dp).fillMaxWidth())
+        if (showRaw) Text(d.raw, style = Aiimin.type.code, modifier = Modifier.clip(RoundedCornerShape(6.dp)).background(Aiimin.colors.raised).padding(12.dp).fillMaxWidth())
         Spacer(Modifier.height(12.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             AppButton("Not a payment", onNotPayment, Modifier.weight(1f), kind = ButtonKind.SECONDARY)
             AppButton("Confirm", onConfirm, Modifier.weight(1f), icon = AppIcons.Check)
         }
