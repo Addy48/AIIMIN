@@ -157,39 +157,6 @@ data class LifeHealthTrendDto(
 )
 
 @Serializable
-data class LabSummaryResponse(
-    val practice: LabPracticeSummaryDto? = null,
-    val error: String? = null,
-)
-
-@Serializable
-data class LabPracticeSummaryDto(
-    val speaking: LabSpeakingSummaryDto? = null,
-)
-
-@Serializable
-data class LabSpeakingSummaryDto(
-    @SerialName("latest_score") val latestScore: Double? = null,
-    val mastery: String? = null,
-    @SerialName("streak_days") val streakDays: Int? = null,
-)
-
-@Serializable
-data class SpeakingPracticeRequest(
-    @SerialName("confidence_score") val confidenceScore: Int,
-    @SerialName("clarity_score") val clarityScore: Int? = null,
-    @SerialName("pace_score") val paceScore: Int? = null,
-    @SerialName("prompt_id") val promptId: String? = null,
-    val notes: String? = null,
-)
-
-@Serializable
-data class SpeakingPracticeResponse(
-    val id: String? = null,
-    val error: String? = null,
-)
-
-@Serializable
 data class FamilyDocDto(
     val id: String? = null,
     @SerialName("doc_type") val docType: String? = null,

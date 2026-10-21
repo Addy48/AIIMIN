@@ -104,6 +104,8 @@ data class AppSettings(
     val notificationsReworded: Boolean = false,
     /** Raahi mode (PRD 1.1): FULL, QUIET (default) or OFF; read through [aiimin.core.engine.raahi.RaahiMode.of]. */
     val raahiMode: String = "QUIET",
+    /** "Hide for today" from a long-press on Raahi (32.4 I-5): the day it was hidden; Raahi is back the next day. */
+    val raahiHiddenOn: String? = null,
     /** Raahi motions played today ([aiimin.core.engine.raahi.RaahiBudget.encode]); Quiet stops at 3. */
     val raahiBudget: String? = null,
     /** The last day the app was opened (ISO), for "Welcome back" (1.6b). */
@@ -233,6 +235,7 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         val firstCaptureDone = booleanPreferencesKey("first_capture_done")
         val notificationsReworded = booleanPreferencesKey("notifications_reworded")
         val raahiMode = stringPreferencesKey("raahi_mode")
+        val raahiHiddenOn = stringPreferencesKey("raahi_hidden_on")
         val raahiBudget = stringPreferencesKey("raahi_budget")
         val lastOpenDay = stringPreferencesKey("last_open_day")
         val greetedOn = stringPreferencesKey("greeted_on")
@@ -320,6 +323,7 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         firstCaptureDone = p[K.firstCaptureDone] ?: false,
         notificationsReworded = p[K.notificationsReworded] ?: false,
         raahiMode = p[K.raahiMode] ?: "QUIET",
+        raahiHiddenOn = p[K.raahiHiddenOn],
         raahiBudget = p[K.raahiBudget],
         lastOpenDay = p[K.lastOpenDay],
         greetedOn = p[K.greetedOn],
@@ -411,6 +415,7 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
             p[K.firstCaptureDone] = s.firstCaptureDone
             p[K.notificationsReworded] = s.notificationsReworded
             p[K.raahiMode] = s.raahiMode
+            s.raahiHiddenOn?.let { p[K.raahiHiddenOn] = it } ?: p.remove(K.raahiHiddenOn)
             s.raahiBudget?.let { p[K.raahiBudget] = it } ?: p.remove(K.raahiBudget)
             s.lastOpenDay?.let { p[K.lastOpenDay] = it } ?: p.remove(K.lastOpenDay)
             s.greetedOn?.let { p[K.greetedOn] = it } ?: p.remove(K.greetedOn)

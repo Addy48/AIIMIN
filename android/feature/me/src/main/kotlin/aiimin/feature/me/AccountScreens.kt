@@ -358,7 +358,7 @@ fun PrivacyScreen(vm: AccountViewModel = hiltViewModel(), me: MeViewModel = hilt
             AppButton("Cancel", { sheet = null }, Modifier.fillMaxWidth(), kind = ButtonKind.SECONDARY)
         }
         "account" -> AppSheet({ sheet = null }, title = "Delete your aiimin.in account?") {
-            Text("Your account and all its data on aiimin.in are removed, and this phone is erased. Enter your PIN to confirm. This can't be undone.", style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(bottom = 16.dp))
+            Text("Your account and all its data on aiimin.in are removed at once, and this phone is erased. There is no waiting period yet, so this can't be undone. Enter your PIN to confirm.", style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(bottom = 16.dp))
             PinInput(pin, { pin = it; err = null })
             err?.let { Text(it, style = Aiimin.type.caption.copy(color = c.warn), modifier = Modifier.padding(top = 8.dp)) }
             Spacer(Modifier.height(16.dp))

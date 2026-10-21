@@ -152,8 +152,9 @@ data class IntentionSet(
                     Signals.FOCUS to card(Direction.MORE, 120.0, 2),
                     Signals.MINIMUMS to card(Direction.MORE, 75.0, 3),
                     Signals.STEPS to card(Direction.MORE, 8000.0, 2),
-                    Signals.JOURNAL to card(Direction.MORE, 1.0, 1),
-                    Signals.DRILLS to card(Direction.MORE, 70.0, 1),
+                    // Journal and Pour are never scored (owner, 21 Oct; PRD 12.2). Drills were dropped with the Lab.
+                    Signals.JOURNAL to card(Direction.TRACK, 0.0, 0),
+                    Signals.DRILLS to card(Direction.TRACK, 0.0, 0),
                     Signals.SCREEN_PERSONAL to card(Direction.LESS, 150.0, 1),
                     Signals.SCREEN_WORK to card(Direction.TRACK, 0.0, 0),
                     Signals.MONEY_PACE to card(Direction.LESS, 100.0, 2),

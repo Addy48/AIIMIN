@@ -57,15 +57,16 @@ enum class Plan(
             "Household and Business ledgers, unlimited splits, receipts on payments",
             "Up to 6 family profiles · recurring bills calendar · CSV export for your CA",
             "Up to 4 linked browsers",
+            "Document versions: a renewed policy joins its cover, with a timeline",
+            "Weekly vault backups to your own storage, with a recovery code",
         ),
-        coming = listOf("Document versions", "Weekly vault backups to your own storage"),
     ),
     PRO(
         "Pro", "aiimin_pro", "Does the thinking for you", "AIIMIN explains your patterns and writes your reviews.",
-        listOf("Everything in Plus", "Priority support"),
+        listOf("Everything in Plus", "Smart categorisation rules", "Priority support"),
         coming = listOf(
             "Patterns: what goes with what", "Monthly review as a PDF", "Weekly review drafts",
-            "Smart categorisation rules", "3 trusted people for emergency access",
+            "3 trusted people for emergency access",
         ),
     ),
     FAMILY(

@@ -164,33 +164,6 @@ internal fun DayEndCard(suggested: LocalTime, current: LocalTime, onYes: () -> U
     }
 }
 
-/** The first-week ladder (master plan Phase 6 R1): five one-tap steps, days 1 to 7 only. */
-@Composable
-internal fun FirstWeekCard(steps: List<Pair<SetupStep, Boolean>>, onStep: (SetupStep) -> Unit, modifier: Modifier = Modifier) {
-    val c = Aiimin.colors
-    val done = steps.count { it.second }
-    Column(modifier.fillMaxWidth().clip(Shapes.card).background(c.surface).border(1.dp, c.border, Shapes.card).padding(vertical = 8.dp)) {
-        Row(Modifier.padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("Your first week", style = Aiimin.type.bodyStrong, modifier = Modifier.weight(1f))
-            Text("$done of ${steps.size} set up", style = Aiimin.type.caption)
-        }
-        steps.forEach { (step, isDone) ->
-            Row(
-                Modifier.fillMaxWidth().heightIn(min = 48.dp)
-                    .then(if (isDone) Modifier else Modifier.pressable({ onStep(step) }, role = Role.Button))
-                    .semantics(mergeDescendants = true) { stateDescription = if (isDone) "Done" else "Not done yet" }
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(if (isDone) AppIcons.CheckCircle else AppIcons.Circle, null, tint = if (isDone) c.done else c.textFaint, modifier = Modifier.size(20.dp))
-                Spacer(Modifier.width(12.dp))
-                Text(step.label, style = Aiimin.type.body.copy(color = if (isDone) c.textMuted else c.text), modifier = Modifier.weight(1f))
-                if (!isDone) Icon(AppIcons.CaretRight, null, tint = c.textFaint, modifier = Modifier.size(16.dp))
-            }
-        }
-    }
-}
-
 /** Part 17: four Quick doors, one tap each, equal width; a door grows into its screen (26.5). */
 @Composable
 internal fun QuickDoorsRow(keys: List<String>, pinned: List<String>, onPin: (String) -> Unit, modifier: Modifier = Modifier) {

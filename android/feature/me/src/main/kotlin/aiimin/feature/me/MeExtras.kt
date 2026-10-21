@@ -300,7 +300,7 @@ private val COMPARE: List<Pair<String, List<Pair<String, List<String>>>>> = list
     ),
     "Vault & family" to listOf(
         "Documents on your phone" to listOf("Unlimited", "Unlimited", "Unlimited", "Unlimited"), "Family profiles" to listOf("2", "6", "6", "6 people"),
-        "Automatic vault backups (coming)" to listOf("Manual", "Weekly", "Weekly", "Weekly"), "Trusted people for emergency access (coming)" to listOf("1", "1", "3", "Any"),
+        "Automatic vault backups" to listOf("Manual", "Weekly", "Weekly", "Weekly"), "Trusted people for emergency access (coming)" to listOf("1", "1", "3", "Any"),
     ),
     "Insight" to listOf("Chart history" to listOf("3 months", "All", "All", "All"), "Patterns, monthly review (coming)" to listOf("—", "—", "✓", "✓")),
     "Sync" to listOf("Linked browsers" to listOf("1", "4", "4", "4 each")),

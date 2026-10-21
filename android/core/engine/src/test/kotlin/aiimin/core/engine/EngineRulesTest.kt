@@ -55,11 +55,12 @@ class EngineRulesTest {
     @Test
     fun `M6 a third not-relevant switch in one month is blocked`() {
         var set = defaults
-        listOf(Signals.DRILLS, Signals.FAMILY).forEach { k ->
+        // Journal and drills are tracked, not scored, since 21 Oct; three other scored cards stand in.
+        listOf(Signals.MONEY_LOGGING, Signals.FAMILY).forEach { k ->
             val r = policy.propose(set, k, set.card(k)!!.copy(direction = Direction.OFF), emptyList(), TODAY)
             set = (r as IntentionChange.Scheduled).set
         }
-        val third = policy.propose(set, Signals.JOURNAL, set.card(Signals.JOURNAL)!!.copy(direction = Direction.OFF), emptyList(), TODAY)
+        val third = policy.propose(set, Signals.SLEEP_REGULARITY, set.card(Signals.SLEEP_REGULARITY)!!.copy(direction = Direction.OFF), emptyList(), TODAY)
 
         assertThat(third).isEqualTo(IntentionChange.Rejected.NotRelevantLimit)
     }

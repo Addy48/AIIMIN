@@ -15,7 +15,6 @@ sealed interface XpEvent {
     data class TaskCompleted(val planned: Boolean, val priority: Priority) : XpEvent
     data class MinimumKept(val firstTimeToday: Boolean) : XpEvent
     data class FocusSession(val minutes: Int) : XpEvent
-    data class DrillCompleted(val correct: Int, val firstTimeToday: Boolean) : XpEvent
     data class JournalSettled(val passedQualityGate: Boolean) : XpEvent
     data object GoalCompleted : XpEvent
     data object PaymentReconciled : XpEvent
@@ -55,7 +54,6 @@ class XpPolicy(private val rules: RulesConfig) {
         }
         is XpEvent.MinimumKept -> if (event.firstTimeToday) 10 else 0
         is XpEvent.FocusSession -> if (event.minutes < rules.focus.minSession) 0 else min(180, event.minutes * 4)
-        is XpEvent.DrillCompleted -> if (event.firstTimeToday) 30 + event.correct * 10 else 0
         is XpEvent.JournalSettled -> if (event.passedQualityGate) 25 else 0
         XpEvent.GoalCompleted -> 50
         XpEvent.PaymentReconciled -> 3

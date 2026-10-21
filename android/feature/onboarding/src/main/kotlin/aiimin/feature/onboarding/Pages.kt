@@ -152,7 +152,7 @@ fun YourDayPage(d: Draft, onWake: (Int) -> Unit, onSleep: (Int) -> Unit) {
     // The arc draws again whenever a time changes (Part 26.5: the day-arc moment).
     key(d.wakeMin, d.sleepMin) {
         DayHorizon(
-            nowMinute = d.sleepMin, ticks = emptyList(), horizon = Horizons.at(12, false),
+            nowMinute = d.sleepMin, ticks = emptyList(), horizon = Horizons.at(12),
             wakeMinute = d.wakeMin, sleepMinute = d.sleepMin,
             description = "Your day from ${Dates.clock(clockOf(d.wakeMin))} to ${Dates.clock(clockOf(d.sleepMin))}",
         )

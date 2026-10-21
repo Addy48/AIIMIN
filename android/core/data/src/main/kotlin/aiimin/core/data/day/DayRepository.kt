@@ -114,16 +114,9 @@ class SnapshotBuilder @Inject constructor(
         }
         SleepMath.regularity(week)?.let { v[Signals.SLEEP_REGULARITY] = it.toDouble(); ev[Signals.SLEEP_REGULARITY] = Tier.A }
 
-        // Journal: the best entry of the day; the quality gate decides credit.
-        val entries = journal.forDay(key).filter { !it.deleted && it.scored }
-        val best = entries.maxByOrNull { (if (it.qualityOk) 10_000 else 0) + it.words }
-        v[Signals.JOURNAL] = when {
-            best == null -> 0.0
-            best.qualityOk -> 1.0
-            best.words >= 10 -> 0.5
-            else -> 0.0
-        }
-        ev[Signals.JOURNAL] = if (best?.qualityOk == true) Tier.B else Tier.C
+        // Journal and Pour give no score (owner, 21 Oct; PRD 12.2): no journal value is written, so the engine skips it
+        // even for a person whose saved cards still say "more". Moods stay for Mood year only.
+        val entries = journal.forDay(key).filter { !it.deleted }
         val moods = entries.mapNotNull { it.mood }
 
         // Money: personal ledger only; adherence to your own plan, never "spend less".

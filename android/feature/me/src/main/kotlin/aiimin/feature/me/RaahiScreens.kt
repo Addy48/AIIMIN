@@ -1,5 +1,10 @@
 package aiimin.feature.me
 
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
+import aiimin.designsystem.theme.Shapes
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.border
 import aiimin.core.engine.raahi.RaahiMode
 import aiimin.core.engine.raahi.RaahiPose
 import aiimin.designsystem.component.BulletList
@@ -53,6 +58,23 @@ fun RaahiSettingsScreen(vm: ProfileViewModel = hiltViewModel()) {
             }
             SectionHeader("How chatty")
             RaahiModePicker(mode, { m -> vm.save { it.copy(raahiMode = m.name) } })
+            // The no-nag promise (13.5 #5, owner 20 Oct): what Raahi will never do, in plain words.
+            SectionHeader("My promise")
+            Column(Modifier.fillMaxWidth().clip(Shapes.card).background(c.surface).border(1.dp, c.border, Shapes.card).padding(16.dp)) {
+                listOf(
+                    "I never warn you about breaking a run of days.",
+                    "I never make you feel bad about a day.",
+                    "I never sell or share what you tell me.",
+                    "I never send a notice of my own beyond the ones you allow.",
+                    "I go quiet whenever you ask.",
+                ).forEach { line ->
+                    Row(Modifier.padding(vertical = 4.dp), verticalAlignment = Alignment.Top) {
+                        Icon(AppIcons.Check, null, tint = c.done, modifier = Modifier.padding(top = 2.dp).size(16.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text(line, style = Aiimin.type.body)
+                    }
+                }
+            }
             SectionHeader("Good to know")
             BulletList(
                 listOf(

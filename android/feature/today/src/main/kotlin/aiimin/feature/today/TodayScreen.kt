@@ -179,11 +179,18 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
                 val reduceMotion = aiimin.designsystem.theme.LocalReduceMotion.current
                 // Raahi stands in the hero as the companion (owner, 22 Oct), 64 dp, beside the clock and its own line.
                 // Reduce motion stops motion only; the pose still follows the day (32.2).
-                val raahi: @Composable (Modifier) -> Unit = { m ->
+                val raahi: @Composable (Modifier) -> Unit = raahi@{ m ->
+                    if (u.raahiHidden) return@raahi
                     val nodKey by vm.nod.collectAsStateWithLifecycle()
+                    @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
                     Raahi(
                         u.mini, RaahiSize.CARD,
-                        m.pressable({ pockets = true }, onClickLabel = "Open Raahi's pockets"),
+                        // Tap: Raahi's pockets. Long-press: hide Raahi for the rest of today, with Undo (32.4 I-5).
+                        m.combinedClickable(
+                            onClickLabel = "Open Raahi's pockets", onLongClickLabel = "Hide Raahi for today",
+                            onLongClick = { vm.hideRaahiToday(true); toaster.undo("Raahi will be back tomorrow") { vm.hideRaahiToday(false) } },
+                            onClick = { pockets = true },
+                        ),
                         motion = if (reduceMotion) null else if (nodKey != null) aiimin.core.engine.raahi.RaahiMotion.NOD else u.miniMotion,
                         motionKey = nodKey ?: u.miniMotionKey,
                         description = "Raahi",
@@ -223,7 +230,7 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
                 DayHorizon(
                     nowMinute = now.hour * 60 + now.minute,
                     ticks = later.filter { it.time != null }.map { HorizonTick(it.time!!.hour * 60 + it.time.minute, Dates.clockPlain(it.time)) },
-                    horizon = horizonFor(sky, Horizons.at(hour, false)),
+                    horizon = horizonFor(sky, Horizons.at(hour)),
                     wakeMinute = u.wakeMin, sleepMinute = u.sleepMin,
                     nightLabel = "Your day starts at ${Dates.clockPlain(wake)}",
                     modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 12.dp, bottom = 4.dp),

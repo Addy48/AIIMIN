@@ -231,13 +231,11 @@ object Horizons {
     val morning = Horizon(Color(0xFFFF8A4C), Color(0xFF1A1916), Color(0xFFD9CDBD))
     val midday = Horizon(Color(0xFFFF6B35), Color(0xFF1A1916), Color(0xFFD2CBBE))
     val evening = Horizon(Color(0xFFD8653E), Color(0xFF3A3530), Color(0xFFD0C7BA))
-    fun at(hour: Int, dark: Boolean): Horizon {
-        val h = when {
-            hour < 12 -> morning
-            hour < 17 -> midday
-            else -> evening
-        }
-        return if (dark) h.copy(line = Color(0xFFF2EFE8), dottedFuture = Color(0xFF4A4038)) else h
+    /** Light theme only (30.A): the dark variant was removed on 22 Oct. The sun's colour now comes from the living sky. */
+    fun at(hour: Int): Horizon = when {
+        hour < 12 -> morning
+        hour < 17 -> midday
+        else -> evening
     }
 }
 

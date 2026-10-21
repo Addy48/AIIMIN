@@ -145,6 +145,8 @@ data class TodayUi(
     /** Raahi's line beside the clock (0 to 2 lines; none on later opens or when Off). */
     val greeting: List<String> = emptyList(),
     val raahiMode: RaahiMode = RaahiMode.QUIET,
+    /** Hidden for today by a long-press (32.4 I-5). */
+    val raahiHidden: Boolean = false,
     val mini: RaahiPose = RaahiPose.IDLE,
     val miniMotion: RaahiMotion? = null,
     /** Identifies one granted motion, so a recomposition never replays it (Quiet's 3 a day). */
@@ -195,6 +197,10 @@ class TodayViewModel @Inject constructor(
             val ka = aiimin.core.sensing.logic.KeepAlive
             if (ka.show(stalled, profile.needsKeepAlive, free, dismissed, now) || ka.intro(facts.maker, profile.needsKeepAlive, free, introA as String?)) ka.steps(facts.maker) else null
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    fun hideRaahiToday(hide: Boolean) = viewModelScope.launch {
+        val day = if (hide) clock.today().toString() else null
+        settingsStore.update { it.copy(raahiHiddenOn = day) }
+    }
     fun dismissKeepAlive() = viewModelScope.launch {
         val maker = runCatching { device.profile().first.maker }.getOrNull()
         settingsStore.update { it.copy(keepAliveDismissedAt = System.currentTimeMillis(), keepAliveIntroMaker = maker ?: it.keepAliveIntroMaker) }
@@ -316,6 +322,7 @@ class TodayViewModel @Inject constructor(
             whatNow = pick,
             greeting = if (sessionGreetDay == b.date) sessionGreeting?.lines.orEmpty() else emptyList(),
             raahiMode = mode,
+            raahiHidden = s.raahiHiddenOn == b.date.toString(),
             wakeMin = s.wakeMin,
             sleepMin = s.sleepMin,
             mini = mini,
