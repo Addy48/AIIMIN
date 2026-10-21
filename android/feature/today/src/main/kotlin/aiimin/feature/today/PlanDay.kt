@@ -232,7 +232,7 @@ fun PlanDayScreen(tomorrow: Boolean, vm: PlanDayViewModel = hiltViewModel()) {
                     Box(Modifier.weight(1f)) {
                         AppTextField(text, { text = it }, placeholder = "Add a task", onDone = { if (text.isNotBlank()) { vm.add(text.trim(), u.day); text = "" } })
                     }
-                    AppIconButton(AppIcons.Mic, "Speak", voice, tint = c.accent)
+                    AppIconButton(AppIcons.Mic, "Speak", voice, tint = c.text)
                 }
                 if (u.candidates.size > 8) Text("That's a lot. Three is a day.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 12.dp))
             }
@@ -329,13 +329,13 @@ fun DebriefScreen(vm: DebriefViewModel = hiltViewModel()) {
             SectionHeader("One line about today")
             Row(verticalAlignment = Alignment.Top) {
                 Box(Modifier.weight(1f)) { AppTextField(line, { line = it }, placeholder = "One line about today", singleLine = false) }
-                AppIconButton(AppIcons.Mic, "Speak", voiceLine, tint = c.accent)
+                AppIconButton(AppIcons.Mic, "Speak", voiceLine, tint = c.text)
             }
             Text("Write as much or as little as you like. It stays private and encrypted.${if (words > 0) " $words words so far." else ""}", style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp))
             SectionHeader("Tomorrow's first task")
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.weight(1f)) { AppTextField(tomorrow, { tomorrow = it }, placeholder = "What comes first tomorrow?") }
-                AppIconButton(AppIcons.Mic, "Speak", voiceTomorrow, tint = c.accent)
+                AppIconButton(AppIcons.Mic, "Speak", voiceTomorrow, tint = c.text)
             }
             SectionHeader("What got in the way?")
             aiimin.designsystem.component.PillRow {

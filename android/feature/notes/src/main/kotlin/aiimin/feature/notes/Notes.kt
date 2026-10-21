@@ -275,7 +275,7 @@ fun NotesScreen(vm: NotesViewModel = hiltViewModel()) {
                 Row(Modifier.fillMaxWidth().enterStagger(i).background(tint).clickable { nav.open(Route.Note(n.id)) }.padding(horizontal = Aiimin.space.gutter, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            if (n.pinned) Icon(AppIcons.PushPin, "Pinned", tint = c.accent, modifier = Modifier.size(16.dp).padding(end = 4.dp))
+                            if (n.pinned) Icon(AppIcons.PushPin, "Pinned", tint = c.textMuted, modifier = Modifier.size(16.dp).padding(end = 4.dp))
                             if (n.locked) Icon(AppIcons.Lock, null, tint = c.textMuted, modifier = Modifier.size(16.dp).padding(end = 4.dp))
                             // A locked note shows nothing of itself in the list (Part 11.6).
                             Text(if (n.locked) "Locked note" else n.title, style = Aiimin.type.bodyStrong, modifier = Modifier.weight(1f), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)

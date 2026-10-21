@@ -132,7 +132,7 @@ fun SectionHeader(
     val hasAction = action != null && onAction != null
     Row(
         // With an action the row is the action's 48 dp touch height, so the header grows ~4 dp, not ~30.
-        modifier.fillMaxWidth().padding(top = if (hasAction) 0.dp else 18.dp, bottom = if (hasAction) 0.dp else 8.dp),
+        modifier.fillMaxWidth().padding(top = if (hasAction) 8.dp else 24.dp, bottom = if (hasAction) 0.dp else 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(title.uppercase(), style = Aiimin.type.eyebrow, modifier = Modifier.weight(1f))

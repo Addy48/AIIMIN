@@ -530,7 +530,7 @@ private fun Heat(history: Map<String, Int>, today: LocalDate, total: Int) {
                     Box(
                         Modifier.weight(1f).height(24.dp).clip(Shapes.small)
                             .background(if (share <= 0f) c.raised else c.done.copy(alpha = 0.25f + 0.75f * share.coerceAtMost(1f)))
-                            .then(if (d == today) Modifier.border(1.dp, c.accent, Shapes.small) else Modifier),
+                            .then(if (d == today) Modifier.border(1.dp, c.text, Shapes.small) else Modifier),
                     )
                 }
             }
