@@ -273,7 +273,7 @@ fun WhyScoreScreen(vm: MeViewModel = hiltViewModel()) {
                 }
             }
             item {
-                Text(if (back == 0) "Final at noon tomorrow; late entries can still change it." else "Final.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 20.dp))
+                Text(if (back == 0) "Final at noon tomorrow; anything you add before then still counts." else "Final.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 20.dp))
             }
         }
     }

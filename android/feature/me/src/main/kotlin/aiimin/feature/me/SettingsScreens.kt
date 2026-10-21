@@ -123,10 +123,10 @@ fun SettingsScreen(vm: MeViewModel = hiltViewModel()) {
                         DayMode.Midnight -> "Midnight"
                         is DayMode.FixedEnd -> "${m.endHour}:00 AM the next morning"
                         is DayMode.Roster -> "Shift roster · ${m.pattern.joinToString("")}"
-                    } + " · late entries can be filed to yesterday until noon",
+                    } + " · until noon you can still file things to yesterday",
                     leading = { IconTile(AppIcons.MoonStars) }, maxSubtitleLines = 2, onClick = { dayMode = true },
                 )
-                ListRow("Late-night screen time starts", subtitle = "Phone use after this counts as late-night use", leading = { IconTile(AppIcons.Moon) })
+                ListRow("Night screen time starts", subtitle = "Phone use after this counts as night use", leading = { IconTile(AppIcons.Moon) })
                 Row(Modifier.padding(start = 52.dp, bottom = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     listOf(22 to "10 PM", 23 to "11 PM", 0 to "Midnight").forEach { (h, label) -> Pill(label, st.lateHour == h, { vm.update { it.copy(lateHour = h) } }) }
                 }
@@ -227,7 +227,7 @@ fun SensorsScreen(vm: SensorsViewModel = hiltViewModel()) {
                 Spacer(Modifier.height(12.dp))
             }
             item {
-                SensorRow("Screen time & app use", "Usage access — screen time per app, unlocks, late-night use, notifications", a?.usage) { context.startActivity(vm.usageSettings()) }
+                SensorRow("Screen time & app use", "Usage access — screen time per app, unlocks, night use, notifications", a?.usage) { context.startActivity(vm.usageSettings()) }
                 SensorRow(
                     "Steps, sleep, heart rate", when (a?.health) {
                         HealthAvailability.NEEDS_UPDATE -> "Health Connect needs an update"
