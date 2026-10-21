@@ -39,6 +39,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,6 +64,8 @@ class MainActivity : FragmentActivity() {
     @Inject lateinit var notifications: NotificationRepository
 
     private var request by mutableStateOf<LaunchRequest?>(null)
+    /** Counts returns after time away; the entrance animations replay once per count. */
+    private var returns by mutableIntStateOf(0)
     private var unlocked by mutableStateOf(false)
     private var backgroundedAt = 0L
 
@@ -86,6 +89,7 @@ class MainActivity : FragmentActivity() {
         // The opening animation plays once per cold start; rotation or returning from the background skips it.
         val coldStart = savedInstanceState == null
         var bootDone by mutableStateOf(false)
+        var handedOff by mutableStateOf(false)
         // A recreated activity (rotation, process restore) has already handled its share; doing it again doubles the note.
         if (savedInstanceState == null) handle(intent)
         // Opened to a specific screen (launcher shortcut, notification, deep link): go straight there, no opening (audit A-034).
@@ -99,7 +103,10 @@ class MainActivity : FragmentActivity() {
                 LaunchedEffect(Unit) { ready = true }
                 // On tablets and unfolded foldables the app stays a phone-width column in the middle.
                 // Raahi's mode reaches every picture of Raahi from here (Off hides them all, PRD 1.1).
-                androidx.compose.runtime.CompositionLocalProvider(aiimin.designsystem.component.LocalRaahiMode provides aiimin.core.engine.raahi.RaahiMode.of(st.raahiMode)) {
+                androidx.compose.runtime.CompositionLocalProvider(
+                    aiimin.designsystem.component.LocalRaahiMode provides aiimin.core.engine.raahi.RaahiMode.of(st.raahiMode),
+                    aiimin.designsystem.component.LocalReveal provides aiimin.designsystem.component.Reveal(handedOff, returns),
+                ) {
                 androidx.compose.foundation.layout.Box(
                     androidx.compose.ui.Modifier.fillMaxSize().background(aiimin.designsystem.theme.LightPalette.base),
                     contentAlignment = androidx.compose.ui.Alignment.TopCenter,
@@ -125,7 +132,7 @@ class MainActivity : FragmentActivity() {
                     val forced = intent.getStringExtra("aiimin_boot")?.let { k -> aiimin.designsystem.component.BootMode.entries.firstOrNull { it.name.equals(k, true) } }
                     val mode = remember { forced ?: aiimin.designsystem.component.bootMode(coldStart, openedToScreen, reduce, st.lastBootDay, today) }
                     LaunchedEffect(mode) { if (mode == aiimin.designsystem.component.BootMode.FULL) settings.update { it.copy(lastBootDay = today) } }
-                    aiimin.designsystem.component.BootScene(mode, ready = true, onDone = { bootDone = true })
+                    aiimin.designsystem.component.BootScene(mode, ready = true, onDone = { bootDone = true; handedOff = true }, onHandOff = { handedOff = true })
                 }
                 LaunchedEffect(st.appLock) { if (st.appLock && !unlocked) authenticate() }
                 // Hide in the app switcher also blocks screenshots (FLAG_SECURE).
@@ -151,6 +158,8 @@ class MainActivity : FragmentActivity() {
 
     override fun onStart() {
         super.onStart()
+        // Back after three minutes or more: the screen rises in again, a small "welcome back" (owner, 22 Oct).
+        if (backgroundedAt > 0 && System.currentTimeMillis() - backgroundedAt > 3 * 60_000L) returns++
         // Re-lock after five minutes away.
         if (backgroundedAt > 0 && System.currentTimeMillis() - backgroundedAt > 5 * 60_000L) unlocked = false
     }

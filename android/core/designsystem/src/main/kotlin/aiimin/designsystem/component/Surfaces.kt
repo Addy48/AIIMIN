@@ -66,19 +66,35 @@ fun Modifier.pressable(onClick: (() -> Unit)?, role: Role = Role.Button, onClick
         .clickable(interactionSource = source, indication = null, role = role, onClickLabel = onClickLabel, onClick = onClick)
 }
 
+
 /**
- * List entry (Part 26.5): the item fades in and rises 12 dp, 30 ms after the one before it (first 8 only),
- * once per screen visit; reduce motion shows it at once.
+ * When the app may play its entrance ([ready]), and a [gen] that grows when the person comes back after a few
+ * minutes away, so the screen they return to rises in again ("welcome back"). Set by MainActivity.
+ */
+class Reveal(val ready: Boolean, val gen: Int)
+
+val LocalReveal = androidx.compose.runtime.compositionLocalOf { Reveal(true, 0) }
+
+/**
+ * List entry (Part 26.5): the item fades in and rises 12 dp, 30 ms after the one before it (first 8 only). It waits
+ * for the boot hand-off and replays once on a return after a few minutes away; reduce motion shows it at once.
  */
 @Composable
 fun Modifier.enterStagger(index: Int): Modifier {
     val reduce = LocalReduceMotion.current
-    var shown by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf(reduce) }
-    val p = remember { androidx.compose.animation.core.Animatable(if (shown) 1f else 0f) }
-    androidx.compose.runtime.LaunchedEffect(Unit) {
-        if (!shown) {
-            p.animateTo(1f, Motion.standard(delay = Motion.staggerDelay(index)))
-            shown = true
+    val r = LocalReveal.current
+    var played by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableIntStateOf(if (reduce) Int.MAX_VALUE else -1) }
+    val p = remember { androidx.compose.animation.core.Animatable(if (played >= r.gen && r.ready) 1f else 0f) }
+    androidx.compose.runtime.LaunchedEffect(r.ready, r.gen, reduce) {
+        when {
+            reduce -> p.snapTo(1f)
+            !r.ready -> Unit
+            played >= r.gen -> p.snapTo(1f)
+            else -> {
+                p.snapTo(0f)
+                p.animateTo(1f, Motion.standard(delay = Motion.staggerDelay(index)))
+                played = r.gen
+            }
         }
     }
     return this.graphicsLayer {

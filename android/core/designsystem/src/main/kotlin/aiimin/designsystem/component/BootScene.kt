@@ -76,9 +76,9 @@ import kotlinx.coroutines.withContext
  * ends it holds its last frame until [ready], then cross-fades into the app over 200 ms.
  */
 @Composable
-fun BootScene(mode: BootMode, ready: Boolean, onDone: () -> Unit) {
+fun BootScene(mode: BootMode, ready: Boolean, onDone: () -> Unit, onHandOff: () -> Unit = {}) {
     if (mode == BootMode.NONE) {
-        LaunchedEffect(Unit) { onDone() }
+        LaunchedEffect(Unit) { onHandOff(); onDone() }
         return
     }
     val total = when (mode) {
@@ -96,14 +96,20 @@ fun BootScene(mode: BootMode, ready: Boolean, onDone: () -> Unit) {
     val ended = skipped || clock.value >= total / 1000f
     LaunchedEffect(ended, ready) {
         if (ended && ready) {
-            withContext(WallClock) { out.animateTo(1f, Motion.exit()) }
+            // The app starts its entrance as the scene leaves, so Today rises while the mark zooms past.
+            onHandOff()
+            withContext(WallClock) { out.animateTo(1f, if (mode == BootMode.REDUCED) Motion.reducedFade() else Motion.handOff()) }
             onDone()
         }
     }
     val t = clock.value
     BoxWithConstraints(
         Modifier.fillMaxSize()
-            .graphicsLayer { alpha = 1f - out.value }
+            .graphicsLayer {
+                // Zoom-through: the scene grows slightly as it fades, so the hand-off reads as moving forward.
+                alpha = 1f - out.value
+                if (mode != BootMode.REDUCED) { val z = 1f + 0.08f * out.value; scaleX = z; scaleY = z }
+            }
             .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClickLabel = "Skip") { skipped = true }
             .clearAndSetSemantics { contentDescription = "AIIMIN. Start small. Keep going." },
     ) {
@@ -111,7 +117,7 @@ fun BootScene(mode: BootMode, ready: Boolean, onDone: () -> Unit) {
         val top = (maxHeight - 844.dp * s) / 2
         val f = frame(mode, t)
         BootCanvas(f, s, top)
-        if (mode == BootMode.FULL || mode == BootMode.REDUCED) BootType(f, mode, t, s, top)
+        BootType(f, mode, t, s, top)
     }
 }
 
@@ -139,9 +145,26 @@ private fun lerp(a: Float, b: Float, p: Float) = a + (b - a) * p
 
 private fun frame(mode: BootMode, t: Float): Frame = when (mode) {
     BootMode.REDUCED -> Frame(seg(t, 0f, 0.2f), sy(240f), 28f, 1f, 1f, 1f, 1f, 1f, 0f, -40f, 0f, rays = false, t = 0f)
+    // The returning open (owner, 22 Oct: "I still want some kind of animation"): the same story as the full one,
+    // told in 1.4 s. The sun rises from just below, the mark draws out of it, the ring breathes once, the mark
+    // lifts and the name opens; the tagline follows in one quick beat.
     BootMode.SHORT -> {
-        val f = seg(t, 0f, 0.25f, Motion.Boot.Rise)
-        Frame(1f, lerp(sy(190f), sy(240f), seg(t, 0.05f, 0.65f, Motion.Boot.Settle)), 28f, f, f, f, f, f, 0f, 0f, 0f, rays = true, t = t)
+        val rise = seg(t, 0f, 0.45f, Motion.Boot.Rise)
+        val fall = seg(t, 0.45f, 0.8f, Motion.Boot.Settle)
+        Frame(
+            alpha = 1f,
+            dotScreen = if (t < 0.45f) lerp(sy(330f), sy(150f), rise) else lerp(sy(150f), sy(240f), fall),
+            dotR = if (t < 0.45f) lerp(10f, 22f, rise) else lerp(22f, 28f, fall),
+            dotO = seg(t, 0f, 0.12f),
+            sunUp = seg(t, 0f, 0.6f, Motion.Boot.Rise),
+            arch = seg(t, 0.35f, 0.75f, Motion.Boot.Draw),
+            peak = seg(t, 0.42f, 0.82f, Motion.Boot.Draw),
+            inner = seg(t, 0.5f, 0.88f, Motion.Boot.Draw),
+            ring = seg(t, 0.6f, 1.05f),
+            lift = -40f * seg(t, 0.75f, 1.05f, Motion.Boot.Move),
+            motesO = seg(t, 0.1f, 0.6f),
+            rays = true, t = t,
+        )
     }
     else -> {
         val rise = seg(t, 0.15f, 1.05f, Motion.Boot.Rise)
@@ -272,6 +295,7 @@ private fun BootType(f: Frame, mode: BootMode, t: Float, s: Float, top: Dp) {
         "AIIMIN".forEachIndexed { i, ch ->
             val p = when (mode) {
                 BootMode.FULL -> { val d = abs(i - 2.5f); seg(t, 2.0f + d * 0.07f, 2.65f + d * 0.07f, Motion.Boot.Draw) }
+                BootMode.SHORT -> { val d = abs(i - 2.5f); seg(t, 0.82f + d * 0.04f, 1.15f + d * 0.04f, Motion.Boot.Draw) }
                 else -> 1f
             }
             val blur = 6f * (1 - p)
@@ -298,6 +322,7 @@ private fun BootType(f: Frame, mode: BootMode, t: Float, s: Float, top: Dp) {
         listOf("Start small." to Aiimin.colors.textMuted, "Keep going." to ink).forEachIndexed { i, (w, color) ->
             val p = when (mode) {
                 BootMode.FULL -> seg(t, 2.5f + i * 0.28f, 3.05f + i * 0.28f, Motion.Boot.Rise)
+                BootMode.SHORT -> seg(t, 1.0f + i * 0.12f, 1.32f + i * 0.12f, Motion.Boot.Rise)
                 else -> 1f
             }
             // Each phrase slides up out of its own mask.

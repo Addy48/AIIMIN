@@ -62,6 +62,8 @@ object Motion {
     fun <T> reducedFade(): TweenSpec<T> = tween(REDUCED_FADE, easing = LinearEasing)
     fun <T> arc(): TweenSpec<T> = tween(ARC, easing = Standard)
     fun <T> release(): TweenSpec<T> = tween(RELEASE, easing = Standard)
+    /** Boot to app: the scene zooms past and fades while the app rises in. */
+    fun <T> handOff(): TweenSpec<T> = tween(EMPHASISED, easing = Exit)
 
     /** The opening screen's own curves (Part 26.2), used only by BootScene. */
     object Boot {
@@ -70,7 +72,8 @@ object Motion {
         val Move: Easing = CubicBezierEasing(0.65f, 0f, 0.35f, 1f)
         val Settle: Easing = CubicBezierEasing(0.34f, 1.5f, 0.5f, 1f)
         const val FULL_MS = 3500
-        const val SHORT_MS = 900
+        /** The returning open: the full story in 1.4 s (owner, 22 Oct). */
+        const val SHORT_MS = 1400
         /** Reduce motion: the final frame fades in over 200 ms and holds 0.6 s. */
         const val REDUCED_MS = REDUCED_FADE + 600
         /** One clock for the whole scene: time runs linearly, each element eases its own segment. */
