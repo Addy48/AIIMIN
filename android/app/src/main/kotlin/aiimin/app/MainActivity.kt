@@ -121,7 +121,9 @@ class MainActivity : FragmentActivity() {
                 if (!bootDone) {
                     val reduce = aiimin.designsystem.theme.LocalReduceMotion.current
                     val today = java.time.LocalDate.now().toString()
-                    val mode = remember { aiimin.designsystem.component.bootMode(coldStart, openedToScreen, reduce, st.lastBootDay, today) }
+                    // Test hook (like aiimin_demo): `--es aiimin_boot full|short` replays an opening without waiting for tomorrow.
+                    val forced = intent.getStringExtra("aiimin_boot")?.let { k -> aiimin.designsystem.component.BootMode.entries.firstOrNull { it.name.equals(k, true) } }
+                    val mode = remember { forced ?: aiimin.designsystem.component.bootMode(coldStart, openedToScreen, reduce, st.lastBootDay, today) }
                     LaunchedEffect(mode) { if (mode == aiimin.designsystem.component.BootMode.FULL) settings.update { it.copy(lastBootDay = today) } }
                     aiimin.designsystem.component.BootScene(mode, ready = true, onDone = { bootDone = true })
                 }
@@ -220,7 +222,7 @@ class MainActivity : FragmentActivity() {
                     "money" -> Route.MoneyInbox
                     "bills" -> Route.Recurring
                     "note" -> arg?.let { Route.Note(it) } ?: Route.Notes
-                    "pour" -> Route.JournalWrite(tool = if (arg == "worry") "worry" else "cool")
+                    "pour" -> Route.JournalWrite(tool = when (arg) { null -> null; "worry" -> "worry"; else -> "cool" })
                     "backup" -> Route.VaultBackup
                     "score" -> Route.Score
                     "focus" -> Route.Focus()

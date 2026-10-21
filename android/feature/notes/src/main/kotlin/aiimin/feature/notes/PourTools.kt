@@ -50,6 +50,7 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -104,17 +105,17 @@ internal fun Toolbox(onTool: (String) -> Unit, onSupport: () -> Unit, supportOpe
 }
 
 @Composable
-internal fun PourTool(key: String, vm: PourViewModel, written: String, feelings: List<String>, onFeelings: (List<String>) -> Unit, onDone: () -> Unit) {
+internal fun PourTool(key: String, vm: PourViewModel, written: String, feelings: List<String>, watch: (String) -> Unit, onFeelings: (List<String>) -> Unit, onDone: () -> Unit) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp).navigationBarsPadding()) {
         when (key) {
             PourTools.BREATHE -> Breathe(onDone)
             PourTools.NAME -> NameFeeling(feelings, onFeelings, onDone)
-            PourTools.TELL -> TellSomeoneTool(onDone)
-            PourTools.COOL -> CoolingOff(vm, onDone)
-            PourTools.SAY -> SayItOutLoud(vm, onDone)
-            PourTools.LETTER -> Letter(vm, onDone)
-            PourTools.MAP -> ControlMap(vm, written)
-            PourTools.WORRY -> WorryTime(vm)
+            PourTools.TELL -> TellSomeoneTool(watch, onDone)
+            PourTools.COOL -> CoolingOff(vm, watch)
+            PourTools.SAY -> SayItOutLoud(vm, watch, onDone)
+            PourTools.LETTER -> Letter(vm, watch)
+            PourTools.MAP -> ControlMap(vm, written, watch)
+            PourTools.WORRY -> WorryTime(vm, watch)
         }
         Spacer(Modifier.height(32.dp))
     }
@@ -131,7 +132,7 @@ private fun ToolTitle(title: String, body: String) {
 private fun Breathe(onDone: () -> Unit) {
     val c = Aiimin.colors
     val reduce = LocalReduceMotion.current
-    var start by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    val start = remember { System.currentTimeMillis() }
     var now by remember { mutableLongStateOf(start) }
     LaunchedEffect(Unit) { while (now - start < PourTiming.BREATHE_SECONDS * 1000L) { delay(if (reduce) 500 else 16); now = System.currentTimeMillis() } }
     val ms = now - start
@@ -166,9 +167,10 @@ private fun NameFeeling(chosen: List<String>, onChange: (List<String>) -> Unit, 
 }
 
 @Composable
-private fun TellSomeoneTool(onDone: () -> Unit) {
+private fun TellSomeoneTool(watch: (String) -> Unit, onDone: () -> Unit) {
     val context = LocalContext.current
-    var text by remember { mutableStateOf(TellSomeone.TEXTS.first()) }
+    var text by rememberSaveable { mutableStateOf(TellSomeone.TEXTS.first()) }
+    LaunchedEffect(text) { watch(text) }
     ToolTitle("Tell someone", "Pick words, then pick the person in your messages. You press send.")
     TellSomeone.TEXTS.forEach { t ->
         Pick(t, t == text) { text = t }
@@ -198,16 +200,20 @@ private fun at(ms: Long) = Instant.ofEpochMilli(ms).atZone(ZoneId.systemDefault(
 
 /** Cooling-off pen: write it, AIIMIN holds it for 24 hours, then asks "Still want to send it?". It never sends. */
 @Composable
-private fun CoolingOff(vm: PourViewModel, onDone: () -> Unit) {
+private fun CoolingOff(vm: PourViewModel, watch: (String) -> Unit) {
     val scope = rememberCoroutineScope()
     val toaster = LocalToaster.current
     val context = LocalContext.current
     val held by vm.cooling.collectAsStateWithLifecycle()
-    var to by remember { mutableStateOf("") }
-    var msg by remember { mutableStateOf("") }
+    var to by rememberSaveable { mutableStateOf("") }
+    var msg by rememberSaveable { mutableStateOf("") }
+    LaunchedEffect(msg) { watch(msg) }
+    // The clock moves while the screen is open, so a held message turns to "Still want to send it?" on time.
+    var nowMs by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(Unit) { while (true) { delay(30_000); nowMs = System.currentTimeMillis() } }
     ToolTitle("Cooling-off pen", "Write the message you want to send. AIIMIN holds it for a day and asks again. It never sends anything.")
     held.forEach { m ->
-        val due = (m.dueAt ?: 0L) <= System.currentTimeMillis() || m.status == "kept"
+        val due = (m.dueAt ?: 0L) <= nowMs || m.status == "kept"
         HeldCard(m, if (due) "Still want to send it?" else "Ready to look at ${dayTime.format(at(m.dueAt!!))}") {
             if (due) {
                 AppButton("Copy", {
@@ -232,11 +238,11 @@ private fun CoolingOff(vm: PourViewModel, onDone: () -> Unit) {
 }
 
 @Composable
-private fun HeldCard(m: PourItem, status: String, actions: @Composable () -> Unit) {
+private fun HeldCard(m: PourItem, status: String, sealed: Boolean = false, actions: @Composable () -> Unit) {
     val c = Aiimin.colors
     Column(Modifier.fillMaxWidth().clip(Shapes.card).background(c.surface).border(1.dp, c.border, Shapes.card).padding(16.dp)) {
         if (m.to.isNotBlank()) Text("To ${m.to}", style = Aiimin.type.label.copy(color = c.textMuted))
-        Text(if (m.sealed) "Sealed" else m.text, style = Aiimin.type.body, maxLines = 6, modifier = Modifier.padding(top = 4.dp))
+        Text(if (sealed) "Sealed" else m.text, style = Aiimin.type.body, maxLines = 6, modifier = Modifier.padding(top = 4.dp))
         if (status.isNotEmpty()) Text(status, style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp))
         Row(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) { actions() }
     }
@@ -244,10 +250,11 @@ private fun HeldCard(m: PourItem, status: String, actions: @Composable () -> Uni
 
 /** Say it out loud: up to 60 seconds, turned into text on the phone; no audio is ever kept. Then Keep or Let go. */
 @Composable
-private fun SayItOutLoud(vm: PourViewModel, onDone: () -> Unit) {
+private fun SayItOutLoud(vm: PourViewModel, watch: (String) -> Unit, onDone: () -> Unit) {
     val scope = rememberCoroutineScope()
     val toaster = LocalToaster.current
-    var said by remember { mutableStateOf("") }
+    var said by rememberSaveable { mutableStateOf("") }
+    LaunchedEffect(said) { watch(said) }
     ToolTitle("Say it out loud", "Hold and speak, up to a minute at a time. Only the words stay, on this phone; the sound is never saved.")
     Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { HoldToTalk(onText = { t -> said = (said.trimEnd() + " " + t).trim() }, label = "Hold and speak") }
     Spacer(Modifier.height(16.dp))
@@ -264,12 +271,14 @@ private fun SayItOutLoud(vm: PourViewModel, onDone: () -> Unit) {
 
 /** A letter never sent: to someone; Keep, Seal until a date, or Let go. */
 @Composable
-private fun Letter(vm: PourViewModel, onDone: () -> Unit) {
+private fun Letter(vm: PourViewModel, watch: (String) -> Unit) {
     val scope = rememberCoroutineScope()
     val toaster = LocalToaster.current
     val letters by vm.letters.collectAsStateWithLifecycle()
-    var to by remember { mutableStateOf("") }
-    var body by remember { mutableStateOf("") }
+    var to by rememberSaveable { mutableStateOf("") }
+    var body by rememberSaveable { mutableStateOf("") }
+    LaunchedEffect(body) { watch(body) }
+    val today = LocalDate.now()
     var sealing by remember { mutableStateOf(false) }
     ToolTitle("Letter never sent", "Write to anyone, even someone who is gone. It stays here, or you let it go.")
     AppTextField(to, { to = it }, label = "Dear", placeholder = "Who it's to")
@@ -285,11 +294,14 @@ private fun Letter(vm: PourViewModel, onDone: () -> Unit) {
     }
     if (sealing) DatePick(LocalDate.now().plusMonths(1), onPick = { d ->
         sealing = false
+        // A seal opens on a later day; today would open at once.
+        if (!d.isAfter(today)) { toaster.show("Pick a day after today"); return@DatePick }
         scope.launch { vm.pour.keepLetter(to, body, d); body = ""; to = ""; toaster.show("Sealed until ${d.format(DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH))}") }
     }, onDismiss = { sealing = false })
     if (letters.isNotEmpty()) SectionHeader("Your letters")
     letters.forEach { l ->
-        HeldCard(l, if (l.sealed) "Opens ${at(l.dueAt!!).toLocalDate().format(DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH))}" else "Kept ${dayTime.format(at(l.createdAt))}") {
+        val sealed = l.sealed(today)
+        HeldCard(l, if (sealed) "Opens ${l.sealUntil!!.format(DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH))}" else "Kept ${dayTime.format(at(l.createdAt))}", sealed) {
             AppButton("Let go", { scope.launch { vm.pour.release(l.id) } }, compact = true, kind = ButtonKind.GHOST)
         }
         Spacer(Modifier.height(12.dp))
@@ -298,11 +310,12 @@ private fun Letter(vm: PourViewModel, onDone: () -> Unit) {
 
 /** Control map: each worry goes to "I can act" (a task for today) or "I can't" (released). */
 @Composable
-private fun ControlMap(vm: PourViewModel, written: String) {
+private fun ControlMap(vm: PourViewModel, written: String, watch: (String) -> Unit) {
     val scope = rememberCoroutineScope()
     val toaster = LocalToaster.current
     val worries by vm.worries.collectAsStateWithLifecycle()
-    var add by remember { mutableStateOf("") }
+    var add by rememberSaveable { mutableStateOf("") }
+    LaunchedEffect(add) { watch(add) }
     var gone by remember { mutableStateOf(setOf<String>()) }
     ToolTitle("Control map", "One worry at a time. If you can act, it becomes a task for today. If you can't, let it go.")
     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -316,8 +329,8 @@ private fun ControlMap(vm: PourViewModel, written: String) {
         AnimatedVisibility(w.id !in gone, exit = fadeOut(aiimin.designsystem.theme.Motion.exit()) + shrinkVertically(aiimin.designsystem.theme.Motion.standard())) {
             Column(Modifier.padding(bottom = 12.dp)) {
                 HeldCard(w, "") {
-                    AppButton("I can act", { scope.launch { gone = gone + w.id; delay(220); vm.pour.act(w.id, LocalDate.now()); toaster.show("Added to Today") } }, compact = true)
-                    AppButton("I can't", { scope.launch { gone = gone + w.id; delay(220); vm.pour.release(w.id); toaster.show("Let go") } }, compact = true, kind = ButtonKind.SECONDARY)
+                    AppButton("I can act", { gone = gone + w.id; vm.act(w.id) { ok -> toaster.show(if (ok) "Added to Today" else "Couldn't make a task from that") } }, compact = true)
+                    AppButton("I can't", { gone = gone + w.id; vm.release(w.id); toaster.show("Let go") }, compact = true, kind = ButtonKind.SECONDARY)
                 }
             }
         }
@@ -326,13 +339,14 @@ private fun ControlMap(vm: PourViewModel, written: String) {
 
 /** Worry time: drop worries in the box any time; one daily 15-minute slot to look at them, with a reminder. */
 @Composable
-private fun WorryTime(vm: PourViewModel) {
+private fun WorryTime(vm: PourViewModel, watch: (String) -> Unit) {
     val scope = rememberCoroutineScope()
     val toaster = LocalToaster.current
     val min by vm.worryMin.collectAsStateWithLifecycle()
     val worries by vm.worries.collectAsStateWithLifecycle()
     var picking by remember { mutableStateOf(false) }
-    var add by remember { mutableStateOf("") }
+    var add by rememberSaveable { mutableStateOf("") }
+    LaunchedEffect(add) { watch(add) }
     val slot = min?.let { LocalTime.of(it / 60, it % 60) }
     val open = slot != null && PourTiming.inWorryTime(slot, LocalTime.now())
     val clock = DateTimeFormatter.ofPattern("h:mm a", Locale.ENGLISH)

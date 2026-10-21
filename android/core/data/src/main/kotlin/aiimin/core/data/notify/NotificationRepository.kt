@@ -250,10 +250,17 @@ class NotificationRepository @Inject constructor(
             if (at.toLocalDate() != today) null else aiimin.core.engine.notify.NoteReminder(n.id, n.title.ifBlank { "Note" }, at.hour * 60 + at.minute, n.locked)
         }
         // Pour: a held message whose day is up (today), and the daily worry time if one is set.
+        // A held message past its 24 hours is offered until it is kept or let go (its key has no date, so it asks once);
+        // worry time only reminds when something is in the box.
+        val nowMs = System.currentTimeMillis()
         val pourReminders = pour.coolingNow().mapNotNull { e ->
             val at = java.time.Instant.ofEpochMilli(e.dueAt!!).atZone(clock.zone)
-            if (at.toLocalDate() != today) null else aiimin.core.engine.notify.PourReminder(e.id, "cool", at.hour * 60 + at.minute)
-        } + listOfNotNull(s.worryMin?.let { aiimin.core.engine.notify.PourReminder("worry", "worry", it) })
+            when {
+                e.dueAt!! > nowMs && at.toLocalDate() != today -> null
+                at.toLocalDate() == today -> aiimin.core.engine.notify.PourReminder(e.id, "cool", at.hour * 60 + at.minute)
+                else -> aiimin.core.engine.notify.PourReminder(e.id, "cool", now)
+            }
+        } + listOfNotNull(s.worryMin?.takeIf { pour.worryCount() > 0 }?.let { aiimin.core.engine.notify.PourReminder("worry", "worry", it) })
         val bills = ledger.billsNow().filter { it.status == "CONFIRMED" && it.remind && !it.autopay && runCatching { LocalDate.parse(it.nextDue) }.getOrNull() == today.plusDays(1) }
             .map { BillTomorrow(it.id, it.title, Money.whole(it.amountPaise)) }
         val docs = vault.withExpiry().mapNotNull { d -> runCatching { LocalDate.parse(d.expires!!) }.getOrNull()?.let { DocExpiry(d.id, d.title, ChronoUnit.DAYS.between(today, it), d.expires!!) } }

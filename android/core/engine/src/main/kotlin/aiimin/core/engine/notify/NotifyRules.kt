@@ -92,7 +92,7 @@ object NotifyRules {
         s.pourReminders.forEach { p ->
             val rule = if (p.kind == "worry") "pour.worry" else "pour.cool"
             val c = copy(rule)
-            add(Candidate(rule, "pour:${p.id}:${s.today}:${p.minute}", Kind.PROMISE, Category.REMINDERS, p.minute, 2, c.title, c.body, "pour", p.id,
+            add(Candidate(rule, if (p.kind == "worry") "pour:worry:${s.today}" else "pour:${p.id}", Kind.PROMISE, Category.REMINDERS, p.minute, 2, c.title, c.body, "pour", p.id,
                 why = if (p.kind == "worry") "You set a daily worry time." else "You held a message for 24 hours.", sensitive = true))
         }
         if (s.billsDocsOn) {

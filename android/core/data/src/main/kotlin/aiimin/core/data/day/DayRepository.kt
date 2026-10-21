@@ -115,7 +115,7 @@ class SnapshotBuilder @Inject constructor(
         SleepMath.regularity(week)?.let { v[Signals.SLEEP_REGULARITY] = it.toDouble(); ev[Signals.SLEEP_REGULARITY] = Tier.A }
 
         // Journal: the best entry of the day; the quality gate decides credit.
-        val entries = journal.forDay(key).filter { !it.deleted }
+        val entries = journal.forDay(key).filter { !it.deleted && it.scored }
         val best = entries.maxByOrNull { (if (it.qualityOk) 10_000 else 0) + it.words }
         v[Signals.JOURNAL] = when {
             best == null -> 0.0

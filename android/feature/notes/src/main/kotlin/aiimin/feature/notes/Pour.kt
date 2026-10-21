@@ -106,9 +106,13 @@ class PourViewModel @Inject constructor(
     val letters = pour.items(PourRepository.KIND_LETTER).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
     val worries = pour.items(PourRepository.KIND_WORRY).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList<PourItem>())
 
-    /** Keep: saved privately, encrypted; feelings ride along as tags. Nothing is scored. */
-    suspend fun keep(text: String, mood: Int?, feelings: List<String>, id: String?): String = journal.save(text, mood, feelings.map { it.lowercase() }, id).id
-    suspend fun letGo(id: String?) { id?.let { journal.letGo(it) } }
+    /** Keep: saved privately, encrypted; feelings ride along as tags. Nothing is scored. Finishes even if the screen closes. */
+    suspend fun keep(text: String, mood: Int?, feelings: List<String>, id: String?): String =
+        kotlinx.coroutines.withContext(viewModelScope.coroutineContext + kotlinx.coroutines.NonCancellable) { journal.save(text, mood, feelings.map { it.lowercase() }, id, scored = false).id }
+    /** Let go starts at once in the ViewModel, so leaving during the release animation never leaves the entry behind. */
+    fun letGo(id: String?) { id?.let { viewModelScope.launch(kotlinx.coroutines.NonCancellable) { journal.letGo(it) } } }
+    fun act(id: String, done: (Boolean) -> Unit) = viewModelScope.launch(kotlinx.coroutines.NonCancellable) { done(pour.act(id, LocalDate.now()) != null) }
+    fun release(id: String) = viewModelScope.launch(kotlinx.coroutines.NonCancellable) { pour.release(id) }
     fun setWorryTime(min: Int?) = viewModelScope.launch { settings.update { it.copy(worryMin = min) } }
 }
 
@@ -129,12 +133,15 @@ fun PourScreen(id: String?, prefill: String? = null, tool: String? = null, vm: P
     val reduce = LocalReduceMotion.current
     val c = Aiimin.colors
     val entries by vm.entries.collectAsStateWithLifecycle()
+    // An entry being reopened is read before the page shows, so nothing typed is lost when it arrives.
+    if (id != null && entries == null) { Box(Modifier.fillMaxSize().background(c.base)); return }
     val existing = entries?.firstOrNull { it.id == id }
     var text by rememberSaveable(existing?.id) { mutableStateOf(existing?.text ?: prefill.orEmpty()) }
+    var mood by rememberSaveable(existing?.id) { mutableStateOf(existing?.mood) }
     var savedId by rememberSaveable { mutableStateOf(id) }
     var step by rememberSaveable { mutableStateOf(if (tool != null) PourStep.TOOL else PourStep.WRITE) }
     var openTool by rememberSaveable { mutableStateOf(tool) }
-    var feelings by rememberSaveable { mutableStateOf(existing?.tags?.map { t -> t.replaceFirstChar { it.uppercase() } }.orEmpty()) }
+    var feelings by rememberSaveable(existing?.id) { mutableStateOf(existing?.tags?.map { t -> t.replaceFirstChar { it.uppercase() } }.orEmpty()) }
     var line by rememberSaveable { mutableStateOf<String?>(null) }
     var supportShown by rememberSaveable { mutableStateOf(false) }
     var supportOpen by rememberSaveable { mutableStateOf(false) }
@@ -144,20 +151,32 @@ fun PourScreen(id: String?, prefill: String? = null, tool: String? = null, vm: P
     // 12.3: screenshots blocked and the recents thumbnail blank while Pour is open.
     DisposableEffect(Unit) {
         val w = (context as? Activity)?.window
+        // "Hide in the app switcher" may already have set it; then it stays when Pour closes.
+        val had = w != null && (w.attributes.flags and WindowManager.LayoutParams.FLAG_SECURE) != 0
         w?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        onDispose { w?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE) }
+        onDispose { if (!had) w?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE) }
     }
     // 12.3: the local check, read only. It shows the card once per visit and never blocks the page.
-    LaunchedEffect(text) {
-        if (supportShown || text.length < 6) return@LaunchedEffect
+    var toolText by remember { mutableStateOf("") }
+    LaunchedEffect(text, toolText) {
+        if (supportShown) return@LaunchedEffect
         delay(500)
-        if (SafetyCheck.flags(text)) { supportShown = true; supportOpen = true }
+        if (SafetyCheck.flags(text) || SafetyCheck.flags(toolText)) { supportShown = true; supportOpen = true }
     }
     // The release (Let go): the words lift and fade; reduce motion only fades.
     val release = remember { Animatable(0f) }
     val lift = with(LocalDensity.current) { 48.dp.toPx() }
 
     fun close() { step = PourStep.CLOSE; line = PourLines.pick(PourLines.CLOSE, today) }
+    fun back() {
+        when (step) {
+            PourStep.TOOL -> if (tool != null) nav.back() else { step = PourStep.TOOLBOX; openTool = null }
+            PourStep.TOOLBOX -> step = PourStep.CHOICE
+            PourStep.PUT_DOWN -> step = PourStep.WRITE
+            else -> nav.back()
+        }
+    }
+    androidx.activity.compose.BackHandler { back() }
 
     Box(
         Modifier.fillMaxSize().background(c.base)
@@ -167,14 +186,7 @@ fun PourScreen(id: String?, prefill: String? = null, tool: String? = null, vm: P
         Column(Modifier.fillMaxSize().statusBarsPadding().imePadding()) {
             // Top: back, the gentle timer and quick hide. No title, no counter.
             Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                AppIconButton(AppIcons.ArrowLeft, "Back", {
-                    when (step) {
-                        PourStep.TOOL -> { step = if (tool != null) PourStep.CLOSE else PourStep.TOOLBOX; openTool = null; if (tool != null) nav.back() }
-                        PourStep.TOOLBOX -> step = PourStep.CHOICE
-                        PourStep.PUT_DOWN -> step = PourStep.WRITE
-                        else -> nav.back()
-                    }
-                }, tint = c.textMuted)
+                AppIconButton(AppIcons.ArrowLeft, "Back", { back() }, tint = c.textMuted)
                 Spacer(Modifier.weight(1f))
                 if (step == PourStep.WRITE) {
                     Text(
@@ -218,14 +230,17 @@ fun PourScreen(id: String?, prefill: String? = null, tool: String? = null, vm: P
                     }
                     PourStep.CHOICE -> ChoiceStep(line, onJustMe = { close() }, onHelp = { step = PourStep.TOOLBOX })
                     PourStep.TOOLBOX -> Toolbox(onTool = { openTool = it; step = PourStep.TOOL }, onSupport = { supportOpen = true }, supportOpen = supportOpen, onSupportClose = { supportOpen = false })
-                    PourStep.TOOL -> PourTool(
-                        openTool.orEmpty(), vm, text, feelings,
+                    PourStep.TOOL -> Column {
+                        if (supportOpen) SupportCard(Modifier.padding(horizontal = 16.dp, vertical = 8.dp), onOkay = { supportOpen = false })
+                        PourTool(
+                        openTool.orEmpty(), vm, text, feelings, watch = { toolText = it },
                         onFeelings = { f ->
                             feelings = f
-                            scope.launch { if (savedId != null) savedId = vm.keep(text, existing?.mood, f, savedId) }
+                            scope.launch { if (savedId != null) savedId = vm.keep(text, mood, f, savedId) }
                         },
                         onDone = { if (tool != null) nav.back() else { step = PourStep.TOOLBOX; openTool = null } },
                     )
+                    }
                     PourStep.CLOSE -> CloseStep(line.orEmpty(), onDone = { nav.back() })
                 }
             }
@@ -238,10 +253,11 @@ fun PourScreen(id: String?, prefill: String? = null, tool: String? = null, vm: P
                     AppButton("Put it down", { step = PourStep.PUT_DOWN }, enabled = text.isNotBlank())
                 }
             } else if (step == PourStep.PUT_DOWN) {
+                WeatherMood(mood) { mood = it }
                 BottomBar {
                     AppButton("Keep", {
                         scope.launch {
-                            savedId = vm.keep(text, existing?.mood, feelings, savedId)
+                            savedId = vm.keep(text, mood, feelings, savedId)
                             toaster.show("Kept privately")
                             line = null; step = PourStep.CHOICE
                         }
@@ -249,15 +265,34 @@ fun PourScreen(id: String?, prefill: String? = null, tool: String? = null, vm: P
                     Spacer(Modifier.width(12.dp))
                     // Let go is the highlighted default (12.2).
                     AppButton("Let go", {
+                        vm.letGo(savedId)
                         scope.launch {
                             release.animateTo(1f, if (reduce) Motion.reducedFade() else Motion.release())
-                            vm.letGo(savedId)
                             savedId = null; text = ""
                             release.snapTo(0f)
                             line = PourLines.pick(PourLines.LET_GO, today); step = PourStep.CHOICE
                         }
                     }, Modifier.weight(1f), icon = AppIcons.Leaf)
                 }
+            }
+        }
+    }
+}
+
+/** The weather-mood (12.6): optional, five steps from stormy to clear, kept for you and never scored. */
+@Composable
+private fun WeatherMood(mood: Int?, onPick: (Int?) -> Unit) {
+    val c = Aiimin.colors
+    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        (1..5).forEach { m ->
+            val sel = mood == m
+            Column(
+                Modifier.weight(1f).clip(Shapes.control).border(1.dp, if (sel) c.text else c.border, Shapes.control).background(if (sel) c.raised else c.surface)
+                    .pressable({ onPick(if (sel) null else m) }).padding(vertical = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Icon(moodIcon(m), null, tint = if (sel) c.text else c.textMuted, modifier = Modifier.size(20.dp))
+                Text(moodLabels[m - 1], style = Aiimin.type.caption.copy(color = if (sel) c.text else c.textMuted), maxLines = 1)
             }
         }
     }
@@ -288,17 +323,26 @@ private fun GentleTimer(minutes: Int, reduce: Boolean) {
 
 /** Hold to talk: speech is turned into text on the phone; no audio is kept. */
 @Composable
-internal fun HoldToTalk(onText: (String) -> Unit, label: String = "Hold to talk") {
+internal fun HoldToTalk(onText: (String) -> Unit, label: String = "Hold to talk", maxSeconds: Int = aiimin.core.engine.pour.PourTiming.SAY_IT_SECONDS) {
     val c = Aiimin.colors
     val toaster = LocalToaster.current
+    val scope = rememberCoroutineScope()
     var listening by remember { mutableStateOf(false) }
-    val voice = aiimin.designsystem.component.rememberVoiceInput(
-        "Speak", onText = onText, onListening = { listening = it },
+    val hold = aiimin.designsystem.component.rememberVoiceHold(
+        onText = onText, onListening = { listening = it },
         onUnavailable = { toaster.show("Speech isn't available on this phone. An offline speech pack in Android settings adds it.") },
     )
     Row(
         Modifier.clip(Shapes.control).background(if (listening) c.accentSoft else c.surface).border(1.dp, if (listening) c.accent else c.border, Shapes.control)
-            .pointerInput(Unit) { detectTapGestures(onPress = { voice(); tryAwaitRelease(); if (listening) voice() }) }
+            // Press starts, release (or a cancelled press) stops; a minute is the most one hold takes.
+            .pointerInput(Unit) {
+                detectTapGestures(onPress = {
+                    hold.start()
+                    val cap = scope.launch { delay(maxSeconds * 1000L); hold.stop() }
+                    tryAwaitRelease()
+                    cap.cancel(); hold.stop()
+                })
+            }
             .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

@@ -350,6 +350,7 @@ class JournalRepository @Inject constructor(
     private val clock: DayClock,
     private val log: EventLogger,
     private val xp: XpRepository,
+    private val settings: aiimin.core.data.settings.SettingsStore,
 ) {
     val entries: Flow<List<JournalEntry>> = dao.all().map { list -> list.map(::decrypt) }
 
@@ -357,7 +358,8 @@ class JournalRepository @Inject constructor(
         e.id, LocalDate.parse(e.day), crypto.decryptText(e.cipher, e.iv), e.mood, Codecs.decodeList(e.tags), e.words, e.qualityOk, e.createdAt,
     )
 
-    suspend fun save(text: String, mood: Int?, tags: List<String>, editId: String? = null, forYesterday: Boolean = false): JournalSave {
+    /** [scored] false for Pour (12.2): no XP, no minimum tick, no Life Score credit. */
+    suspend fun save(text: String, mood: Int?, tags: List<String>, editId: String? = null, forYesterday: Boolean = false, scored: Boolean = true): JournalSave {
         val day = if (forYesterday) clock.today().minusDays(1) else clock.today()
         val recent = dao.latest(30).filter { it.id != editId }.map { crypto.decryptText(it.cipher, it.iv) }
         val q = quality(text, recent)
@@ -368,12 +370,12 @@ class JournalRepository @Inject constructor(
         dao.upsert(
             JournalEntity(
                 id, existing?.day ?: day.toString(), cipher, iv, mood?.coerceIn(1, 5), Codecs.encodeList(tags), q.words, q.ok,
-                existing?.createdAt ?: now, now, remoteId = existing?.remoteId,
+                existing?.createdAt ?: now, now, remoteId = existing?.remoteId, scored = scored && existing?.scored != false,
             ),
         )
-        log.log("journal.entry", "journal", id, mapOf("words" to q.words, "ok" to q.ok), if (forYesterday) Tier.D else if (q.ok) Tier.B else Tier.C, day = day)
+        log.log("journal.entry", "journal", id, mapOf("words" to q.words, "ok" to q.ok), if (!scored) Tier.D else if (forYesterday) Tier.D else if (q.ok) Tier.B else Tier.C, day = day)
         var award = 0
-        if (existing == null && q.ok) {
+        if (existing == null && q.ok && scored) {
             award = xp.award(XpEvent.JournalSettled(true)).awarded
             // A journalling minimum, if you have one, is kept by writing.
             minimums.activeNow().firstOrNull { it.name.contains("journal", ignoreCase = true) }?.let { m ->
@@ -396,7 +398,8 @@ class JournalRepository @Inject constructor(
      */
     suspend fun letGo(id: String) {
         val e = dao.get(id) ?: return
-        if (e.remoteId == null) dao.deleteNow(id)
+        // A row that may be on its way to aiimin.in leaves a blank tombstone, so the next sync removes the copy there.
+        if (e.remoteId == null && !settings.current().journalSync) dao.deleteNow(id)
         else {
             val (c, iv) = crypto.encryptText("")
             dao.upsert(e.copy(cipher = c, iv = iv, mood = null, tags = "[]", words = 0, deleted = true, dirty = true, updatedAt = System.currentTimeMillis()))

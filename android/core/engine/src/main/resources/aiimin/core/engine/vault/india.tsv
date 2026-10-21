@@ -1,0 +1,42 @@
+# India document pack (PRD Part 5 Phase 1). Validity is a suggestion only; a date read from the scan wins.
+# Sources from knowledge, last checked 2026-10-21: verify each link before launch (30.C).
+# key	name	lifecycle	subject	validity_months	lead_days	words	source
+pan	PAN card	A	person		0	pan card|permanent account number|income tax department	https://www.incometax.gov.in
+aadhaar	Aadhaar	A	person		0	aadhaar|aadhar|uidai|unique identification	https://uidai.gov.in
+voter_id	Voter ID (EPIC)	A	person		0	voter id|epic|election commission|elector	https://voters.eci.gov.in
+birth	Birth certificate	A	person		0	birth certificate|certificate of birth	https://crsorgi.gov.in
+marriage	Marriage certificate	A	person		0	marriage certificate|certificate of marriage	https://www.india.gov.in
+degree	Degree or diploma	A	person		0	degree|diploma|convocation|bachelor of|master of	https://www.ugc.gov.in
+marksheet	Marksheet	A	person		0	marksheet|mark sheet|statement of marks|grade card	https://www.cbse.gov.in
+deed	Property deed	A	property		0	sale deed|title deed|conveyance deed|gift deed	https://igrmaharashtra.gov.in
+will	Will	A	person		0	last will|testament	https://www.india.gov.in
+oci	OCI card	A	person		0	overseas citizen of india|oci card	https://ociservices.gov.in
+passport	Passport	B	person	120	180,90,30	passport|republic of india passport	https://www.passportindia.gov.in
+dl	Driving licence	B	person	240	90,30,7	driving licence|driving license|licence to drive|dl no	https://parivahan.gov.in
+rc	Vehicle RC	B	vehicle	180	90,30,7	registration certificate|certificate of registration|vehicle registration|form 23	https://parivahan.gov.in
+fastag	FASTag	B	vehicle	60	30,7	fastag|fast tag	https://www.npci.org.in
+visa	Visa	B	person		90,30,7	visa|entry permit	https://indianfrro.gov.in
+arms	Arms licence	B	person	60	90,30	arms licence|arms license	https://www.mha.gov.in
+car_insurance	Car insurance	C	vehicle	12	30,7,0	private car package|private car|car insurance|four wheeler|motor insurance|vehicle insurance	https://www.irdai.gov.in
+bike_insurance	Two-wheeler insurance	C	vehicle	12	30,7,0	two wheeler package|two wheeler|two-wheeler|bike insurance|motorcycle|scooter insurance	https://www.irdai.gov.in
+health_insurance	Health insurance	C	person	12	30,7,0	health insurance|mediclaim|health policy|floater|hospitalisation	https://www.irdai.gov.in
+life_insurance	Life insurance	C	person		30,7,0	life insurance|term plan|term insurance|endowment|lic of india	https://licindia.in
+travel_insurance	Travel insurance	C	person		7,0	travel insurance|overseas travel|trip cover	https://www.irdai.gov.in
+home_insurance	Home insurance	C	property	12	30,7,0	home insurance|householder|fire insurance|bharat griha	https://www.irdai.gov.in
+puc	PUC certificate	C	vehicle	12	7,0	pollution under control|puc certificate|puc	https://parivahan.gov.in
+rent	Rent agreement	C	property	11	60,30,7	rent agreement|leave and license|leave & license|rental agreement|lease deed	https://igrmaharashtra.gov.in
+loan	Loan agreement	C	account		30,7	loan agreement|sanction letter|home loan|car loan|personal loan	https://www.rbi.org.in
+amc	AMC	C	property	12	30,7	annual maintenance|amc	https://consumerhelpline.gov.in
+warranty	Warranty	C	property	12	30,7	warranty|guarantee card	https://consumerhelpline.gov.in
+gym	Membership	C	person	12	14,0	membership|gym	https://consumerhelpline.gov.in
+itr	Income tax return	D	person		0	itr-v|income tax return|acknowledgement number|itr	https://www.incometax.gov.in
+form16	Form 16	D	person		0	form 16|form no. 16|tds certificate	https://www.incometax.gov.in
+statement	Bank statement	D	account		0	account statement|bank statement|statement of account	https://www.rbi.org.in
+salary	Salary slip	D	person		0	salary slip|payslip|pay slip|earnings and deductions	https://www.india.gov.in
+medical	Medical report	D	person		0	lab report|test report|pathology|radiology|discharge summary|blood test	https://www.nmc.org.in
+prescription	Prescription	D	person		0	prescription|rx	https://www.nmc.org.in
+bill	Bill	D	account		0	electricity bill|water bill|gas bill|bill date|amount payable	https://consumerhelpline.gov.in
+receipt	Receipt	D	account		0	receipt|tax invoice|invoice no	https://www.gst.gov.in
+property_tax	Property tax receipt	E	property		0	property tax|house tax|municipal tax	https://www.india.gov.in
+service	Vehicle service record	E	vehicle		0	service invoice|job card|vehicle service	https://parivahan.gov.in
+challan	Traffic challan	D	vehicle		0	challan|e-challan	https://echallan.parivahan.gov.in

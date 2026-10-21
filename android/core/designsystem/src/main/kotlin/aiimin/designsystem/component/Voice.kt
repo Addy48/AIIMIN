@@ -66,6 +66,40 @@ fun rememberVoiceInput(
     }
 }
 
+/** Press-and-hold speech (Pour, 12.2): [VoiceHold.start] on press, [VoiceHold.stop] on release, whatever state it is in. */
+class VoiceHold internal constructor(val start: () -> Unit, val stop: () -> Unit)
+
+@Composable
+fun rememberVoiceHold(
+    onText: (String) -> Unit,
+    onUnavailable: () -> Unit = {},
+    onListening: (Boolean) -> Unit = {},
+    language: String = "en-IN",
+): VoiceHold {
+    val context = LocalContext.current
+    val text = rememberUpdatedState(onText)
+    val listening = rememberUpdatedState(onListening)
+    val unavailable = rememberUpdatedState(onUnavailable)
+    val session = remember { VoiceSession(context.applicationContext) }
+    DisposableEffect(Unit) { onDispose { session.release() } }
+    val mic = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok -> if (!ok) unavailable.value() }
+    var asking by remember { mutableStateOf(false) }
+    if (asking) ConsentSheet(
+        ConsentText.MICROPHONE,
+        onAllow = { asking = false; mic.launch(Manifest.permission.RECORD_AUDIO) },
+        onNotNow = { asking = false; unavailable.value() },
+    )
+    return remember {
+        VoiceHold(
+            start = {
+                if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) asking = true
+                else if (!session.active) session.start(language, text.value, {}, {}, listening.value, unavailable.value)
+            },
+            stop = { session.stop() },
+        )
+    }
+}
+
 private class VoiceSession(private val context: Context) {
     private var recognizer: SpeechRecognizer? = null
     var active = false

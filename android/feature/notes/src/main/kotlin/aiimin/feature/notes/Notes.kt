@@ -704,10 +704,10 @@ private fun rememberUpdatedValues(title: String, body: String, pinned: Boolean):
 
 // =================================================================== journal
 
-private val moodLabels = listOf("Low", "Off", "Okay", "Good", "Great")
+internal val moodLabels = listOf("Low", "Off", "Okay", "Good", "Great")
 
 @Composable
-private fun moodIcon(m: Int) = when (m) {
+internal fun moodIcon(m: Int) = when (m) {
     1, 2 -> AppIcons.SmileySad
     3 -> AppIcons.SmileyMeh
     else -> AppIcons.Smiley

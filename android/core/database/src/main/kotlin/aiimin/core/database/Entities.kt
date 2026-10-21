@@ -343,6 +343,8 @@ data class JournalEntity(
     val deleted: Boolean = false,
     /** aiimin.in journal_entries id, only when journal sync is switched on (v2). */
     @ColumnInfo(defaultValue = "NULL") val remoteId: String? = null,
+    /** False for entries kept from Pour (PRD 12.2: nothing there is scored). */
+    @ColumnInfo(defaultValue = "1") val scored: Boolean = true,
 )
 
 @Entity(tableName = "focus_sessions", indices = [Index("startAt")])

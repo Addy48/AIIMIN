@@ -13,7 +13,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /** One of Pour's saved items, decrypted for the screen. [sealed] letters show no text until their date. */
-data class PourItem(val id: String, val kind: String, val to: String, val text: String, val status: String, val dueAt: Long?, val createdAt: Long, val sealed: Boolean)
+data class PourItem(val id: String, val kind: String, val to: String, val text: String, val status: String, val dueAt: Long?, val createdAt: Long, val sealUntil: LocalDate?) {
+    /** Worked out on the screen against today, so a letter opens at midnight without a database change. */
+    fun sealed(today: LocalDate): Boolean = PourTiming.sealed(sealUntil, today)
+}
 
 /**
  * Pour's tools that keep something (PRD 12.6): the cooling-off pen, letters never sent and the worry box. Text is
@@ -27,13 +30,12 @@ class PourRepository @Inject constructor(
 ) {
     fun items(kind: String): Flow<List<PourItem>> = dao.open(kind).map { l -> l.map(::open) }
 
-    private fun open(e: PourItemEntity): PourItem {
-        val sealed = e.kind == KIND_LETTER && PourTiming.sealed(e.dueAt?.let { java.time.Instant.ofEpochMilli(it).atZone(java.time.ZoneId.systemDefault()).toLocalDate() }, LocalDate.now())
-        return PourItem(
-            e.id, e.kind, if (e.toCipher.isEmpty()) "" else crypto.decryptText(e.toCipher, e.toIv),
-            if (sealed) "" else crypto.decryptText(e.cipher, e.iv), e.status, e.dueAt, e.createdAt, sealed,
-        )
-    }
+    // A letter's seal is stored as its calendar day (epoch day in UTC millis), so a timezone change never moves it.
+    private fun open(e: PourItemEntity): PourItem = PourItem(
+        e.id, e.kind, if (e.toCipher.isEmpty()) "" else crypto.decryptText(e.toCipher, e.toIv),
+        crypto.decryptText(e.cipher, e.iv), e.status, e.dueAt, e.createdAt,
+        if (e.kind == KIND_LETTER) e.dueAt?.let { LocalDate.ofEpochDay(it / 86_400_000L) } else null,
+    )
 
     private suspend fun write(kind: String, to: String, text: String, status: String, dueAt: Long?): String {
         val now = System.currentTimeMillis()
@@ -50,7 +52,7 @@ class PourRepository @Inject constructor(
 
     /** A letter never sent: kept, or sealed until [until] (start of that day). */
     suspend fun keepLetter(to: String, text: String, until: LocalDate?): String =
-        write(KIND_LETTER, to, text, "kept", until?.atStartOfDay(java.time.ZoneId.systemDefault())?.toInstant()?.toEpochMilli())
+        write(KIND_LETTER, to, text, "kept", until?.toEpochDay()?.times(86_400_000L))
 
     suspend fun dropWorry(text: String): String = write(KIND_WORRY, "", text, "open", null)
 

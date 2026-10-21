@@ -392,6 +392,9 @@ interface PourDao {
     @Query("SELECT * FROM pour_items WHERE kind = 'cool' AND status = 'open' AND dueAt IS NOT NULL")
     suspend fun coolingNow(): List<PourItemEntity>
 
+    @Query("SELECT COUNT(*) FROM pour_items WHERE kind = 'worry' AND status = 'open'")
+    suspend fun worryCount(): Int
+
     @Query("DELETE FROM pour_items WHERE id = :id")
     suspend fun deleteNow(id: String)
 }
