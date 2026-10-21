@@ -65,6 +65,8 @@ sealed interface Route {
     data object Trash : Route
     data class SignIn(val createAccount: Boolean = false) : Route
     data object Privacy : Route
+    /** Settings > Privacy > Your rights (PRD 21 s.9a, DPDP Rules 3 and 14). */
+    data object YourRights : Route
     data object HealthPrivacy : Route
     data object PhoneDay : Route
     data object Body : Route

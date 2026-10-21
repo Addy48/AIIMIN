@@ -314,6 +314,9 @@ fun PrivacyScreen(vm: AccountViewModel = hiltViewModel(), me: MeViewModel = hilt
                 onClick = { me.verify() },
             )
             Hairline()
+            SectionHeader("Your rights")
+            ListRow("Your rights", subtitle = "See, correct, export or erase your data, withdraw consent, name someone, complain", leading = { IconTile(AppIcons.Scales) }, onClick = { nav.open(Route.YourRights) }, maxSubtitleLines = 2)
+            Hairline()
             SectionHeader("Your copy")
             Row(Modifier.fillMaxWidth().clickable {
                 scope.launch {
@@ -379,4 +382,53 @@ private fun DangerRow(title: String, sub: String, onClick: () -> Unit) {
         Text(sub, style = Aiimin.type.caption)
     }
     Hairline()
+}
+
+/** Part 21 s.9 and 9a, verbatim where the policy speaks; DPDP Rule 14 asks that the means and the identifier needed be shown. */
+object Rights {
+    const val EMAIL = "support@aiimin.in"
+    const val ASK = "You can ask to see, correct, export or erase your information, withdraw consent (as easily as you gave it), and have a grievance answered. Write to support@aiimin.in; we will reply within 30 days. If you are not satisfied, you may complain to the Data Protection Board of India once it is constituted. If you live in the European Union or United Kingdom, you may also complain to your local data protection authority."
+    const val WITHDRAW = "In the app go to Settings > Privacy and switch off sync, bank-message reading, health, usage, microphone or voice. This is as easy as turning them on. Turning one off does not remove what already sits on your phone; use \"Erase this phone\" for that."
+    const val NOMINATE = "You may name a person who can use your rights for you if you die or cannot act. Email support@aiimin.in from your sign-in address with their name and contact details. We check them before we act."
+    const val BOARD = "You may complain to the Data Protection Board of India (website: dpb.gov.in, once it is constituted). We ask that you contact us first, but you do not have to."
+    const val IDENTIFIER = "Write from your sign-in email, or include it, so we can find your account. Nothing else is needed."
+    const val REPLY = "Within 30 days; the law allows us at most 90 days."
+    const val BREACH = "If a personal-data breach affects you, we will tell you without delay in the app and by email. Our message will say what happened, when, how far it reached, what it may mean for you, what we have done, what you can do to protect yourself, and a person you can ask. We will also report it to the Data Protection Board without delay and send a full report within 72 hours."
+}
+
+@Composable
+fun YourRightsScreen(me: MeViewModel = hiltViewModel()) {
+    val nav = LocalNavigator.current
+    val context = LocalContext.current
+    val c = Aiimin.colors
+    fun mail(subject: String) = runCatching {
+        context.startActivity(Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:${Rights.EMAIL}")).putExtra(Intent.EXTRA_SUBJECT, subject))
+    }
+    Column(Modifier.fillMaxSize().background(c.base)) {
+        TopBar("Your rights", onBack = { nav.back() })
+        Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Aiimin.space.gutter)) {
+            Text(Rights.ASK, style = Aiimin.type.body, modifier = Modifier.padding(top = 4.dp))
+            SectionHeader("Do it in the app")
+            ListRow("Export everything", subtitle = "Settings > Privacy > Your copy", leading = { IconTile(AppIcons.Export) }, onClick = { nav.open(Route.Privacy) })
+            Hairline()
+            ListRow("Correct", subtitle = "Edit any entry where you see it; your name in Edit profile", leading = { IconTile(AppIcons.Pencil) }, onClick = { nav.open(Route.EditProfile) })
+            Hairline()
+            ListRow("Erase this phone or delete your account", subtitle = "Settings > Privacy > Erase", leading = { IconTile(AppIcons.Trash) }, onClick = { nav.open(Route.Privacy) })
+            SectionHeader("Withdraw consent")
+            Text(Rights.WITHDRAW, style = Aiimin.type.caption.copy(fontSize = 14.sp, lineHeight = 21.sp))
+            SectionHeader("Ask us")
+            Text(Rights.IDENTIFIER, style = Aiimin.type.caption.copy(fontSize = 14.sp, lineHeight = 21.sp))
+            Text("Reply time: ${Rights.REPLY}", style = Aiimin.type.caption.copy(fontSize = 14.sp, lineHeight = 21.sp), modifier = Modifier.padding(top = 6.dp))
+            Spacer(Modifier.height(10.dp))
+            AppButton("Write to ${Rights.EMAIL}", { mail("My data rights") }, Modifier.fillMaxWidth(), kind = ButtonKind.SECONDARY, icon = AppIcons.EnvelopeSimple)
+            SectionHeader("Nominate someone")
+            Text(Rights.NOMINATE, style = Aiimin.type.caption.copy(fontSize = 14.sp, lineHeight = 21.sp))
+            AppButton("Name a nominee by email", { mail("Nominee for my AIIMIN account") }, Modifier.padding(top = 10.dp), kind = ButtonKind.GHOST, compact = true)
+            SectionHeader("Complain")
+            Text(Rights.BOARD, style = Aiimin.type.caption.copy(fontSize = 14.sp, lineHeight = 21.sp))
+            SectionHeader("If there is a breach")
+            Text(Rights.BREACH, style = Aiimin.type.caption.copy(fontSize = 14.sp, lineHeight = 21.sp))
+            Text("Grievance contact: ${Rights.EMAIL}", style = Aiimin.type.label, modifier = Modifier.padding(top = 20.dp, bottom = 32.dp))
+        }
+    }
 }

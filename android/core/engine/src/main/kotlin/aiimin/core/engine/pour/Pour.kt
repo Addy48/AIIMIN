@@ -77,7 +77,8 @@ object PourLines {
     val OPEN = listOf("Say it all. I'm just here.", "Let it out. I'm listening.", "No one else reads this. Go on.")
     val CLOSE = listOf("That took something. Rest a little.", "Put down for now. Rest a little.", "Noted. Be easy on yourself tonight.")
     val LET_GO = listOf("Gone. It doesn't have to stay with you.", "Let go. The page is clear again.")
-    const val DISCLAIMER = "AIIMIN is not a medical service. For support from a person, tap here."
+    /** Part 23 "Pour first open", verbatim. */
+    const val DISCLAIMER = "This space is private. It stays on this phone. AIIMIN is not a medical service. For support from a person, tap here."
     const val CARD_TITLE = "It sounds really heavy."
     const val CARD_BODY = "You deserve support from a person."
 

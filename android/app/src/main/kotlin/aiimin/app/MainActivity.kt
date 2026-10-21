@@ -206,7 +206,7 @@ class MainActivity : FragmentActivity() {
                     "moneysettings" -> Route.MoneySettings; "smsimport" -> Route.SmsImport; "appearance" -> Route.Appearance; "raahi" -> Route.RaahiSettings; "notifysettings" -> Route.NotifySettings; "aboutraahi" -> Route.AboutRaahi; "language" -> Route.Language; "help" -> Route.Help; "about" -> Route.About; "running" -> Route.Running
                     "captures" -> Route.RecentCaptures; "moodyear" -> Route.MoodYear; "backups" -> Route.VaultBackup; "kits" -> Route.EmergencyKits
                     "accounts" -> Route.Accounts; "splits" -> Route.Splits; "recurring" -> Route.Recurring; "payees" -> Route.PayeeMemory
-                    "sync" -> Route.SyncSettings; "conflicts" -> Route.Conflicts; "trash" -> Route.Trash; "account" -> Route.Account; "privacy" -> Route.Privacy
+                    "sync" -> Route.SyncSettings; "conflicts" -> Route.Conflicts; "trash" -> Route.Trash; "account" -> Route.Account; "privacy" -> Route.Privacy; "rights" -> Route.YourRights
                     else -> Route.Today
                 },
             )

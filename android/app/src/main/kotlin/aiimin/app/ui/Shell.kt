@@ -395,6 +395,7 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
                             )
                         }
                         entry<Route.Privacy> { aiimin.feature.me.PrivacyScreen() }
+                        entry<Route.YourRights> { aiimin.feature.me.YourRightsScreen() }
                         entry<Route.HealthPrivacy> { aiimin.feature.onboarding.HealthPrivacyScreen(onBack = { navigator.back() }) }
                         entry<Route.PhoneDay> { PhoneDayScreen() }
                         entry<Route.MoneyInbox> { MoneyInboxScreen() }
