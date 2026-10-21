@@ -263,7 +263,7 @@ class NotificationRepository @Inject constructor(
         } + listOfNotNull(s.worryMin?.takeIf { pour.worryCount() > 0 }?.let { aiimin.core.engine.notify.PourReminder("worry", "worry", it) })
         val bills = ledger.billsNow().filter { it.status == "CONFIRMED" && it.remind && !it.autopay && runCatching { LocalDate.parse(it.nextDue) }.getOrNull() == today.plusDays(1) }
             .map { BillTomorrow(it.id, it.title, Money.whole(it.amountPaise)) }
-        val docs = vault.withExpiry().mapNotNull { d -> runCatching { LocalDate.parse(d.expires!!) }.getOrNull()?.let { DocExpiry(d.id, d.title, ChronoUnit.DAYS.between(today, it), d.expires!!) } }
+        val docs = aiimin.core.data.vault.remindable(vault.currentWithExpiry()).mapNotNull { d -> runCatching { LocalDate.parse(d.expires!!) }.getOrNull()?.let { DocExpiry(d.id, d.title, ChronoUnit.DAYS.between(today, it), d.expires!!) } }
         val docCount = vault.allNow().count { !it.deleted }
         val last = context.getSharedPreferences(aiimin.core.data.vault.VaultBackupRepository.PREFS, Context.MODE_PRIVATE).getLong("last_at", 0L)
         val backupDays = if (last == 0L) null else ChronoUnit.DAYS.between(java.time.Instant.ofEpochMilli(last).atZone(clock.zone).toLocalDate(), today)

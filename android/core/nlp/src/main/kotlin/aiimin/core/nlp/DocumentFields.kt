@@ -8,6 +8,10 @@ data class DocFields(
     /** PAN, masked Aadhaar (last 4 only), passport or policy number. */
     val number: String? = null,
     val vehicle: String? = null,
+    /** When this version starts (a cover's timeline and gap check). */
+    val starts: LocalDate? = null,
+    /** The insurer or issuer, from a fixed list; never guessed. */
+    val provider: String? = null,
 )
 
 /**
@@ -26,6 +30,21 @@ object DocumentFields {
     private val EXPIRY_CUE = Regex(
         """(valid\s*(?:till|upto|up to|until)|expir\w*|renewal\s*due|due\s*date|date\s*of\s*expiry|policy\s*end)""",
         I,
+    )
+    private val START_CUE = Regex(
+        """(valid\s*from|period\s*of\s*(?:insurance|cover)\W*(?:from)?|commencement(?:\s*date)?|start\s*date|effective\s*(?:from|date)|risk\s*start)""",
+        I,
+    )
+    private val TO_CUE = Regex("""\b(?:to|till|until|upto)\b""", I)
+    private val PROVIDERS = listOf(
+        "ICICI Lombard" to "icici lombard", "ICICI Prudential" to "icici prudential", "HDFC Ergo" to "hdfc ergo", "HDFC Life" to "hdfc life",
+        "Star Health" to "star health", "Care Health" to "care health", "Niva Bupa" to "niva bupa", "Bajaj Allianz" to "bajaj allianz",
+        "Tata AIG" to "tata aig", "New India Assurance" to "new india assurance", "United India" to "united india insurance",
+        "National Insurance" to "national insurance", "Oriental Insurance" to "oriental insurance", "Reliance General" to "reliance general",
+        "SBI General" to "sbi general", "SBI Life" to "sbi life", "Aditya Birla" to "aditya birla", "ManipalCigna" to "manipalcigna",
+        "Go Digit" to "go digit", "Acko" to "acko", "Kotak" to "kotak mahindra general", "IFFCO Tokio" to "iffco tokio",
+        "Royal Sundaram" to "royal sundaram", "Chola MS" to "cholamandalam", "Future Generali" to "future generali", "Max Life" to "max life",
+        "LIC" to "life insurance corporation",
     )
     private val PAN = Regex("""\b[A-Z]{5}[0-9]{4}[A-Z]\b""")
     private val AADHAAR = Regex("""\b\d{4}\s?\d{4}\s?\d{4}\b""")
@@ -64,7 +83,16 @@ object DocumentFields {
         if (number == null) number = PASSPORT.find(text)?.value
         val vehicle = VEHICLE.find(text)?.value
         if (number == null) number = POLICY.find(text)?.groupValues?.get(1)
-        return DocFields(best, number, vehicle)
+        var starts: LocalDate? = null
+        START_CUE.find(text)?.let { m ->
+            val window = text.substring(m.range.last + 1, minOf(text.length, m.range.last + 1 + 60))
+            starts = parseAnyDate(window)
+            // "From 14/10/2026 To 13/10/2027": the end follows the start.
+            if (best == null) TO_CUE.find(window)?.let { t -> parseAnyDate(window.substring(t.range.last + 1))?.let { e -> if (starts == null || e.isAfter(starts)) best = e } }
+        }
+        val low = text.lowercase()
+        val provider = PROVIDERS.firstOrNull { low.contains(it.second) }?.first
+        return DocFields(best, number, vehicle, starts, provider)
     }
 
     private val CATEGORY_RULES: List<Pair<String, Regex>> = listOf(

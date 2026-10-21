@@ -429,6 +429,16 @@ interface VaultDao {
     @Query("SELECT * FROM docs WHERE deleted = 0 AND expires IS NOT NULL ORDER BY expires")
     suspend fun withExpiry(): List<DocEntity>
 
+    /** Expiry reminders follow the current version of each cover only. */
+    @Query("SELECT * FROM docs WHERE deleted = 0 AND current = 1 AND expires IS NOT NULL ORDER BY expires")
+    suspend fun currentWithExpiry(): List<DocEntity>
+
+    @Query("SELECT * FROM docs WHERE deleted = 0 AND (coverId = :cover OR id = :cover) ORDER BY version DESC")
+    suspend fun cover(cover: String): List<DocEntity>
+
+    @Query("SELECT * FROM docs WHERE deleted = 0 AND (coverId = :cover OR id = :cover) ORDER BY version DESC")
+    fun observeCover(cover: String): Flow<List<DocEntity>>
+
     @Query("SELECT * FROM docs WHERE deleted = 0 AND sha256 = :hash LIMIT 1")
     suspend fun byHash(hash: String): DocEntity?
 

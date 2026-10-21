@@ -87,6 +87,10 @@ sealed interface Route {
 
     // vault / family
     data class Doc(val id: String) : Route
+    /** V7: a document's cover, its versions and its lifecycle (PRD Part 5 Phase 1). */
+    data class DocInfo(val id: String) : Route
+    /** A car's or a home's papers on one page. */
+    data class Asset(val key: String) : Route
     data class Person(val id: String) : Route
     data object Family : Route
     data object VaultBackup : Route

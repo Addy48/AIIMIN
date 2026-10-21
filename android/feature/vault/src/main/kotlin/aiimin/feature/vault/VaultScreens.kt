@@ -120,8 +120,9 @@ internal fun ExpiryTag(days: Long?) {
     val c = Aiimin.colors
     if (days == null) return
     when {
-        days < 0 -> Tag("Expired", color = c.danger, background = c.dangerSoft)
-        days == 0L -> Tag("Expires today", color = c.danger, background = c.dangerSoft)
+        // Lapsed and today use the warn colour: the brand has no red.
+        days < 0 -> Tag("Lapsed", color = c.warn, background = c.warnSoft)
+        days == 0L -> Tag("Ends today", color = c.warn, background = c.warnSoft)
         days <= 30 -> Tag("$days days", color = c.warn, background = c.warnSoft)
         days <= 90 -> Tag("$days days", color = c.textMuted)
         else -> Unit
@@ -200,7 +201,7 @@ fun VaultScreen(vm: VaultViewModel = hiltViewModel()) {
                                     Text(d.ownerName, style = Aiimin.type.caption)
                                 }
                                 val n = d.daysToExpiry ?: 0
-                                Text(if (n < 0) "expired" else "expires in $n days", style = Aiimin.type.label.copy(color = if (n <= 30) c.warn else c.textMuted, fontWeight = if (n <= 30) FontWeight.SemiBold else FontWeight.Normal, fontSize = 13.5.sp))
+                                Text(if (n < 0) "lapsed" else "ends in $n days", style = Aiimin.type.label.copy(color = if (n <= 30) c.warn else c.textMuted, fontWeight = if (n <= 30) FontWeight.SemiBold else FontWeight.Normal, fontSize = 13.5.sp))
                             }
                             Hairline()
                         }
@@ -280,11 +281,12 @@ fun VaultScreen(vm: VaultViewModel = hiltViewModel()) {
         var pick by remember { mutableStateOf(false) }
         var category by remember(r.docId) { mutableStateOf(r.category) }
         var title by remember(r.docId) { mutableStateOf("") }
+        var join by remember(r.docId) { mutableStateOf(defaultChoice(r)) }
         LaunchedEffect(r.docId) { title = vm.doc(r.docId)?.title.orEmpty() }
         val scope = rememberCoroutineScope()
         suspend fun commit() {
             vm.doc(r.docId)?.let { d -> vm.saveDoc(d.copy(category = category, title = title.trim().ifBlank { d.title })) }
-            vm.setExpiry(r.docId, expires, task)
+            vm.saveVersion(r.docId, join, expires, task)
             vm.clearImport()
         }
         AppSheet({ scope.launch { commit() } }, title = "Saved to the vault", subtitle = r.duplicateOf?.let { "This file is already in the vault as “${it.title}”." }) {
@@ -295,13 +297,18 @@ fun VaultScreen(vm: VaultViewModel = hiltViewModel()) {
                     AppButton("Remove this copy", { scope.launch { vm.removeCopy(r.docId); vm.clearImport(); toaster.show("Copy removed") } }, compact = true, kind = ButtonKind.GHOST)
                 }
             }
-            SectionHeader("Category")
+            if (r.duplicateOf == null) VersionPrompt(r, join) { join = it }
+            SectionHeader(r.typeName?.let { "Category · looks like a $it" } ?: "Category")
             PillRow { DOC_CATEGORIES.forEach { k -> Pill(k, category == k, { category = k }) } }
             r.number?.let { ListRow("Number found", subtitle = it, leading = { IconTile(AppIcons.Barcode) }) }
             ListRow(
-                "Expires", subtitle = expires?.let { "${Dates.long(it)} — found in the document" } ?: "No date found. Add one for reminders.",
+                "Expires", subtitle = expires?.let { "${Dates.longYear(it)} · found in the document" } ?: "No date found. Add one for reminders.",
                 leading = { IconTile(AppIcons.Hourglass) }, onClick = { pick = true },
             )
+            if (expires == null) r.suggestedEnd?.let { s ->
+                // The registry's length is only a suggestion; a date read from the paper always wins.
+                ListRow("Usually ends ${Dates.longYear(s)}", subtitle = "Check your document. Tap to use this date", leading = { IconTile(AppIcons.CalendarCheck) }, onClick = { expires = s })
+            }
             if (expires != null) SwitchRow("Add a renewal task", task, { task = it }, subtitle = "Two weeks before, with reminders at 90/60/30/7 days")
             Text("Stored only on this phone. Documents you store are your responsibility; keep the originals.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp))
             Spacer(Modifier.height(12.dp))
@@ -330,7 +337,7 @@ private fun DocRow(d: DocView, onClick: () -> Unit) {
             )
             val line = when {
                 days == null -> "No expiry"
-                days < 0 -> "Expired ${-days} days ago"
+                days < 0 -> "Lapsed ${-days} days ago"
                 days <= 120 -> "Expires ${d.doc.expires?.let { Dates.short(LocalDate.parse(it)) }} · $days days"
                 else -> "Valid to ${d.doc.expires?.let { Dates.short(LocalDate.parse(it)) }}"
             }

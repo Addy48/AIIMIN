@@ -66,6 +66,11 @@ class VaultViewModel @Inject constructor(
     /** Drops a just-imported duplicate (V3 "This file is already in the vault"). */
     suspend fun removeCopy(id: String) { vault.delete(id) }
     fun setExpiry(id: String, date: LocalDate?, task: Boolean) = viewModelScope.launch { vault.setExpiry(id, date, task) }
+    /** Joins the cover first so the reminder lands on the version that is now current. */
+    suspend fun saveVersion(id: String, cover: String?, date: LocalDate?, task: Boolean) {
+        if (cover != null) vault.joinCover(id, cover) else if (lastImport.value?.covers?.isNotEmpty() == true) vault.keepSeparate(id)
+        vault.setExpiry(id, date, task)
+    }
     suspend fun today() = clock.today()
 }
 
@@ -100,7 +105,10 @@ class DocViewModel @Inject constructor(
         return out
     }
 
-    fun rename(d: DocEntity, title: String) = viewModelScope.launch { vault.edit(d.copy(title = title.trim())) }
+    suspend fun candidates(docId: String) = vault.candidates(docId)
+    suspend fun join(docId: String, cover: String) { vault.joinCover(docId, cover); vault.get(docId)?.let { vault.setExpiry(it.id, it.expires?.let(LocalDate::parse), renewalTask = false) } }
+    suspend fun keepSeparate(docId: String) = vault.keepSeparate(docId)
+        fun rename(d: DocEntity, title: String) = viewModelScope.launch { vault.edit(d.copy(title = title.trim())) }
     fun setCategory(d: DocEntity, cat: String) = viewModelScope.launch { vault.edit(d.copy(category = cat)) }
     suspend fun saveDoc(d: DocEntity) = vault.edit(d)
     /** Drops a just-imported duplicate (V3 "This file is already in the vault"). */

@@ -149,6 +149,18 @@ fun DocScreen(id: String, vm: DocViewModel = hiltViewModel()) {
                 d.number?.let { LinkChip(if (d.sensitive) "Number ••••${it.takeLast(4)}" else it, AppIcons.Hash) {} }
                 if (d.sensitive) LinkChip("Sensitive", AppIcons.LockSimple) {}
             }
+            // "Is this a new version of ...?" for a file that arrived without the save sheet (shared in).
+            var asked by remember(d.id) { mutableStateOf<List<Pair<DocEntity, aiimin.core.engine.vault.Renewal>>>(emptyList()) }
+            LaunchedEffect(d.id, d.coverId) { asked = vm.candidates(d.id) }
+            if (asked.isNotEmpty()) Column(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 12.dp)) {
+                val r = aiimin.core.data.vault.ImportResult(d.id, null, d.category, null, null, covers = asked)
+                VersionPrompt(r, null, instant = true) { cover ->
+                    scope.launch {
+                        if (cover != null) { vm.join(d.id, cover); toaster.show("Added as the new version") } else vm.keepSeparate(d.id)
+                        asked = emptyList()
+                    }
+                }
+            }
             // page preview
             Box(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 16.dp).fillMaxWidth().height(360.dp).clip(RoundedCornerShape(6.dp)).background(c.paper).border(1.dp, c.borderStrong, RoundedCornerShape(6.dp)).clickable { full = true }) {
                 val f = file
@@ -169,6 +181,13 @@ fun DocScreen(id: String, vm: DocViewModel = hiltViewModel()) {
                     trailing = { ExpiryVial(days?.let { (it / 365f).coerceIn(0f, 1f) }) },
                 )
                 if (d.vehicle != null) { Hairline(); FoundRow("Vehicle", d.vehicle!!, found = true) }
+                d.provider?.let { Hairline(); FoundRow("Provider", it, found = true) }
+                d.startsOn?.let { Hairline(); FoundRow("Starts", LocalDate.parse(it).let { s -> Dates.short(s) + " " + s.year }, found = true) }
+                Spacer(Modifier.height(8.dp))
+                ListRow(
+                    "Info and versions", subtitle = if (d.version > 1 || d.coverId != null) "Version ${d.version}${if (d.current) ", current" else ""} · timeline" else "Kind of paper, timeline, add a new version",
+                    leading = { IconTile(AppIcons.ClockCounter) }, onClick = { nav.open(Route.DocInfo(d.id)) },
+                )
                 Spacer(Modifier.height(16.dp))
                 Text("Stored only on this phone · ${if (d.sizeBytes < 1_048_576) "${maxOf(1, d.sizeBytes / 1024)} KB" else "%.1f MB".format(d.sizeBytes / 1_048_576.0)}", style = Aiimin.type.caption.copy(fontSize = 12.sp))
                 Spacer(Modifier.height(24.dp))
@@ -230,7 +249,7 @@ fun DocScreen(id: String, vm: DocViewModel = hiltViewModel()) {
         var task by remember { mutableStateOf(true) }
         var pick by remember { mutableStateOf(false) }
         AppSheet({ remind = false }, title = "Expiry & reminders", subtitle = "Reminders at 90, 60, 30 and 7 days, a calendar marker on the day, and an optional renewal task.") {
-            ListRow("Expires", subtitle = date?.let(Dates::long) ?: "Not set", leading = { IconTile(AppIcons.Hourglass) }, onClick = { pick = true })
+            ListRow("Expires", subtitle = date?.let(Dates::longYear) ?: "Not set", leading = { IconTile(AppIcons.Hourglass) }, onClick = { pick = true })
             SwitchRow("Renewal task two weeks before", task, { task = it })
             Spacer(Modifier.height(12.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {

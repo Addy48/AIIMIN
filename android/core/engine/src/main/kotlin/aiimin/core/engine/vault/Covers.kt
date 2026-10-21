@@ -82,6 +82,26 @@ sealed interface Renewal {
     data class AskBoth(val overlapDays: Long) : Renewal
 }
 
+/** A saved document as the cover rules see it. [coverId] is the document's own id until it joins another cover. */
+data class CoverDoc(
+    val id: String,
+    val coverId: String,
+    val type: String?,
+    val subject: String?,
+    val starts: LocalDate?,
+    val ends: LocalDate?,
+    val version: Int,
+    val current: Boolean,
+)
+
+/** One timeline row; [before] is the gap or overlap against the older version below it. */
+data class TimelineRow(val doc: CoverDoc, val before: Renewal?)
+
+enum class AssetKind { VEHICLE, HOME }
+
+/** An asset page groups one car's or one home's papers (lifecycle E and everything with that subject). */
+data class Asset(val key: String, val kind: AssetKind)
+
 object Covers {
     const val OVERLAP_ASK_DAYS = 30L
 
@@ -110,6 +130,43 @@ object Covers {
     /** Lapsed shows (in the warn colour: the brand has no red) for renewed things and contracts only (rule 6). */
     fun lapsed(type: DocType?, ends: LocalDate?, today: LocalDate): Boolean =
         ends != null && ends.isBefore(today) && (type?.lifecycle == Lifecycle.B || type?.lifecycle == Lifecycle.C)
+
+    /** The subject a document belongs to: a vehicle by its number, a place by its owner's home, else the owner. */
+    fun subjectOf(type: DocType?, owner: String, vehicle: String?): String? = when (type?.subject) {
+        null -> null
+        Subject.VEHICLE -> norm(vehicle)
+        Subject.PROPERTY -> "home:$owner"
+        Subject.PERSON, Subject.ACCOUNT -> owner
+    }
+
+    /** Current versions of covers the new document could belong to ("Is this a new version of ...?"). */
+    fun match(type: DocType?, subject: String?, docs: List<CoverDoc>): List<CoverDoc> {
+        if (type == null) return emptyList()
+        return docs.filter { it.current && sameCover(type, subject, it.type, it.subject) }.distinctBy { it.coverId }
+    }
+
+    /** Newest first; each row knows the gap or overlap from the version before it. */
+    fun timeline(versions: List<CoverDoc>): List<TimelineRow> {
+        val sorted = versions.sortedWith(compareByDescending<CoverDoc> { it.version }.thenByDescending { it.starts })
+        return sorted.mapIndexed { i, d -> TimelineRow(d, sorted.getOrNull(i + 1)?.let { older -> renewal(older.ends, d.starts) }) }
+    }
+
+    fun nextVersion(versions: List<CoverDoc>): Int = (versions.maxOfOrNull { it.version } ?: 0) + 1
+
+    /** The end date to use: only one read from the document; the registry's length is a suggestion the person confirms. */
+    fun expiryFor(type: DocType?, read: LocalDate?, starts: LocalDate?): LocalDate? = read
+
+    /** "Usually 1 year": the start plus the type's usual length, shown for the person to accept. */
+    fun suggestedEnd(type: DocType?, starts: LocalDate?): LocalDate? =
+        if (starts == null || type?.validityMonths == null || type.lifecycle == Lifecycle.A || type.lifecycle == Lifecycle.D) null
+        else starts.plusMonths(type.validityMonths.toLong()).minusDays(1)
+
+    fun assetOf(type: DocType?, subject: String?): Asset? = when {
+        subject == null -> null
+        type?.subject == Subject.VEHICLE -> Asset(subject, AssetKind.VEHICLE)
+        type?.subject == Subject.PROPERTY -> Asset(subject, AssetKind.HOME)
+        else -> null
+    }
 
     /** The words for a gap or overlap, free of guilt words. */
     fun say(r: Renewal): String? = when (r) {

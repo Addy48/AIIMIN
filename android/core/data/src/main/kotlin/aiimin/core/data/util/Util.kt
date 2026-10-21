@@ -88,6 +88,8 @@ object Dates {
     fun clockPlain(t: LocalTime): String = time12Plain.format(t)
     fun meridiem(t: LocalTime): String = if (t.hour < 12) "AM" else "PM"
     fun long(d: LocalDate): String = longLabel.format(d)
+    /** "Wednesday, 13 October 2027": the year added when it is not this year. */
+    fun longYear(d: LocalDate): String = long(d) + if (d.year != LocalDate.now().year) " ${d.year}" else ""
     fun clock(t: LocalTime): String = time12.format(t)
     fun clock(hhmm: String?): String? = hhmm?.let { runCatching { clock(LocalTime.parse(it)) }.getOrNull() }
 

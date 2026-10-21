@@ -404,6 +404,8 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
                         entry<Route.Payments> { PaymentsScreen() }
                         entry<Route.Category> { CategoryScreen(it.name) }
                         entry<Route.Doc> { DocScreen(it.id) }
+                        entry<Route.DocInfo> { aiimin.feature.vault.DocInfoScreen(it.id) }
+                        entry<Route.Asset> { aiimin.feature.vault.AssetScreen(it.key) }
                         entry<Route.Person> { PersonScreen(it.id) }
                         entry<Route.Family> { FamilyScreen() }
                         entry<Route.EmergencyCard> { EmergencyCardScreen(it.personId) }

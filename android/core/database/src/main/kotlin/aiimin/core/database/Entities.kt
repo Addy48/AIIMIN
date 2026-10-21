@@ -385,7 +385,21 @@ data class DocEntity(
     val createdAt: Long,
     val openedAt: Long? = null,
     val deleted: Boolean = false,
-)
+    /** The cover this version belongs to (PRD Part 5 Phase 1); null means its own cover, keyed by [id]. */
+    val coverId: String? = null,
+    /** Registry key (india.tsv), e.g. car_insurance. */
+    val docType: String? = null,
+    /** Lifecycle A-E chosen by the person; null follows the registry. */
+    val lifecycle: String? = null,
+    /** Vehicle number, "home:<owner>" or the owner id: the cover's identity with [docType]. */
+    val subject: String? = null,
+    val startsOn: String? = null,
+    val provider: String? = null,
+    /** Only the current version of a cover reminds. Documents from before covers are each version 1 and current. */
+    @ColumnInfo(defaultValue = "1") val current: Boolean = true,
+) {
+    val cover: String get() = coverId ?: id
+}
 
 @Entity(tableName = "doc_shares", primaryKeys = ["docId", "who"])
 data class DocShareEntity(
