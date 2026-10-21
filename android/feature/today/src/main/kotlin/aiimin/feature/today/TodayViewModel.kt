@@ -503,7 +503,20 @@ class TodayViewModel @Inject constructor(
     }
 
     suspend fun toggleTask(id: String) = tasks.toggle(id)
-    suspend fun toggleMinimum(id: String) = minimums.toggle(id)
+    /** A one-shot nod from the Mini when a minimum is kept (20.4 "life" touch), within the day's motion budget. */
+    val nod = MutableStateFlow<Long?>(null)
+
+    suspend fun toggleMinimum(id: String): Int {
+        val r = minimums.toggle(id)
+        val kept = runCatching { minimums.today(clock.today()).first().firstOrNull { it.minimum.id == id }?.done == true }.getOrDefault(false)
+        if (kept) {
+            val s = settingsStore.settings.first()
+            val (ok, next) = RaahiRules.play(RaahiMode.of(s.raahiMode), s.reduceMotion, clock.today(), budgetCache ?: RaahiBudget.decode(s.raahiBudget), RaahiMotion.NOD)
+            budgetCache = next
+            if (ok) { nod.value = System.nanoTime(); settingsStore.update { it.copy(raahiBudget = next.encode()) } }
+        }
+        return r
+    }
     suspend fun backfillMinimum(id: String) = minimums.backfillYesterday(id).also { yesterdayOpen.value = days.yesterdayOpen() }
 
     fun addTask(title: String, part: DayPart, day: LocalDate) {

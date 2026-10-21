@@ -181,7 +181,11 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
                 // With reduce motion Raahi keeps one still pose (1.6b: "no pose change").
                 val reduceMotion = aiimin.designsystem.theme.LocalReduceMotion.current
                 val mini: @Composable (Modifier) -> Unit = { m ->
-                    Raahi(if (reduceMotion) aiimin.core.engine.raahi.RaahiPose.IDLE else u.mini, RaahiSize.MINI, m, motion = u.miniMotion, motionKey = u.miniMotionKey)
+                    val nodKey by vm.nod.collectAsStateWithLifecycle()
+                    Raahi(
+                        if (reduceMotion) aiimin.core.engine.raahi.RaahiPose.IDLE else u.mini, RaahiSize.MINI, m,
+                        motion = if (nodKey != null) aiimin.core.engine.raahi.RaahiMotion.NOD else u.miniMotion, motionKey = nodKey ?: u.miniMotionKey,
+                    )
                 }
                 // D-002: "AM" and the greeting sit on the clock's baseline. At large text the clock fills the width,
                 // so the two lines move under it instead of floating beside it.

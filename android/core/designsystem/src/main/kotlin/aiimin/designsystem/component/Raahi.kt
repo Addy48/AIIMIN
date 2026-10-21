@@ -83,19 +83,19 @@ fun Raahi(
     if (!RaahiRules.showsArt(mode)) return
     val reduce = LocalReduceMotion.current
     val loop = RaahiRules.loops(mode, reduce)
-    val breathe = if (loop) {
+    // Animated values are read only inside graphicsLayer, so breathing and motions redraw without recomposing.
+    val breathe: androidx.compose.runtime.State<Float>? = if (loop) {
         val t = rememberInfiniteTransition(label = "raahi")
         // Idle breathing 2.4 s, sleeping 3 s, listening sway 4 s (Part 20.3): a tiny rise, never bouncy.
         val ms = when (pose) { RaahiPose.SLEEPING -> 3000; RaahiPose.LISTENING -> Motion.AMBIENT_MAX; else -> Motion.AMBIENT_MIN }
-        t.animateFloat(0f, 1f, infiniteRepeatable(Motion.ambient(ms), RepeatMode.Reverse), label = "breathe").value
-    } else 0f
+        t.animateFloat(0f, 1f, infiniteRepeatable(Motion.ambient(ms), RepeatMode.Reverse), label = "breathe")
+    } else null
     val played = remember { Animatable(1f) }
     LaunchedEffect(motion, motionKey) {
         if (motion == null || reduce || (motionKey != null && !RaahiPlayed.claim(motionKey))) { played.snapTo(1f); return@LaunchedEffect }
         played.snapTo(0f)
         played.animateTo(1f, if (motion == RaahiMotion.WAVE) Motion.emphasised() else Motion.standard())
     }
-    val p = played.value
     val sway = pose == RaahiPose.LISTENING
     Box(
         modifier.size(size.dp).then(
@@ -109,6 +109,7 @@ fun Raahi(
                 contentScale = ContentScale.Fit,
                 modifier = Modifier.size(size.dp).graphicsLayer {
                     transformOrigin = TransformOrigin(0.5f, 1f)
+                    val p = played.value
                     val wave = kotlin.math.sin(p * Math.PI * 2).toFloat()
                     when (motion) {
                         // A small hop for firsts and a short rise for waking, settling and noticing.
@@ -118,9 +119,9 @@ fun Raahi(
                         null -> Unit
                         else -> { val s = 0.94f + 0.06f * p; scaleX = s; scaleY = s }
                     }
-                    if (loop) {
-                        if (sway) rotationZ += (breathe - 0.5f) * 1.6f
-                        else { scaleY *= 1f + 0.015f * breathe; translationY -= breathe * size.dp.toPx() * 0.006f }
+                    breathe?.value?.let { b ->
+                        if (sway) rotationZ += (b - 0.5f) * 1.6f
+                        else { scaleY *= 1f + 0.015f * b; translationY -= b * size.dp.toPx() * 0.006f }
                     }
                 },
             )
