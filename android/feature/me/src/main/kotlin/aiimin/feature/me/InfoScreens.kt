@@ -136,6 +136,7 @@ fun NotificationsScreen(vm: NotificationsViewModel = hiltViewModel()) {
                                 "backup" -> nav.open(Route.VaultBackup)
                                 "score" -> nav.open(Route.Score)
                                 "note" -> nav.open(n.routeArg?.let { Route.Note(it) } ?: Route.Notes)
+                                "pour" -> nav.open(Route.JournalWrite(tool = if (n.routeArg == "worry") "worry" else "cool"))
                                 else -> nav.tab(Tab.TODAY)
                             }
                         },

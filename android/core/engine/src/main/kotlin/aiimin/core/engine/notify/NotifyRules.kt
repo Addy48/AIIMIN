@@ -7,6 +7,8 @@ data class TaskTimed(val id: String, val title: String, val minute: Int)
 
 /** A note the person asked to be reminded about today (Part 11 "Time"). A locked note's title is never shown. */
 data class NoteReminder(val id: String, val title: String, val minute: Int, val locked: Boolean)
+/** Pour (12.6): a cooling-off message whose 24 hours end, or the daily worry time. Never carries the text. */
+data class PourReminder(val id: String, val kind: String, val minute: Int)
 data class BillTomorrow(val id: String, val title: String, val amountText: String)
 /** [expires] is part of the key, so a renewed document (same id, new date) is reminded again. */
 data class DocExpiry(val id: String, val title: String, val daysLeft: Long, val expires: String = "")
@@ -22,6 +24,7 @@ data class NotifySnapshot(
     val events: List<EventSoon> = emptyList(),
     val timedTasks: List<TaskTimed> = emptyList(),
     val noteReminders: List<NoteReminder> = emptyList(),
+    val pourReminders: List<PourReminder> = emptyList(),
     val bills: List<BillTomorrow> = emptyList(),
     val docs: List<DocExpiry> = emptyList(),
     val docCount: Int = 0,
@@ -84,6 +87,13 @@ object NotifyRules {
             val c = if (n.locked) copy("note.remind.locked") else copy("note.remind", mapOf("note" to n.title))
             add(Candidate(if (n.locked) "note.remind.locked" else "note.remind", "note:${n.id}:${s.today}:${n.minute}", Kind.PROMISE, Category.REMINDERS, n.minute, 2,
                 c.title, c.body, "note", n.id, why = "You asked to be reminded about this note.", sensitive = n.locked))
+        }
+        // Pour's reminders say only that something is waiting: no words from the space, nothing on the lock screen.
+        s.pourReminders.forEach { p ->
+            val rule = if (p.kind == "worry") "pour.worry" else "pour.cool"
+            val c = copy(rule)
+            add(Candidate(rule, "pour:${p.id}:${s.today}:${p.minute}", Kind.PROMISE, Category.REMINDERS, p.minute, 2, c.title, c.body, "pour", p.id,
+                why = if (p.kind == "worry") "You set a daily worry time." else "You held a message for 24 hours.", sensitive = true))
         }
         if (s.billsDocsOn) {
             s.bills.forEach { b ->

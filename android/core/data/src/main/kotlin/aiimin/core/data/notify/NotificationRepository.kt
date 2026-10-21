@@ -74,6 +74,7 @@ class NotificationRepository @Inject constructor(
     private val settings: SettingsStore,
     private val clock: DayClock,
     private val notes: aiimin.core.database.NoteDao,
+    private val pour: aiimin.core.database.PourDao,
 ) {
     val all = dao.all()
     val unread = dao.unread()
@@ -248,6 +249,11 @@ class NotificationRepository @Inject constructor(
             val at = java.time.Instant.ofEpochMilli(n.reminderAt!!).atZone(clock.zone)
             if (at.toLocalDate() != today) null else aiimin.core.engine.notify.NoteReminder(n.id, n.title.ifBlank { "Note" }, at.hour * 60 + at.minute, n.locked)
         }
+        // Pour: a held message whose day is up (today), and the daily worry time if one is set.
+        val pourReminders = pour.coolingNow().mapNotNull { e ->
+            val at = java.time.Instant.ofEpochMilli(e.dueAt!!).atZone(clock.zone)
+            if (at.toLocalDate() != today) null else aiimin.core.engine.notify.PourReminder(e.id, "cool", at.hour * 60 + at.minute)
+        } + listOfNotNull(s.worryMin?.let { aiimin.core.engine.notify.PourReminder("worry", "worry", it) })
         val bills = ledger.billsNow().filter { it.status == "CONFIRMED" && it.remind && !it.autopay && runCatching { LocalDate.parse(it.nextDue) }.getOrNull() == today.plusDays(1) }
             .map { BillTomorrow(it.id, it.title, Money.whole(it.amountPaise)) }
         val docs = vault.withExpiry().mapNotNull { d -> runCatching { LocalDate.parse(d.expires!!) }.getOrNull()?.let { DocExpiry(d.id, d.title, ChronoUnit.DAYS.between(today, it), d.expires!!) } }
@@ -264,7 +270,7 @@ class NotificationRepository @Inject constructor(
         return NotifySnapshot(
             today = today, nowMinute = now, installDays = ChronoUnit.DAYS.between(install, today).toInt(),
             firstName = s.name.trim().split(" ").firstOrNull().orEmpty(), playful = s.playful,
-            events = events, timedTasks = timed, noteReminders = noteReminders, bills = bills, docs = docs, docCount = docCount, lastBackupDays = backupDays,
+            events = events, timedTasks = timed, noteReminders = noteReminders, pourReminders = pourReminders, bills = bills, docs = docs, docCount = docCount, lastBackupDays = backupDays,
             lastBackupDay = if (last == 0L) "never" else java.time.Instant.ofEpochMilli(last).atZone(clock.zone).toLocalDate().toString(),
             minimumsLeft = if (view?.today?.paused == true) emptyList() else left,
             paused = view?.today?.paused == true,

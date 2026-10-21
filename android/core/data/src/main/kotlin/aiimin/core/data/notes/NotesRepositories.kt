@@ -390,6 +390,20 @@ class JournalRepository @Inject constructor(
         log.log("journal.delete", "journal", id)
     }
 
+    /**
+     * Pour's "Let go" (12.5): the entry leaves the phone at once, no trash. A copy that synced to aiimin.in is
+     * emptied and marked deleted, so the next sync removes it there too.
+     */
+    suspend fun letGo(id: String) {
+        val e = dao.get(id) ?: return
+        if (e.remoteId == null) dao.deleteNow(id)
+        else {
+            val (c, iv) = crypto.encryptText("")
+            dao.upsert(e.copy(cipher = c, iv = iv, mood = null, tags = "[]", words = 0, deleted = true, dirty = true, updatedAt = System.currentTimeMillis()))
+        }
+        log.log("journal.letgo", "journal", id)
+    }
+
     data class Quality(val words: Int, val ok: Boolean, val reason: String?)
 
     /** 40+ words, varied, real words, and not a near-copy of a recent entry. */

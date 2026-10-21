@@ -47,7 +47,7 @@ import aiimin.feature.money.MoneyScreen
 import aiimin.feature.money.PaymentsScreen
 import aiimin.feature.money.TxnScreen
 import aiimin.feature.notes.JournalScreen
-import aiimin.feature.notes.JournalWriteScreen
+import aiimin.feature.notes.PourScreen
 import aiimin.feature.notes.NoteScreen
 import aiimin.feature.notes.NotesScreen
 import aiimin.feature.today.CalendarScreen
@@ -411,7 +411,7 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
                         entry<Route.Note> { NoteScreen(it.id) }
                         entry<Route.NotesImport> { aiimin.feature.notes.NotesImportScreen() }
                         entry<Route.Journal> { JournalScreen() }
-                        entry<Route.JournalWrite> { JournalWriteScreen(it.id, prefill = it.prefill) }
+                        entry<Route.JournalWrite> { PourScreen(it.id, prefill = it.prefill, tool = it.tool) }
                         entry<Route.Assistant> { AssistantScreen(it) }
                     },
                 )

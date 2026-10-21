@@ -24,11 +24,11 @@ import kotlinx.coroutines.Dispatchers
         DeviceDayEntity::class, DayStateEntity::class, ChatThreadEntity::class, ChatMessageEntity::class,
         GoalEntity::class, SyncShadowEntity::class, SyncConflictEntity::class,
         AccountEntity::class, BillEntity::class, PulseRunEntity::class, CategoryEntity::class,
-        NotifyLogEntity::class, MoneyRuleEntity::class,
+        NotifyLogEntity::class, MoneyRuleEntity::class, PourItemEntity::class,
     ],
-    version = 9,
+    version = 10,
     exportSchema = true,
-    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3), AutoMigration(from = 3, to = 4), AutoMigration(from = 4, to = 5), AutoMigration(from = 5, to = 6), AutoMigration(from = 6, to = 7), AutoMigration(from = 7, to = 8), AutoMigration(from = 8, to = 9)],
+    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3), AutoMigration(from = 3, to = 4), AutoMigration(from = 4, to = 5), AutoMigration(from = 5, to = 6), AutoMigration(from = 6, to = 7), AutoMigration(from = 7, to = 8), AutoMigration(from = 8, to = 9), AutoMigration(from = 9, to = 10)],
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun events(): EventDao
@@ -50,6 +50,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun goals(): GoalDao
     abstract fun syncMeta(): SyncMetaDao
     abstract fun ledgerExtras(): LedgerDao
+    abstract fun pour(): PourDao
 }
 
 @Module
@@ -71,6 +72,7 @@ object DatabaseModule {
     @Provides fun money(db: AppDatabase) = db.money()
     @Provides fun notes(db: AppDatabase) = db.notes()
     @Provides fun journal(db: AppDatabase) = db.journal()
+    @Provides fun pour(db: AppDatabase) = db.pour()
     @Provides fun focus(db: AppDatabase) = db.focus()
     @Provides fun vault(db: AppDatabase) = db.vault()
     @Provides fun family(db: AppDatabase) = db.family()

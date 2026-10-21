@@ -616,3 +616,25 @@ data class SyncConflictEntity(
     val createdAt: Long,
     val resolved: Boolean = false,
 )
+
+/**
+ * Pour's tools (PRD 12.6): a cooling-off message, a letter never sent, or a worry. The text is encrypted with the
+ * journal key before it is written; nothing here syncs, shows in search, notifications text or the widget.
+ */
+@Entity(tableName = "pour_items", indices = [Index("kind"), Index("status")])
+data class PourItemEntity(
+    @PrimaryKey val id: String,
+    /** cool · letter · worry */
+    val kind: String,
+    /** Who a message or letter is to, encrypted with the text's key; empty for a worry. */
+    val toCipher: String = "",
+    val toIv: String = "",
+    val cipher: String,
+    val iv: String,
+    /** open · kept · act · released */
+    val status: String = "open",
+    /** Cooling-off: when "Still want to send it?" is asked. Letter: sealed until this moment. Null otherwise. */
+    val dueAt: Long? = null,
+    val createdAt: Long,
+    val updatedAt: Long,
+)

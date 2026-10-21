@@ -43,6 +43,8 @@ object Motion {
 
     /** Today's day-arc dot slides to now on open (Part 26.5 moment table). */
     const val ARC = 600
+    /** Pour's Let go (Part 12.2): the words lift and fade, slow enough to watch. */
+    const val RELEASE = 900
     /** Press scale on cards and buttons (0.97). */
     const val PRESS_SCALE = 0.97f
     /** List items rise this far as they fade in. */
@@ -59,6 +61,7 @@ object Motion {
     fun <T> springSoft(): SpringSpec<T> = spring(dampingRatio = 0.8f, stiffness = 300f)
     fun <T> reducedFade(): TweenSpec<T> = tween(REDUCED_FADE, easing = LinearEasing)
     fun <T> arc(): TweenSpec<T> = tween(ARC, easing = Standard)
+    fun <T> release(): TweenSpec<T> = tween(RELEASE, easing = Standard)
 
     /** The opening screen's own curves (Part 26.2), used only by BootScene. */
     object Boot {

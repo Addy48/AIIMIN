@@ -373,6 +373,27 @@ interface JournalDao {
 
     @Query("UPDATE journal SET dirty = 0, remoteId = :remoteId WHERE id = :id AND updatedAt = :updatedAt")
     suspend fun markSynced(id: String, remoteId: String?, updatedAt: Long)
+
+    /** Pour's "Let go": the row is gone from the phone, not kept in trash. */
+    @Query("DELETE FROM journal WHERE id = :id")
+    suspend fun deleteNow(id: String)
+}
+
+@Dao
+interface PourDao {
+    @Upsert suspend fun upsert(p: PourItemEntity)
+
+    @Query("SELECT * FROM pour_items WHERE kind = :kind AND status IN ('open', 'kept') ORDER BY createdAt DESC")
+    fun open(kind: String): Flow<List<PourItemEntity>>
+
+    @Query("SELECT * FROM pour_items WHERE id = :id")
+    suspend fun get(id: String): PourItemEntity?
+
+    @Query("SELECT * FROM pour_items WHERE kind = 'cool' AND status = 'open' AND dueAt IS NOT NULL")
+    suspend fun coolingNow(): List<PourItemEntity>
+
+    @Query("DELETE FROM pour_items WHERE id = :id")
+    suspend fun deleteNow(id: String)
 }
 
 @Dao

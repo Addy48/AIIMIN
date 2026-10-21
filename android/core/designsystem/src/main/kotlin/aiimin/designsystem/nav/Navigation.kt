@@ -101,7 +101,7 @@ sealed interface Route {
     data object Journal : Route
     data object MoodYear : Route
     /** [prefill]: text typed into the "+" sheet that belongs in private writing (Pour). */
-    data class JournalWrite(val id: String? = null, val prefill: String? = null) : Route
+    data class JournalWrite(val id: String? = null, val prefill: String? = null, val tool: String? = null) : Route
 
     // assistant
     data object RecentCaptures : Route

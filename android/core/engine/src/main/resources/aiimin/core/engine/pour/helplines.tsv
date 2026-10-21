@@ -1,0 +1,25 @@
+# Generated from 12-datasets/helplines/helplines.json (last checked 2026-10-20). Trust C rows are never shipped.
+# country	name	emergency	trust	helplines (name=number; ...)
+IN	India	112	A	Tele-MANAS (24/7, free)=14416; Tele-MANAS toll-free alt.=1-800-891-4416; Aasra (24/7)=+91-98204-66726
+US	United States	911	A	988 Suicide & Crisis Lifeline (call or text, 24/7)=988
+CA	Canada	911	A	9-8-8 Suicide Crisis Helpline (24/7)=988; Kids Help Phone=1-800-668-6868
+GB	United Kingdom	999	A	Samaritans (free, 24/7)=116 123
+IE	Ireland	112 or 999	A	Samaritans (24/7)=116 123; Pieta 24-hour crisis helpline=1800 247 247
+AU	Australia	000	A	Lifeline (24/7)=13 11 14; Lifeline text=0477 13 11 14; Beyond Blue=1300 22 4636
+NZ	New Zealand	111	A	1737 Need to talk? (call or text, 24/7)=1737; Lifeline=0800 543 354; Samaritans Aotearoa=0800 726 666
+FR	France	112	A	3114 national suicide prevention (24/7)=3114
+SE	Sweden	112	A	Mind Självmordslinjen (24/7)=90101
+DE	Germany	112	B	Telefonseelsorge (free, 24/7)=0800 111 0 111 / 0800 111 0 222
+BR	Brazil		B	CVV (24/7)=188
+ZA	South Africa		B	SADAG suicide crisis line=0800 567 567
+AE	United Arab Emirates		B	
+PK	Pakistan		B	
+LK	Sri Lanka		B	
+NP	Nepal		B	
+SG	Singapore		B	
+JP	Japan		B	
+PH	Philippines	911	B	NCMH crisis hotline (24/7)=1553 / 1800-1888-1553 / 0919-057-1553
+TR	Turkey	112	B	
+EG	Egypt	112 or 122 (police)	B	
+CH	Switzerland		B	Die Dargebotene Hand=143
+AT	Austria	112	B	Crisis hotline=142

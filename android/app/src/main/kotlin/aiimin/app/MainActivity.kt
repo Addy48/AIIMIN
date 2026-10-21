@@ -220,6 +220,7 @@ class MainActivity : FragmentActivity() {
                     "money" -> Route.MoneyInbox
                     "bills" -> Route.Recurring
                     "note" -> arg?.let { Route.Note(it) } ?: Route.Notes
+                    "pour" -> Route.JournalWrite(tool = if (arg == "worry") "worry" else "cool")
                     "backup" -> Route.VaultBackup
                     "score" -> Route.Score
                     "focus" -> Route.Focus()
