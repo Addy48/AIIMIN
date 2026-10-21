@@ -16,6 +16,7 @@ import aiimin.designsystem.nav.LocalToaster
 import aiimin.designsystem.component.Raahi
 import aiimin.designsystem.component.RaahiSize
 import aiimin.designsystem.component.pressable
+import aiimin.designsystem.component.livingSky
 import aiimin.designsystem.icon.AppIcons
 import aiimin.designsystem.nav.LocalNavigator
 import aiimin.designsystem.theme.Aiimin
@@ -26,6 +27,7 @@ import android.app.Activity
 import android.view.WindowManager
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -42,6 +44,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -71,7 +74,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -181,8 +183,15 @@ fun PourScreen(id: String?, prefill: String? = null, tool: String? = null, vm: P
     Box(
         Modifier.fillMaxSize().background(c.base)
             // The faint sky tint (12.2): the day's band colour fading into the page.
-            .background(Brush.verticalGradient(0f to c.band.copy(alpha = 0.55f), 0.45f to c.base)),
+            ,
     ) {
+        // A full-page sky for the time of day that breathes slowly (owner, 22 Oct: Pour must feel calm and
+        // beautiful on open). Still with reduce motion.
+        val skyNow = remember { aiimin.core.engine.today.SkyClock.now(java.time.LocalTime.now(), aiimin.core.engine.today.SkyClock.sun(today, java.time.ZoneId.systemDefault())) }
+        val breath = if (reduce) 0.5f else androidx.compose.animation.core.rememberInfiniteTransition(label = "pour-sky").animateFloat(
+            0f, 1f, androidx.compose.animation.core.infiniteRepeatable(Motion.ambient(Motion.AMBIENT_MAX), androidx.compose.animation.core.RepeatMode.Reverse), label = "breath",
+        ).value
+        Box(Modifier.fillMaxSize().graphicsLayer { alpha = 0.7f + 0.3f * breath }.livingSky(skyNow, heightFraction = 0.9f))
         Column(Modifier.fillMaxSize().statusBarsPadding().imePadding()) {
             // Top: back, the gentle timer and quick hide. No title, no counter.
             Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -210,23 +219,67 @@ fun PourScreen(id: String?, prefill: String? = null, tool: String? = null, vm: P
             ) { s ->
                 when (s) {
                     PourStep.WRITE, PourStep.PUT_DOWN -> Column(Modifier.fillMaxSize()) {
-                        Row(Modifier.padding(horizontal = 24.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                        // The first moment: Raahi listens at full size with its line, then steps aside and the page
+                        // is yours. Skipped when there is already text, when reopened, or with reduce motion.
+                        var settled by rememberSaveable { mutableStateOf(text.isNotEmpty() || reduce) }
+                        val intro = remember { Animatable(if (settled) 1f else 0f) }
+                        LaunchedEffect(settled) {
+                            if (!settled) { delay(1_400); settled = true }
+                            intro.animateTo(1f, Motion.emphasised())
+                        }
+                        val k = intro.value
+                        if (k < 1f) {
+                            Column(
+                                Modifier.fillMaxWidth().height((300 * (1f - k)).dp).graphicsLayer { alpha = 1f - k; val z = 1f - 0.4f * k; scaleX = z; scaleY = z },
+                                horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
+                            ) {
+                                Raahi(RaahiPose.LISTENING, RaahiSize.HERO, Modifier.size(180.dp))
+                                Text(PourLines.pick(PourLines.OPEN, today), style = Aiimin.type.headline, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 8.dp))
+                            }
+                        }
+                        Row(
+                            Modifier.padding(horizontal = 24.dp, vertical = 4.dp).graphicsLayer { alpha = k },
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
                             Raahi(RaahiPose.LISTENING, RaahiSize.MINI)
                             Spacer(Modifier.width(12.dp))
                             Text(PourLines.pick(PourLines.OPEN, today), style = Aiimin.type.caption.copy(color = c.textMuted))
                         }
                         if (supportOpen) SupportCard(Modifier.padding(horizontal = 16.dp, vertical = 8.dp), onOkay = { supportOpen = false })
                         val focus = remember { FocusRequester() }
-                        LaunchedEffect(Unit) { if (s == PourStep.WRITE && text.isEmpty()) runCatching { focus.requestFocus() } }
-                        BasicTextField(
-                            text, { if (s == PourStep.WRITE) text = it },
-                            textStyle = Aiimin.type.journal,
-                            cursorBrush = SolidColor(c.accent),
-                            readOnly = s != PourStep.WRITE,
-                            modifier = Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp, vertical = 16.dp)
-                                .focusRequester(focus)
-                                .graphicsLayer { alpha = 1f - release.value; translationY = if (reduce) 0f else -lift * release.value },
-                        )
+                        LaunchedEffect(settled) { if (settled && s == PourStep.WRITE && text.isEmpty()) runCatching { focus.requestFocus() } }
+                        Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp, vertical = 16.dp)) {
+                            BasicTextField(
+                                text, { if (s == PourStep.WRITE) text = it },
+                                textStyle = Aiimin.type.journal.copy(fontSize = Aiimin.type.journal.fontSize * 1.1f, lineHeight = Aiimin.type.journal.lineHeight * 1.1f),
+                                cursorBrush = SolidColor(c.text),
+                                readOnly = s != PourStep.WRITE,
+                                modifier = Modifier.fillMaxWidth().heightIn(min = 120.dp)
+                                    .focusRequester(focus)
+                                    .graphicsLayer {
+                                        // Let go: the words lift, soften and fade.
+                                        alpha = 1f - release.value
+                                        translationY = if (reduce) 0f else -lift * release.value
+                                        if (!reduce && release.value > 0.01f && android.os.Build.VERSION.SDK_INT >= 31) {
+                                            val b = 14.dp.toPx() * release.value
+                                            renderEffect = androidx.compose.ui.graphics.BlurEffect(b, b)
+                                        }
+                                    },
+                            )
+                            // Openers (12.6): one tap starts a sentence when the page feels too empty.
+                            if (s == PourStep.WRITE && text.isEmpty() && settled) {
+                                Spacer(Modifier.height(24.dp))
+                                Text("Or start with", style = Aiimin.type.caption.copy(color = c.textMuted))
+                                Spacer(Modifier.height(8.dp))
+                                PourLines.OPENERS.forEach { o ->
+                                    Text(
+                                        o, style = Aiimin.type.body,
+                                        modifier = Modifier.padding(bottom = 8.dp).clip(Shapes.control).background(c.surface.copy(alpha = 0.7f))
+                                            .border(1.dp, c.border, Shapes.control).pressable({ text = "$o " }).padding(horizontal = 16.dp, vertical = 12.dp),
+                                    )
+                                }
+                            }
+                        }
                     }
                     PourStep.CHOICE -> ChoiceStep(line, onJustMe = { close() }, onHelp = { step = PourStep.TOOLBOX })
                     PourStep.TOOLBOX -> Toolbox(onTool = { openTool = it; step = PourStep.TOOL }, onSupport = { supportOpen = true }, supportOpen = supportOpen, onSupportClose = { supportOpen = false })

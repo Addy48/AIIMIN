@@ -43,7 +43,7 @@ class PourTest {
 
     @Test fun `fixed lines carry no guilt words`() {
         val banned = listOf("late", "overdue", "missed", "streak", "behind", "failed")
-        (PourLines.OPEN + PourLines.CLOSE + PourLines.LET_GO + TellSomeone.TEXTS + Feelings.WORDS + PourLines.DISCLAIMER).forEach { line ->
+        (PourLines.OPEN + PourLines.OPENERS + PourLines.CLOSE + PourLines.LET_GO + TellSomeone.TEXTS + Feelings.WORDS + PourLines.DISCLAIMER).forEach { line ->
             banned.forEach { w -> assertWithMessage("$line / $w").that(Regex("\\b$w\\b", RegexOption.IGNORE_CASE).containsMatchIn(line)).isFalse() }
         }
         assertThat(PourLines.pick(PourLines.OPEN, LocalDate.of(2026, 10, 21))).isIn(PourLines.OPEN)
