@@ -91,7 +91,8 @@ internal fun WhatNowCard(
         Spacer(Modifier.height(8.dp))
         Text(
             text,
-            style = Aiimin.type.cardTitle.copy(color = c.accentText),
+            // 32.6 X3: the sun is Today's one orange element; the line is ink.
+            style = Aiimin.type.cardTitle.copy(color = c.text),
             maxLines = 3, overflow = TextOverflow.Ellipsis,
             modifier = Modifier.fillMaxWidth().pressable({ why = true }, onClickLabel = "Why this?"),
         )

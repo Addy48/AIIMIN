@@ -62,6 +62,9 @@ object Motion {
     fun <T> reducedFade(): TweenSpec<T> = tween(REDUCED_FADE, easing = LinearEasing)
     fun <T> arc(): TweenSpec<T> = tween(ARC, easing = Standard)
     fun <T> release(): TweenSpec<T> = tween(RELEASE, easing = Standard)
+    /** The living sky eases into each new minute over a minute (PRD 1.3), so it never visibly jumps. */
+    const val SKY_EASE = 60_000
+    fun <T> sky(): TweenSpec<T> = tween(SKY_EASE, easing = LinearEasing)
     /** Boot to app: the scene zooms past and fades while the app rises in. */
     fun <T> handOff(): TweenSpec<T> = tween(EMPHASISED, easing = Exit)
 

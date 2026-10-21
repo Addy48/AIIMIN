@@ -1,5 +1,8 @@
 package aiimin.feature.today
 
+import aiimin.core.engine.today.SkyClock
+import aiimin.designsystem.component.livingSky
+import aiimin.designsystem.component.horizonFor
 import aiimin.designsystem.component.enterStagger
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.layout.LastBaseline
@@ -157,63 +160,73 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
             )
             Hairline(Modifier.padding(horizontal = Aiimin.space.gutter))
         }
+        // ---- The hero (owner, 22 Oct: Today rebuilt): date, clock, Raahi and the day arc under one living sky (1.3).
         item {
-            val status = when {
-                u.dayState?.paused == true -> "Paused today · nothing counts against you"
-                light -> "Light day · just the minimums"
-                u.yesterdayOpen -> "Yesterday stays open till noon"
-                else -> null
-            }
-            LargeHeader(title = Dates.dayMonth(u.date), overline = status) { RootActions(u.unread) }
-        }
-        item {
-            Column(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 2.dp)) {
-                // PRD 1.6b: Raahi's line replaces the plain greeting; none on later opens or when Raahi is Off.
-                val greet = u.greeting.joinToString(" ")
-                val said = if (greet.isEmpty()) "" else " $greet"
-                val meridiem: @Composable () -> Unit = { Text(Dates.meridiem(now), style = Aiimin.type.bodyStrong.copy(color = Aiimin.colors.text)) }
-                val greeting: @Composable () -> Unit = {
-                    u.greeting.forEach { line ->
-                        Text(line, style = Aiimin.type.body.copy(color = Aiimin.colors.textMuted), maxLines = 2, overflow = TextOverflow.Ellipsis)
-                    }
+            val sun = remember(u.date) { SkyClock.sun(u.date, java.time.ZoneId.systemDefault()) }
+            val sky = SkyClock.now(now, sun)
+            Column(Modifier.fillMaxWidth().livingSky(sky)) {
+                val status = when {
+                    u.dayState?.paused == true -> "Paused today · nothing counts against you"
+                    light -> "Light day · just the minimums"
+                    u.yesterdayOpen -> "Yesterday stays open till noon"
+                    else -> null
                 }
-                // Raahi Mini, 28 dp beside the clock (1.1); nothing when Off.
-                // With reduce motion Raahi keeps one still pose (1.6b: "no pose change").
+                LargeHeader(title = Dates.dayMonth(u.date), overline = status) { RootActions(u.unread) }
+                // PRD 1.6b: Raahi's line replaces the plain greeting; none on later opens.
+                val greet = u.greeting.joinToString(" ")
+                val said = if (greet.isEmpty()) "" else " Raahi says: $greet"
                 val reduceMotion = aiimin.designsystem.theme.LocalReduceMotion.current
-                val mini: @Composable (Modifier) -> Unit = { m ->
+                // Raahi stands in the hero as the companion (owner, 22 Oct), 64 dp, beside the clock and its own line.
+                // Reduce motion stops motion only; the pose still follows the day (32.2).
+                val raahi: @Composable (Modifier) -> Unit = { m ->
                     val nodKey by vm.nod.collectAsStateWithLifecycle()
                     Raahi(
-                        if (reduceMotion) aiimin.core.engine.raahi.RaahiPose.IDLE else u.mini, RaahiSize.MINI, m,
-                        motion = if (nodKey != null) aiimin.core.engine.raahi.RaahiMotion.NOD else u.miniMotion, motionKey = nodKey ?: u.miniMotionKey,
+                        u.mini, RaahiSize.CARD,
+                        m.pressable({ nav.open(Route.Assistant()) }, onClickLabel = "Talk to Raahi"),
+                        motion = if (reduceMotion) null else if (nodKey != null) aiimin.core.engine.raahi.RaahiMotion.NOD else u.miniMotion,
+                        motionKey = nodKey ?: u.miniMotionKey,
+                        description = "Raahi",
                     )
                 }
-                // D-002: "AM" and the greeting sit on the clock's baseline. At large text the clock fills the width,
-                // so the two lines move under it instead of floating beside it.
-                if (LocalDensity.current.fontScale < 1.5f) {
-                    Row(Modifier.fillMaxWidth().semantics(mergeDescendants = true) { contentDescription = "It is ${Dates.clock(now)}.$said" }) {
+                val clock: @Composable () -> Unit = {
+                    Row {
                         Text(Dates.clockPlain(now), style = Aiimin.type.display, modifier = Modifier.alignBy(LastBaseline))
-                        Spacer(Modifier.width(12.dp))
-                        Column(Modifier.weight(1f).alignBy(LastBaseline)) {
-                            // Raahi stands beside "AM" on its baseline, part of the clock, not adrift at the edge.
-                            Row {
-                                Box(Modifier.alignByBaseline()) { meridiem() }
-                                mini(Modifier.alignBy { it.measuredHeight }.padding(start = 8.dp))
-                            }
-                            greeting()
-                        }
-                    }
-                } else {
-                    Column(Modifier.semantics(mergeDescendants = true) { contentDescription = "It is ${Dates.clock(now)}.$said" }) {
-                        Row(Modifier.fillMaxWidth()) {
-                            Text(Dates.clockPlain(now), style = Aiimin.type.display, modifier = Modifier.alignBy(LastBaseline))
-                            Spacer(Modifier.width(8.dp))
-                            Box(Modifier.alignBy(LastBaseline)) { meridiem() }
-                            mini(Modifier.alignBy { it.measuredHeight }.padding(start = 8.dp))
-                            Spacer(Modifier.weight(1f))
-                        }
-                        greeting()
+                        Spacer(Modifier.width(8.dp))
+                        Text(Dates.meridiem(now), style = Aiimin.type.bodyStrong.copy(color = Aiimin.colors.text), modifier = Modifier.alignBy(LastBaseline))
                     }
                 }
+                val line: @Composable () -> Unit = {
+                    u.greeting.forEach { l ->
+                        Text(l, style = Aiimin.type.body.copy(color = Aiimin.colors.textMuted), maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    }
+                }
+                val big = LocalDensity.current.fontScale >= 1.5f
+                Row(
+                    Modifier.fillMaxWidth().padding(horizontal = Aiimin.space.gutter).padding(top = 4.dp),
+                    verticalAlignment = Alignment.Bottom,
+                ) {
+                    Column(Modifier.weight(1f).semantics(mergeDescendants = true) { contentDescription = "It is ${Dates.clock(now)}.$said" }) {
+                        clock()
+                        if (!big) line()
+                    }
+                    if (!big) raahi(Modifier.padding(start = 12.dp))
+                }
+                if (big) {
+                    Row(Modifier.fillMaxWidth().padding(horizontal = Aiimin.space.gutter).padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        raahi(Modifier)
+                        Spacer(Modifier.width(12.dp))
+                        Column(Modifier.weight(1f)) { line() }
+                    }
+                }
+                val wake = java.time.LocalTime.of((u.wakeMin / 60) % 24, u.wakeMin % 60)
+                DayHorizon(
+                    nowMinute = now.hour * 60 + now.minute,
+                    ticks = later.filter { it.time != null }.map { HorizonTick(it.time!!.hour * 60 + it.time.minute, Dates.clockPlain(it.time)) },
+                    horizon = horizonFor(sky, Horizons.at(hour, false)),
+                    wakeMinute = u.wakeMin, sleepMinute = u.sleepMin,
+                    nightLabel = "Your day starts at ${Dates.clockPlain(wake)}",
+                    modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 12.dp, bottom = 4.dp),
+                )
             }
         }
         // PRD 1.2: one "What now?" line, then the stat line (owner, 20 Oct), the slim arc and the Quick doors (Part 17).
@@ -232,37 +245,6 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
         stopAsk?.let { cat ->
             item { aiimin.designsystem.component.StopTheseCard(cat.label, onStop = { vm.answerStop(cat, true) }, onKeep = { vm.answerStop(cat, false) }, modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 12.dp)) }
         }
-        item { StatLine(u, Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 16.dp, bottom = 4.dp)) }
-        item {
-            DayHorizon(
-                nowMinute = now.hour * 60 + now.minute,
-                ticks = later.filter { it.time != null }.map { HorizonTick(it.time!!.hour * 60 + it.time.minute, Dates.clockPlain(it.time)) },
-                horizon = Horizons.at(hour, Aiimin.colors.isDark),
-                wakeMinute = u.wakeMin, sleepMinute = u.sleepMin,
-                modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 8.dp),
-            )
-        }
-        u.setup?.let { steps ->
-            item {
-                FirstWeekCard(steps, onStep = { step ->
-                    when (step) {
-                        aiimin.core.engine.today.SetupStep.SCREEN_TIME -> runCatching { context.startActivity(vm.usageSettings()) }
-                        aiimin.core.engine.today.SetupStep.MINIMUM -> nav.open(Route.Minimums)
-                        aiimin.core.engine.today.SetupStep.CAPTURE -> nav.capture()
-                        aiimin.core.engine.today.SetupStep.DOCUMENT -> nav.tab(aiimin.designsystem.nav.Tab.VAULT)
-                        aiimin.core.engine.today.SetupStep.BUDGET -> nav.open(Route.Budget)
-                    }
-                }, modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 16.dp))
-            }
-        }
-        item {
-            QuickDoorsRow(u.doors, u.pinnedDoors, onPin = { key ->
-                vm.togglePin(key)
-                toaster.show(if (key in u.pinnedDoors) "Unpinned" else "Pinned to Today")
-            }, modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 16.dp))
-        }
-        item { PhoneDataCard(vm, Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 12.dp)) }
-        item { KeepAliveCard(vm, Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 12.dp)) }
 
         // ---- Minimums
         item {
@@ -363,6 +345,36 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
                 }
             }
             item { QuickAdd(u.date, vm, Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 12.dp)) }
+        }
+
+        // ---- Getting set up: one quiet section below the day, not four cards above it (owner, 22 Oct).
+        item {
+            SetupSection(
+                vm, u.setup,
+                onStep = { step ->
+                    when (step) {
+                        aiimin.core.engine.today.SetupStep.SCREEN_TIME -> runCatching { context.startActivity(vm.usageSettings()) }
+                        aiimin.core.engine.today.SetupStep.MINIMUM -> nav.open(Route.Minimums)
+                        aiimin.core.engine.today.SetupStep.CAPTURE -> nav.capture()
+                        aiimin.core.engine.today.SetupStep.DOCUMENT -> nav.tab(aiimin.designsystem.nav.Tab.VAULT)
+                        aiimin.core.engine.today.SetupStep.BUDGET -> nav.open(Route.Budget)
+                    }
+                },
+                modifier = Modifier.padding(horizontal = Aiimin.space.gutter),
+            )
+        }
+        // ---- Your day in numbers, then the Quick doors (Part 17).
+        item {
+            Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
+                SectionHeader("Your day")
+                StatLine(u, Modifier)
+            }
+        }
+        item {
+            QuickDoorsRow(u.doors, u.pinnedDoors, onPin = { key ->
+                vm.togglePin(key)
+                toaster.show(if (key in u.pinnedDoors) "Unpinned" else "Pinned to Today")
+            }, modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 12.dp))
         }
 
         // ---- Pinned note
@@ -649,62 +661,91 @@ private fun PhoneBody(u: TodayUi, modifier: Modifier) {
  * Shown only while screen time or steps can't be measured: one tap per missing source. Without
  * these the Body and Mind areas of the score have nothing measured to stand on.
  */
+/**
+ * Getting set up, in one quiet section (owner, 22 Oct): the first-week steps, measuring the day and the phone's
+ * background limits used to be four cards above the day. Now they are slim rows under one progress line, the
+ * two most useful first, and the section disappears once everything is done.
+ */
 @Composable
-private fun PhoneDataCard(vm: TodayViewModel, modifier: Modifier) {
+private fun SetupSection(vm: TodayViewModel, steps: List<Pair<aiimin.core.engine.today.SetupStep, Boolean>>?, onStep: (aiimin.core.engine.today.SetupStep) -> Unit, modifier: Modifier) {
     val context = androidx.compose.ui.platform.LocalContext.current
+    val nav = LocalNavigator.current
     val a by vm.access.collectAsStateWithLifecycle()
+    val keep by vm.keepAlive.collectAsStateWithLifecycle()
     androidx.lifecycle.compose.LifecycleEventEffect(androidx.lifecycle.Lifecycle.Event.ON_RESUME) { vm.refreshAccess() }
     val health = androidx.activity.compose.rememberLauncherForActivityResult(vm.healthContract()) { vm.refreshAccess() }
     val perm = androidx.activity.compose.rememberLauncherForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestPermission()) { vm.refreshAccess() }
-    val acc = a ?: return
-    if (acc.usage && acc.steps) return
+    var all by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
     val c = Aiimin.colors
-    val shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp)
-    Column(modifier.fillMaxWidth().clip(shape).background(c.surface).border(1.dp, c.border, shape).padding(16.dp)) {
-        Text("MEASURE YOUR DAY", style = Aiimin.type.eyebrow.copy(color = c.textMuted))
-        Text("Let the phone count screen time and steps", style = Aiimin.type.headline, modifier = Modifier.padding(top = 4.dp))
-        Text("Measured numbers count more in your score than taps. They're read on this phone and never leave it.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 4.dp, bottom = 8.dp))
-        if (!acc.usage) SetupRow(AppIcons.DeviceMobile, "Screen time", "Opens Usage access › AIIMIN › Allow") { runCatching { context.startActivity(vm.usageSettings()) } }
-        if (!acc.steps) SetupRow(AppIcons.Footprints, "Steps and sleep", if (acc.health == aiimin.core.sensing.HealthAvailability.AVAILABLE) "Health Connect asks once" else "Step counter on this phone") {
-            when (acc.health) {
-                aiimin.core.sensing.HealthAvailability.AVAILABLE -> health.launch(vm.healthPermissions)
-                else -> if (android.os.Build.VERSION.SDK_INT >= 29) perm.launch(android.Manifest.permission.ACTIVITY_RECOGNITION) else runCatching { context.startActivity(vm.healthInstall()) }
+    val open = steps.orEmpty().filter { !it.second }.map { it.first }
+    val needSteps = a?.steps == false
+    val needUsage = a?.usage == false && aiimin.core.engine.today.SetupStep.SCREEN_TIME !in open && steps == null
+    if (open.isEmpty() && !needSteps && !needUsage && keep == null) return
+    val total = steps.orEmpty().size + (if (a != null) 1 else 0)
+    val done = steps.orEmpty().count { it.second } + (if (a?.steps == true) 1 else 0)
+    Column(modifier.fillMaxWidth()) {
+        SectionHeader(if (total > 0) "Set up · $done of $total" else "Set up")
+        if (total > 0) {
+            Box(Modifier.fillMaxWidth().height(4.dp).clip(Shapes.small).background(c.segmentTrack)) {
+                Box(Modifier.fillMaxWidth(done / total.toFloat()).height(4.dp).clip(Shapes.small).background(c.done))
+            }
+            Spacer(Modifier.height(4.dp))
+        }
+        keep?.let { text ->
+            SetupRow(AppIcons.WarningCircle, "Your phone pauses AIIMIN in the background", "Screen time, steps and reminders wait until you open the app. $text", action = "Fix", tint = c.warn) {
+                runCatching { context.startActivity(vm.appDetails()) }
+            }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                AppButton("What's running", { nav.open(Route.Running) }, kind = ButtonKind.GHOST, compact = true)
+                AppButton("Later", { vm.dismissKeepAlive() }, kind = ButtonKind.GHOST, compact = true)
             }
         }
-    }
-}
-
-/** Shown when Pulse sees a stalled job on a phone known to pause apps (or with battery limits on). */
-@Composable
-private fun KeepAliveCard(vm: TodayViewModel, modifier: Modifier) {
-    val steps by vm.keepAlive.collectAsStateWithLifecycle()
-    val text = steps ?: return
-    val context = androidx.compose.ui.platform.LocalContext.current
-    val nav = LocalNavigator.current
-    val c = Aiimin.colors
-    val shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp)
-    Column(modifier.fillMaxWidth().clip(shape).background(c.surface).border(1.dp, c.border, shape).padding(16.dp)) {
-        Text("Your phone is pausing AIIMIN in the background", style = Aiimin.type.headline)
-        Text("So screen time, steps and reminders pause until you open the app. $text", style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp))
-        // Primary action full width; the two quiet ones share a row. Fits any phone width and text size.
-        AppButton("Open App info", { runCatching { context.startActivity(vm.appDetails()) } }, Modifier.fillMaxWidth().padding(top = 16.dp))
-        Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            AppButton("What's running", { nav.open(aiimin.designsystem.nav.Route.Running) }, Modifier.weight(1f), kind = ButtonKind.GHOST, compact = true)
-            AppButton("Later", { vm.dismissKeepAlive() }, Modifier.weight(1f), kind = ButtonKind.GHOST, compact = true)
+        val rows = buildList<@Composable () -> Unit> {
+            open.forEach { st -> add { SetupRow(stepIcon(st), st.label, stepHint(st), action = "Start") { onStep(st) } } }
+            if (needUsage) add { SetupRow(AppIcons.DeviceMobile, "Screen time", "Opens Usage access › AIIMIN › Allow") { runCatching { context.startActivity(vm.usageSettings()) } } }
+            if (needSteps) add {
+                SetupRow(AppIcons.Footprints, "Steps and sleep", if (a?.health == aiimin.core.sensing.HealthAvailability.AVAILABLE) "Health Connect asks once" else "Step counter on this phone") {
+                    when (a?.health) {
+                        aiimin.core.sensing.HealthAvailability.AVAILABLE -> health.launch(vm.healthPermissions)
+                        else -> if (android.os.Build.VERSION.SDK_INT >= 29) perm.launch(android.Manifest.permission.ACTIVITY_RECOGNITION) else runCatching { context.startActivity(vm.healthInstall()) }
+                    }
+                }
+            }
+        }
+        rows.take(if (all) rows.size else 2).forEach { it() }
+        if (rows.size > 2) {
+            AppButton(if (all) "Show less" else "Show all ${rows.size}", { all = !all }, kind = ButtonKind.GHOST, compact = true)
         }
     }
 }
 
+private fun stepIcon(s: aiimin.core.engine.today.SetupStep) = when (s) {
+    aiimin.core.engine.today.SetupStep.SCREEN_TIME -> AppIcons.DeviceMobile
+    aiimin.core.engine.today.SetupStep.MINIMUM -> AppIcons.CheckCircle
+    aiimin.core.engine.today.SetupStep.CAPTURE -> AppIcons.Plus
+    aiimin.core.engine.today.SetupStep.DOCUMENT -> AppIcons.Folder
+    aiimin.core.engine.today.SetupStep.BUDGET -> AppIcons.Wallet
+}
+
+private fun stepHint(s: aiimin.core.engine.today.SetupStep) = when (s) {
+    aiimin.core.engine.today.SetupStep.SCREEN_TIME -> "Counted on this phone, never sent"
+    aiimin.core.engine.today.SetupStep.MINIMUM -> "The small thing you do even on a bad day"
+    aiimin.core.engine.today.SetupStep.CAPTURE -> "Type or say a task, an expense or a note"
+    aiimin.core.engine.today.SetupStep.DOCUMENT -> "A PAN, a policy or a licence, kept safe"
+    aiimin.core.engine.today.SetupStep.BUDGET -> "One number for the month"
+}
+
 @Composable
-private fun SetupRow(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, sub: String, onClick: () -> Unit) {
+private fun SetupRow(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, sub: String, action: String = "Turn on", tint: androidx.compose.ui.graphics.Color = Aiimin.colors.text, onClick: () -> Unit) {
     val c = Aiimin.colors
     Row(Modifier.fillMaxWidth().clip(androidx.compose.foundation.shape.RoundedCornerShape(10.dp)).clickable(onClick = onClick).heightIn(min = 56.dp).padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-        Icon(icon, null, tint = c.text, modifier = Modifier.size(24.dp))
+        Icon(icon, null, tint = tint, modifier = Modifier.size(24.dp))
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             Text(title, style = Aiimin.type.bodyStrong)
-            Text(sub, style = Aiimin.type.caption)
+            Text(sub, style = Aiimin.type.caption, maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
-        Text("Turn on", style = Aiimin.type.labelLarge.copy(color = c.link))
+        Spacer(Modifier.width(8.dp))
+        Text(action, style = Aiimin.type.labelLarge.copy(color = c.link))
     }
 }

@@ -203,6 +203,26 @@ val PersonHues = listOf(
     Color(0xFF1A1916), Color(0xFF1A1916), Color(0xFF1A1916), Color(0xFF1A1916),
 )
 
+/** One living-sky keyframe (PRD 1.3, master plan keyframes): a tint drawn as a soft glow at a low alpha. */
+@Immutable
+data class SkyTint(val color: Color, val alpha: Float, val sun: Color)
+
+/**
+ * The living sky's seven keyframes (PRD 1.3, task B18). Alpha never above 0.22; night is blue-grey, never purple.
+ * The sun colour is the day arc's one orange element; at night the arc shows a moon ring instead.
+ */
+object Sky {
+    val night = SkyTint(Color(0xFF8FA6C8), 0.14f, Color(0xFFD8653E))
+    val preDawn = SkyTint(Color(0xFFA9B4C2), 0.12f, Color(0xFFFF9A5C))
+    val dawn = SkyTint(Color(0xFFFFB38A), 0.18f, Color(0xFFFF9A5C))
+    val morning = SkyTint(Color(0xFFFF9A5C), 0.22f, Color(0xFFFF8A4C))
+    val midday = SkyTint(Color(0xFFFFE2B8), 0.14f, Color(0xFFFF6B35))
+    val golden = SkyTint(Color(0xFFFF8A4C), 0.20f, Color(0xFFE8703F))
+    val dusk = SkyTint(Color(0xFFE07A5F), 0.18f, Color(0xFFD8653E))
+    /** The moon ring on the arc at night. */
+    val moon = Color(0xFF8FA6C8)
+}
+
 /** Time-of-day tint for the Today horizon only (handoff §1). */
 @Immutable
 data class Horizon(val sun: Color, val line: Color, val dottedFuture: Color)

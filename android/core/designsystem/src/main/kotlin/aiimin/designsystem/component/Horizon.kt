@@ -50,6 +50,8 @@ fun DayHorizon(
     /** The arc runs from waking to sleep (PRD 1.6 screen 2); a sleep time after midnight runs into the next day. */
     wakeMinute: Int = 7 * 60,
     sleepMinute: Int = 23 * 60,
+    /** Shown under the arc at night, e.g. "Tomorrow starts at 7:00" (1.3 night state). */
+    nightLabel: String = "",
 ) {
     val measurer = rememberTextMeasurer()
     val axis = Aiimin.type.axis
@@ -82,6 +84,18 @@ fun DayHorizon(
             var m = a
             moveTo(px(a), py(a))
             while (m < b) { m = (m + 6).coerceAtMost(b); lineTo(px(m), py(m)) }
+        }
+        // Night (1.3): after the day end and before waking, the day's arc is complete and a moon ring rests at its end.
+        val night = onDay(nowMinute) !in start..end
+        if (night) {
+            drawPath(path(start, end), horizon.line, style = Stroke(2.2f * dp, cap = StrokeCap.Round))
+            drawLine(horizon.line, Offset(0f, base), Offset(w, base), strokeWidth = 1.5f * dp)
+            drawCircle(aiimin.designsystem.theme.Sky.moon, sunR, Offset(px(end), py(end)), style = Stroke(2f * dp))
+            if (nightLabel.isNotEmpty()) {
+                val layout = measurer.measure(nightLabel, axis)
+                drawText(layout, topLeft = Offset((w - layout.size.width) / 2f, base + 10 * dp))
+            }
+            return@Canvas
         }
         // dotted future arc: dots every 6 dp along the curve (a dash PathEffect on a long polyline drops out on some GPUs)
         var m = target.toFloat()
