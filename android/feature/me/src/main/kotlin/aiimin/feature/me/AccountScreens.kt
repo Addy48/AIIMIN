@@ -418,7 +418,7 @@ fun YourRightsScreen(me: MeViewModel = hiltViewModel()) {
             Text(Rights.WITHDRAW, style = Aiimin.type.note)
             SectionHeader("Ask us")
             Text(Rights.IDENTIFIER, style = Aiimin.type.note)
-            Text("Reply time: ${Rights.REPLY}", style = Aiimin.type.note, modifier = Modifier.padding(top = 8.dp))
+            Text("Reply time: ${Rights.REPLY.replaceFirstChar(Char::lowercase)}", style = Aiimin.type.note, modifier = Modifier.padding(top = 8.dp))
             Spacer(Modifier.height(12.dp))
             AppButton("Write to ${Rights.EMAIL}", { mail("My data rights") }, Modifier.fillMaxWidth(), kind = ButtonKind.SECONDARY, icon = AppIcons.EnvelopeSimple)
             SectionHeader("Nominate someone")

@@ -123,7 +123,7 @@ fun NotificationsScreen(vm: NotificationsViewModel = hiltViewModel()) {
                         leading = {
                             IconTile(
                                 when (n.route) { "doc" -> AppIcons.ShieldCheck; "money", "bills" -> AppIcons.Money; "score" -> AppIcons.Pulse; else -> AppIcons.Bell },
-                                tint = if (n.priority >= 2) Aiimin.colors.accent else Aiimin.colors.textMuted,
+                                tint = if (n.priority >= 2) Aiimin.colors.text else Aiimin.colors.textMuted, // ink, not orange: one orange element per screen
                             )
                         },
                         // D-028: the close mark ends on the page margin; its 48 dp target hangs into the margin.

@@ -54,6 +54,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
@@ -93,10 +94,11 @@ fun ColumnScope.HelloPage() {
     Raahi(RaahiPose.WAVING, RaahiSize.HERO, Modifier.align(Alignment.CenterHorizontally).padding(top = 16.dp), motion = RaahiMotion.WAVE)
     Text(
         "Welcome to AIIMIN. I'm Raahi, an AI that walks your day with you.",
-        style = Aiimin.type.title.copy(letterSpacing = (-0.4).sp),
-        modifier = Modifier.padding(top = 16.dp).semantics { heading() },
+        // Hero screens are one centred composition: Raahi and the words share the centre line.
+        style = Aiimin.type.title.copy(letterSpacing = (-0.4).sp, textAlign = TextAlign.Center),
+        modifier = Modifier.fillMaxWidth().padding(top = 16.dp).semantics { heading() },
     )
-    Text("It only ever compares you with you.", style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(top = 8.dp))
+    Text("It only ever compares you with you.", style = Aiimin.type.body.copy(color = c.textMuted, textAlign = TextAlign.Center), modifier = Modifier.fillMaxWidth().padding(top = 8.dp))
 }
 
 @Composable
@@ -351,19 +353,20 @@ fun ColumnScope.DonePage(d: Draft, shrink: Float) {
     )
     // With Raahi Off there is nothing beside the clock, so the line does not promise it.
     val off = !aiimin.core.engine.raahi.RaahiRules.showsArt(aiimin.designsystem.component.LocalRaahiMode.current)
-    Text(if (off) "That's it. Your day is ready." else "That's it. I'll be here beside the clock.", style = Aiimin.type.title, modifier = Modifier.padding(top = 16.dp).semantics { heading() })
+    Text(if (off) "That's it. Your day is ready." else "That's it. I'll be here beside the clock.", style = Aiimin.type.title.copy(textAlign = TextAlign.Center), modifier = Modifier.fillMaxWidth().padding(top = 16.dp).semantics { heading() })
     val dayEnd = DayEndLearner.fromSleep(clockOf(d.sleepMin))
-    Column(Modifier.padding(top = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text("Your day: ${Dates.clock(clockOf(d.wakeMin))} to ${Dates.clock(clockOf(d.sleepMin))}, closing at ${Dates.clock(dayEnd)}.", style = Aiimin.type.body.copy(color = c.textMuted))
-        Text(if (d.mins.isEmpty()) "No minimums yet. Add them any time." else "Minimums: " + d.mins.joinToString(", ") { it.title } + ".", style = Aiimin.type.body.copy(color = c.textMuted))
-        d.firstWin?.let { Text("On your Today: $it.", style = Aiimin.type.body.copy(color = c.textMuted)) }
+    Column(Modifier.fillMaxWidth().padding(top = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Text("Your day: ${Dates.clock(clockOf(d.wakeMin))} to ${Dates.clock(clockOf(d.sleepMin))}, closing at ${Dates.clock(dayEnd)}.", style = Aiimin.type.body.copy(color = c.textMuted, textAlign = TextAlign.Center))
+        Text(if (d.mins.isEmpty()) "No minimums yet. Add them any time." else "Minimums: " + d.mins.joinToString(", ") { it.title } + ".", style = Aiimin.type.body.copy(color = c.textMuted, textAlign = TextAlign.Center))
+        d.firstWin?.let { Text("On your Today: $it.", style = Aiimin.type.body.copy(color = c.textMuted, textAlign = TextAlign.Center)) }
     }
 }
 
 /** Scale toward the top end, where the clock's Raahi slot is, and fade the last stretch. Transform and opacity only. */
 private fun Modifier.shrinkToSlot(scale: Float, t: Float): Modifier = graphicsLayer {
     scaleX = scale; scaleY = scale
-    transformOrigin = TransformOrigin(1f, 0f)
+    // Mini stands beside "AM", a little left of the screen's centre, so the hero shrinks toward that point.
+    transformOrigin = TransformOrigin(0.3f, 0f)
     translationY = -t * size.height * 0.4f
     alpha = 1f - (t - 0.8f).coerceAtLeast(0f) * 5f
 }
@@ -376,8 +379,8 @@ fun UnderAgePage(eighteenth: LocalDate?, onPrint: () -> Unit, onRemind: (LocalDa
     Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(top = 48.dp)) {
         Raahi(RaahiPose.IDLE, RaahiSize.HERO, Modifier.align(Alignment.CenterHorizontally))
         // Part 23, word for word.
-        Text(ConsentText.UNDER_18, style = Aiimin.type.cardTitle, modifier = Modifier.padding(top = 16.dp))
-        Text("For a parent: nothing about your child was saved on this phone.", style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(top = 12.dp))
+        Text(ConsentText.UNDER_18, style = Aiimin.type.cardTitle.copy(textAlign = TextAlign.Center), modifier = Modifier.fillMaxWidth().padding(top = 16.dp))
+        Text("For a parent: nothing about your child was saved on this phone.", style = Aiimin.type.body.copy(color = c.textMuted, textAlign = TextAlign.Center), modifier = Modifier.fillMaxWidth().padding(top = 12.dp))
         Spacer(Modifier.height(24.dp))
         AppButton("Print the Start Small planner", onPrint, Modifier.fillMaxWidth(), kind = ButtonKind.SECONDARY)
         if (eighteenth != null) {

@@ -193,17 +193,23 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
                     Row(Modifier.fillMaxWidth().semantics(mergeDescendants = true) { contentDescription = "It is ${Dates.clock(now)}.$said" }) {
                         Text(Dates.clockPlain(now), style = Aiimin.type.display, modifier = Modifier.alignBy(LastBaseline))
                         Spacer(Modifier.width(12.dp))
-                        Column(Modifier.weight(1f).alignBy(LastBaseline)) { meridiem(); greeting() }
-                        // Raahi stands on the clock's baseline.
-                        mini(Modifier.alignBy { it.measuredHeight }.padding(start = 8.dp))
+                        Column(Modifier.weight(1f).alignBy(LastBaseline)) {
+                            // Raahi stands beside "AM" on its baseline, part of the clock, not adrift at the edge.
+                            Row {
+                                Box(Modifier.alignByBaseline()) { meridiem() }
+                                mini(Modifier.alignBy { it.measuredHeight }.padding(start = 8.dp))
+                            }
+                            greeting()
+                        }
                     }
                 } else {
                     Column(Modifier.semantics(mergeDescendants = true) { contentDescription = "It is ${Dates.clock(now)}.$said" }) {
                         Row(Modifier.fillMaxWidth()) {
                             Text(Dates.clockPlain(now), style = Aiimin.type.display, modifier = Modifier.alignBy(LastBaseline))
                             Spacer(Modifier.width(8.dp))
-                            Box(Modifier.weight(1f).alignBy(LastBaseline)) { meridiem() }
+                            Box(Modifier.alignBy(LastBaseline)) { meridiem() }
                             mini(Modifier.alignBy { it.measuredHeight }.padding(start = 8.dp))
+                            Spacer(Modifier.weight(1f))
                         }
                         greeting()
                     }

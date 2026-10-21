@@ -71,8 +71,11 @@ fun DayHorizon(
         // After midnight on a late day, the small hours belong to the evening before.
         fun onDay(min: Int) = if (end > 24 * 60 && min < start) min + 24 * 60 else min
         fun frac(min: Int) = ((min - start).toFloat() / (end - start)).coerceIn(0f, 1f)
-        fun px(min: Int) = frac(min) * w
-        fun py(min: Int): Float = base - (40 * dp) * sin(PI.toFloat() * frac(min)).toDouble().pow(1.3).toFloat()
+        // Inset by the sun's radius so the sun at wake or day end sits inside the 16 dp margins, never past them.
+        val sunR = 8 * dp
+        fun px(min: Int) = sunR + frac(min) * (w - 2 * sunR)
+        // sin(PI.toFloat()) is a hair below zero, and a negative to the 1.3 power is NaN: clamp, or the arc and sun vanish at day end.
+        fun py(min: Int): Float = base - (40 * dp) * sin(PI.toFloat() * frac(min)).coerceAtLeast(0f).toDouble().pow(1.3).toFloat()
         val target = onDay(nowMinute).coerceIn(start, end)
         val now = (start + (target - start) * travel.value).toInt()
         fun path(a: Int, b: Int): Path = Path().apply {
@@ -111,6 +114,6 @@ fun DayHorizon(
             }
         }
         // sun
-        drawCircle(horizon.sun, 8 * dp, Offset(px(now), py(now)))
+        drawCircle(horizon.sun, sunR, Offset(px(now), py(now)))
     }
 }
