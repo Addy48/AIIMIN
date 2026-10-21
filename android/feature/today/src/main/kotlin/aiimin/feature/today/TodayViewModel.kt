@@ -186,14 +186,19 @@ class TodayViewModel @Inject constructor(
         if (before != null && before != access.value) pulse.beat(Reason.MANUAL, force = setOf(Job.DEVICE))
     }
     /** Steps for the "phone is pausing AIIMIN" card, or null when it shouldn't show (plan Phase 16). */
-    val keepAlive: StateFlow<String?> = combine(settingsStore.settings, clock.tick) { s, now -> Triple(s.stallDetectedAt, s.keepAliveDismissedAt, now) }
+    val keepAlive: StateFlow<String?> = combine(settingsStore.settings, clock.tick) { s, now -> listOf(s.stallDetectedAt, s.keepAliveDismissedAt, now, s.keepAliveIntroMaker) }
         .distinctUntilChanged()
-        .mapLatest { (stalled, dismissed, now) ->
-            if (stalled == null) return@mapLatest null
+        .mapLatest { (stalledA, dismissedA, nowA, introA) ->
+            val stalled = stalledA as Long?; val dismissed = dismissedA as Long?; val now = nowA as Long
             val (facts, profile) = runCatching { device.profile() }.getOrNull() ?: return@mapLatest null
-            if (aiimin.core.sensing.logic.KeepAlive.show(stalled, profile.needsKeepAlive, device.backgroundUnrestricted(), dismissed, now)) aiimin.core.sensing.logic.KeepAlive.steps(facts.maker) else null
+            val free = device.backgroundUnrestricted()
+            val ka = aiimin.core.sensing.logic.KeepAlive
+            if (ka.show(stalled, profile.needsKeepAlive, free, dismissed, now) || ka.intro(facts.maker, profile.needsKeepAlive, free, introA as String?)) ka.steps(facts.maker) else null
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
-    fun dismissKeepAlive() = viewModelScope.launch { settingsStore.update { it.copy(keepAliveDismissedAt = System.currentTimeMillis()) } }
+    fun dismissKeepAlive() = viewModelScope.launch {
+        val maker = runCatching { device.profile().first.maker }.getOrNull()
+        settingsStore.update { it.copy(keepAliveDismissedAt = System.currentTimeMillis(), keepAliveIntroMaker = maker ?: it.keepAliveIntroMaker) }
+    }
     fun appDetails() = device.appDetailsIntent()
     val healthPermissions get() = device.healthPermissions
     fun healthContract() = device.healthContract()

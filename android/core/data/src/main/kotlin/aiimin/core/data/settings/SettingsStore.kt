@@ -129,6 +129,8 @@ data class AppSettings(
     val lastSyncAt: Long? = null,
     /** When the person closed the "phone is pausing AIIMIN" card; it stays away for a week. */
     val keepAliveDismissedAt: Long? = null,
+    /** The phone maker the one-time "keep AIIMIN running" card was shown for (4.3). */
+    val keepAliveIntroMaker: String? = null,
     /** When Pulse last found a job that had missed two background runs (the phone paused AIIMIN). */
     val stallDetectedAt: Long? = null,
     /** First day bank alerts count from (yyyy-MM-dd), chosen when importing past messages. */
@@ -193,6 +195,7 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         val focusAllowedApps = stringSetPreferencesKey("focus_allowed_apps")
         val screenStrategy = stringPreferencesKey("screen_strategy")
         val keepAliveDismissed = stringPreferencesKey("keep_alive_dismissed")
+        val keepAliveIntro = stringPreferencesKey("keep_alive_intro_maker")
         val stallDetected = stringPreferencesKey("stall_detected")
         val moneyTrackFrom = stringPreferencesKey("money_track_from")
         val smsFilter = stringPreferencesKey("sms_filter")
@@ -336,6 +339,7 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         focusActive = p[K.focus],
         lastSyncAt = p[K.lastSync]?.toLongOrNull(),
         keepAliveDismissedAt = p[K.keepAliveDismissed]?.toLongOrNull(),
+        keepAliveIntroMaker = p[K.keepAliveIntro],
         stallDetectedAt = p[K.stallDetected]?.toLongOrNull(),
         moneyTrackFrom = p[K.moneyTrackFrom],
         smsFilter = p[K.smsFilter],
@@ -426,6 +430,7 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
             s.focusActive?.let { p[K.focus] = it } ?: p.remove(K.focus)
             s.lastSyncAt?.let { p[K.lastSync] = it.toString() } ?: p.remove(K.lastSync)
             s.keepAliveDismissedAt?.let { p[K.keepAliveDismissed] = it.toString() } ?: p.remove(K.keepAliveDismissed)
+            s.keepAliveIntroMaker?.let { p[K.keepAliveIntro] = it } ?: p.remove(K.keepAliveIntro)
             s.stallDetectedAt?.let { p[K.stallDetected] = it.toString() } ?: p.remove(K.stallDetected)
             s.moneyTrackFrom?.let { p[K.moneyTrackFrom] = it } ?: p.remove(K.moneyTrackFrom)
             s.smsFilter?.let { p[K.smsFilter] = it } ?: p.remove(K.smsFilter)

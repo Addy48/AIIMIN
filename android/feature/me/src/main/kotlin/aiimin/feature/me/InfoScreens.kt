@@ -223,10 +223,14 @@ fun PhoneDayScreen(vm: PhoneDayViewModel = hiltViewModel()) {
                 SectionHeader("Movement")
                 Panel {
                     Row(verticalAlignment = Alignment.Bottom) {
-                        Stat(data.steps?.let { "%,d".format(it) } ?: "—", "steps · " + when (data.stepsSource) {
-                            "health_connect" -> data.stepsOrigin?.takeIf { it != "Health Connect" }?.let { "from $it via Health Connect" } ?: "Health Connect"
-                            "sensor" -> "phone step counter"
-                            else -> "not measured"
+                        // 4.3: Measured (Health Connect or the phone's counter), Estimated (filled from a partial day), Not measured: never a 0.
+                        Stat(data.steps?.let { "%,d".format(it) } ?: "—", when {
+                            data.steps == null || data.stepsSource == null -> "Not measured"
+                            data.stepsSource == "estimated" -> "Estimated steps"
+                            else -> "Measured · " + when (data.stepsSource) {
+                                "health_connect" -> data.stepsOrigin?.takeIf { it != "Health Connect" }?.let { "from $it via Health Connect" } ?: "Health Connect"
+                                else -> "phone step counter"
+                            }
                         }, Modifier.weight(1f))
                         Text("of %,d".format(stepsTarget.toLong()), style = Aiimin.type.caption)
                     }
@@ -276,14 +280,14 @@ fun PhoneDayScreen(vm: PhoneDayViewModel = hiltViewModel()) {
                     if (day == LocalDate.now()) {
                         // Confidence: checked against the phone's own number, or an offer to check.
                         val cal = prefs?.screenCalibration
-                        val checked = cal != null && kotlin.math.abs(cal - 1.0) <= 0.10
+                        val checked = aiimin.core.sensing.logic.ScreenFilter.checked(cal)
                         Row(Modifier.padding(top = 6.dp).clip(Shapes.small).pressable({ checkSheet = true }).heightIn(min = 40.dp), verticalAlignment = Alignment.CenterVertically) {
                             Icon(if (checked) AppIcons.SealCheck else AppIcons.Scales, null, tint = if (checked) c.done else c.warn, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
                             Text(
                                 when {
-                                    checked -> "Measured · checked against your phone"
-                                    cal != null -> "Estimated · off by ${(kotlin.math.abs(cal - 1.0) * 100).toInt()}% last check · check again"
+                                    checked -> "Checked against your phone"
+                                    cal != null -> "Estimate · off by ${(kotlin.math.abs(cal - 1.0) * 100).toInt()}% last check · check again"
                                     else -> "Check against your phone (20 seconds)"
                                 },
                                 style = Aiimin.type.caption.copy(color = if (checked) c.textMuted else c.warn),
