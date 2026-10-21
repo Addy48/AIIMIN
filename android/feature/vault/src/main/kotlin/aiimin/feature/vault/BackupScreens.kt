@@ -12,6 +12,7 @@ import aiimin.core.database.PersonEntity
 import aiimin.core.database.VaultDao
 import aiimin.designsystem.component.AppButton
 import aiimin.designsystem.component.AppSheet
+import aiimin.designsystem.component.SwitchRow
 import aiimin.designsystem.component.AppTextField
 import aiimin.designsystem.component.ButtonKind
 import aiimin.designsystem.component.Chevron
@@ -103,6 +104,24 @@ class VaultBackupViewModel @Inject constructor(
 
     fun setFolder(tree: Uri) { repo.setFolder(tree); refresh() }
 
+    /** Shown once after weekly setup, then forgotten. */
+    val recovery = MutableStateFlow<String?>(null)
+
+    fun setupWeekly(pass: String) = viewModelScope.launch {
+        busy.value = "Setting up weekly backups…"
+        runCatching { repo.setupWeekly(pass.toCharArray()) }.onSuccess { code ->
+            recovery.value = code
+            aiimin.core.data.vault.WeeklyBackupWorker.schedule(context, true)
+            // The first weekly backup is written now, so the folder is proven to work.
+            runCatching { repo.weeklyNow() }.onFailure { message.value = "Set up. The first backup wasn't saved: ${it.message}" }
+        }.onFailure { message.value = it.message ?: "Setup didn't finish" }
+        busy.value = null
+        refresh()
+    }
+
+    fun setWeekly(on: Boolean) { repo.setWeekly(on); aiimin.core.data.vault.WeeklyBackupWorker.schedule(context, on); refresh() }
+    suspend fun recoverySheet(code: String): File = repo.recoverySheet(code)
+
     fun backup(pass: String) = viewModelScope.launch {
         busy.value = "Encrypting and writing your backup…"
         message.value = runCatching { "Backed up · " + repo.backupNow(pass.toCharArray()) }.getOrElse { it.message ?: "Backup didn't finish" }
@@ -113,7 +132,7 @@ class VaultBackupViewModel @Inject constructor(
     fun restore(uri: Uri, secret: String, kit: Boolean) = viewModelScope.launch {
         busy.value = if (kit) "Opening the kit…" else "Restoring…"
         message.value = runCatching {
-            val r = repo.restore(uri, (if (kit) Seal.normalizeCode(secret) else secret).toCharArray())
+            val r = repo.restore(uri, (if (kit) Seal.normalizeCode(secret) else secret.trim()).toCharArray())
             buildString {
                 append(if (kit) "Kit opened · ${r.docs} documents" else "Restored ${r.docs} documents")
                 if (r.skipped > 0) append(" · ${r.skipped} already here")
@@ -147,7 +166,10 @@ fun VaultBackupScreen(vm: VaultBackupViewModel = hiltViewModel()) {
     val h by vm.health.collectAsStateWithLifecycle()
     val busy by vm.busy.collectAsStateWithLifecycle()
     val msg by vm.message.collectAsStateWithLifecycle()
-    var ask by remember { mutableStateOf<String?>(null) } // "backup" | "restore"
+    var ask by remember { mutableStateOf<String?>(null) } // "backup" | "restore" | "weekly"
+    val code by vm.recovery.collectAsStateWithLifecycle()
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
     var restoreUri by remember { mutableStateOf<Uri?>(null) }
     androidx.compose.runtime.LaunchedEffect(msg) { msg?.let { toaster.show(it); vm.message.value = null } }
     val folder = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { it?.let(vm::setFolder) }
@@ -164,6 +186,20 @@ fun VaultBackupScreen(vm: VaultBackupViewModel = hiltViewModel()) {
                 (health.where?.let { "In $it · " } ?: "") + "${health.docs} documents on this phone" + if (health.overdue) " · due for a backup" else "",
                 style = Aiimin.type.caption.copy(color = if (health.overdue) c.warn else c.textMuted, fontSize = 13.5.sp),
             )
+            health.failAt?.let { at ->
+                Text(
+                    "The backup on ${stamp.format(Instant.ofEpochMilli(at).atZone(ZoneId.systemDefault()))} wasn't saved: ${health.failWhy ?: "the folder couldn't be written"}. Choose the folder again.",
+                    style = Aiimin.type.caption.copy(color = c.warn, fontSize = 13.5.sp), modifier = Modifier.padding(top = 6.dp),
+                )
+            }
+            SectionHeader("Every week")
+            if (health.weekly) {
+                SwitchRow("Weekly backup", true, { vm.setWeekly(it) }, subtitle = "Written with the app closed, about once a week. Last good backup: ${health.lastAt?.let { stamp.format(Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault())) } ?: "none yet"}")
+            } else {
+                Text("Set a passphrase once. AIIMIN then writes an encrypted backup to your folder every week, even with the app closed. You also get a recovery code in case you forget the passphrase.", style = Aiimin.type.caption.copy(fontSize = 13.5.sp, lineHeight = 20.sp))
+                Spacer(Modifier.height(10.dp))
+                AppButton("Set up weekly backup", { if (!health.folderSet) folder.launch(null) else ask = "weekly" }, Modifier.fillMaxWidth(), kind = ButtonKind.SECONDARY, enabled = busy == null)
+            }
             Spacer(Modifier.height(16.dp))
             AppButton(
                 if (busy != null) busy!! else "Back up now", { if (!health.folderSet) folder.launch(null) else ask = "backup" },
@@ -176,7 +212,7 @@ fun VaultBackupScreen(vm: VaultBackupViewModel = hiltViewModel()) {
             )
             Hairline()
             SectionHeader("Restore")
-            ListRow("Restore from a backup", subtitle = "Pick an .aiimin backup file and type its passphrase", maxSubtitleLines = 2, leading = { IconTile(AppIcons.ClockCounter) }, trailing = { Chevron() }, onClick = { pickFile.launch(arrayOf("*/*")) })
+            ListRow("Restore from a backup", subtitle = "Pick an .aiimin backup file and type its passphrase or recovery code", maxSubtitleLines = 2, leading = { IconTile(AppIcons.ClockCounter) }, trailing = { Chevron() }, onClick = { pickFile.launch(arrayOf("*/*")) })
             Hairline()
             SectionHeader("How it works")
             listOf(
@@ -189,7 +225,22 @@ fun VaultBackupScreen(vm: VaultBackupViewModel = hiltViewModel()) {
     }
     when (ask) {
         "backup" -> PassSheet("Backup passphrase", "At least 10 characters. You'll need it to restore; AIIMIN can't reset it.", confirm = true, onDismiss = { ask = null }) { vm.backup(it); ask = null }
-        "restore" -> PassSheet("Passphrase for this backup", "The one you set when you made it.", confirm = false, onDismiss = { ask = null }) { p -> restoreUri?.let { vm.restore(it, p, kit = false) }; ask = null }
+        "restore" -> PassSheet("Passphrase or recovery code", "The passphrase you set, or the 24-character recovery code.", confirm = false, onDismiss = { ask = null }) { p -> restoreUri?.let { vm.restore(it, p, kit = false) }; ask = null }
+        "weekly" -> PassSheet(
+            "Weekly backup passphrase",
+            "At least 10 characters. If you lose both this passphrase and the recovery code you get next, the backup is lost: nobody can open it, AIIMIN included.",
+            confirm = true, onDismiss = { ask = null },
+        ) { vm.setupWeekly(it); ask = null }
+    }
+    code?.let { k ->
+        AppSheet({}, title = "Your recovery code", subtitle = "Shown once. It opens your backups if you forget the passphrase. Save it as a PDF or print it, and keep it apart from this phone.") {
+            Text(k.replace("-", "  "), style = Aiimin.type.title.copy(fontFamily = aiimin.designsystem.theme.Mono, fontSize = 22.sp, lineHeight = 34.sp), modifier = Modifier.padding(vertical = 8.dp))
+            Text("If you lose both the passphrase and this code, the backup can't be opened by anyone.", style = Aiimin.type.caption.copy(color = c.warn))
+            Spacer(Modifier.height(14.dp))
+            AppButton("Save as PDF or print", { scope.launch { share(context, vm.recoverySheet(k), "application/pdf", "Recovery code") } }, Modifier.fillMaxWidth(), kind = ButtonKind.SECONDARY, icon = AppIcons.Export)
+            Spacer(Modifier.height(8.dp))
+            AppButton("I've saved it", { vm.recovery.value = null }, Modifier.fillMaxWidth())
+        }
     }
 }
 

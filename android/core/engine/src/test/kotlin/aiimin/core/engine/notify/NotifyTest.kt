@@ -6,6 +6,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
 class NotifyPolicyTest {
@@ -205,5 +206,13 @@ class NotifyRulesTest {
         }) + NotifyRules.candidates(snap { copy(today = LocalDate.of(2026, 10, 25), weekLabel = "43") })
         assertTrue(all.size >= 10)
         all.forEach { c -> NotifyCopy.banned.forEach { b -> assertFalse("${c.rule}: $b", Regex("\\b$b\\b").containsMatchIn((c.title + " " + c.body).lowercase())) } }
+    }
+
+    @Test fun `a weekly backup that could not be saved gives one notice that day, worded without guilt words`() {
+        val c = NotifyRules.candidates(snap { copy(docCount = 1, backupFailDay = "2026-10-21") }).filter { it.rule == "vault.backup.fail" }
+        assertThat(c).hasSize(1)
+        assertThat(c[0].key).isEqualTo("backupfail:2026-10-21")
+        assertThat((c[0].title + c[0].body).lowercase()).doesNotContainMatch("failed|missed|late|overdue|behind")
+        assertThat(NotifyRules.candidates(snap { copy(docCount = 1) }).none { it.rule == "vault.backup.fail" }).isTrue()
     }
 }

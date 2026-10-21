@@ -249,6 +249,10 @@ fun VaultScreen(vm: VaultViewModel = hiltViewModel()) {
                     "${all.size} ${if (all.size == 1) "document" else "documents"} · ${"%.1f".format(all.sumOf { it.doc.sizeBytes } / 1_048_576.0)} MB on this phone. Files stay on this phone; AIIMIN never uploads them.",
                     style = Aiimin.type.caption.copy(fontSize = 12.sp), modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 16.dp),
                 )
+                val backupLine = remember(all.size) { vm.backupLine() }
+                if (all.isNotEmpty()) backupLine?.let {
+                    Text(it, style = Aiimin.type.caption.copy(fontSize = 12.sp, color = if (it.startsWith("This week")) c.warn else c.textMuted), modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 4.dp).clickable { nav.open(Route.VaultBackup) })
+                }
                 // Everything else the vault does, as a quiet 2-column grid instead of a row of orange links.
                 aiimin.designsystem.component.ToolGrid(
                     "Vault tools",

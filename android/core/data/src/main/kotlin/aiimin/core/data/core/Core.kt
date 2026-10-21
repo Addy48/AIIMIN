@@ -189,6 +189,8 @@ class Crypto @Inject constructor() {
     companion object {
         const val JOURNAL = "aiimin.journal.v1"
         const val VAULT = "aiimin.vault.v1"
+        /** Wraps the weekly backup's data key on this phone only. */
+        const val BACKUP = "aiimin.backup.v1"
         const val SESSION = "aiimin.session.v1"
         private const val TRANSFORM = "AES/GCM/NoPadding"
     }

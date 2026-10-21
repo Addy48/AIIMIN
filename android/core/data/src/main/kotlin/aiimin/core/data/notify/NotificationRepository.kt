@@ -266,6 +266,8 @@ class NotificationRepository @Inject constructor(
         val docs = aiimin.core.data.vault.remindable(vault.currentWithExpiry()).mapNotNull { d -> runCatching { LocalDate.parse(d.expires!!) }.getOrNull()?.let { DocExpiry(d.id, d.title, ChronoUnit.DAYS.between(today, it), d.expires!!) } }
         val docCount = vault.allNow().count { !it.deleted }
         val last = context.getSharedPreferences(aiimin.core.data.vault.VaultBackupRepository.PREFS, Context.MODE_PRIVATE).getLong("last_at", 0L)
+        val failAt = context.getSharedPreferences(aiimin.core.data.vault.VaultBackupRepository.PREFS, Context.MODE_PRIVATE).getLong("fail_at", 0L)
+        val backupFailDay = if (failAt == 0L) null else java.time.Instant.ofEpochMilli(failAt).atZone(clock.zone).toLocalDate().toString()
         val backupDays = if (last == 0L) null else ChronoUnit.DAYS.between(java.time.Instant.ofEpochMilli(last).atZone(clock.zone).toLocalDate(), today)
         val view = runCatching { life.compute() }.getOrNull()
         val left = runCatching { minimums.today(today).first() }.getOrDefault(emptyList()).filter { it.planned && !it.done }.map { it.minimum.name }
@@ -277,7 +279,7 @@ class NotificationRepository @Inject constructor(
         return NotifySnapshot(
             today = today, nowMinute = now, installDays = ChronoUnit.DAYS.between(install, today).toInt(),
             firstName = s.name.trim().split(" ").firstOrNull().orEmpty(), playful = s.playful,
-            events = events, timedTasks = timed, noteReminders = noteReminders, pourReminders = pourReminders, bills = bills, docs = docs, docCount = docCount, lastBackupDays = backupDays,
+            events = events, timedTasks = timed, noteReminders = noteReminders, pourReminders = pourReminders, bills = bills, docs = docs, docCount = docCount, lastBackupDays = backupDays, backupFailDay = backupFailDay,
             lastBackupDay = if (last == 0L) "never" else java.time.Instant.ofEpochMilli(last).atZone(clock.zone).toLocalDate().toString(),
             minimumsLeft = if (view?.today?.paused == true) emptyList() else left,
             paused = view?.today?.paused == true,

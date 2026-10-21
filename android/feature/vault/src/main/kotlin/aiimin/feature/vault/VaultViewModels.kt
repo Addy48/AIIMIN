@@ -33,6 +33,7 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class VaultViewModel @Inject constructor(
     private val vault: VaultRepository,
+    private val backups: aiimin.core.data.vault.VaultBackupRepository,
     private val family: FamilyRepository,
     private val clock: DayClock,
 ) : ViewModel() {
@@ -58,6 +59,18 @@ class VaultViewModel @Inject constructor(
     }
 
     fun clearImport() { lastImport.value = null }
+
+    /** Phase 3: "Last good backup: 14 Oct", or the note that the last weekly one wasn't saved. */
+    fun backupLine(): String? {
+        val h = backups.health(0)
+        val fmt = java.time.format.DateTimeFormatter.ofPattern("d MMM", java.util.Locale.ENGLISH)
+        fun day(ms: Long) = fmt.format(java.time.Instant.ofEpochMilli(ms).atZone(java.time.ZoneId.systemDefault()))
+        return when {
+            h.failAt != null -> "This week's backup wasn't saved. Last good backup: ${h.lastAt?.let(::day) ?: "none"}"
+            h.lastAt != null -> "Last good backup: ${day(h.lastAt!!)}"
+            else -> null
+        }
+    }
     fun previewAs(id: String) = family.previewAs(id)
 
     suspend fun doc(id: String) = vault.get(id)

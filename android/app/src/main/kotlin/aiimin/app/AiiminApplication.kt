@@ -56,6 +56,8 @@ class AiiminApplication : Application() {
             override fun onStop(owner: androidx.lifecycle.LifecycleOwner) = deps.pulse().setForeground(false)
         })
         PulseWorker.schedule(this)
+        // Weekly vault backup (PRD Part 5 Phase 3) stays armed across updates once set up.
+        if (getSharedPreferences(aiimin.core.data.vault.VaultBackupRepository.PREFS, MODE_PRIVATE).getBoolean("weekly", false)) aiimin.core.data.vault.WeeklyBackupWorker.schedule(this, true)
         // Home-screen widgets (PRD 1.4): Pulse refreshes them every 30 minutes (1 in front), and a change to
         // today's tasks, minimums or settings refreshes the Today widget at once.
         deps.pulse().register(aiimin.core.engine.pulse.Job.WIDGET) {

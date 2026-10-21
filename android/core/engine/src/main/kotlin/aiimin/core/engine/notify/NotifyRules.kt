@@ -31,6 +31,8 @@ data class NotifySnapshot(
     /** Days since the last vault backup; null = never. [lastBackupDay] keys the nudge, so each lapse nudges again. */
     val lastBackupDays: Long? = null,
     val lastBackupDay: String = "never",
+    /** Day the weekly backup last could not be saved; null when the last one was good. */
+    val backupFailDay: String? = null,
     val minimumsLeft: List<String> = emptyList(),
     val paused: Boolean = false,
     val lightDay: Boolean = false,
@@ -128,6 +130,11 @@ object NotifyRules {
             if (s.lightDay) {
                 val c = copy("day.light")
                 add(Candidate("day.light", "light:${s.today}", Kind.NUDGE, Category.DAY, 10 * 60, 1, c.title, c.body, "today", why = "Your week has been heavy, so today asks less."))
+            }
+            s.backupFailDay?.let { day ->
+                // Phase 3: a write that could not be saved gives a notice within a day (Pulse beats every 15 minutes).
+                val c = copy("vault.backup.fail")
+                add(Candidate("vault.backup.fail", "backupfail:$day", Kind.INFO, Category.VAULT, s.nowMinute, 2, c.title, c.body, "backup", why = "This week's backup couldn't be written to your folder."))
             }
             if (s.docCount > 0) {
                 val step = when { s.lastBackupDays == null -> "never"; s.lastBackupDays >= 30 -> "30"; s.lastBackupDays >= 14 -> "14"; else -> null }

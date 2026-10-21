@@ -27,6 +27,7 @@ object NotifyCopy {
         "vault.expiry.today" to listOf(Copy("{doc} expires today", "Renew it, then add the new copy.")),
         "vault.expired" to listOf(Copy("{doc} expired {n} days ago", "Renew it, then add the new copy.")),
         "vault.backup" to listOf(Copy("Back up your vault", "Last backup {days} days ago. Keep a copy somewhere you trust.")),
+        "vault.backup.fail" to listOf(Copy("This week's backup wasn't saved", "AIIMIN couldn't write to your backup folder. Open Backups to pick it again.")),
         "vault.backup.never" to listOf(Copy("Back up your vault", "Your documents live only on this phone. Keep a backup somewhere you trust.")),
         "day.minimums" to listOf(
             Copy("{left} left today", "{nudge}"),
@@ -53,7 +54,7 @@ object NotifyCopy {
     )
 
     /** Plain rules: money, documents, security, reminders. One sober line, never playful. */
-    val plainRules = setOf("pour.cool", "pour.worry", "note.remind", "note.remind.locked", "task.soon", "event.soon", "task.still", "money.bill", "money.review", "money.budget80", "money.budget100", "vault.expiry", "vault.expiry.today", "vault.expired", "vault.backup", "vault.backup.never", "digest.wrapup")
+    val plainRules = setOf("pour.cool", "pour.worry", "note.remind", "note.remind.locked", "task.soon", "event.soon", "task.still", "money.bill", "money.review", "money.budget80", "money.budget100", "vault.expiry", "vault.expiry.today", "vault.expired", "vault.backup", "vault.backup.never", "vault.backup.fail", "digest.wrapup")
 
     /** The line for a rule: plain unless [playful], then rotated by day so the words change from day to day. */
     fun pick(rule: String, dayIndex: Long, vars: Map<String, String>, playful: Boolean, useName: Boolean = true): Copy {
