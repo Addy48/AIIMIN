@@ -248,6 +248,7 @@ fun NotesScreen(vm: NotesViewModel = hiltViewModel()) {
     val c = Aiimin.colors
     Column(Modifier.fillMaxSize().background(c.base)) {
         TopBar(if (archived) "Archived notes" else "Notes", onBack = { if (archived) vm.showArchived.value = false else nav.back() }) {
+            aiimin.designsystem.component.RaahiGuideButton(aiimin.designsystem.component.RaahiArea.NOTES)
             AppIconButton(AppIcons.More, "More", { menu = true })
             AppIconButton(AppIcons.Pencil, "New note", { nav.open(Route.Note()) })
         }

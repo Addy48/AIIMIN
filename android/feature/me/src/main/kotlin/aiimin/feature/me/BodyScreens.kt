@@ -167,7 +167,7 @@ fun PatternsScreen(vm: MeViewModel = hiltViewModel()) {
     val l by vm.life.collectAsStateWithLifecycle()
     val c = Aiimin.colors
     Column(Modifier.fillMaxSize().background(c.base)) {
-        TopBar("Patterns", onBack = { nav.back() })
+        TopBar("Patterns", onBack = { nav.back() }) { aiimin.designsystem.component.RaahiGuideButton(aiimin.designsystem.component.RaahiArea.PATTERNS) }
         val life = l
         if (life == null) { Skeleton(Modifier.padding(Aiimin.space.gutter).fillMaxWidth().height(160.dp)); return@Column }
         val h = life.history

@@ -149,6 +149,7 @@ fun VaultScreen(vm: VaultViewModel = hiltViewModel()) {
         LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 32.dp)) {
             item {
                 LargeHeader("Vault") {
+                    aiimin.designsystem.component.RaahiGuideButton(aiimin.designsystem.component.RaahiArea.VAULT)
                     RootActions(0)
                     AppIconButton(AppIcons.Plus, "Add document", { adding = true })
                 }

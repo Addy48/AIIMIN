@@ -376,12 +376,13 @@ fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, i
             onDismiss(); after()
         }
     }
+    val saveCtx = androidx.compose.ui.platform.LocalContext.current
     // One save per sheet; it runs in the view model, so closing the sheet can't cancel it halfway.
     fun save() {
         if (saving) return
         saving = true
         vm.saveAll(kept) { created ->
-            close { if (created.isNotEmpty()) toaster.undo(if (created.size == 1) "Saved." else "Saved ${created.size}.") { vm.revert(created) } }
+            close { if (created.isNotEmpty()) toaster.undo(if (created.size == 1) saveCtx.getString(aiimin.designsystem.R.string.raahi_saved_1) else saveCtx.getString(aiimin.designsystem.R.string.raahi_saved_many, created.size)) { vm.revert(created) } }
         }
     }
 

@@ -98,7 +98,7 @@ fun GoalsScreen(vm: GoalsViewModel = hiltViewModel()) {
     var title by remember { mutableStateOf("") }
     val live = goals.filter { !it.archived }
     Column(Modifier.fillMaxSize().background(c.base)) {
-        TopBar("Goals", onBack = { nav.back() }) { AppIconButton(AppIcons.Plus, "New goal", { adding = true }) }
+        TopBar("Goals", onBack = { nav.back() }) { aiimin.designsystem.component.RaahiGuideButton(aiimin.designsystem.component.RaahiArea.GOALS); AppIconButton(AppIcons.Plus, "New goal", { adding = true }) }
         if (live.isEmpty() && !adding) {
             EmptyState(raahi = aiimin.core.engine.raahi.RaahiPose.POINTING, icon = AppIcons.Flag, title = "No goals yet", body = "A goal is something that takes weeks. Link tasks and milestones to it, and the progress works itself out.", action = "New goal", onAction = { adding = true })
             return@Column

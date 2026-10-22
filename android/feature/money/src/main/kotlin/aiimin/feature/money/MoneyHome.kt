@@ -128,6 +128,7 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
         item {
             LargeHeader("Money") {
                 if (shownLedgers.size > 1) LedgerPicker(ledger) { picking = true }
+                aiimin.designsystem.component.RaahiGuideButton(aiimin.designsystem.component.RaahiArea.MONEY)
                 RootActions(unread)
             }
         }
