@@ -126,7 +126,7 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
     LazyColumn(Modifier.fillMaxSize().background(c.base), contentPadding = PaddingValues(bottom = 32.dp)) {
         // 4.4: one small "Personal ▾" in the header instead of a second pill bar.
         item {
-            LargeHeader("Money") {
+            LargeHeader("Money", actionsBelowAtCompactWidth = true) {
                 if (shownLedgers.size > 1) LedgerPicker(ledger) { picking = true }
                 aiimin.designsystem.component.RaahiGuideButton(aiimin.designsystem.component.RaahiArea.MONEY)
                 RootActions(unread)

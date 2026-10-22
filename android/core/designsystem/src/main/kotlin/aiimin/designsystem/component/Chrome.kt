@@ -30,6 +30,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -58,6 +59,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -103,17 +105,37 @@ fun TopBar(title: String, onBack: (() -> Unit)?, modifier: Modifier = Modifier, 
  * then sync, search, assistant, bell. [overline] is the one-line status under the title.
  */
 @Composable
-fun LargeHeader(title: String, modifier: Modifier = Modifier, overline: String? = null, actions: @Composable RowScope.() -> Unit = {}) {
-    Row(
-        modifier.fillMaxWidth().statusBarsPadding().heightIn(min = 56.dp).padding(start = Aiimin.space.gutter, end = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(Modifier.weight(1f).padding(vertical = 8.dp)) {
-            Text(title, style = Aiimin.type.title, modifier = Modifier.semantics { heading() })
-            // One line: a status, not a paragraph (D-001).
-            if (overline != null) Text(overline, style = Aiimin.type.caption, maxLines = 1, overflow = TextOverflow.Ellipsis)
+fun LargeHeader(
+    title: String,
+    modifier: Modifier = Modifier,
+    overline: String? = null,
+    actionsBelowAtCompactWidth: Boolean = false,
+    actions: @Composable RowScope.() -> Unit = {},
+) {
+    BoxWithConstraints(modifier.fillMaxWidth().statusBarsPadding().padding(start = Aiimin.space.gutter, end = 4.dp)) {
+        val fontScale = LocalDensity.current.fontScale
+        val stacked = actionsBelowAtCompactWidth && (maxWidth <= 360.dp || (fontScale >= 1.2f && maxWidth < 440.dp))
+        if (stacked) {
+            Column(Modifier.fillMaxWidth()) {
+                Row(Modifier.fillMaxWidth().heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f).padding(vertical = 8.dp)) {
+                        Text(title, style = Aiimin.type.title, maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis, modifier = Modifier.semantics { heading() })
+                        // One line: a status, not a paragraph (D-001).
+                        if (overline != null) Text(overline, style = Aiimin.type.caption, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+                }
+                Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically, content = actions)
+            }
+        } else {
+            Row(Modifier.fillMaxWidth().heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f).padding(vertical = 8.dp)) {
+                    Text(title, style = Aiimin.type.title, maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis, modifier = Modifier.semantics { heading() })
+                    // One line: a status, not a paragraph (D-001).
+                    if (overline != null) Text(overline, style = Aiimin.type.caption, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+                Row(verticalAlignment = Alignment.CenterVertically, content = actions)
+            }
         }
-        Row(verticalAlignment = Alignment.CenterVertically, content = actions)
     }
 }
 

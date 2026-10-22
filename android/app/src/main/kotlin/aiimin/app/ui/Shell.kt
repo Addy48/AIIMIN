@@ -449,7 +449,7 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
             androidx.compose.foundation.layout.Spacer(
                 Modifier.align(Alignment.TopCenter).fillMaxWidth()
                     .windowInsetsTopHeight(androidx.compose.foundation.layout.WindowInsets.Companion.statusBars)
-                    .background(c.base.copy(alpha = 0.96f)),
+                    .background(c.base),
             )
         }
         capture?.let { (prefill, voice, type) -> CaptureSheet(prefill, voice, onDismiss = { capture = null }, initialType = type) }
