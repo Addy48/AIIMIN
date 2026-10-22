@@ -19,4 +19,13 @@
     <string name="raahi_guide_goals_3">Ask me "what is next on my goal" in chat.</string>
     <string name="raahi_saved_1">Saved. I have it.</string>
     <string name="raahi_saved_many">Saved %1$d. I have them.</string>
+    <string name="raahi_postcard_from">From Raahi</string>
+    <string name="raahi_postcard_some">This week: %1$d small things.</string>
+    <string name="raahi_postcard_one">This week: 1 small thing.</string>
+    <string name="raahi_postcard_none">A quiet week. The next one is open.</string>
+    <string name="raahi_goal_done">Goal reached. Well done.</string>
+    <string name="raahi_goal_empty">Add a milestone or link a task. I will work out the progress.</string>
+    <string name="raahi_review_saved">Saved to Notes as \'%1$s\'. I have it.</string>
+    <string name="raahi_patterns_wait">Patterns appear after 21 days. I will keep watching.</string>
+    <string name="raahi_patterns_none">Nothing stands out yet. Your days are steady.</string>
 </resources>

@@ -172,7 +172,7 @@ fun PatternsScreen(vm: MeViewModel = hiltViewModel()) {
         if (life == null) { Skeleton(Modifier.padding(Aiimin.space.gutter).fillMaxWidth().height(160.dp)); return@Column }
         val h = life.history
         if (h.size < 21) {
-            EmptyState(AppIcons.Pulse, "Patterns appear after 21 days", "${21 - h.size} to go. AIIMIN pairs your days (sleep, steps, focus, screen time) and tells you plainly what goes with what.")
+            EmptyState(AppIcons.Pulse, "Patterns appear after 21 days", "${21 - h.size} to go. AIIMIN pairs your days (sleep, steps, focus, screen time) and tells you plainly what goes with what.", raahi = aiimin.core.engine.raahi.RaahiPose.NOTICING)
             return@Column
         }
         val found = listOfNotNull(
@@ -185,7 +185,7 @@ fun PatternsScreen(vm: MeViewModel = hiltViewModel()) {
         )
         LazyColumn(contentPadding = PaddingValues(start = Aiimin.space.gutter, end = Aiimin.space.gutter, bottom = 40.dp)) {
             if (found.isEmpty()) item {
-                EmptyState(AppIcons.Pulse, "Nothing stands out yet", "Your days are steady, so no two things clearly move together. Check back as more days arrive.", sidePadding = 0.dp)
+                EmptyState(AppIcons.Pulse, "Nothing stands out yet", "Your days are steady, so no two things clearly move together. Check back as more days arrive.", sidePadding = 0.dp, raahi = aiimin.core.engine.raahi.RaahiPose.SETTLE)
             }
             items(found.size) { i ->
                 val p = found[i]
