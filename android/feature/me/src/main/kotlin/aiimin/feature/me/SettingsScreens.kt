@@ -77,6 +77,7 @@ fun SettingsScreen(vm: MeViewModel = hiltViewModel()) {
     var dayMode by remember { mutableStateOf(false) }
     var quietPick by remember { mutableStateOf<String?>(null) }
     var dayEndPick by remember { mutableStateOf(false) }
+    var settingsQuery by remember { mutableStateOf("") }
     val c = Aiimin.colors
     val st = s ?: return
     if (dayEndPick) aiimin.designsystem.component.TimePick(
@@ -86,7 +87,39 @@ fun SettingsScreen(vm: MeViewModel = hiltViewModel()) {
     )
     Column(Modifier.fillMaxSize().background(c.base)) {
         TopBar("Settings", onBack = { nav.back() })
-        LazyColumn(contentPadding = PaddingValues(start = Aiimin.space.gutter, end = Aiimin.space.gutter, bottom = 40.dp)) {
+        AppTextField(
+            settingsQuery, { settingsQuery = it }, placeholder = "Search settings",
+            leading = AppIcons.Search,
+            modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(bottom = 8.dp),
+        )
+        if (settingsQuery.isNotBlank()) {
+            val settingTitles = setOf(
+                "Account and sync", "Plans", "Linked devices", "Notification settings", "Phone data", "Money settings",
+                "Assistant and voice", "Raahi", "Appearance", "Language and region", "How AIIMIN is running",
+                "Help", "About and legal", "Trash", "Privacy",
+            )
+            val q = settingsQuery.trim().lowercase()
+            val matches = aiimin.designsystem.nav.FeatureIndex.all.filter { entry ->
+                if (entry.title !in settingTitles) return@filter false
+                val aliases = when (entry.title) {
+                    "Appearance" -> listOf("reduce motion", "font size")
+                    "Notification settings" -> listOf("quiet hours", "quiet notifications")
+                    "Privacy" -> listOf("app lock", "privacy data", "export data")
+                    else -> emptyList()
+                }
+                val terms = listOf(entry.title, entry.subtitle).plus(entry.keywords).plus(aliases)
+                q.split(Regex("\\s+")).all { token -> terms.any { it.contains(token) || it.contains(token.removeSuffix("s")) } }
+            }
+            LazyColumn(contentPadding = PaddingValues(start = Aiimin.space.gutter, end = Aiimin.space.gutter, bottom = 40.dp)) {
+                if (matches.isEmpty()) item { Text("No settings found for “${settingsQuery.trim()}”.", style = Aiimin.type.caption, modifier = Modifier.padding(vertical = 12.dp)) }
+                else {
+                    item { SectionHeader("Settings · ${matches.size}") }
+                    items(matches, key = { "setting-" + it.title }) { entry ->
+                        ListRow(entry.title, subtitle = entry.subtitle, leading = { IconTile(entry.icon) }, trailing = { Chevron() }, onClick = { nav.open(entry.route) })
+                    }
+                }
+            }
+        } else LazyColumn(contentPadding = PaddingValues(start = Aiimin.space.gutter, end = Aiimin.space.gutter, bottom = 40.dp)) {
             item {
                 // Every settings page in one place, so nothing is only reachable from somewhere else.
                 SectionHeader("Account")
@@ -108,8 +141,6 @@ fun SettingsScreen(vm: MeViewModel = hiltViewModel()) {
                 ) { dayEndPick = true }
                 SettingsLink(AppIcons.Translate, "Language and region", "English (India)") { nav.open(Route.Language) }
                 SettingsLink(AppIcons.Pulse, "How AIIMIN is running", "Background jobs and their last run") { nav.open(Route.Running) }
-                SettingsLink(AppIcons.Lifebuoy, "Help", "Questions and contact") { nav.open(Route.Help) }
-                SettingsLink(AppIcons.Info, "About and legal", "Version, privacy policy, terms") { nav.open(Route.About) }
             }
             item {
                 SectionHeader("Look")
@@ -166,6 +197,11 @@ fun SettingsScreen(vm: MeViewModel = hiltViewModel()) {
                     }
                 })
                 Text("No lending, no credit scoring, no selling data. SMS and documents are read on this phone.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 12.dp))
+            }
+            item {
+                SectionHeader("Help and about")
+                SettingsLink(AppIcons.Lifebuoy, "Help", "Questions and contact") { nav.open(Route.Help) }
+                SettingsLink(AppIcons.Info, "About and legal", "Version, privacy policy, terms") { nav.open(Route.About) }
             }
         }
     }

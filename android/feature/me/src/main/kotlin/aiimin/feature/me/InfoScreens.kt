@@ -246,6 +246,8 @@ fun PhoneDayScreen(vm: PhoneDayViewModel = hiltViewModel()) {
             val apps = DeviceRepository.apps(data)
             val total = data.screenMs
             val sum = total?.let { ScreenSummary.of(it, data.screenPersonalMs ?: it, apps.map { a -> a.ms }, shown = 12) }
+            val usualDays = week.filter { it.day < day.toString() }.mapNotNull { it.screenPersonalMs ?: it.screenMs }
+            val todayCountedMs = data.screenPersonalMs ?: total
             item {
                 SectionHeader("Screen")
                 if (total == null || sum == null) {
@@ -266,6 +268,20 @@ fun PhoneDayScreen(vm: PhoneDayViewModel = hiltViewModel()) {
                         ).joinToString(" · "),
                         style = Aiimin.type.caption, modifier = Modifier.padding(top = 4.dp),
                     )
+                    if (todayCountedMs != null && usualDays.size >= 3) {
+                        val usual = usualDays.average().toLong()
+                        val difference = usual - todayCountedMs
+                        val comparison = when {
+                            difference > 0 -> "${ScreenSummary.fmt(difference)} under your usual"
+                            difference < 0 -> "${ScreenSummary.fmt(-difference)} over your usual"
+                            else -> "In line with your usual"
+                        }
+                        Text(
+                            "$comparison · ${usualDays.size}-day average",
+                            style = Aiimin.type.caption.copy(color = if (difference > 0) c.done else c.textMuted),
+                            modifier = Modifier.padding(top = 8.dp),
+                        )
+                    }
                     screenLimit?.let {
                         Meter((((data.screenPersonalMs ?: total) / 60_000.0) / it).toFloat().coerceIn(0f, 1f), color = c.text, modifier = Modifier.padding(top = 12.dp))
                         Text("Your personal limit: ${Dates.minutes(it.toLong())}", style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp))

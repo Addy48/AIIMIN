@@ -364,9 +364,10 @@ fun ScoreScreen(vm: MeViewModel = hiltViewModel()) {
                 val ups = r.contributors.filter { it.points > 0 }.take(3)
                 val downs = r.contributors.filter { it.points < 0 }.sortedBy { it.points }.take(3)
                 val rows = ups + downs
+                val maxContribution = rows.maxOfOrNull { kotlin.math.abs(it.points) }?.coerceAtLeast(0.1) ?: 1.0
                 if (rows.isEmpty()) Text("Not enough history yet.", style = Aiimin.type.caption)
                 rows.forEachIndexed { i, it ->
-                    ContributionRow(life.intentions.def(it.signal)?.name ?: it.signal, it.points, signalDetail(it.signal, life.history))
+                    ContributionRow(life.intentions.def(it.signal)?.name ?: it.signal, it.points, signalDetail(it.signal, life.history), maxContribution)
                     if (i < rows.lastIndex) Hairline()
                 }
             }
@@ -431,12 +432,13 @@ private fun MarkDot(m: StreakMark) {
 }
 
 @Composable
-private fun ContributionRow(name: String, pts: Double, detail: String?) {
+private fun ContributionRow(name: String, pts: Double, detail: String?, maxContribution: Double) {
     val c = Aiimin.colors
     Row(Modifier.fillMaxWidth().padding(vertical = 16.dp), verticalAlignment = Alignment.Top) {
         Column(Modifier.weight(1f)) {
             Text(name, style = Aiimin.type.headline.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Normal))
             if (detail != null) Text(detail, style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(top = 2.dp))
+            Meter((kotlin.math.abs(pts) / maxContribution).toFloat(), Modifier.fillMaxWidth().padding(top = 8.dp), color = if (pts > 0) c.done else c.textMuted, height = 4.dp)
         }
         Text(
             (if (pts > 0) "+" else "−") + "%.1f".format(kotlin.math.abs(pts)),

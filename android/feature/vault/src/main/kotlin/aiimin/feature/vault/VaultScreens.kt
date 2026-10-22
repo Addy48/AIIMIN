@@ -106,6 +106,8 @@ internal fun categoryIcon(cat: String): ImageVector = when (cat) {
     else -> AppIcons.Package
 }
 
+private const val ALL_OWNERS = "__all_owners__"
+
 internal fun kindIcon(ext: String, mime: String): ImageVector = when (kindOf(ext, mime)) {
     DocKind.PDF -> AppIcons.FilePdf
     DocKind.DOCX -> AppIcons.FileDoc
@@ -139,7 +141,7 @@ fun VaultScreen(vm: VaultViewModel = hiltViewModel()) {
     val busy by vm.busy.collectAsStateWithLifecycle()
     val last by vm.lastImport.collectAsStateWithLifecycle()
     var cat by remember { mutableStateOf<String?>(null) }
-    var owner by remember { mutableStateOf(ME) }
+    var owner by remember { mutableStateOf(ALL_OWNERS) }
     var query by remember { mutableStateOf("") }
     var adding by remember { mutableStateOf(false) }
     val toaster = LocalToaster.current
@@ -161,14 +163,22 @@ fun VaultScreen(vm: VaultViewModel = hiltViewModel()) {
                     ) { Text("Previewing as ${people.firstOrNull { it.id == viewer }?.name ?: "someone"}. This is exactly what they could see. Tap to return.", style = Aiimin.type.label) }
                 }
             }
-            // person chips: Emergency first, then each vault; wrapping, never scrolling
+            // Owner chips wrap naturally at every screen width.
             item {
                 FlowRow(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 2.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    PersonChip("Emergency", selected = false, emergency = true) { nav.open(Route.EmergencyCard(ME)) }
+                    PersonChip("Everyone", owner == ALL_OWNERS) { owner = ALL_OWNERS; cat = null }
                     people.forEach { p -> PersonChip(if (p.id == ME) "Me" else p.name, owner == p.id, onLong = { nav.open(Route.Person(p.id)) }) { owner = p.id; cat = null } }
                     PersonChip("Household", owner == HOUSEHOLD) { owner = HOUSEHOLD; cat = null }
                     PersonChip("Person", false, dashed = true, icon = AppIcons.Plus) { nav.open(Route.Family) }
                 }
+            }
+            item {
+                ListRow(
+                    "Emergency card", subtitle = "Ready when a family member needs help",
+                    modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 8.dp),
+                    leading = { IconTile(AppIcons.FirstAid) }, trailing = { aiimin.designsystem.component.Chevron() },
+                    onClick = { nav.open(Route.EmergencyCard(ME)) },
+                )
             }
             item {
                 Box(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 16.dp)) {
@@ -187,14 +197,14 @@ fun VaultScreen(vm: VaultViewModel = hiltViewModel()) {
                 item { Skeleton(Modifier.padding(Aiimin.space.gutter).fillMaxWidth().height(200.dp)) }
                 return@LazyColumn
             }
-            val mine = all.filter { it.doc.owner == owner }
+            val mine = all.filter { owner == ALL_OWNERS || it.doc.owner == owner }
             val q = query.trim().lowercase()
             val shown = mine.filter { (cat == null || it.doc.category == cat) && (q.isEmpty() || it.doc.title.lowercase().contains(q) || (it.doc.number ?: "").lowercase().contains(q) || (it.doc.number ?: "").takeLast(4) == q) }
-            val expiring = all.filter { (it.daysToExpiry ?: 9999) in -30..90 }.sortedBy { it.daysToExpiry }.take(3)
+            val expiring = all.filter { (owner == ALL_OWNERS || it.doc.owner == owner) && (it.daysToExpiry ?: 9999) in -30..90 }.sortedBy { it.daysToExpiry }.take(3)
             if (q.isEmpty() && expiring.isNotEmpty()) {
                 item {
                     Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
-                        SectionHeader("Expiring soon", action = "See all", onAction = { nav.open(Route.Family) })
+                        SectionHeader("Needs attention")
                         expiring.forEach { d ->
                             Row(Modifier.fillMaxWidth().pressable({ nav.open(Route.Doc(d.doc.id)) }).heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
                                 Column(Modifier.weight(1f)) {
@@ -225,7 +235,13 @@ fun VaultScreen(vm: VaultViewModel = hiltViewModel()) {
                         Pill("All ${mine.size}", cat == null, { cat = null })
                         DOC_CATEGORIES.filter { k -> mine.any { it.doc.category == k } }.forEach { k -> Pill("$k ${mine.count { it.doc.category == k }}", cat == k, { cat = k }) }
                     }
-                    SectionHeader((if (owner == ME) "My" else if (owner == HOUSEHOLD) "Household" else (people.firstOrNull { it.id == owner }?.name ?: "") + "'s") + " · " + (if (q.isEmpty()) "recently opened" else "results"))
+                    val ownerName = when (owner) {
+                        ALL_OWNERS -> "Everyone"
+                        ME -> "My"
+                        HOUSEHOLD -> "Household"
+                        else -> (people.firstOrNull { it.id == owner }?.name ?: "Person") + "'s"
+                    }
+                    SectionHeader("$ownerName · " + (if (q.isEmpty()) "recently opened" else "results"))
                 }
             }
             if (shown.isEmpty()) {
@@ -259,7 +275,6 @@ fun VaultScreen(vm: VaultViewModel = hiltViewModel()) {
                     "Vault tools",
                     listOf(
                         aiimin.designsystem.component.Tool(AppIcons.Users, "Family", opens = Route.Family) { nav.open(Route.Family) },
-                        aiimin.designsystem.component.Tool(AppIcons.FirstAid, "Emergency card", opens = Route.EmergencyCard(ME)) { nav.open(Route.EmergencyCard(ME)) },
                         aiimin.designsystem.component.Tool(AppIcons.CloudArrowUp, "Backups", opens = Route.VaultBackup) { nav.open(Route.VaultBackup) },
                         aiimin.designsystem.component.Tool(AppIcons.FirstAidKit, "Emergency kits", opens = Route.EmergencyKits) { nav.open(Route.EmergencyKits) },
                         aiimin.designsystem.component.Tool(AppIcons.Eye, "Who saw what", opens = Route.Activity) { nav.open(Route.Activity) },
