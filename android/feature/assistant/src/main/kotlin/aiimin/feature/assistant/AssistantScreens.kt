@@ -315,6 +315,7 @@ private fun Composer(value: String, onChange: (String) -> Unit, onSend: () -> Un
  * Typing a feature's name ("vault") offers to open it. Everything saved can be undone from the toast.
  */
 @Composable
+@OptIn(ExperimentalLayoutApi::class)
 fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, initialType: String? = null, vm: CaptureViewModel = hiltViewModel()) {
     val nav = LocalNavigator.current
     val toaster = LocalToaster.current
@@ -408,7 +409,8 @@ fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, i
                     .clip(RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp)).background(c.sheet)
                     // Taps on the sheet itself don't reach the scrim (no extra button for TalkBack).
                     .pointerInput(Unit) { detectTapGestures { } }
-                    .navigationBarsPadding().imePadding().padding(horizontal = Aiimin.space.gutter).padding(top = 12.dp, bottom = 12.dp),
+                    .navigationBarsPadding().imePadding().verticalScroll(rememberScrollState())
+                    .padding(horizontal = Aiimin.space.gutter).padding(top = 12.dp, bottom = 12.dp),
             ) {
                 Box(Modifier.align(Alignment.CenterHorizontally).size(width = 40.dp, height = 4.dp).clip(RoundedCornerShape(2.dp)).background(c.borderStrong))
                 Spacer(Modifier.height(16.dp))
@@ -438,9 +440,12 @@ fun CaptureSheet(prefill: String?, startVoice: Boolean, onDismiss: () -> Unit, i
                 if (listening) Meter18(true, level)
                 // Six quick types (1.2b); picking one files the text as that type.
                 Spacer(Modifier.height(12.dp))
-                androidx.compose.foundation.lazy.LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    items(QUICK_TYPES.size) { i ->
-                        val (label, key) = QUICK_TYPES[i]
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    QUICK_TYPES.forEach { (label, key) ->
                         val kind = quickKind(key)
                         Pill(label, forced == kind && kind != null, {
                             if (key == "document") close { nav.go(Route.Vault) } else vm.forced.value = if (forced == kind) null else kind

@@ -164,8 +164,11 @@ fun MeScreen(vm: MeViewModel = hiltViewModel()) {
                 Row(Modifier.fillMaxWidth().padding(vertical = 20.dp)) {
                     // C-003: kept days, never a "0 days streak" tile.
                     MeStat("${r?.streak?.totalKept ?: 0}", if ((r?.streak?.totalKept ?: 0) == 1) "day kept" else "days kept", Modifier.weight(1f))
-                    MeStat("${r?.battery?.value ?: 0}", "battery · ${r?.battery?.mode?.name?.lowercase()?.replaceFirstChar(Char::uppercase) ?: "Gentle"}", Modifier.weight(1f))
-                    if (!settings.hideXp) MeStat("%,d".format(settings.xp.xp), "XP · level ${settings.xp.level}", Modifier.weight(1f))
+                    MeStat(
+                        "${r?.battery?.value ?: 0}", "battery", Modifier.weight(1f),
+                        detail = r?.battery?.mode?.name?.lowercase()?.replaceFirstChar(Char::uppercase) ?: "Gentle",
+                    )
+                    if (!settings.hideXp) MeStat("%,d".format(settings.xp.xp), "XP", Modifier.weight(1f), detail = "level ${settings.xp.level}")
                 }
             }
         }
@@ -211,11 +214,16 @@ fun MeScreen(vm: MeViewModel = hiltViewModel()) {
 }
 
 @Composable
-private fun MeStat(value: String, label: String, modifier: Modifier) {
-    // D-015: equal columns; a long label wraps at its "·" inside its own column instead of running into the next.
-    Column(modifier.padding(end = 8.dp)) {
-        Text(value, style = Aiimin.type.cardTitle.copy(fontFeatureSettings = "tnum"), maxLines = 1)
-        aiimin.designsystem.component.MetaLine(label)
+private fun MeStat(value: String, label: String, modifier: Modifier, detail: String? = null) {
+    // Equal columns keep each stat in its lane. Details move to a second line only when the column is narrow.
+    androidx.compose.foundation.layout.BoxWithConstraints(modifier.padding(end = 8.dp)) {
+        val splitDetail = detail != null && maxWidth < 110.dp
+        Column {
+            Text(value, style = Aiimin.type.cardTitle.copy(fontFeatureSettings = "tnum"), maxLines = 1)
+            val labelLine = if (detail != null && !splitDetail) "$label · $detail" else label
+            Text(labelLine, style = Aiimin.type.caption, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+            if (splitDetail) Text(detail, style = Aiimin.type.caption, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+        }
     }
 }
 

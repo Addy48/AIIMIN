@@ -184,7 +184,7 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
                     val nodKey by vm.nod.collectAsStateWithLifecycle()
                     @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
                     Raahi(
-                        u.mini, RaahiSize.CARD,
+                        u.mini, RaahiSize.MINI,
                         // Tap: Raahi's pockets. Long-press: hide Raahi for the rest of today, with Undo (32.4 I-5).
                         m.combinedClickable(
                             onClickLabel = "Open Raahi's pockets", onLongClickLabel = "Hide Raahi for today",
