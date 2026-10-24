@@ -20,7 +20,7 @@ export function Mark({ size = 30, title }) {
 export const raahi = (pose) => `/site/raahi/raahi_${pose}.webp`;
 
 /** Page meta in one place, so no public page keeps the retired "Life OS" title. */
-export function Meta({ title, description, path, image = '/og-image-v2.png' }) {
+export function Meta({ title, description, path, image = '/og-image-v4.png' }) {
   const url = `${DOMAIN}${path}`;
   return (
     <Helmet>
