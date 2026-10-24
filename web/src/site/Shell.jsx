@@ -73,7 +73,7 @@ function Header({ cta }) {
           {NAV.map((n) => (
             <Link key={n.to} to={n.to} aria-current={here === n.to ? 'page' : undefined}>{n.label}</Link>
           ))}
-          {cta || <Link className="s-btn s-btn--sm" to="/waitlist#join">Join the beta</Link>}
+          {cta || <Link className="s-btn s-btn--sm" to="/waitlist#join">Get early access</Link>}
         </nav>
       </div>
     </header>
@@ -81,7 +81,7 @@ function Header({ cta }) {
 }
 
 const FOOT = [
-  { h: 'AIIMIN', links: [['/waitlist', 'Join the beta'], ['/app', 'Android app'], ['/brand', 'Raahi & brand'], ['/waitlist#plans', 'Plans'], ['/about', 'About']] },
+  { h: 'AIIMIN', links: [['/waitlist', 'Get early access'], ['/app', 'Android app'], ['/brand', 'Raahi & brand'], ['/waitlist#plans', 'Plans'], ['/about', 'About']] },
   { h: 'Your data', links: [['/privacy', 'Privacy policy'], ['/data-deletion', 'Delete your data'], ['/security', 'Security'], ['/ai-disclosure', 'How Raahi uses AI'], ['/cookies', 'Cookies']] },
   { h: 'Help', links: [['/contact', 'Contact'], ['/grievance', 'Grievance officer'], ['/terms', 'Terms of use'], ['/refunds', 'Refunds'], ['/legal', 'All legal pages']] },
 ];
@@ -159,14 +159,19 @@ export default function Shell({ children, cta, bare = false }) {
   );
 }
 
-/** A phone with a real app screen. Screens come from the demo profile, never a real person's data. */
-export function Phone({ src, alt, tag = 'Sample data', className = '', eager = false }) {
+/**
+ * The one device on the site: a Galaxy S25 Ultra with a real app screen. Screens come from the demo profile, never
+ * a real person's data, so the caption ("Sample data") sits under the phone, outside the screen.
+ */
+export function Phone({ src, alt, caption = 'Sample data', className = '', eager = false }) {
   return (
-    <div className={`s-phone ${className}`}>
-      <div className="s-phone__screen">
-        <img src={src} alt={alt} width="1080" height="2340" loading={eager ? 'eager' : 'lazy'} decoding={eager ? 'sync' : 'async'} fetchPriority={eager ? 'high' : undefined} />
+    <figure className={`s-device ${className}`}>
+      <div className="s-phone">
+        <div className="s-phone__screen">
+          <img src={src} alt={alt} width="1080" height="2340" loading={eager ? 'eager' : 'lazy'} decoding={eager ? 'sync' : 'async'} fetchPriority={eager ? 'high' : undefined} />
+        </div>
       </div>
-      {tag && <span className="s-phone__tag">{tag}</span>}
-    </div>
+      {caption && <figcaption className="s-device__cap">{caption}</figcaption>}
+    </figure>
   );
 }

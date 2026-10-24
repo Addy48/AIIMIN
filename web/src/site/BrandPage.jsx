@@ -1,6 +1,8 @@
 import React from 'react';
-import { Check, DownloadSimple, X } from '@phosphor-icons/react';
+import { Link } from 'react-router-dom';
+import { ArrowRight, Check, DownloadSimple, X } from '@phosphor-icons/react';
 import Shell, { Mark, Meta, raahi } from './Shell';
+import JoinForm from './JoinForm';
 
 const POSES = [
   ['pose_idle_hero', 'Idle', 'Standing by, beside the clock.'],
@@ -24,7 +26,7 @@ const YES = [
 const NO = [
   ["You broke your 12-day streak!", 'No streak shaming.'],
   ['You missed 3 tasks yesterday.', 'No guilt, no "you missed".'],
-  ['Raahi is sad you left 😢', 'No sad, hungry or needy states.'],
+  ['Raahi is sad you left.', 'No sad, hungry or needy moods.'],
   ['Supercharge your life OS!', 'No hype, no jargon.'],
 ];
 
@@ -48,13 +50,14 @@ export default function BrandPage() {
 
       <section className="s-wrap s-bhero">
         <div>
-          <h1>Raahi.</h1>
-          <p className="s-hero__sub" style={{ maxWidth: '36ch' }}>
-            Raahi means traveller. A small walker in a sand hood and an orange scarf who keeps you company through the day. Raahi is the face of AIIMIN, and the name on everything its AI writes.
+          <h1>Raahi<span className="s-dot">.</span></h1>
+          <p className="s-hero__sub" style={{ maxWidth: '34ch' }}>
+            Raahi means traveller. A small walker in a sand hood and an orange scarf who keeps you company through the day.
           </p>
-          <p style={{ color: 'var(--muted)', maxWidth: '44ch' }}>
-            Not a pet to feed, not a coach to please. Raahi has no sad state and never asks for anything. If you do nothing today, Raahi simply sleeps on time.
+          <p className="s-bhero__more">
+            Not a pet to feed or a coach to please. Raahi never sulks and never asks for anything. If you do nothing today, Raahi simply sleeps on time.
           </p>
+          <p style={{ marginTop: 28 }}><Link className="s-btn" to="/waitlist#join">Meet Raahi in the app <ArrowRight weight="bold" /></Link></p>
         </div>
         <div className="s-bhero__art"><img src={raahi('scene_holding_lantern')} alt="Raahi holding a lantern at night" width="571" height="640" fetchPriority="high" /></div>
       </section>
@@ -63,12 +66,12 @@ export default function BrandPage() {
         <div className="s-wrap">
           <div className="s-head2 s-rv">
             <h2 id="poses-h" className="s-h2">Ten poses, one calm mood.</h2>
-            <p className="s-lede">Each pose has one job in the app. Quiet mode plays at most three small moves a day; Off hides the art and keeps the voice; reduce motion stops it all.</p>
+            <p className="s-lede">Each pose has one job in the app. Raahi moves a few times a day at most, and you can turn the art off or stop all motion in Settings.</p>
           </div>
           <div className="s-poses">
             {POSES.map(([f, n, d]) => (
               <figure key={f} className="s-pose s-rv">
-                <img src={raahi(f)} alt={`Raahi, ${n.toLowerCase()}`} width="768" height="768" loading="lazy" />
+                <div className="s-pose__art"><img src={raahi(f)} alt={`Raahi, ${n.toLowerCase()}`} width="768" height="768" loading="lazy" /></div>
                 <figcaption><b>{n}</b>{d}</figcaption>
               </figure>
             ))}
@@ -80,7 +83,7 @@ export default function BrandPage() {
         <div className="s-wrap">
           <div className="s-head2 s-rv">
             <h2 id="tone-h" className="s-h2">How Raahi talks.</h2>
-            <p className="s-lede">One tone for the app, the website and every email: short, calm, no guilt. The first name appears at most once a day.</p>
+            <p className="s-lede">One voice for the app, this website and every email: short, calm and never guilty. Raahi uses your name once a day at most.</p>
           </div>
           <div className="s-tone s-rv">
             <div>
@@ -89,7 +92,7 @@ export default function BrandPage() {
             </div>
             <div className="s-tone__no">
               <h3><X weight="bold" style={{ color: 'var(--accent-text)' }} aria-hidden="true" /> Raahi never says</h3>
-              <ul>{NO.map(([l, w]) => <li key={l}>"{l}"<small>{w}</small></li>)}</ul>
+              <ul>{NO.map(([l, w]) => <li key={l}><s>"{l}"</s><small>{w}</small></li>)}</ul>
             </div>
           </div>
         </div>
@@ -99,7 +102,7 @@ export default function BrandPage() {
         <div className="s-wrap">
           <div className="s-head2 s-rv">
             <h2 id="mark-h" className="s-h2">The mark.</h2>
-            <p className="s-lede">An arch for the day, a peak for the climb, and the sun at the point of now. The wordmark is set in Bodoni Moda; it is the only place that face is used.</p>
+            <p className="s-lede">An arch for the day, a peak for the climb, and the sun at the point of now. Download the files below and use them as they are.</p>
           </div>
           <div className="s-marks s-rv">
             <div className="s-markcard">
@@ -122,7 +125,7 @@ export default function BrandPage() {
         <div className="s-wrap">
           <div className="s-head2 s-rv">
             <h2 id="color-h" className="s-h2">Colour.</h2>
-            <p className="s-lede">Light only. Beige and ink do the work; orange is the sun and appears once per screen. No gradients, no purple, no red for alarm.</p>
+            <p className="s-lede">Warm beige and ink do most of the work. Orange is the sun, and it appears once per screen.</p>
           </div>
           <div className="s-swatches s-rv">
             {COLORS.map(([n, h, u]) => (
@@ -156,6 +159,14 @@ export default function BrandPage() {
               <li><b>Stay honest</b><p>Describe only what the beta does today. Prices are in the plans; the beta is free and takes no payment.</p></li>
             </ul>
           </div>
+        </div>
+      </section>
+      <section className="s-sec">
+        <div className="s-wrap s-close s-rv">
+          <img src={raahi('pose_pointing_hero')} alt="" width="768" height="768" loading="lazy" />
+          <h2 className="s-h2">Walk with Raahi.</h2>
+          <p className="s-lede" style={{ margin: 0 }}>Join the free beta and Raahi will say good morning on your phone.</p>
+          <JoinForm button="Get early access" compact />
         </div>
       </section>
     </Shell>

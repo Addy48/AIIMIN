@@ -95,7 +95,7 @@ export default function JoinForm({ id, button = 'Join the beta', compact = false
       </div>
       {state === 'error'
         ? <p className="s-join__err" id={`${inputId}-n`} role="alert">{msg}</p>
-        : !compact && <p className="s-join__note" id={`${inputId}-n`}>Email only. One invite email, no newsletter. Free during the beta.</p>}
+        : !compact && <p className="s-join__note" id={`${inputId}-n`}>Just your email. One invite when your place is ready, no spam.</p>}
     </form>
   );
 }
