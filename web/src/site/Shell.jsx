@@ -164,7 +164,7 @@ export function Phone({ src, alt, tag = 'Sample data', className = '', eager = f
   return (
     <div className={`s-phone ${className}`}>
       <div className="s-phone__screen">
-        <img src={src} alt={alt} width="1080" height="2340" loading={eager ? 'eager' : 'lazy'} decoding={eager ? 'sync' : 'async'} fetchpriority={eager ? 'high' : undefined} />
+        <img src={src} alt={alt} width="1080" height="2340" loading={eager ? 'eager' : 'lazy'} decoding={eager ? 'sync' : 'async'} fetchPriority={eager ? 'high' : undefined} />
       </div>
       {tag && <span className="s-phone__tag">{tag}</span>}
     </div>

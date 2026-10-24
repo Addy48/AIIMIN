@@ -123,7 +123,7 @@ export default function WaitlistPage() {
           <div className="s-hero__stage">
             <div className="s-hero__walk">
               <span className="s-hero__sun" aria-hidden="true" />
-              <img className="s-hero__raahi" src={raahi('pose_idle_hero')} alt="Raahi, a small traveller in a sand hood and orange scarf" width="768" height="768" fetchpriority="high" />
+              <img className="s-hero__raahi" src={raahi('pose_idle_hero')} alt="Raahi, a small traveller in a sand hood and orange scarf" width="768" height="768" fetchPriority="high" />
             </div>
             <Phone src="/site/screens/today.webp" alt="AIIMIN's Today screen" eager />
           </div>

@@ -56,7 +56,7 @@ export default function BrandPage() {
             Not a pet to feed, not a coach to please. Raahi has no sad state and never asks for anything. If you do nothing today, Raahi simply sleeps on time.
           </p>
         </div>
-        <div className="s-bhero__art"><img src={raahi('scene_holding_lantern')} alt="Raahi holding a lantern at night" width="571" height="640" fetchpriority="high" /></div>
+        <div className="s-bhero__art"><img src={raahi('scene_holding_lantern')} alt="Raahi holding a lantern at night" width="571" height="640" fetchPriority="high" /></div>
       </section>
 
       <section className="s-sec--tight" aria-labelledby="poses-h">
