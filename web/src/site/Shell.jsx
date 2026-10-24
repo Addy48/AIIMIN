@@ -163,7 +163,9 @@ export default function Shell({ children, cta, bare = false }) {
 export function Phone({ src, alt, tag = 'Sample data', className = '', eager = false }) {
   return (
     <div className={`s-phone ${className}`}>
-      <img src={src} alt={alt} width="720" height="1600" loading={eager ? 'eager' : 'lazy'} decoding="async" />
+      <div className="s-phone__screen">
+        <img src={src} alt={alt} width="1080" height="2340" loading={eager ? 'eager' : 'lazy'} decoding={eager ? 'sync' : 'async'} fetchpriority={eager ? 'high' : undefined} />
+      </div>
       {tag && <span className="s-phone__tag">{tag}</span>}
     </div>
   );

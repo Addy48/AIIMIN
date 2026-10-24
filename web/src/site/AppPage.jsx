@@ -19,7 +19,7 @@ const PERMS = [
 const SCREENS = [
   ['/site/screens/today.webp', 'Today', 'The time, your day as an arc, the one next thing and your minimums.'],
   ['/site/screens/money.webp', 'Money', 'Spending against your plan, drafted from bank SMS on the phone.'],
-  ['/site/screens/vault.webp', 'Vault', "Everyone's papers, with an emergency card and expiry reminders."],
+  ['/site/screens/emerg.webp', 'Vault', 'An emergency card for each person, plus their papers and expiry reminders.'],
   ['/site/screens/you.webp', 'You', 'Life Score, patterns, weekly review and every setting.'],
 ];
 

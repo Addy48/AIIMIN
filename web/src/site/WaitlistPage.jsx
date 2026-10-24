@@ -1,43 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  AirplaneTilt, ArrowRight, Bell, ChatCircleText, Check, DeviceMobile, EyeSlash, FileLock, Lock,
-  Microphone, Plus, Receipt, ShieldCheck, Sun, Users, WifiSlash,
+  AirplaneTilt, ArrowRight, ChatCircleText, Check, DeviceMobile, EyeSlash, FileLock, Lock,
+  Microphone, Plus, Timer, Receipt, ShieldCheck, Sun, Users, WifiSlash,
 } from '@phosphor-icons/react';
 import Shell, { Meta, Phone, raahi } from './Shell';
 import JoinForm from './JoinForm';
 import { PLANS, REFERRAL } from '../marketing/plans';
 import { API_URL } from '../utils/api';
 
-// The Today screen's arc, drawn once: the line climbs to "now" and the sun settles on it.
-const PAST = 'M 0 300 C 110 296 190 210 290 176';
-const FUTURE = 'M 290 176 C 400 140 520 200 620 300';
-
-function DayArc() {
-  const still = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-  const motion = (
-    <animateMotion dur="1.85s" begin="0s" fill="freeze" path={PAST} keyPoints="0;0;1" keyTimes="0;0.14;1" calcMode="spline" keySplines="0 0 1 1;0.16 1 0.3 1" />
-  );
-  return (
-    <svg className="s-arc" viewBox="0 -20 620 340" preserveAspectRatio="xMinYMax meet" aria-hidden="true" data-still={still}>
-      <line className="s-arc__ground" x1="0" y1="300" x2="620" y2="300" />
-      <path className="s-arc__future" d={FUTURE} pathLength="100" strokeDasharray="0.01 2.4" />
-      <path className="s-arc__past" d={PAST} pathLength="1" strokeDasharray="1 1" strokeDashoffset={still ? 0 : 1}>
-        {!still && <animate attributeName="stroke-dashoffset" from="1" to="0" dur="1.85s" fill="freeze" keyTimes="0;0.14;1" values="1;1;0" calcMode="spline" keySplines="0 0 1 1;0.16 1 0.3 1" />}
-      </path>
-      {still ? (
-        <circle className="s-arc__sun" cx="290" cy="176" r="14" />
-      ) : (
-        <g>
-          <circle className="s-arc__halo" r="16" />
-          <circle className="s-arc__sun" r="14" />
-          {motion}
-        </g>
-      )}
-    </svg>
-  );
-}
-
+// The opening-screen motif (PRD Part 26): one sun rises once behind the phone. Reduced motion: already risen.
 function useCount() {
   const [n, setN] = useState(null);
   useEffect(() => {
@@ -54,13 +26,13 @@ const MOMENTS = [
   {
     time: 'Morning',
     title: 'One clear next thing.',
-    body: 'Today opens on the clock, your day as an arc, and the one task that matters now. Minimums are the small things you promised yourself: tap to keep one.',
+    body: 'Today opens on the one task that matters now. Tap Focus and give it 25 quiet minutes. Minimums, the small things you promised yourself, sit right below.',
     facts: [
       [Microphone, 'Say it and it becomes a task, a reminder or a note.'],
       [Sun, 'Raahi says good morning once. No streak warnings, ever.'],
-      [Bell, 'At most a few nudges a day, all of them yours to switch off.'],
+      [Timer, 'Tap Focus for a 15 to 90 minute timer on that one thing.'],
     ],
-    screen: '/site/screens/capture.webp', alt: 'The capture sheet over Today: type or speak, then pick task, expense, note, event, journal or document',
+    screen: '/site/screens/focus.webp', alt: 'The Focus screen: a 25-minute timer for "Call the CA about advance tax"',
     pose: 'pose_pointing_hero',
   },
   {
@@ -84,7 +56,7 @@ const MOMENTS = [
       [ShieldCheck, 'An emergency card for the day someone needs help.'],
       [WifiSlash, 'Everything opens in airplane mode.'],
     ],
-    screen: '/site/screens/vault.webp', alt: "The Vault screen with profiles for Me, Mom, Dad and Riya, and an emergency card",
+    screen: '/site/screens/emerg.webp', alt: "Meera's emergency card: blood group, allergies, medicines, doctor and who to call",
     pose: 'pose_holding_postcard_hero',
   },
 ];
@@ -149,8 +121,10 @@ export default function WaitlistPage() {
             </div>
           </div>
           <div className="s-hero__stage">
-            <DayArc />
-            <img className="s-hero__raahi" src={raahi('pose_idle_hero')} alt="Raahi, a small traveller in a sand hood and orange scarf" width="768" height="768" fetchpriority="high" />
+            <div className="s-hero__walk">
+              <span className="s-hero__sun" aria-hidden="true" />
+              <img className="s-hero__raahi" src={raahi('pose_idle_hero')} alt="Raahi, a small traveller in a sand hood and orange scarf" width="768" height="768" fetchpriority="high" />
+            </div>
             <Phone src="/site/screens/today.webp" alt="AIIMIN's Today screen" eager />
           </div>
         </div>
