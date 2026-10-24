@@ -9,10 +9,10 @@ import { AppQueryProvider } from '../../context/QueryProvider';
 // Pages
 import Overview from '../Overview';
 import Settings from '../Settings';
-import WaitlistLanding from '../WaitlistLanding';
+import WaitlistLanding from '../../site/WaitlistPage';
 import Login from '../Login';
-import Brand from '../Brand';
-import AndroidApp from '../AndroidApp';
+import Brand from '../../site/BrandPage';
+import AndroidApp from '../../site/AppPage';
 import Journal from '../Journal';
 import Discipline from '../Discipline';
 import FocusRoom from '../FocusRoom';

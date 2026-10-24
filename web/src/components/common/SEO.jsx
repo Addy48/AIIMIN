@@ -2,9 +2,9 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 
 const DOMAIN = 'https://aiimin.in';
-const DEFAULT_TITLE = 'AIIMIN — Personal Life OS for High Agency Living';
+const DEFAULT_TITLE = "AIIMIN · Know what's next";
 const DEFAULT_DESCRIPTION =
-  'AIIMIN is a data-dense personal Life OS for ambitious builders, operators, and high performers. Track habits, money, focus, and mood in one unified screen.';
+  "A calm Android app for your day, your money and your family's papers. It lives on your phone and never shows ads.";
 const DEFAULT_OG_IMAGE = 'https://aiimin.in/og-image-v2.png';
 
 /**
@@ -21,7 +21,7 @@ export default function SEO({
   jsonLd,
 }) {
   const fullTitle = title
-    ? `${title} | AIIMIN — Personal Life OS`
+    ? `${title} · AIIMIN`
     : DEFAULT_TITLE;
 
   const metaDescription = description || DEFAULT_DESCRIPTION;
@@ -80,7 +80,7 @@ export default function SEO({
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
       <meta property="og:image:type" content="image/png" />
-      <meta property="og:image:alt" content="AIIMIN Life OS Interface and Analytics" />
+      <meta property="og:image:alt" content="AIIMIN, an Android app for your day, money and papers" />
       <meta property="og:locale" content="en_IN" />
 
       {/* Twitter Card Metadata */}
@@ -91,7 +91,7 @@ export default function SEO({
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={metaDescription} />
       <meta name="twitter:image" content={image} />
-      <meta name="twitter:image:alt" content="AIIMIN Life OS" />
+      <meta name="twitter:image:alt" content="AIIMIN" />
 
       {/* Structured Data (JSON-LD) */}
       <script type="application/ld+json">

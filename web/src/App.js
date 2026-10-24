@@ -6,7 +6,7 @@ const Login = React.lazy(() => import('./pages/Login'));
 const AuthCallback = React.lazy(() => import('./pages/AuthCallback'));
 const Onboarding = React.lazy(() => import('./pages/Onboarding'));
 const VerifyEmail = React.lazy(() => import('./pages/VerifyEmail'));
-import WaitlistLanding from './pages/WaitlistLanding';
+import WaitlistLanding from './site/WaitlistPage';
 import { WaitlistPendingScreen } from './components/waitlist/WaitlistQuickFeedback';
 import WaitlistThemeSync from './components/waitlist/WaitlistThemeSync';
 const Privacy = React.lazy(() => import('./pages/legal/Privacy'));
@@ -22,10 +22,9 @@ const AiDisclosure = React.lazy(() => import('./pages/legal/AiDisclosure'));
 const Grievance = React.lazy(() => import('./pages/legal/Grievance'));
 const Subprocessors = React.lazy(() => import('./pages/legal/Subprocessors'));
 const LegalHub = React.lazy(() => import('./pages/legal/LegalHub'));
-const Brand = React.lazy(() => import('./pages/Brand'));
-const AndroidApp = React.lazy(() => import('./pages/AndroidApp'));
-const EmptyStatePage = React.lazy(() => import('./pages/EmptyStatePage'));
-const NotFound = React.lazy(() => import('./pages/NotFound'));
+const Brand = React.lazy(() => import('./site/BrandPage'));
+const AndroidApp = React.lazy(() => import('./site/AppPage'));
+const NotFound = React.lazy(() => import('./site/SitePages').then((m) => ({ default: m.SiteNotFound })));
 
 // Layout & lazy widgets
 import DashboardLayout from './components/layout/DashboardLayout';
@@ -178,6 +177,9 @@ function AppContent({ user, session }) {
     location.pathname === '/login' ||
     PUBLIC_PATH_PREFIXES.some((prefix) => location.pathname.startsWith(prefix));
 
+  // Tours belong to the signed-in desk only, never to the public site or the 404 page.
+  const isDeskRoute = /^\/(overview|insights|calendar|sports|journal|finance|settings|lab|placements|habits|goals|identity|notes|discipline|focus|family|account|reports)(\/|$)/.test(location.pathname);
+
   const showPendingScreen = isWaitlistMode && isSignedIn && !canAccessApp && !accessLoading
     && !['/login', '/'].includes(location.pathname)
     && !isPublicSurface;
@@ -289,7 +291,6 @@ function AppContent({ user, session }) {
         <Route path="/legal" element={<Lazy><LegalHub /></Lazy>} />
         <Route path="/brand" element={<Lazy><Brand /></Lazy>} />
         <Route path="/app" element={<Lazy><AndroidApp /></Lazy>} />
-        <Route path="/empty" element={<Lazy><EmptyStatePage /></Lazy>} />
         {/* Parked: Drafting Table craft lock — not product */}
         <Route path="/proto/draft" element={<Lazy><DraftingTablePrototype /></Lazy>} />
         <Route path="/dev/waitlist-studio" element={<Lazy><WaitlistScreenshotStudio /></Lazy>} />
@@ -305,10 +306,10 @@ function AppContent({ user, session }) {
 
       {/* Global Widgets — lazy wrapped, suppressed on public surfaces, prototypes, and phone capture surfaces */}
       <React.Suspense fallback={null}>
-        {!isProto && !isPublicSurface && !location.pathname.startsWith('/m') && !location.pathname.startsWith('/reports-demo') && canAccessApp && location.pathname !== '/login' && user && !user.isGuest && <ProductTour />}
-        {!isProto && !isPublicSurface && !location.pathname.startsWith('/m') && !location.pathname.startsWith('/reports-demo') && canAccessApp && location.pathname !== '/login' && user && !user.isGuest && <FeedbackWidget />}
+        {!isProto && isDeskRoute && !isPublicSurface && !location.pathname.startsWith('/m') && !location.pathname.startsWith('/reports-demo') && canAccessApp && location.pathname !== '/login' && user && !user.isGuest && <ProductTour />}
+        {!isProto && isDeskRoute && !isPublicSurface && !location.pathname.startsWith('/m') && !location.pathname.startsWith('/reports-demo') && canAccessApp && location.pathname !== '/login' && user && !user.isGuest && <FeedbackWidget />}
         {!isProto && isWaitlistMode && location.pathname === '/' && <FeedbackWidget waitlistPublic />}
-        {!isProto && !location.pathname.startsWith('/m') && !location.pathname.startsWith('/reports-demo') && !isWaitlistMode && !isPublicSurface && location.pathname !== '/login' && !session && (!user || user.isGuest) && <GuestTour />}
+        {!isProto && isDeskRoute && !location.pathname.startsWith('/m') && !location.pathname.startsWith('/reports-demo') && !isWaitlistMode && !isPublicSurface && location.pathname !== '/login' && !session && (!user || user.isGuest) && <GuestTour />}
       </React.Suspense>
     </div>
     </DeviceGate>

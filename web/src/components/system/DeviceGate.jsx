@@ -1,6 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useDeviceTier, applyDeviceTierAttr } from '../../hooks/useDeviceTier';
+import { DeskNotice } from '../../site/SitePages';
+
+const DESK_KEY = 'aiimin_phone_desktop_ok';
+const readOk = () => { try { return sessionStorage.getItem(DESK_KEY) === '1'; } catch { return false; } };
 
 const PUBLIC_PREFIXES = [
   '/login',
@@ -14,6 +18,14 @@ const PUBLIC_PREFIXES = [
   '/about',
   '/contact',
   '/brand',
+  '/waitlist',
+  '/legal',
+  '/cookies',
+  '/grievance',
+  '/refunds',
+  '/acceptable-use',
+  '/ai-disclosure',
+  '/subprocessors',
   '/app',
   '/m',
 ];
@@ -24,8 +36,8 @@ function isPublicPath(pathname) {
 }
 
 /**
- * Phone browsers → /m capture shell (native app coming).
- * iPad/tablet → stay on full Life OS.
+ * Signed-in phone browsers → a notice pointing to the app (PRD 3.7).
+ * iPad/tablet → the full site.
  * Bypass: ?forceDesktop=1 (testing only).
  */
 export default function DeviceGate({ children, authed }) {
@@ -38,6 +50,7 @@ export default function DeviceGate({ children, authed }) {
 
   const params = new URLSearchParams(location.search);
   const forceDesktop = params.get('forceDesktop') === '1';
+  const [deskOk, setDeskOk] = useState(readOk);
 
   if (
     authed
@@ -48,14 +61,10 @@ export default function DeviceGate({ children, authed }) {
     return <Navigate to={`/m/account${location.search || ''}`} replace />;
   }
 
-  if (
-    authed
-    && isPhone
-    && !forceDesktop
-    && !isPublicPath(location.pathname)
-  ) {
-    return <Navigate to="/m" replace />;
+  // PRD 3.7: a signed-in tester on a phone sees "The full site is for desktop. Use the app.",
+  // with "Open desktop site anyway" for this browser session.
+  if (authed && isPhone && !forceDesktop && !deskOk && !isPublicPath(location.pathname)) {
+    return <DeskNotice onContinue={() => { try { sessionStorage.setItem(DESK_KEY, '1'); } catch { /* private window */ } setDeskOk(true); }} />;
   }
-
   return children;
 }

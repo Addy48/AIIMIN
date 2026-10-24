@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import SEO from '../../components/common/SEO';
+import Shell, { Meta } from '../../site/Shell';
 
 export const LegalSection = ({ title, children }) => (
     <div style={{ marginBottom: '40px' }}>
@@ -87,51 +87,24 @@ export const LegalTable = ({ head, rows, caption }) => (
     </div>
 );
 
-const LegalLayout = ({ title, lastUpdated, description, canonicalPath, children }) => {
-    return (
-        <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-primary)', padding: '80px 20px 60px' }}>
-            <SEO
-                title={title}
-                description={description || `${title} for the AIIMIN Life Operating System.`}
-                canonicalPath={canonicalPath}
-            />
-
-            <div style={{ maxWidth: '680px', margin: '0 auto' }}>
-
-                {/* Back */}
-                <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: 'var(--text-3)', fontSize: '12px', fontWeight: 600, textDecoration: 'none', marginBottom: '32px' }}
-                    onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
-                    onMouseLeave={e => e.currentTarget.style.color = 'var(--text-3)'}
-                >
-                    ← AIIMIN
-                </Link>
-
-                {/* Header */}
-                <div style={{ marginBottom: '48px' }}>
-                    <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '10px' }}>
-                        Compliance
-                    </div>
-                    <h1 style={{ fontSize: '32px', fontWeight: 900, color: 'var(--text-1)', letterSpacing: '-0.5px', margin: '0 0 10px' }}>
-                        {title}
-                    </h1>
-                    {lastUpdated && (
-                        <p style={{ fontSize: '13px', color: 'var(--text-3)', margin: 0 }}>
-                            Last updated {lastUpdated}
-                        </p>
-                    )}
-                </div>
-
-                {children}
-
-                <div style={{ padding: '20px 24px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', marginTop: '16px' }}>
-                    <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-                        <Link to="/legal" style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none' }}>All legal documents →</Link>
-                        <Link to="/" style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none' }}>Back to Dashboard →</Link>
-                    </div>
-                </div>
+const LegalLayout = ({ title, lastUpdated, description, canonicalPath, children }) => (
+    <Shell>
+        <Meta
+            title={`${title} · AIIMIN`}
+            description={description || `${title} for AIIMIN, the Android app for your day, your money and your family's papers.`}
+            path={canonicalPath || '/legal'}
+        />
+        <article className="s-wrap s-legal">
+            <h1>{title}</h1>
+            {lastUpdated && <p className="s-legal__meta">Last updated {lastUpdated}</p>}
+            <div className="s-legal__body">{children}</div>
+            <div className="s-legal__more">
+                <Link className="s-btn s-btn--sm s-btn--ghost" to="/legal">All legal pages</Link>
+                <Link className="s-btn s-btn--sm s-btn--ghost" to="/contact">Contact us</Link>
+                <Link className="s-btn s-btn--sm" to="/waitlist">Back to AIIMIN</Link>
             </div>
-        </div>
-    );
-};
+        </article>
+    </Shell>
+);
 
 export default LegalLayout;
