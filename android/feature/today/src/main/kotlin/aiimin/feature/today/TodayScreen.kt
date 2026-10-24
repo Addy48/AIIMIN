@@ -61,6 +61,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -575,7 +576,9 @@ private fun LaterRow(item: FlowItem, onToggle: () -> Unit, onOpen: () -> Unit, o
         Text(
             item.time?.let(Dates::clockPlain) ?: "anytime",
             style = if (item.time != null) Aiimin.type.bodyStrong.copy(color = if (item.done) c.textFaint else c.text) else Aiimin.type.caption,
-            modifier = Modifier.width(56.dp),
+            maxLines = 1,
+            softWrap = false,
+            modifier = Modifier.widthIn(min = 56.dp).padding(end = 8.dp),
         )
         Column(Modifier.weight(1f).padding(vertical = 8.dp)) {
             DoneText(item.title, item.done && item.kind == FlowKind.TASK, style = Aiimin.type.bodyStrong.copy(fontWeight = FontWeight.Medium))
