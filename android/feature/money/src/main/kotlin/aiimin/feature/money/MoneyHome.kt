@@ -126,8 +126,7 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
     LazyColumn(Modifier.fillMaxSize().background(c.base), contentPadding = PaddingValues(bottom = 32.dp)) {
         // 4.4: one small "Personal ▾" in the header instead of a second pill bar.
         item {
-            LargeHeader("Money", actionsBelowAtCompactWidth = true) {
-                if (shownLedgers.size > 1) LedgerPicker(ledger) { picking = true }
+            LargeHeader("Money") {
                 aiimin.designsystem.component.RaahiGuideButton(aiimin.designsystem.component.RaahiArea.MONEY)
                 RootActions(unread)
             }
@@ -143,7 +142,11 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
             val selected = selection.value
             val bar = selected?.let { s.bars.getOrNull(it) }
             Column(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 24.dp)) {
-                Headline(s, bar, d.budget?.totalPaise, d.remaining, ledger, monthIsCurrent, d.paceLine, today)
+                // The ledger switch sits beside the headline it changes, so the header row stays one line (24 Oct pass).
+                Box(Modifier.fillMaxWidth()) {
+                    Headline(s, bar, d.budget?.totalPaise, d.remaining, ledger, monthIsCurrent, d.paceLine, today)
+                    if (shownLedgers.size > 1) Box(Modifier.align(Alignment.TopEnd)) { LedgerPicker(ledger) { picking = true } }
+                }
                 Spacer(Modifier.height(12.dp))
                 PeriodNav(s, offset, onPage = { vm.page(it) })
                 val plan = d.budget?.totalPaise?.takeIf { it > 0 && ledger == Ledger.PERSONAL }
@@ -413,17 +416,17 @@ private fun Headline(s: aiimin.core.data.money.SpendSeries, bar: SpendBar?, plan
                     }
                 } else if (monthIsCurrent && ledger == Ledger.PERSONAL && plan != null && remaining != null) {
                     val daysLeft = YearMonth.from(today).lengthOfMonth() - today.dayOfMonth
-                    val word = when {
-                        pace == null -> ""
-                        s.totalPaise <= pace -> "On pace"
-                        else -> "${Money.whole(s.totalPaise - pace)} ahead of pace"
-                    }
-                    // Each part stays on one line; the line only breaks between parts, never inside "On pace" (audit A-006).
-                    listOf("${Money.whole(remaining.coerceAtLeast(0))} left of ${Money.whole(plan)}", "$daysLeft days to go", word).filter { it.isNotBlank() }
+                    // Each part stays on one line; the line only breaks between parts (audit A-006). The pace word is a tag below.
+                    listOf("${Money.whole(remaining.coerceAtLeast(0))} left of ${shortRupees(plan)}", "$daysLeft days to go")
                         .joinToString(" · ") { it.replace(' ', '\u00A0') }
                 } else if (monthIsCurrent && ledger == Ledger.PERSONAL) "Set a monthly plan to see your pace" else "${Money.whole(s.usualPaise)} a ${s.unit} on average"
                 // D-005: the parts wrap as whole parts; no "·" is left at a line end.
                 aiimin.designsystem.component.MetaLine(sub, style = Aiimin.type.note)
+                if (overall && monthIsCurrent && ledger == Ledger.PERSONAL && plan != null && pace != null) {
+                    Spacer(Modifier.height(8.dp))
+                    if (s.totalPaise <= pace) aiimin.designsystem.component.Tag("On pace", color = c.done, background = c.doneSoft, icon = AppIcons.Check)
+                    else aiimin.designsystem.component.Tag("${Money.whole(s.totalPaise - pace)} ahead of pace", color = c.accentText, background = c.accentSoft)
+                }
             }
         }
     }

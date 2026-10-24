@@ -217,7 +217,7 @@ fun MeScreen(vm: MeViewModel = hiltViewModel()) {
 private fun MeStat(value: String, label: String, modifier: Modifier, detail: String? = null) {
     // Equal columns keep each stat in its lane. Details move to a second line only when the column is narrow.
     androidx.compose.foundation.layout.BoxWithConstraints(modifier.padding(end = 8.dp)) {
-        val splitDetail = detail != null && maxWidth < 110.dp
+        val splitDetail = detail != null && maxWidth < 140.dp
         Column {
             Text(value, style = Aiimin.type.cardTitle.copy(fontFeatureSettings = "tnum"), maxLines = 1)
             val labelLine = if (detail != null && !splitDetail) "$label · $detail" else label

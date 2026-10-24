@@ -171,7 +171,8 @@ fun PaceChart(
                     val padX = 7 * g.dp1
                     val chipW = l.size.width + padX * 2
                     val chipH = l.size.height + 6 * g.dp1
-                    val lx = (g.x(si) - chipW / 2f).coerceIn(0f, g.w - chipW)
+                    // Keep clear of the "₹20k" guide labels on the left edge (24 Oct pass).
+                    val lx = (g.x(si) - chipW / 2f).coerceIn((40 * g.dp1).coerceAtMost(g.w - chipW), g.w - chipW)
                     // D-006: the chip never sits on the running-total line; it moves above it, or below it when there is no room.
                     val under = (0 until e).filter { g.x(it) in lx - 4 * g.dp1..lx + chipW + 4 * g.dp1 }.map { g.y(data.cumulative[it]) }
                     val ly = spikeChipTop(barTop - g.barZone * 0.6f - chipH, chipH, under.minOrNull(), under.maxOrNull(), 5 * g.dp1, barTop - 3 * g.dp1)
@@ -362,7 +363,7 @@ private fun PaceBase(data: PaceChartData, barTint: Color, reveal: () -> Float) {
                 data.daily.forEachIndexed { i, v ->
                     if (v <= 0.0) return@forEachIndexed
                     val t = g.barTop(i)
-                    drawRoundRect(barTint.copy(alpha = 0.45f), Offset(g.x(i) - g.barW / 2, t), Size(g.barW, g.base - t), CornerRadius(g.barW / 2))
+                    drawRoundRect(barTint.copy(alpha = 0.3f), Offset(g.x(i) - g.barW / 2, t), Size(g.barW, g.base - t), CornerRadius(g.barW / 2))
                 }
                 // Pace: the even climb to plan, with the plan named in a small chip at the end.
                 if (planY != null) {

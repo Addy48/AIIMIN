@@ -44,6 +44,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -387,21 +389,34 @@ fun FocusScreen(route: Route.Focus, vm: FocusViewModel = hiltViewModel()) {
                 var minutes by remember { mutableStateOf(route.minutes) }
                 Spacer(Modifier.height(24.dp))
                 AppTextField(label, { label = it }, placeholder = "What are you focusing on?", leading = AppIcons.Target)
-                Spacer(Modifier.height(24.dp))
-                // One duration, shown once: − and + sit beside the number, presets below (audit A-020).
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    AppIconButton(AppIcons.Minus, "5 minutes less", { minutes = (minutes - 5).coerceAtLeast(5) })
-                    Column(Modifier.padding(horizontal = 12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("%d".format(minutes), style = Aiimin.type.display)
-                        Text("minutes", style = Aiimin.type.caption)
-                    }
-                    AppIconButton(AppIcons.Plus, "5 minutes more", { minutes = (minutes + 5).coerceAtMost(180) })
-                }
-                Spacer(Modifier.height(16.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf(15, 25, 50, 90).forEach { m -> Pill("$m", minutes == m, { minutes = m }) }
-                }
+                // One duration, shown once and centred: the ring previews the session (a full ring is 90 min),
+                // round − and + flank it, presets below (audit A-020; 24 Oct layout pass).
                 Spacer(Modifier.weight(1f))
+                val share by animateFloatAsState((minutes / 90f).coerceIn(0f, 1f), Motion.move(LocalReduceMotion.current, Motion.emphasised()), label = "focusPlan")
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    RoundStep(AppIcons.Minus, "5 minutes less") { minutes = (minutes - 5).coerceAtLeast(5) }
+                    Box(contentAlignment = Alignment.Center) {
+                        val track = c.raised
+                        val ring = c.accent
+                        Canvas(Modifier.size(208.dp)) {
+                            val sw = 4.dp.toPx()
+                            val s = Size(size.width - sw, size.height - sw)
+                            drawArc(track, 0f, 360f, false, Offset(sw / 2, sw / 2), s, style = Stroke(sw))
+                            drawArc(ring, -90f, 360f * share, false, Offset(sw / 2, sw / 2), s, style = Stroke(sw, cap = StrokeCap.Round))
+                        }
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("%d".format(minutes), style = Aiimin.type.heroNumber.copy(fontSize = 80.sp, lineHeight = 80.sp))
+                            Text("minutes", style = Aiimin.type.note)
+                        }
+                    }
+                    RoundStep(AppIcons.Plus, "5 minutes more") { minutes = (minutes + 5).coerceAtMost(180) }
+                }
+                Spacer(Modifier.height(28.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    listOf(15, 25, 50, 90).forEach { m -> Pill("$m", minutes == m, { minutes = m }, Modifier.semantics { this.contentDescription = "$m minutes" }) }
+                }
+                Spacer(Modifier.weight(1.2f))
+                Text("Leave the app if you like. Time in other apps is taken out, so the minutes stay honest.", style = Aiimin.type.caption.copy(textAlign = TextAlign.Center), modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp))
                 AppButton("Start", { vm.start(label.ifBlank { "Focus" }, minutes, route.taskId) }, Modifier.fillMaxWidth(), icon = AppIcons.Play)
             }
         }
@@ -654,4 +669,17 @@ private fun MonthGrid(selected: LocalDate, byDay: Map<LocalDate, List<CalendarEv
             }
         }
     }
+}
+
+/** A round 52 dp step button for the Focus timer: hairline ring, 24 dp icon, labelled for TalkBack. */
+@Composable
+private fun RoundStep(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, onClick: () -> Unit) {
+    val c = Aiimin.colors
+    val round = androidx.compose.foundation.shape.CircleShape
+    Box(
+        Modifier.size(52.dp).clip(round).border(1.dp, c.borderStrong, round)
+            .clickable(role = androidx.compose.ui.semantics.Role.Button, onClickLabel = label, onClick = onClick)
+            .semantics { this.contentDescription = label },
+        contentAlignment = Alignment.Center,
+    ) { Icon(icon, null, tint = c.text, modifier = Modifier.size(24.dp)) }
 }

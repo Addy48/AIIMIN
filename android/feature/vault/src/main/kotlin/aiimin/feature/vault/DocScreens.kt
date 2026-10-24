@@ -589,23 +589,63 @@ fun EmergencyCardScreen(id: String, vm: PersonViewModel = hiltViewModel()) {
     val empty = listOf(person.blood, person.allergies, person.meds, person.doctor).all { it.isBlank() } && Codecs.decodeList(person.contacts).isEmpty()
     Column(Modifier.fillMaxSize().background(c.base)) {
         TopBar("Emergency card", onBack = { nav.back() }) { AppIconButton(AppIcons.Pencil, "Edit emergency card", { editing = true }) }
-        Column(Modifier.padding(Aiimin.space.gutter)) {
-            Text(person.name, style = Aiimin.type.title)
+        Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(Aiimin.space.gutter)) {
+            // Who this card is for: big name, initials and a plain badge (24 Oct pass: was a bare text list).
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Avatar(person.name, person.hue, size = 56.dp)
+                Spacer(Modifier.width(16.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(person.name, style = Aiimin.type.title)
+                    Spacer(Modifier.height(4.dp))
+                    Tag("Opens when the vault is locked", color = c.accentText, background = c.accentSoft, icon = AppIcons.FirstAid)
+                }
+            }
             // An empty card says how to fill it instead of four dashes.
             if (empty) {
-                Text("Nothing on this card yet. Add a blood group, allergies and someone to call; it opens even when the phone is locked.", style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(top = 8.dp))
+                Text("Nothing on this card yet. Add a blood group, allergies and someone to call; it opens even when the phone is locked.", style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(top = 16.dp))
                 AppButton("Fill in the card", { editing = true }, Modifier.padding(top = 16.dp))
+            } else {
+                Spacer(Modifier.height(20.dp))
+                val rows = listOf(
+                    Triple(AppIcons.Drop, "Blood group", person.blood),
+                    Triple(AppIcons.WarningCircle, "Allergies", person.allergies),
+                    Triple(AppIcons.Pill, "Medicines", person.meds),
+                    Triple(AppIcons.Stethoscope, "Doctor", person.doctor),
+                )
+                Panel(color = c.surface, bordered = true, padding = PaddingValues(horizontal = 16.dp)) {
+                    rows.forEachIndexed { i, (icon, k, v) ->
+                        if (i > 0) Hairline()
+                        Row(Modifier.padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                            IconTile(icon)
+                            Spacer(Modifier.width(16.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(k.uppercase(), style = Aiimin.type.eyebrow)
+                                Text(v.ifBlank { "Not added" }, style = if (v.isBlank()) Aiimin.type.body.copy(color = c.textFaint) else Aiimin.type.headline)
+                            }
+                        }
+                    }
+                }
             }
-            Spacer(Modifier.height(16.dp))
-            if (!empty) listOf("Blood group" to person.blood, "Allergies" to person.allergies, "Medicines" to person.meds, "Doctor" to person.doctor).forEach { (k, v) ->
-                Text(k.uppercase(), style = Aiimin.type.eyebrow)
-                Text(v.ifBlank { "—" }, style = Aiimin.type.cardTitle, modifier = Modifier.padding(bottom = 16.dp))
+            val contacts = Codecs.decodeList(person.contacts)
+            if (contacts.isNotEmpty()) {
+                Spacer(Modifier.height(24.dp))
+                Text("WHO TO CALL", style = Aiimin.type.eyebrow)
+                Spacer(Modifier.height(8.dp))
             }
-            Codecs.decodeList(person.contacts).forEach { contact ->
-                val phone = Regex("[+\\d][\\d\\s-]{6,}").find(contact)?.value?.filter { it.isDigit() || it == '+' }
-                ListRow(contact, leading = { IconTile(AppIcons.Phonecall, tint = c.done, background = c.doneSoft) }, onClick = {
-                    if (phone != null) context.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phone")))
-                })
+            contacts.forEach { contact ->
+                val phone = Regex("[+\\d][\\d\\s-]{6,}").find(contact)?.value?.trim()
+                val who = (if (phone != null) contact.replace(phone, "") else contact).trim().trim(',', '·', '-', ' ')
+                Panel(Modifier.padding(bottom = 8.dp), color = c.doneSoft) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text(who.ifBlank { contact }, style = Aiimin.type.headline)
+                            if (phone != null) Text(phone, style = Aiimin.type.note.copy(color = c.text))
+                        }
+                        if (phone != null) AppButton("Call", {
+                            context.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:${phone.filter { it.isDigit() || it == '+' }}")))
+                        }, icon = AppIcons.Phonecall, compact = true)
+                    }
+                }
             }
         }
     }
