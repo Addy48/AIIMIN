@@ -7,6 +7,7 @@ const AuthCallback = React.lazy(() => import('./pages/AuthCallback'));
 const Onboarding = React.lazy(() => import('./pages/Onboarding'));
 const VerifyEmail = React.lazy(() => import('./pages/VerifyEmail'));
 import WaitlistLanding from './site/WaitlistPage';
+import { isPublicSurfacePath, shouldShowWaitlistAccessFallback } from './site/publicRoutes';
 import { WaitlistPendingScreen } from './components/waitlist/WaitlistQuickFeedback';
 import WaitlistThemeSync from './components/waitlist/WaitlistThemeSync';
 const Privacy = React.lazy(() => import('./pages/legal/Privacy'));
@@ -27,7 +28,8 @@ const AndroidApp = React.lazy(() => import('./site/AppPage'));
 const NotFound = React.lazy(() => import('./site/SitePages').then((m) => ({ default: m.SiteNotFound })));
 
 // Layout & lazy widgets
-import DashboardLayout from './components/layout/DashboardLayout';
+// The signed-in desk shell loads only when someone signs in; public visitors never download it.
+const DashboardLayout = React.lazy(() => import('./components/layout/DashboardLayout'));
 const FeedbackWidget = React.lazy(() => import('./components/FeedbackWidget'));
 const ProductTour = React.lazy(() => import('./components/onboarding/ProductTour'));
 const GuestTour = React.lazy(() => import('./components/onboarding/GuestTour'));
@@ -116,28 +118,25 @@ const Lazy = ({ children, fallback }) => (
     {children}
   </React.Suspense>
 );
+const PublicPageFallback = () => (
+  <div role="status" style={{ minHeight: '100vh', display: 'grid', placeContent: 'center', justifyItems: 'center', gap: 10, background: '#F5F3EE', color: '#625E57', font: '500 15px/1.5 system-ui, sans-serif' }}>
+    <b style={{ color: '#1A1916', font: '700 22px/1 Georgia, serif', letterSpacing: '.06em' }}>AIIMIN</b>
+    <span>Opening your page…</span>
+  </div>
+);
 
-/* Public surfaces that stay reachable while an account waits for waitlist approval. */
-const PUBLIC_PATH_PREFIXES = [
-  '/privacy',
-  '/terms',
-  '/contact',
-  '/about',
-  '/security',
-  '/data-deletion',
-  '/cookies',
-  '/acceptable-use',
-  '/refunds',
-  '/ai-disclosure',
-  '/grievance',
-  '/subprocessors',
-  '/legal',
-  '/app',
-  '/brand',
-  '/proto',
-  '/waitlist',
-  '/empty',
-];
+// The public marketing pages do not need auth. Render them while the session
+// check runs so a direct visit never flashes the old dark app loading screen.
+function PublicMarketingEntry() {
+  return (
+    <Routes>
+      <Route path="/" element={<WaitlistLanding />} />
+      <Route path="/waitlist" element={<WaitlistLanding />} />
+      <Route path="/app" element={<Lazy fallback={<PublicPageFallback />}><AndroidApp /></Lazy>} />
+      <Route path="/brand" element={<Lazy fallback={<PublicPageFallback />}><Brand /></Lazy>} />
+    </Routes>
+  );
+}
 
 /* ── Root App ─────────────────────────────────────────────────────── */
 function App() {
@@ -160,7 +159,11 @@ function App() {
 
 function AuthedApp() {
   const { user, session, loading } = useAuth();
-  if (loading) return <Fallback />;
+  const location = useLocation();
+  if (loading) {
+    if (['/', '/waitlist', '/app', '/brand'].includes(location.pathname)) return <PublicMarketingEntry />;
+    return <Fallback />;
+  }
   return <AppContent user={user} session={session} />;
 }
 
@@ -169,13 +172,13 @@ function AppContent({ user, session }) {
   const { isSignedIn } = useAuth();
   const { canAccessApp, loading: accessLoading, isWaitlistMode } = useAccessGate();
 
+  // Public marketing routes do not depend on waitlist access checks. Keeping
+  // them outside the gate prevents a flash of the signed-in app loader on a
+  // direct visit to /app or /brand while access state is still resolving.
+  const isPublicSurface = isPublicSurfacePath(location.pathname);
+
   const showWaitlistAtRoot = !session || isWaitlistMode || (!canAccessApp && !accessLoading);
   const isProto = location.pathname.startsWith('/proto');
-
-  const isPublicSurface =
-    location.pathname === '/' ||
-    location.pathname === '/login' ||
-    PUBLIC_PATH_PREFIXES.some((prefix) => location.pathname.startsWith(prefix));
 
   // Tours belong to the signed-in desk only, never to the public site or the 404 page.
   const isDeskRoute = /^\/(overview|insights|calendar|sports|journal|finance|settings|lab|placements|habits|goals|identity|notes|discipline|focus|family|account|reports)(\/|$)/.test(location.pathname);
@@ -184,7 +187,7 @@ function AppContent({ user, session }) {
     && !['/login', '/'].includes(location.pathname)
     && !isPublicSurface;
 
-  if (accessLoading && isWaitlistMode) {
+  if (shouldShowWaitlistAccessFallback(location.pathname, accessLoading, isWaitlistMode)) {
     return <Fallback />;
   }
 
@@ -243,7 +246,7 @@ function AppContent({ user, session }) {
           isWaitlistMode && !canAccessApp && !accessLoading
             ? <Navigate to="/" replace />
             : (session
-              ? <EmailVerifiedGuard><DashboardLayout user={user || { id: 'loading', full_name: 'Loading...', username: 'loading', isGuest: false }} /></EmailVerifiedGuard>
+              ? <EmailVerifiedGuard><Lazy><DashboardLayout user={user || { id: 'loading', full_name: 'Loading...', username: 'loading', isGuest: false }} /></Lazy></EmailVerifiedGuard>
               : <Navigate to="/login" replace />)
         }>
           <Route path="/overview" element={<Lazy><Overview user={user || { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true }} /></Lazy>} />

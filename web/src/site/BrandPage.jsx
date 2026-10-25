@@ -1,174 +1,174 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Check, DownloadSimple, X } from '@phosphor-icons/react';
-import Shell, { Mark, Meta, raahi } from './Shell';
+import { ArrowRight, Check, Copy, DownloadSimple } from '@phosphor-icons/react';
+import Shell, { Meta, raahi } from './Shell';
 import JoinForm from './JoinForm';
+import { PLANS } from '../marketing/plans';
 
-const POSES = [
-  ['pose_idle_hero', 'Idle', 'Standing by, beside the clock.'],
-  ['pose_pointing_hero', 'Pointing', 'Showing the one next thing.'],
-  ['pose_listening_hero', 'Listening', 'While you speak a task.'],
-  ['pose_noticing_hero', 'Noticing', 'Something changed worth a look.'],
-  ['pose_satchel_open_hero', 'Satchel open', 'Filing a payment or a paper.'],
-  ['pose_holding_postcard_hero', 'Postcard', 'Your weekly review is ready.'],
-  ['pose_nodding_hero', 'Nodding', 'A minimum kept.'],
-  ['pose_quiet_celebration_hero', 'Quiet cheer', 'A good day, said softly.'],
-  ['pose_settle_hero', 'Settle', 'Winding down for the night.'],
-  ['pose_sleeping_hero', 'Sleeping', 'Rests on time, even if you did nothing.'],
+// The lines Raahi says in the app (the same ones the home page shows), placed along the day's arc.
+const DAY = [
+  ['First open', 'Hi Meera. Let’s start small.'],
+  ['Morning', 'Morning. 3 minimums today.'],
+  ['Back after a week', 'Welcome back. No catch-up needed. Start with today.'],
+  ['End of day', 'Day closed. Rest well.'],
 ];
 
-const YES = [
-  ['Morning. 3 minimums today.', 'Numbers before adjectives.'],
-  ['Welcome back. No catch-up needed.', 'Every return is a fresh start.'],
-  ['Day closed. Rest well.', 'Short. Twelve words at most.'],
-  ['Written by Raahi, an AI. Check the numbers.', 'AI is named plainly where it writes.'],
-];
-const NO = [
-  ["You broke your 12-day streak!", 'No streak shaming.'],
-  ['You missed 3 tasks yesterday.', 'No guilt, no "you missed".'],
-  ['Raahi is sad you left.', 'No sad, hungry or needy moods.'],
-  ['Supercharge your life OS!', 'No hype, no jargon.'],
+// Points on the arc for the four stops (viewBox 0 0 1000 170): y = 150 - 130·sin(πx/1000).
+const ARC_X = [125, 375, 625, 875];
+const arcY = (x) => 150 - 130 * Math.sin((Math.PI * x) / 1000);
+const ARC_PATH = `M0 150 ${Array.from({ length: 41 }, (_, i) => { const x = i * 25; return `L${x} ${arcY(x).toFixed(1)}`; }).join(' ')}`;
+
+const NEVER = [
+  ['Count your missed days.', 'There are no streaks to lose. Come back after a week and Raahi says “Welcome back”, with nothing to catch up on.'],
+  ['Pretend to be a person.', 'Anything Raahi’s AI writes for you is marked “Written by Raahi, an AI. Check the numbers.” Greetings are written by people.'],
+  ['Keep talking.', 'One short line when you open the app, then quiet. You can switch Raahi off.'],
 ];
 
-const COLORS = [
-  ['Evidence beige', '#F5F3EE', 'Every background'],
-  ['Warm ink', '#1A1916', 'Text and primary buttons'],
-  ['Sun orange', '#FF6B35', 'Fills only: the sun, now, one accent'],
-  ['Orange text', '#C24E20', 'When orange must be read'],
-  ['Sand hood', '#EADBC7', "Raahi's hood"],
-  ['Terracotta scarf', '#C67A4E', "Raahi's scarf"],
+const BELIEFS = [
+  ['Your phone is the vault.', 'Tasks, spending, papers and journal are saved on your phone. No account is needed, and your documents are never uploaded.'],
+  ['Small promises beat big plans.', 'Minimums are the few small things you mean to do each day, like a 20-minute walk or 10 pages of a book.'],
+  ['Three piles, one place.', 'Your day, your money and your family’s papers sit together, so the next thing that needs you is never in another app.'],
+  ['It works without signal.', 'Add things, get reminders and open your papers in airplane mode.'],
 ];
+
+const LOGOS = [['Logo for light backgrounds', '/logo-symbol.svg', 'Light'], ['Logo for dark backgrounds', '/AIIMIN_logo_dark.svg', 'Dark']];
+
+const BOILERPLATE = 'AIIMIN is an Android app that keeps your day, your money and your family’s papers in one place. Its companion, Raahi, greets you, helps you name what’s next and labels anything it writes as AI. AIIMIN is made in India and is free during the beta.';
+
+const plus = PLANS.find((p) => p.id === 'plus');
+
+function CopyButton({ value, label, children }) {
+  const [done, setDone] = useState(false);
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(value); setDone(true); setTimeout(() => setDone(false), 1600); } catch { /* no clipboard */ }
+  };
+  return (
+    <button type="button" className="s-bg-copy" onClick={copy} aria-label={done ? `${label} copied` : `Copy ${label}`}>
+      {done ? <Check weight="bold" aria-hidden="true" /> : <Copy aria-hidden="true" />}
+      {children}
+      <span className="s-sr" aria-live="polite">{done ? 'Copied' : ''}</span>
+    </button>
+  );
+}
 
 export default function BrandPage() {
   return (
     <Shell>
       <Meta
-        title="Raahi & the AIIMIN brand"
-        description="Meet Raahi, the small traveller who is the face and voice of AIIMIN. Poses, tone of voice, colours, type, the AIIMIN mark and a press kit."
+        title="Meet Raahi · AIIMIN"
+        description="Raahi is the small traveller inside AIIMIN: one short line when you open the app, then quiet. What Raahi says, what it never does, and what AIIMIN is built on."
         path="/brand"
       />
 
-      <section className="s-wrap s-bhero">
-        <div>
-          <h1>Raahi<span className="s-dot">.</span></h1>
-          <p className="s-hero__sub" style={{ maxWidth: '34ch' }}>
-            Raahi means traveller. A small walker in a sand hood and an orange scarf who keeps you company through the day.
-          </p>
-          <p className="s-bhero__more">
-            Not a pet to feed or a coach to please. Raahi never sulks and never asks for anything. If you do nothing today, Raahi simply sleeps on time.
-          </p>
-          <p style={{ marginTop: 28 }}><Link className="s-btn" to="/waitlist#join">Meet Raahi in the app <ArrowRight weight="bold" /></Link></p>
-        </div>
-        <div className="s-bhero__art"><img src={raahi('scene_holding_lantern')} alt="Raahi holding a lantern at night" width="571" height="640" fetchPriority="high" /></div>
-      </section>
-
-      <section className="s-sec--tight" aria-labelledby="poses-h">
-        <div className="s-wrap">
-          <div className="s-head2 s-rv">
-            <h2 id="poses-h" className="s-h2">Ten poses, one calm mood.</h2>
-            <p className="s-lede">Each pose has one job in the app. Raahi moves a few times a day at most, and you can turn the art off or stop all motion in Settings.</p>
-          </div>
-          <div className="s-poses">
-            {POSES.map(([f, n, d]) => (
-              <figure key={f} className="s-pose s-rv">
-                <div className="s-pose__art"><img src={raahi(f)} alt={`Raahi, ${n.toLowerCase()}`} width="768" height="768" loading="lazy" /></div>
-                <figcaption><b>{n}</b>{d}</figcaption>
-              </figure>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="s-sec" aria-labelledby="tone-h">
-        <div className="s-wrap">
-          <div className="s-head2 s-rv">
-            <h2 id="tone-h" className="s-h2">How Raahi talks.</h2>
-            <p className="s-lede">One voice for the app, this website and every email: short, calm and never guilty. Raahi uses your name once a day at most.</p>
-          </div>
-          <div className="s-tone s-rv">
-            <div>
-              <h3><Check weight="bold" style={{ color: 'var(--done)' }} aria-hidden="true" /> Raahi says</h3>
-              <ul>{YES.map(([l, w]) => <li key={l}>"{l}"<small>{w}</small></li>)}</ul>
-            </div>
-            <div className="s-tone__no">
-              <h3><X weight="bold" style={{ color: 'var(--accent-text)' }} aria-hidden="true" /> Raahi never says</h3>
-              <ul>{NO.map(([l, w]) => <li key={l}><s>"{l}"</s><small>{w}</small></li>)}</ul>
+      <div className="s-bg">
+        <section className="s-wrap s-bg-hero" aria-labelledby="brand-title">
+          <div className="s-bg-hero__copy">
+            <h1 id="brand-title">Walk your day with Raahi.</h1>
+            <p>Raahi means traveller. It is the small companion inside AIIMIN: it greets you when you open the app, points at the one thing that matters next, then goes quiet so you can do it.</p>
+            <div className="s-bg-hero__actions">
+              <Link className="s-btn" to="/waitlist#join">Get early access <ArrowRight weight="bold" /></Link>
+              <Link className="s-bg-link" to="/app">See the Android app</Link>
             </div>
           </div>
-        </div>
-      </section>
+          <figure className="s-bg-portrait">
+            <img src={raahi('pose_idle_hero')} alt="Raahi, a small traveller in a sand-coloured hood, terracotta scarf and leather satchel" width="768" height="768" fetchPriority="high" />
+          </figure>
+        </section>
 
-      <section className="s-sec--tight" aria-labelledby="mark-h">
-        <div className="s-wrap">
-          <div className="s-head2 s-rv">
-            <h2 id="mark-h" className="s-h2">The mark.</h2>
-            <p className="s-lede">An arch for the day, a peak for the climb, and the sun at the point of now. Download the files below and use them as they are.</p>
-          </div>
-          <div className="s-marks s-rv">
-            <div className="s-markcard">
-              <div className="s-markcard__art"><Mark size={120} title="AIIMIN mark" /></div>
-              <div className="s-markcard__body"><div><b>Symbol</b>App icon, favicon, small spaces</div><a className="s-btn s-btn--sm s-btn--ghost" href="/logo-symbol.svg" download><DownloadSimple /> SVG</a></div>
+        <section className="s-bg-sec" aria-labelledby="day-title">
+          <div className="s-wrap">
+            <div className="s-bg-head s-rv">
+              <h2 id="day-title">One line at a time.</h2>
+              <p>These are the lines Raahi says in the app, from the first time you open it to the end of a day.</p>
             </div>
-            <div className="s-markcard">
-              <div className="s-markcard__art"><span style={{ display: 'inline-flex', alignItems: 'center', gap: 14 }}><Mark size={64} /><span className="s-word" style={{ fontSize: 44 }}>AIIMIN</span></span></div>
-              <div className="s-markcard__body"><div><b>Lockup</b>Headers, press, slides</div><a className="s-btn s-btn--sm s-btn--ghost" href="/AIIMIN_logo.svg" download><DownloadSimple /> SVG</a></div>
+            <div className="s-bg-day s-rv">
+              <svg className="s-bg-day__arc" viewBox="0 0 1000 170" preserveAspectRatio="none" aria-hidden="true">
+                <path className="s-bg-day__ground" d="M0 150 L1000 150" />
+                <path className="s-bg-day__path" d={ARC_PATH} pathLength="1" />
+              </svg>
+              <ol className="s-bg-day__stops">
+                {DAY.map(([when, line], i) => (
+                  <li key={when} style={{ '--y': (arcY(ARC_X[i]) / 170).toFixed(3), '--i': i }}>
+                    <i className="s-bg-day__dot" aria-hidden="true" />
+                    <span className="s-bg-day__when">{when}</span>
+                    <q>{line}</q>
+                  </li>
+                ))}
+              </ol>
             </div>
-            <div className="s-markcard">
-              <div className="s-markcard__art s-markcard__art--ink"><span style={{ display: 'grid', justifyItems: 'center', gap: 10 }}><span className="s-word" style={{ fontSize: 40, color: '#fff' }}>AIIMIN</span><span style={{ fontFamily: 'var(--display)', fontSize: 18, color: '#BDB6AA' }}>Start small. Keep going.</span></span></div>
-              <div className="s-markcard__body"><div><b>On ink</b>With the logo line</div><a className="s-btn s-btn--sm s-btn--ghost" href="/AIIMIN_logo_dark.svg" download><DownloadSimple /> SVG</a></div>
+          </div>
+        </section>
+
+        <section className="s-bg-sec" aria-labelledby="never-title">
+          <div className="s-wrap">
+            <div className="s-bg-head s-rv">
+              <h2 id="never-title">What Raahi won’t do.</h2>
+              <p>A companion that nags is one more thing to manage. Raahi is built to stay out of the way.</p>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="s-sec--tight" aria-labelledby="color-h">
-        <div className="s-wrap">
-          <div className="s-head2 s-rv">
-            <h2 id="color-h" className="s-h2">Colour.</h2>
-            <p className="s-lede">Warm beige and ink do most of the work. Orange is the sun, and it appears once per screen.</p>
-          </div>
-          <div className="s-swatches s-rv">
-            {COLORS.map(([n, h, u]) => (
-              <div key={h} className="s-swatch"><i style={{ background: h }} /><div><b>{n}</b><code>{h}</code><br />{u}</div></div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="s-sec--tight" aria-labelledby="type-h">
-        <div className="s-wrap">
-          <h2 id="type-h" className="s-h2 s-rv" style={{ marginBottom: 40 }}>Type.</h2>
-          <dl className="s-type s-rv">
-            <div><dt><b>Funnel Display</b>Headings, the clock, numbers</dt><dd style={{ fontFamily: 'var(--display)', fontSize: 'clamp(40px, 6vw, 72px)', fontWeight: 600, letterSpacing: '-0.04em', lineHeight: 1 }}>12:32 Know what's next.</dd></div>
-            <div><dt><b>Golos Text</b>Everything you read</dt><dd style={{ fontSize: 20, maxWidth: '52ch' }}>Your day, your money and your family's papers, on your phone. Bank messages are read on the phone and never leave it.</dd></div>
-            <div><dt><b>Bodoni Moda</b>The wordmark only</dt><dd><span className="s-word" style={{ fontSize: 'clamp(40px, 6vw, 64px)' }}>AIIMIN</span></dd></div>
-          </dl>
-        </div>
-      </section>
-
-      <section className="s-sec" aria-labelledby="press-h">
-        <div className="s-wrap">
-          <div className="s-head2 s-rv">
-            <h2 id="press-h" className="s-h2">For press and friends.</h2>
-            <p className="s-lede">Use the files as they are. For anything else, write to <a href="mailto:support@aiimin.in">support@aiimin.in</a>.</p>
-          </div>
-          <div className="s-rules s-rv">
-            <ul>
-              <li><b>Say it like this</b><p>AIIMIN, in capitals. "An Android app for your day, your money and your family's papers." Raahi, never "the AI mascot".</p></li>
-              <li><b>Keep the art whole</b><p>Don't recolour, crop or redraw Raahi, give it new expressions, or show it sad. Leave room around the mark.</p></li>
-              <li><b>Stay honest</b><p>Describe only what the beta does today. Prices are in the plans; the beta is free and takes no payment.</p></li>
+            <ul className="s-bg-never s-rv">
+              {NEVER.map(([t, d]) => (
+                <li key={t}><h3>{t}</h3><p>{d}</p></li>
+              ))}
             </ul>
           </div>
-        </div>
-      </section>
-      <section className="s-sec">
-        <div className="s-wrap s-close s-rv">
-          <img src={raahi('pose_pointing_hero')} alt="" width="768" height="768" loading="lazy" />
-          <h2 className="s-h2">Walk with Raahi.</h2>
-          <p className="s-lede" style={{ margin: 0 }}>Join the free beta and Raahi will say good morning on your phone.</p>
-          <JoinForm button="Get early access" compact />
-        </div>
-      </section>
+        </section>
+
+        <section className="s-bg-sec" aria-labelledby="beliefs-title">
+          <div className="s-wrap">
+            <div className="s-bg-head s-rv">
+              <h2 id="beliefs-title">What AIIMIN is built on.</h2>
+              <p>Four decisions that shape every screen, and how each one shows up in the app today.</p>
+            </div>
+            <dl className="s-bg-beliefs s-rv">
+              {BELIEFS.map(([t, d]) => <div key={t}><dt>{t}</dt><dd>{d}</dd></div>)}
+            </dl>
+          </div>
+        </section>
+
+        <section className="s-bg-sec" aria-labelledby="money-title">
+          <div className="s-wrap">
+            <div className="s-bg-money s-rv">
+              <h2 id="money-title">How AIIMIN pays its way.</h2>
+              <div>
+                <p>The Free plan stays free for as long as you like. Paid plans start later, from ₹{plus.monthly} a month, and are billed through Google Play. Nothing renews without telling you first.</p>
+                <p>There is no ad or tracking code inside the app, and nothing about you is sold.</p>
+                <Link className="s-bg-link" to="/waitlist#plans">Compare the plans <ArrowRight weight="bold" /></Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="s-bg-sec" aria-labelledby="press-title">
+          <div className="s-wrap">
+            <div className="s-bg-press s-rv">
+              <div>
+                <h2 id="press-title">Writing about AIIMIN?</h2>
+                <p>Logo files, a short description and a direct line for questions: <a href="mailto:support@aiimin.in">support@aiimin.in</a></p>
+              </div>
+              <div className="s-bg-press__actions">
+                {LOGOS.map(([name, href, short]) => (
+                  <a key={href} className="s-btn s-btn--ghost s-btn--sm" href={href} download aria-label={`Download ${name} (SVG)`}>
+                    <DownloadSimple weight="bold" aria-hidden="true" /> {short} logo
+                  </a>
+                ))}
+                <CopyButton value={BOILERPLATE} label="short description">Copy description</CopyButton>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="s-bg-sec s-bg-sec--last" aria-labelledby="brand-close-title">
+          <div className="s-wrap">
+            <div className="s-cta s-rv">
+              <div>
+                <h2 id="brand-close-title" className="s-h2">Start small. Keep going.</h2>
+                <p>Early access to the Android beta is free. No card needed.</p>
+              </div>
+              <JoinForm button="Get early access" compact />
+            </div>
+          </div>
+        </section>
+      </div>
     </Shell>
   );
 }

@@ -6,6 +6,7 @@ import WaitlistPage from '../WaitlistPage';
 import AppPage from '../AppPage';
 import BrandPage from '../BrandPage';
 import { PLANS } from '../../marketing/plans';
+import { isPublicSurfacePath, shouldShowWaitlistAccessFallback } from '../publicRoutes';
 
 const wrap = (ui) => render(<HelmetProvider><MemoryRouter>{ui}</MemoryRouter></HelmetProvider>);
 
@@ -40,6 +41,13 @@ test('a small waitlist count is not shown', async () => {
   expect(screen.queryByText(/people waiting/)).toBeNull();
 });
 
+test('waitlist mobile previews form a swipe gallery and keep Raahi clear of the hero phone', () => {
+  const { container } = wrap(<WaitlistPage />);
+  expect(container.querySelectorAll('.s-moment-gallery .s-device')).toHaveLength(3);
+  expect(screen.getByText('Swipe to see 3 sample screens')).toBeInTheDocument();
+  expect(container.querySelector('.s-hero__stage .s-hero__raahi')).toBeNull();
+});
+
 test('site prices are the app ladder', () => {
   wrap(<WaitlistPage />);
   PLANS.filter((p) => p.monthly).forEach((p) => {
@@ -52,7 +60,20 @@ test('site prices are the app ladder', () => {
 test('/app links no APK until a checksum exists', () => {
   const { container } = wrap(<AppPage />);
   expect(container.querySelector('a[href$=".apk"]')).toBeNull();
-  expect(screen.getByText('Get the beta')).toBeInTheDocument();
+  expect(screen.getAllByText('Get early access').length).toBeGreaterThanOrEqual(2);
+});
+
+test('/app labels the sample screen gallery as swipeable', () => {
+  wrap(<AppPage />);
+  expect(screen.getByText('Swipe to see all four screens')).toBeInTheDocument();
+});
+
+test('public routes do not flash the waitlist access fallback while access state loads', () => {
+  ['/','/waitlist','/app','/brand','/privacy'].forEach((path) => {
+    expect(isPublicSurfacePath(path)).toBe(true);
+    expect(shouldShowWaitlistAccessFallback(path, true, true)).toBe(false);
+  });
+  expect(shouldShowWaitlistAccessFallback('/settings', true, true)).toBe(true);
 });
 
 test('no public page uses retired claims', () => {
@@ -61,4 +82,29 @@ test('no public page uses retired claims', () => {
     expect(container.textContent).not.toMatch(/SQLCipher|CRDT|OPERATOR|Life OS|v2\.0\.4/);
     unmount();
   });
+});
+
+test('/brand leads with Raahi, keeps a press kit and quotes real prices', () => {
+  const { container } = wrap(<BrandPage />);
+  expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Walk your day with Raahi.');
+  expect(container.querySelector('a[download][href="/logo-symbol.svg"]')).not.toBeNull();
+  expect(container.querySelector('a[download][href="/AIIMIN_logo_dark.svg"]')).not.toBeNull();
+  expect(screen.getByRole('button', { name: /Copy short description/ })).toBeInTheDocument();
+  expect(container.textContent).toContain(`₹${PLANS.find((p) => p.id === 'plus').monthly} a month`);
+  expect(container.querySelectorAll('main main')).toHaveLength(0);
+});
+
+test('when the sign-up list is unreachable, the form offers email instead', async () => {
+  const before = global.fetch;
+  global.fetch = jest.fn(() => Promise.reject(new TypeError('Failed to fetch')));
+  try {
+    localStorage.clear();
+    const { container } = wrap(<WaitlistPage />);
+    const form = container.querySelector('#join');
+    fireEvent.change(form.querySelector('input'), { target: { value: 'meera@example.com' } });
+    fireEvent.submit(form);
+    await waitFor(() => expect(form.querySelector('[role=alert] a[href^="mailto:support@aiimin.in"]')).not.toBeNull());
+  } finally {
+    global.fetch = before;
+  }
 });

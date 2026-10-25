@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-IN">
 
 <head>
   <meta charset="utf-8" />
@@ -15,13 +15,13 @@
   <!-- Viewport & theme -->
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#F5F3EE" />
-  <meta name="color-scheme" content="dark light" />
+  <meta name="color-scheme" content="light" />
 
   <!-- Primary Meta Tags -->
   <title>AIIMIN · Know what's next</title>
   <meta name="title" content="AIIMIN · Know what's next" />
   <meta name="description"
-    content="A calm Android app for your day, your money and your family's papers. It lives on your phone, reads bank SMS on the phone and never shows ads. Join the free beta." />
+    content="One calm Android app for your day, your spending and your family's papers. Bank texts help fill in expenses; your documents stay on your phone. Join the free beta." />
   <meta name="keywords"
     content="AIIMIN, Raahi, daily planner, expense tracker from bank SMS, family document vault, India, Android" />
   <meta name="author" content="AIIMIN" />
@@ -45,7 +45,7 @@
   <meta property="og:url" content="https://aiimin.in/" />
   <meta property="og:title" content="AIIMIN · Know what's next" />
   <meta property="og:description"
-    content="A calm Android app for your day, your money and your family's papers. It lives on your phone, reads bank SMS on the phone and never shows ads. Join the free beta." />
+    content="One calm Android app for your day, your spending and your family's papers. Bank texts help fill in expenses; your documents stay on your phone. Join the free beta." />
   <meta property="og:image" content="https://aiimin.in/og-image-v4.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -57,23 +57,17 @@
   <meta name="twitter:url" content="https://aiimin.in/" />
   <meta name="twitter:title" content="AIIMIN · Know what's next" />
   <meta name="twitter:description"
-    content="A calm Android app for your day, your money and your family's papers. It lives on your phone, reads bank SMS on the phone and never shows ads. Join the free beta." />
+    content="One calm Android app for your day, your spending and your family's papers. Bank texts help fill in expenses; your documents stay on your phone. Join the free beta." />
   <meta name="twitter:image" content="https://aiimin.in/og-image-v4.png" />
 
 
+  <!-- Signed-in desk fonts (public pages self-host theirs in /site/fonts). Loaded without blocking first paint. -->
   <!-- Typography: Familjen Grotesk (display) + Figtree (body) + JetBrains Mono (data) + Bodoni Moda (brand) + Newsreader (editorial) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,700&family=Familjen+Grotesk:wght@400;500;600;700&family=Figtree:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap" />
   <link
     href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,700&family=Familjen+Grotesk:wght@400;500;600;700&family=Figtree:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap"
-    rel="stylesheet" />
-
-  <!-- Google Identity Services (for OAuth) -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-
-  <!-- SheetJS for Excel Processing -->
-  <script src="https://cdn.sheetjs.com/xlsx-0.18.5/package/dist/xlsx.full.min.js"></script>
+    rel="stylesheet" media="print" onload="this.media='all'" />
 
   <!-- Structured Data — Organization -->
   <script type="application/ld+json">
@@ -81,7 +75,7 @@
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     "name": "AIIMIN",
-    "description": "A calm Android app for your day, your money and your family's papers. It lives on your phone, reads bank SMS on the phone and never shows ads. Join the free beta.",
+    "description": "One calm Android app for your day, your spending and your family's papers. Bank texts help fill in expenses; your documents stay on your phone. Join the free beta.",
     "url": "https://aiimin.in",
     "applicationCategory": "ProductivityApplication",
     "operatingSystem": "Android 8.0+",
@@ -102,89 +96,19 @@
 
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    html,
-    body,
-    #root {
-      background-color: var(--color-base, #F5F3EE);
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
-      letter-spacing: -0.01em;
-    }
-
-    html {
-      scroll-padding-top: 80px;
-      /* floating pill nav offset */
-    }
-
-    nav {
-      z-index: 99999 !important;
-    }
+    html, body { min-height: 100%; margin: 0; background: #F5F3EE; color: #1A1916; }
+    #root { min-height: 100vh; }
+    #site-start { min-height: 100vh; display: grid; place-content: center; justify-items: center; gap: 12px; font: 500 15px/1.5 system-ui, sans-serif; color: #625E57; }
+    #site-start b { color: #1A1916; font: 700 22px/1 Georgia, serif; letter-spacing: .06em; }
   </style>
 </head>
 
 <body>
   <noscript>You need to enable JavaScript to run AIIMIN.</noscript>
   <div id="root">
-    <!-- Static pre-render shell: guarantees non-empty View Source and instant crawlers indexing -->
-    <div id="prerender-shell" style="min-height: 100vh; background: #1a1a1a; color: #f4f4f6; font-family: 'Figtree', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; flex-direction: column;">
-      <header style="border-bottom: 1px solid #2d2d2d; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; max-width: 1200px; width: 100%; margin: 0 auto; box-sizing: border-box;">
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <span style="display: inline-block; width: 18px; height: 18px; background: #ff6b35; border-radius: 3px;"></span>
-          <span style="font-family: 'Bodoni Moda', serif; font-size: 20px; font-weight: 700; letter-spacing: 0.05em; color: #f4f4f6;">AIIMIN</span>
-        </div>
-        <nav style="display: flex; gap: 20px; font-size: 14px; font-weight: 500;">
-          <a href="/waitlist" style="color: #749dc4; text-decoration: none;">Waitlist</a>
-          <a href="/app" style="color: #9c9ca4; text-decoration: none;">App</a>
-          <a href="/about" style="color: #9c9ca4; text-decoration: none;">About</a>
-          <a href="/security" style="color: #9c9ca4; text-decoration: none;">Security</a>
-          <a href="/login" style="color: #ff6b35; text-decoration: none; font-weight: 600;">Sign In</a>
-        </nav>
-      </header>
-
-      <main style="flex: 1; max-width: 880px; width: 100%; margin: 48px auto; padding: 0 24px; box-sizing: border-box;">
-        <div style="display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #ff6b35; background: rgba(255,107,53,0.1); border: 1px solid rgba(255,107,53,0.25); padding: 4px 10px; border-radius: 4px; margin-bottom: 20px;">
-          Personal Life Operating System
-        </div>
-        <h1 style="font-size: clamp(32px, 5vw, 48px); font-weight: 800; line-height: 1.15; letter-spacing: -0.03em; color: #f4f4f6; margin: 0 0 20px 0;">
-          The Command Surface for High-Agency Living
-        </h1>
-        <p style="font-size: 18px; line-height: 1.6; color: #9c9ca4; margin: 0 0 32px 0;">
-          AIIMIN unifies habits, money, focus, and daily reflections into a single high-density command center. Built for engineers, founders, and high performers who demand complete personal telemetry without fragmented apps.
-        </p>
-        <div style="display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 48px;">
-          <a href="/waitlist" style="padding: 12px 24px; background: #ff6b35; color: #1a1a1a; font-weight: 700; font-size: 14px; border-radius: 6px; text-decoration: none;">Join Founding Waitlist</a>
-          <a href="/login" style="padding: 12px 24px; background: #2d2d2d; color: #f4f4f6; border: 1px solid #416180; font-weight: 600; font-size: 14px; border-radius: 6px; text-decoration: none;">Access Terminal</a>
-        </div>
-
-        <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 48px;">
-          <div style="background: #222; border: 1px solid #2d2d2d; padding: 20px; border-radius: 8px;">
-            <h2 style="font-size: 15px; font-weight: 700; color: #749dc4; margin: 0 0 8px 0;">Life Score Matrix</h2>
-            <p style="font-size: 13px; color: #9c9ca4; line-height: 1.5; margin: 0;">Multi-dimensional real-time scoring across Body, Mind, Discipline, Money, and Mood.</p>
-          </div>
-          <div style="background: #222; border: 1px solid #2d2d2d; padding: 20px; border-radius: 8px;">
-            <h2 style="font-size: 15px; font-weight: 700; color: #749dc4; margin: 0 0 8px 0;">Financial Truth</h2>
-            <p style="font-size: 13px; color: #9c9ca4; line-height: 1.5; margin: 0;">Net worth tracking, monthly cashflow, category velocity, and automated ledger imports.</p>
-          </div>
-          <div style="background: #222; border: 1px solid #2d2d2d; padding: 20px; border-radius: 8px;">
-            <h2 style="font-size: 15px; font-weight: 700; color: #749dc4; margin: 0 0 8px 0;">Atomic Habits &amp; Focus</h2>
-            <p style="font-size: 13px; color: #9c9ca4; line-height: 1.5; margin: 0;">Consistency heatmaps, urge-delay timers, Pomodoro focus blocks, and distraction logs.</p>
-          </div>
-        </section>
-      </main>
-
-      <footer style="border-top: 1px solid #2d2d2d; padding: 24px; text-align: center; font-size: 13px; color: #666; max-width: 1200px; width: 100%; margin: 0 auto; box-sizing: border-box;">
-        <p style="margin: 0 0 12px 0;">AIIMIN · Zero tracking cookies · End-to-end data ownership · Built for ambition</p>
-        <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
-          <a href="/about" style="color: #888; text-decoration: none;">About</a>
-          <a href="/security" style="color: #888; text-decoration: none;">Security</a>
-          <a href="/privacy" style="color: #888; text-decoration: none;">Privacy</a>
-          <a href="/terms" style="color: #888; text-decoration: none;">Terms</a>
-          <a href="/contact" style="color: #888; text-decoration: none;">Contact</a>
-        </div>
-      </footer>
+    <div id="site-start" role="status" aria-live="polite">
+      <b>AIIMIN</b>
+      <span>Opening your page…</span>
     </div>
   </div>
 </body>

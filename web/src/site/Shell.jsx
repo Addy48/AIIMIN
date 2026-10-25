@@ -5,14 +5,19 @@ import './site.css';
 
 const DOMAIN = 'https://aiimin.in';
 
-/** The AIIMIN mark (logo-symbol.svg without its tile): pale arch, ink peak, the orange sun. */
-export function Mark({ size = 30, title }) {
+/** The AIIMIN mark (logo-symbol.svg without its tile): pale arch, ink peak, the orange sun. `tone="dark"` matches AIIMIN_logo_dark.svg. */
+const MARK_TONES = {
+  light: ['#D1D5DB', 1, '#1A1916', '#6B7280'],
+  dark: ['#6B7280', 0.65, '#EDE4D3', '#B9AF9E'],
+};
+export function Mark({ size = 30, title, tone = 'light' }) {
+  const [arch, archOpacity, peak, far] = MARK_TONES[tone] || MARK_TONES.light;
   return (
     <svg width={size} height={size} viewBox="64 96 384 304" fill="none" role={title ? 'img' : undefined} aria-hidden={title ? undefined : true} aria-label={title}>
-      <path d="M80 384 C80 192 208 112 256 112 C304 112 432 192 432 384" stroke="#D1D5DB" strokeWidth="24" strokeLinecap="round" />
-      <path d="M144 384 L256 176 L368 384" stroke="#1A1916" strokeWidth="24" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M192 368 L256 272 L320 368" stroke="#6B7280" strokeWidth="18" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="256" cy="240" r="28" fill="#FF6B35" />
+      <path d="M80 384 C80 192 208 112 256 112 C304 112 432 192 432 384" stroke={arch} strokeOpacity={archOpacity} strokeWidth="24" strokeLinecap="round" />
+      <path d="M144 384 L256 176 L368 384" stroke={peak} strokeWidth="24" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M192 368 L256 272 L320 368" stroke={far} strokeWidth="18" strokeLinecap="round" strokeLinejoin="round" />
+      <circle className="s-mark-sun" cx="256" cy="240" r="28" fill="#FF6B35" />
     </svg>
   );
 }
@@ -48,7 +53,7 @@ export function Meta({ title, description, path, image = '/og-image-v4.png' }) {
 const NAV = [
   { to: '/waitlist', label: 'Home' },
   { to: '/app', label: 'Android app' },
-  { to: '/brand', label: 'Raahi & brand' },
+  { to: '/brand', label: 'Meet Raahi' },
   { to: '/waitlist#plans', label: 'Plans' },
 ];
 
@@ -81,7 +86,7 @@ function Header({ cta }) {
 }
 
 const FOOT = [
-  { h: 'AIIMIN', links: [['/waitlist', 'Get early access'], ['/app', 'Android app'], ['/brand', 'Raahi & brand'], ['/waitlist#plans', 'Plans'], ['/about', 'About']] },
+  { h: 'AIIMIN', links: [['/waitlist', 'Get early access'], ['/app', 'Android app'], ['/brand', 'Meet Raahi'], ['/waitlist#plans', 'Plans'], ['/about', 'About']] },
   { h: 'Your data', links: [['/privacy', 'Privacy policy'], ['/data-deletion', 'Delete your data'], ['/security', 'Security'], ['/ai-disclosure', 'How Raahi uses AI'], ['/cookies', 'Cookies']] },
   { h: 'Help', links: [['/contact', 'Contact'], ['/grievance', 'Grievance officer'], ['/terms', 'Terms of use'], ['/refunds', 'Refunds'], ['/legal', 'All legal pages']] },
 ];
@@ -106,6 +111,7 @@ function Footer() {
         <div className="s-foot__base">
           <span>© {new Date().getFullYear()} AIIMIN · <a href="mailto:support@aiimin.in">support@aiimin.in</a></span>
           <span>No ads. No analytics in the app. Your data stays on your phone.</span>
+          <span className="s-foot__note">App screens on this site show a sample profile, Meera. Your own app starts empty.</span>
         </div>
       </div>
     </footer>
@@ -132,12 +138,19 @@ function useReveal(ref) {
 
 /** Jump to #hash targets after route changes (React Router does not). */
 function useHashScroll() {
-  const { pathname, hash } = useLocation();
+  const { pathname, hash, key } = useLocation();
   useEffect(() => {
     if (!hash) { window.scrollTo(0, 0); return; }
-    const t = setTimeout(() => document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+    const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    const t = setTimeout(() => {
+      const el = document.getElementById(hash.slice(1));
+      if (!el) return;
+      el.scrollIntoView({ behavior, block: 'start' });
+      // "Get early access" links land on the form: put the cursor in the email field too.
+      el.querySelector?.('input[type="email"]')?.focus({ preventScroll: true });
+    }, 60);
     return () => clearTimeout(t);
-  }, [pathname, hash]);
+  }, [pathname, hash, key]); // key: clicking the same #link twice still scrolls back to it
 }
 
 export default function Shell({ children, cta, bare = false }) {
@@ -161,14 +174,14 @@ export default function Shell({ children, cta, bare = false }) {
 
 /**
  * The one device on the site: a Galaxy S25 Ultra with a real app screen. Screens come from the demo profile, never
- * a real person's data, so the caption ("Sample data") sits under the phone, outside the screen.
+ * a real person's data; the footer says so once for the whole site, so the phones carry no caption by default.
  */
-export function Phone({ src, alt, caption = 'Sample data', className = '', eager = false }) {
+export function Phone({ src, alt, caption = null, className = '', eager = false }) {
   return (
     <figure className={`s-device ${className}`}>
       <div className="s-phone">
         <div className="s-phone__screen">
-          <img src={src} alt={alt} width="1080" height="2340" loading={eager ? 'eager' : 'lazy'} decoding={eager ? 'sync' : 'async'} fetchPriority={eager ? 'high' : undefined} />
+          <img src={src} alt={alt} width="1440" height="2960" loading={eager ? 'eager' : 'lazy'} decoding={eager ? 'sync' : 'async'} fetchPriority={eager ? 'high' : undefined} />
         </div>
       </div>
       {caption && <figcaption className="s-device__cap">{caption}</figcaption>}

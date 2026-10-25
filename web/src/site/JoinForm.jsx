@@ -16,11 +16,12 @@ function refFromUrl() {
 }
 
 /** Email only (PRD 32.7 W2). Nothing is sent to analytics: the old form passed the email to gtag. */
-export default function JoinForm({ id, button = 'Join the beta', compact = false }) {
+export default function JoinForm({ id, button = 'Get early access', compact = false }) {
   const inputId = useId();
   const [email, setEmail] = useState('');
   const [state, setState] = useState('idle'); // idle | busy | error | done
   const [msg, setMsg] = useState('');
+  const [offline, setOffline] = useState(false); // the list could not be reached: offer email instead
   const [done, setDone] = useState(null);
   const [copied, setCopied] = useState(false);
 
@@ -35,7 +36,7 @@ export default function JoinForm({ id, button = 'Join the beta', compact = false
     e.preventDefault();
     const clean = email.trim().toLowerCase();
     if (!EMAIL_RE.test(clean)) { setState('error'); setMsg('That email looks incomplete. Check it and try again.'); return; }
-    setState('busy'); setMsg('');
+    setState('busy'); setMsg(''); setOffline(false);
     try {
       const payload = { email: clean, source: 'site_v4' };
       const ref = refFromUrl();
@@ -44,14 +45,17 @@ export default function JoinForm({ id, button = 'Join the beta', compact = false
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setState('error');
-        setMsg(res.status === 429 ? 'Too many tries from here. Wait a minute, then try again.' : (data.error || 'We could not add you just now. Try again in a minute.'));
+        if (res.status === 429) { setMsg('Too many tries from here. Wait a minute, then try again.'); return; }
+        if (res.status >= 500 || !data.error) { setOffline(true); setMsg('The sign-up list is not answering right now.'); return; }
+        setMsg(data.error);
         return;
       }
       const v = { email: clean, code: data.referral_code || '', count: data.referral_count ?? 0, again: !!data.already_registered };
       save(v); setDone(v); setState('done');
       window.dispatchEvent(new Event('aiimin:joined'));
     } catch {
-      setState('error'); setMsg('No connection. Check your internet and try again.');
+      setState('error'); setOffline(true);
+      setMsg(navigator.onLine === false ? 'You seem to be offline. Check your connection and try again.' : 'The sign-up list is not answering right now.');
     }
   };
 
@@ -94,8 +98,13 @@ export default function JoinForm({ id, button = 'Join the beta', compact = false
         </button>
       </div>
       {state === 'error'
-        ? <p className="s-join__err" id={`${inputId}-n`} role="alert">{msg}</p>
-        : !compact && <p className="s-join__note" id={`${inputId}-n`}>Just your email. One invite when your place is ready, no spam.</p>}
+        ? (
+          <p className="s-join__err" id={`${inputId}-n`} role="alert">
+            {msg}
+            {offline && <> <a href={`mailto:support@aiimin.in?subject=${encodeURIComponent('Early access')}&body=${encodeURIComponent(`Please add ${email.trim() || 'me'} to the AIIMIN beta list.`)}`}>Email us to join instead</a>.</>}
+          </p>
+        )
+        : !compact && <p className="s-join__note" id={`${inputId}-n`}>Just your email. We’ll send an invite when it’s your turn. No spam.</p>}
     </form>
   );
 }
