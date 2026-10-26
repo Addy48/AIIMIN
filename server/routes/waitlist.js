@@ -10,7 +10,7 @@ import { requireAuth } from '../middleware/auth.js';
 import { waitlistLimiter, feedbackLimiter } from '../middleware/rateLimiter.js';
 import { sendEmail } from '../lib/email.js';
 import { getOwnerNotifyEmail } from '../services/accessService.js';
-import { toDisplayMemberNumber, DISPLAY_CAP } from '../lib/waitlistEmailVariants.js';
+import { isFounding, FOUNDING_SEATS } from '../lib/waitlistMail.js';
 
 const app = new Hono();
 
@@ -123,6 +123,7 @@ async function notifyOwnerWaitlistSignup({
   firstName,
   reservedUsername,
   source,
+  position = null,
   event = 'signup',
 }) {
   const ownerEmail = getOwnerNotifyEmail();
@@ -142,28 +143,31 @@ async function notifyOwnerWaitlistSignup({
       source: source || 'landing_page',
       signed_up_at: new Date().toISOString(),
       total_count: totalCount,
+      position,
+      founding: isFounding(position),
     });
   } catch (err) {
     console.warn('[Waitlist] owner notify failed:', err.message);
   }
 }
 
-async function sendWaitlistConfirmation({ email, firstName, reservedUsername, referralCode }) {
-  let memberNumber = null;
+/** Real 1-based place in signup order, or null when the lookup fails (never a padded number). */
+async function safePosition(email) {
   try {
-    const position = await getWaitlistPosition(email);
-    memberNumber = toDisplayMemberNumber(position);
+    const p = await getWaitlistPosition(email);
+    return p == null ? null : Number(p);
   } catch {
-    // non-fatal
+    return null;
   }
+}
+
+async function sendWaitlistConfirmation({ email, firstName, referralCode, position }) {
   try {
     await sendEmail(email, 'waitlist_confirmation', {
       email,
       name: firstName,
-      reserved_username: reservedUsername,
       referral_code: referralCode,
-      member_number: memberNumber,
-      total_count: DISPLAY_CAP,
+      position,
     });
     return true;
   } catch (err) {
@@ -226,7 +230,15 @@ app.post('/approve', requireAuth, async (c) => {
     );
 
     try {
-      await sendEmail(email, 'waitlist_invite', { email });
+      const { rows: who } = await pool.query(
+        'SELECT first_name, name FROM waitlist_emails WHERE lower(email) = lower($1) LIMIT 1',
+        [email],
+      ).catch(() => ({ rows: [] }));
+      await sendEmail(email, 'waitlist_invite', {
+        email,
+        name: who[0]?.first_name || who[0]?.name || null,
+        position: await safePosition(email),
+      });
     } catch (err) {
       console.warn('[Waitlist] invite email failed:', err.message);
     }
@@ -389,13 +401,14 @@ app.post('/', waitlistLimiter, async (c) => {
         const resolvedName = firstName || rows[0]?.first_name || rows[0]?.name || null;
         const resolvedReferralCode = rows[0]?.referral_code || null;
 
+        const existingPosition = await safePosition(email);
         let confirmationEmailSent = false;
         if (osIdJustAttached && resolvedUsername) {
           confirmationEmailSent = await sendWaitlistConfirmation({
             email,
             firstName: resolvedName,
-            reservedUsername: resolvedUsername,
             referralCode: resolvedReferralCode,
+            position: existingPosition,
           });
         }
 
@@ -406,6 +419,9 @@ app.post('/', waitlistLimiter, async (c) => {
           referral_code: resolvedReferralCode,
           referral_count: rows[0]?.referral_count ?? 0,
           reserved_username: resolvedUsername,
+          position: existingPosition,
+          founding: isFounding(existingPosition),
+          founding_seats: FOUNDING_SEATS,
           confirmation_email_sent: confirmationEmailSent,
         });
       }
@@ -438,11 +454,12 @@ app.post('/', waitlistLimiter, async (c) => {
 
     console.log(`[Waitlist] New signup: ${email} (${firstName || 'no-name'}) ${reservedUsername ? `@${reservedUsername}` : '(no-osid)'}`);
 
+    const position = await safePosition(email);
     const confirmationEmailSent = await sendWaitlistConfirmation({
       email,
       firstName,
-      reservedUsername,
       referralCode,
+      position,
     });
 
     notifyOwnerWaitlistSignup({
@@ -450,6 +467,7 @@ app.post('/', waitlistLimiter, async (c) => {
       firstName,
       reservedUsername,
       source,
+      position,
       event: 'signup',
     }).catch(() => {});
 
@@ -459,6 +477,9 @@ app.post('/', waitlistLimiter, async (c) => {
       reserved_username: reservedUsername,
       referral_code: referralCode,
       referral_count: referralCount,
+      position,
+      founding: isFounding(position),
+      founding_seats: FOUNDING_SEATS,
       confirmation_email_sent: confirmationEmailSent,
     });
   } catch (err) {

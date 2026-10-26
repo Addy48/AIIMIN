@@ -10,7 +10,7 @@
     "dev:web": "cd web && npm start",
     "build": "cd web && node scripts/verify-production-env.mjs && npm run build",
     "start": "node dev_server.js",
-    "test": "node --test server/services/*.test.js",
+    "test": "node --test --experimental-test-module-mocks server/services/*.test.js server/routes/*.test.js",
     "auth:migrate": "npx @better-auth/cli@latest migrate --config server/lib/auth.js --yes",
     "auth:import-users": "node scripts/migrate-supabase-users-to-better-auth.mjs",
     "auth:backfill-accounts": "node scripts/backfill-better-auth-accounts.mjs",

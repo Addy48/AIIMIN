@@ -2,7 +2,7 @@
  * HTML email templates — Nordic waitlist brand (parchment + forest ink).
  * Fonts: Familjen Grotesk (display) + Figtree (body) + JetBrains Mono (system IDs).
  */
-import { renderWaitlistConfirmation } from './waitlistEmailVariants.js';
+import { renderWaitlistWelcome, renderWaitlistInvite } from './waitlistMail.js';
 function escapeHtml(str) {
   return String(str || '')
     .replace(/&/g, '&amp;')
@@ -296,7 +296,7 @@ export const EMAIL_TEMPLATES = {
     ),
   }),
 
-  waitlist_confirmation: (v) => renderWaitlistConfirmation(v),
+  waitlist_confirmation: (v) => renderWaitlistWelcome(v),
 
   waitlist_osid_locked: (v) => {
     const name = v.name ? escapeHtml(v.name) : 'there';
@@ -326,28 +326,7 @@ export const EMAIL_TEMPLATES = {
     };
   },
 
-  waitlist_invite: () => ({
-    subject: 'Your AIIMIN key is ready — early access inside',
-    html: waitlistLayout({
-      preheader: 'You were selected from the founding waitlist. Sign in before 31 July.',
-      eyebrow: 'Early access unlocked',
-      title: 'The dashboard is yours.',
-      bodyHtml: `
-        ${heroBand('VIP access', 'You made it off the waitlist.')}
-        <p style="font-family:${FONT_BODY};font-size:15px;line-height:1.7;color:${BRAND.text2};margin:0 0 20px;">
-          You were hand-picked from the founding waitlist. Sign in with <strong>this email</strong> to explore habits, money, focus, mood, and the full Life OS — weeks before public launch.
-        </p>
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;padding:16px 18px;background:${BRAND.accentSoft};border-radius:12px;border:1px solid #C5D9CC;">
-          <tr><td style="font-family:${FONT_BODY};font-size:13px;line-height:1.6;color:${BRAND.text2};">
-            <strong style="color:${BRAND.accent};">Tester perk:</strong> Activate before <strong>31 July</strong> and Elite tier is complimentary for one full year.
-          </td></tr>
-        </table>
-        ${founderNote()}`,
-      ctaHref: 'https://www.aiimin.in/login',
-      ctaLabel: 'Open your dashboard →',
-      footerNote: 'Questions? Reply to this email — it reaches the founder directly.',
-    }),
-  }),
+  waitlist_invite: (v) => renderWaitlistInvite(v),
 
   waitlist_owner_notify: (v) => {
     if (v.html && !v.type) {
@@ -415,6 +394,7 @@ export const EMAIL_TEMPLATES = {
             ${detailRow('First name', safeName)}
             ${detailRow('OS-ID', safeUsername ? `<span style="font-family:${FONT_DISPLAY};color:${BRAND.accent};font-weight:600;">@${safeUsername}</span>` : `<span style="color:${BRAND.text3};">Not claimed yet</span>`)}
             ${detailRow('Source', escapeHtml(v.source || 'landing_page'))}
+            ${v.position ? detailRow('Position', `#${escapeHtml(String(v.position))}${v.founding ? ' · founding' : ''}`) : ''}
             ${detailRow(isOsIdEvent ? 'Reserved at' : 'Signed up', formatSignedUpAt(v.signed_up_at))}
           </table>`,
         ctaHref: BRAND.siteUrl,
