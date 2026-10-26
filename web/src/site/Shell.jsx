@@ -1,6 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { List, X } from '@phosphor-icons/react';
 import { Helmet } from 'react-helmet-async';
+import { isPublicSurfacePath } from './publicRoutes';
 import './site.css';
 
 const DOMAIN = 'https://aiimin.in';
@@ -58,8 +61,19 @@ const NAV = [
 ];
 
 function Header({ cta }) {
-  const { pathname } = useLocation();
+  const { pathname, key } = useLocation();
   const [scrolled, setScrolled] = useState(false);
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef(null);
+  useEffect(() => { setOpen(false); }, [key]);
+  useEffect(() => {
+    if (!open) return undefined;
+    const esc = (e) => { if (e.key === 'Escape') setOpen(false); };
+    const away = (e) => { if (!menuRef.current?.contains(e.target)) setOpen(false); };
+    document.addEventListener('keydown', esc);
+    document.addEventListener('pointerdown', away);
+    return () => { document.removeEventListener('keydown', esc); document.removeEventListener('pointerdown', away); };
+  }, [open]);
   useEffect(() => {
     const on = () => setScrolled(window.scrollY > 8);
     on();
@@ -68,7 +82,7 @@ function Header({ cta }) {
   }, []);
   const here = pathname === '/' ? '/waitlist' : pathname;
   return (
-    <header className="s-head" data-scrolled={scrolled}>
+    <header className="s-head" data-scrolled={scrolled} ref={menuRef}>
       <div className="s-wrap s-head__row">
         <Link to="/waitlist" className="s-brand" aria-label="AIIMIN home">
           <Mark />
@@ -76,9 +90,22 @@ function Header({ cta }) {
         </Link>
         <nav className="s-nav" aria-label="Main">
           {NAV.map((n) => (
-            <Link key={n.to} to={n.to} aria-current={here === n.to ? 'page' : undefined}>{n.label}</Link>
+            <Link key={n.to} to={n.to} aria-current={here === n.to ? 'page' : undefined}>
+              {n.label}{here === n.to && <span className="s-nav__dot" aria-hidden="true" />}
+            </Link>
           ))}
           {cta || <Link className="s-btn s-btn--sm" to="/waitlist#join">Get early access</Link>}
+          <button type="button" className="s-menu-btn" aria-expanded={open} aria-controls="s-menu" aria-label={open ? 'Close menu' : 'Open menu'} onClick={() => setOpen((o) => !o)}>
+            {open ? <X weight="bold" aria-hidden="true" /> : <List weight="bold" aria-hidden="true" />}
+          </button>
+        </nav>
+      </div>
+      <div className="s-menu" id="s-menu" data-open={open} hidden={!open}>
+        <nav className="s-wrap" aria-label="Menu">
+          {NAV.map((n) => (
+            <Link key={n.to} to={n.to} aria-current={here === n.to ? 'page' : undefined}>{n.label}</Link>
+          ))}
+          <Link to="/privacy">Privacy</Link>
         </nav>
       </div>
     </header>
@@ -153,8 +180,64 @@ function useHashScroll() {
   }, [pathname, hash, key]); // key: clicking the same #link twice still scrolls back to it
 }
 
+/*
+ * Page-to-page motion. Internal links run inside a View Transition: the old page is held as a snapshot until the new
+ * page's Shell has mounted (so a lazy chunk never flashes a blank fallback), then the content fades up while the
+ * header stays put. Browsers without the API, and reduced motion, navigate instantly.
+ */
+let markReady = null;
+const PRELOAD = { '/app': () => import('./AppPage'), '/brand': () => import('./BrandPage') };
+const preload = (path) => { try { PRELOAD[path]?.(); } catch { /* offline: the click still navigates */ } };
+
+function usePageTransitions(ref) {
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  useLayoutEffect(() => { markReady?.(); markReady = null; }, []);
+  useEffect(() => {
+    const idle = window.requestIdleCallback || ((f) => setTimeout(f, 1200));
+    const id = idle(() => Object.keys(PRELOAD).forEach(preload));
+    return () => (window.cancelIdleCallback || clearTimeout)(id);
+  }, []);
+  useEffect(() => {
+    const root = ref.current;
+    if (!root) return undefined;
+    const target = (e) => {
+      const a = e.target.closest?.('a[href]');
+      if (!a || a.target || a.hasAttribute('download') || a.origin !== window.location.origin) return null;
+      return a;
+    };
+    const hover = (e) => { const a = target(e); if (a) preload(a.pathname); };
+    const click = (e) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const a = target(e);
+      if (!a || a.pathname === pathname || a.pathname === '/login' || !isPublicSurfacePath(a.pathname)) return; // same page: the hash scroll handles it
+      if (!document.startViewTransition || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      e.preventDefault();
+      const to = a.pathname + a.search + a.hash;
+      let went = false;
+      const go = () => { if (!went) { went = true; flushSync(() => navigate(to)); } };
+      const vt = document.startViewTransition(() => new Promise((resolve) => {
+        markReady = resolve;
+        go();
+        setTimeout(resolve, 900); // never hold the old page longer than this
+      }));
+      // A hidden or throttled tab may never run the update: navigate anyway rather than swallow the click.
+      setTimeout(() => { if (!went) { vt.skipTransition?.(); go(); } }, 400);
+    };
+    root.addEventListener('pointerover', hover);
+    root.addEventListener('focusin', hover);
+    root.addEventListener('click', click, true);
+    return () => {
+      root.removeEventListener('pointerover', hover);
+      root.removeEventListener('focusin', hover);
+      root.removeEventListener('click', click, true);
+    };
+  }, [ref, navigate, pathname]);
+}
+
 export default function Shell({ children, cta, bare = false }) {
   const ref = useRef(null);
+  usePageTransitions(ref);
   // The signed-in desk scrolls inside <body>; public pages scroll the window so the header and anchors behave.
   useEffect(() => {
     document.documentElement.classList.add('site-doc');

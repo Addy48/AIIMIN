@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Check, Copy, DownloadSimple } from '@phosphor-icons/react';
 import Shell, { Meta, raahi } from './Shell';
 import JoinForm from './JoinForm';
-import { PLANS } from '../marketing/plans';
+import { PLANS, FOUNDING } from '../marketing/plans';
 
 // The lines Raahi says in the app (the same ones the home page shows), placed along the day's arc.
 const DAY = [
@@ -33,7 +33,7 @@ const BELIEFS = [
 
 const LOGOS = [['Logo for light backgrounds', '/logo-symbol.svg', 'Light'], ['Logo for dark backgrounds', '/AIIMIN_logo_dark.svg', 'Dark']];
 
-const BOILERPLATE = 'AIIMIN is an Android app that keeps your day, your money and your family’s papers in one place. Its companion, Raahi, greets you, helps you name what’s next and labels anything it writes as AI. AIIMIN is made in India and is free during the beta.';
+const BOILERPLATE = 'AIIMIN is an Android app that keeps your day, your money and your family’s papers in one place. Its companion, Raahi, greets you, helps you name what’s next and labels anything it writes as AI. AIIMIN is made in India and in beta on Android.';
 
 const plus = PLANS.find((p) => p.id === 'plus');
 
@@ -105,7 +105,7 @@ export default function BrandPage() {
               <h2 id="never-title">What Raahi won’t do.</h2>
               <p>A companion that nags is one more thing to manage. Raahi is built to stay out of the way.</p>
             </div>
-            <ul className="s-bg-never s-rv">
+            <ul className="s-bg-never s-rv s-stagger">
               {NEVER.map(([t, d]) => (
                 <li key={t}><h3>{t}</h3><p>{d}</p></li>
               ))}
@@ -119,7 +119,7 @@ export default function BrandPage() {
               <h2 id="beliefs-title">What AIIMIN is built on.</h2>
               <p>Four decisions that shape every screen, and how each one shows up in the app today.</p>
             </div>
-            <dl className="s-bg-beliefs s-rv">
+            <dl className="s-bg-beliefs s-rv s-stagger">
               {BELIEFS.map(([t, d]) => <div key={t}><dt>{t}</dt><dd>{d}</dd></div>)}
             </dl>
           </div>
@@ -130,8 +130,8 @@ export default function BrandPage() {
             <div className="s-bg-money s-rv">
               <h2 id="money-title">How AIIMIN pays its way.</h2>
               <div>
-                <p>The Free plan stays free for as long as you like. Paid plans start later, from ₹{plus.monthly} a month, and are billed through Google Play. Nothing renews without telling you first.</p>
-                <p>There is no ad or tracking code inside the app, and nothing about you is sold.</p>
+                <p>Your subscription is the business. Plans run from ₹{plus.monthly} a month, billed through Google Play, and nothing renews without telling you first.</p>
+                <p>So there is no ad or tracking code inside the app, and nothing about you is ever sold.</p>
                 <Link className="s-bg-link" to="/waitlist#plans">Compare the plans <ArrowRight weight="bold" /></Link>
               </div>
             </div>
@@ -162,9 +162,9 @@ export default function BrandPage() {
             <div className="s-cta s-rv">
               <div>
                 <h2 id="brand-close-title" className="s-h2">Start small. Keep going.</h2>
-                <p>Early access to the Android beta is free. No card needed.</p>
+                <p>The first {FOUNDING.seats} testers keep 50% off any paid plan, for life.</p>
               </div>
-              <JoinForm button="Get early access" compact />
+              <JoinForm button="Claim my founding spot" compact />
             </div>
           </div>
         </section>

@@ -50,7 +50,7 @@ export default function JoinForm({ id, button = 'Get early access', compact = fa
         setMsg(data.error);
         return;
       }
-      const v = { email: clean, code: data.referral_code || '', count: data.referral_count ?? 0, again: !!data.already_registered };
+      const v = { email: clean, code: data.referral_code || '', count: data.referral_count ?? 0, again: !!data.already_registered, pos: Number(data.position) || null, founding: !!data.founding, seats: data.founding_seats || null };
       save(v); setDone(v); setState('done');
       window.dispatchEvent(new Event('aiimin:joined'));
     } catch {
@@ -61,12 +61,14 @@ export default function JoinForm({ id, button = 'Get early access', compact = fa
 
   if (state === 'done' && done) {
     const link = done.code ? `https://aiimin.in/?ref=${encodeURIComponent(done.code)}` : 'https://aiimin.in';
-    const share = `https://wa.me/?text=${encodeURIComponent(`I'm testing AIIMIN, a calm Android app for your day, money and family papers. Join with my link and get 1 month of Plus free: ${link}`)}`;
+    const share = `https://wa.me/?text=${encodeURIComponent(`I'm testing AIIMIN, a calm Android app for your day, money and family papers. Join with my link and get a month of Plus on us: ${link}`)}`;
     const copy = async () => { try { await navigator.clipboard.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 1800); } catch { /* no clipboard */ } };
     return (
       <div className="s-done" id={id} role="status">
+        {done.founding && done.pos && <p className="s-done__badge num">Founding member <b>#{done.pos}</b>{done.seats ? ` of ${done.seats}` : ''}</p>}
+        {!done.founding && done.pos && <p className="s-done__badge s-done__badge--plain num"><b>#{done.pos.toLocaleString('en-IN')}</b> on the list</p>}
         <h3>{done.again ? 'You are already on the list.' : 'You are in. Check your email.'}</h3>
-        <p>We will write to <b style={{ color: 'var(--ink)' }}>{done.email}</b> when your invite is ready. {done.code ? 'Share your link: each friend who joins moves you up the queue.' : ''}</p>
+        <p>{done.founding ? 'You keep 50% off any paid plan, for life. ' : ''}We will write to <b style={{ color: 'var(--ink)' }}>{done.email}</b> when your invite is ready. {done.code ? 'Share your link: each friend who joins moves you up the queue.' : ''}</p>
         {done.code && (
           <>
             <div className="s-done__link">

@@ -5,7 +5,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import WaitlistPage from '../WaitlistPage';
 import AppPage from '../AppPage';
 import BrandPage from '../BrandPage';
-import { PLANS } from '../../marketing/plans';
+import { PLANS, FOUNDING } from '../../marketing/plans';
 import { isPublicSurfacePath, shouldShowWaitlistAccessFallback } from '../publicRoutes';
 
 const wrap = (ui) => render(<HelmetProvider><MemoryRouter>{ui}</MemoryRouter></HelmetProvider>);
@@ -51,10 +51,43 @@ test('waitlist mobile previews form a swipe gallery and keep Raahi clear of the 
 test('site prices are the app ladder', () => {
   wrap(<WaitlistPage />);
   PLANS.filter((p) => p.monthly).forEach((p) => {
-    expect(screen.getByText(`₹${p.monthly.toLocaleString('en-IN')}`)).toBeInTheDocument();
+    expect(screen.getAllByText(`₹${p.monthly.toLocaleString('en-IN')}`).length).toBeGreaterThan(0);
     expect(screen.getByText(`or ₹${p.yearly.toLocaleString('en-IN')} a year`)).toBeInTheDocument();
   });
-  expect(screen.getByText('Beta: free for now. No payment is taken.')).toBeInTheDocument();
+});
+
+test('plans lead with value: yearly toggle, founding half price for the first 251, and no "free" pitch', () => {
+  const { container } = wrap(<WaitlistPage />);
+  expect(FOUNDING.seats).toBe(251);
+  expect(screen.getAllByText('₹49.50').length).toBeGreaterThan(0); // Pro, founding, monthly
+  fireEvent.click(screen.getByRole('button', { name: /Yearly/ }));
+  expect(screen.getAllByText('₹899').length).toBeGreaterThan(0);
+  expect(screen.getAllByText('₹449.50').length).toBeGreaterThan(0); // Pro, founding, yearly
+  expect(container.textContent).toContain('first 251 testers');
+  expect(container.textContent).not.toMatch(/Free during the beta|free beta|Is it really free|No card, no catch/i);
+});
+
+test('after joining, a founding signup sees its seat number', async () => {
+  global.fetch = jest.fn((url) => Promise.resolve({
+    ok: true, status: 200,
+    json: () => Promise.resolve(String(url).endsWith('/count') ? { count: 3 } : { referral_code: 'MEERA1', position: 42, founding: true, founding_seats: 251 }),
+  }));
+  wrap(<WaitlistPage />);
+  const [input] = screen.getAllByLabelText('Email address');
+  fireEvent.change(input, { target: { value: 'meera@example.com' } });
+  fireEvent.submit(input.closest('form'));
+  await waitFor(() => expect(screen.getAllByText('#42').length).toBeGreaterThan(0));
+  expect(screen.getAllByText(/of 251/).length).toBeGreaterThan(0);
+});
+
+test('the hero walks one day through four real screens', () => {
+  const { container } = wrap(<WaitlistPage />);
+  const imgs = container.querySelectorAll('.s-dayhero .s-phone__screen img');
+  expect(imgs).toHaveLength(4);
+  const rail = screen.getByRole('group', { name: 'One sample day' });
+  fireEvent.click(rail.querySelectorAll('button')[3]);
+  expect(container.querySelector('.s-dayhero').dataset.phase).toBe('night');
+  expect(imgs[3].getAttribute('alt')).toMatch(/night/);
 });
 
 test('/app links no APK until a checksum exists', () => {

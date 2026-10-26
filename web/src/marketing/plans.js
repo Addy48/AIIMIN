@@ -71,7 +71,15 @@ export const PLANS = [
   },
 ];
 
-const inr = (n) => '₹' + n.toLocaleString('en-IN');
+const inr = (n) => '₹' + n.toLocaleString('en-IN', { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 });
+export { inr };
+
+/** The founding offer (PRD 32.7): the first 251 testers keep 50% off any paid plan for as long as they stay on it. */
+export const FOUNDING = { seats: 251, off: 0.5 };
+export const foundingPrice = (n) => Math.round(n * (1 - FOUNDING.off) * 100) / 100;
+
+/** Whole-percent saving of the yearly price against twelve monthly payments. */
+export const yearlySaving = (p) => (p.monthly ? Math.round((1 - p.yearly / (p.monthly * 12)) * 100) : 0);
 
 /** "Free" or "₹99/month · ₹899/year", the way the app's Plans screen shows it. */
 export function priceLine(plan) {
@@ -81,11 +89,11 @@ export function priceLine(plan) {
 
 /** Two-sided and cheap to give (master plan §1C). Rewards start when paid plans go on sale. */
 export const REFERRAL = {
-  friendGets: '1 month of Plus free',
+  friendGets: '1 month of Plus on us',
   tiers: [
     { friends: 1, reward: 'Beta access sooner: you move up the queue' },
-    { friends: 3, reward: '3 months of Plus free' },
-    { friends: 10, reward: '1 year of Pro free' },
+    { friends: 3, reward: '3 months of Plus on us' },
+    { friends: 10, reward: '1 year of Pro on us' },
   ],
   rules:
     'A friend counts once they verify their email. Each reward is given once. Plan rewards start when paid plans go on sale.',
