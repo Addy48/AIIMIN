@@ -69,6 +69,26 @@ class MainActivity : FragmentActivity() {
     private var unlocked by mutableStateOf(false)
     private var backgroundedAt = 0L
 
+    // Shake to send feedback: the detector runs only while the screen is on, the setting is on and the app is unlocked.
+    private var feedbackOpen by mutableStateOf(false)
+    private var feedbackShot by mutableStateOf<android.graphics.Bitmap?>(null)
+    private var shake: ShakeDetector? = null
+    private var shakeAllowed = false
+
+    private fun syncShake() {
+        val live = shakeAllowed && lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)
+        if (live) shake?.start() else shake?.stop()
+    }
+
+    private fun openFeedback() {
+        if (feedbackOpen) return
+        // Copy the screen first, then cover it with the sheet.
+        captureWindow(this) { bmp -> feedbackShot = bmp; feedbackOpen = true }
+    }
+
+    override fun onResume() { super.onResume(); syncShake() }
+    override fun onPause() { shake?.stop(); super.onPause() }
+
     override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
         super.onConfigurationChanged(newConfig)
         // Folding or unfolding changes the smallest width; re-pick without restarting the screen.
@@ -83,6 +103,7 @@ class MainActivity : FragmentActivity() {
         )
         super.onCreate(savedInstanceState)
         requestedOrientation = orientationFor(resources.configuration.smallestScreenWidthDp)
+        shake = ShakeDetector(this) { runOnUiThread { openFeedback() } }
         AppShortcuts.publish(applicationContext)
         var ready = false
         splash.setKeepOnScreenCondition { !ready }
@@ -135,6 +156,9 @@ class MainActivity : FragmentActivity() {
                     aiimin.designsystem.component.BootScene(mode, ready = true, onDone = { bootDone = true; handedOff = true }, onHandOff = { handedOff = true })
                 }
                 LaunchedEffect(st.appLock) { if (st.appLock && !unlocked) authenticate() }
+                val canShake = st.shakeFeedback && st.onboarded && (!st.appLock || unlocked)
+                LaunchedEffect(canShake) { shakeAllowed = canShake; syncShake() }
+                if (feedbackOpen) FeedbackSheet(feedbackShot, onDismiss = { feedbackOpen = false; feedbackShot = null })
                 // Hide in the app switcher also blocks screenshots (FLAG_SECURE).
                 LaunchedEffect(st.hideInRecents) {
                     if (st.hideInRecents) window.addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)

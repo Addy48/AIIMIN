@@ -559,6 +559,8 @@ fun HelpScreen() {
     val c = Aiimin.colors
     var feedback by remember { mutableStateOf("") }
     var diag by remember { mutableStateOf(true) }
+    val me: MeViewModel = hiltViewModel()
+    val st by me.settings.collectAsStateWithLifecycle()
     Column(Modifier.fillMaxSize().background(c.base)) {
         TopBar("Help and feedback", onBack = { nav.back() })
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Aiimin.space.gutter)) {
@@ -573,6 +575,9 @@ fun HelpScreen() {
                 runCatching { context.startActivity(i) }
             }, Modifier.fillMaxWidth(), enabled = feedback.isNotBlank(), icon = AppIcons.EnvelopeSimple)
             Text("Opens your mail app; nothing is sent until you press send there.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp))
+            st?.let { s ->
+                SwitchRow("Shake to send feedback", s.shakeFeedback, { v -> me.update { it.copy(shakeFeedback = v) } }, subtitle = "Shake your phone on any screen to send a note with a screenshot of it", icon = AppIcons.EnvelopeSimple)
+            }
             SectionHeader("Contact")
             ListRow(AppContact.SUPPORT_EMAIL, subtitle = "Support, privacy and data requests", leading = { IconTile(AppIcons.EnvelopeSimple) }, onClick = {
                 runCatching { context.startActivity(Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:${AppContact.SUPPORT_EMAIL}"))) }

@@ -63,6 +63,8 @@ data class AppSettings(
     val reduceMotion: Boolean = false,
     val appLock: Boolean = false,
     val hideInRecents: Boolean = false,
+    /** Shake the phone on any screen to send feedback with a screenshot (opens the mail app; nothing is sent by AIIMIN). */
+    val shakeFeedback: Boolean = true,
     val journalSync: Boolean = false,
     /** What may leave the phone when signed in (see [SyncKinds]). Journal has its own switch. */
     val syncScope: Set<String> = SyncKinds.DEFAULT,
@@ -208,6 +210,7 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         val reduceMotion = booleanPreferencesKey("reduce_motion")
         val appLock = booleanPreferencesKey("app_lock")
         val hideRecents = booleanPreferencesKey("hide_recents")
+        val shakeFeedback = booleanPreferencesKey("shake_feedback")
         val journalSync = booleanPreferencesKey("journal_sync")
         val syncScope = stringSetPreferencesKey("sync_scope")
         val syncScopeV2 = booleanPreferencesKey("sync_scope_v2")
@@ -298,6 +301,7 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         reduceMotion = p[K.reduceMotion] ?: false,
         appLock = p[K.appLock] ?: false,
         hideInRecents = p[K.hideRecents] ?: false,
+        shakeFeedback = p[K.shakeFeedback] ?: true,
         journalSync = p[K.journalSync] ?: false,
         // Scopes saved before v2 only knew tasks/notes/money; the kinds added later start on.
         syncScope = p[K.syncScope]?.let { if (p[K.syncScopeV2] == true) it else it + SyncKinds.ADDED_V2 } ?: SyncKinds.DEFAULT,
@@ -389,6 +393,7 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
             p[K.reduceMotion] = s.reduceMotion
             p[K.appLock] = s.appLock
             p[K.hideRecents] = s.hideInRecents
+            p[K.shakeFeedback] = s.shakeFeedback
             p[K.journalSync] = s.journalSync
             p[K.syncScope] = s.syncScope
             p[K.syncScopeV2] = true
