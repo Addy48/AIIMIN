@@ -174,6 +174,8 @@ class NotificationsViewModel @Inject constructor(private val repo: NotificationR
     val all = repo.all.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
     fun markRead() = viewModelScope.launch { repo.markAllRead() }
     fun dismiss(id: String) = viewModelScope.launch { repo.dismiss(id) }
+    val stopAsk = repo.stopAsk.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    fun answerStop(c: aiimin.core.engine.notify.Category, stop: Boolean) = viewModelScope.launch { repo.answerStop(c, stop) }
 }
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)

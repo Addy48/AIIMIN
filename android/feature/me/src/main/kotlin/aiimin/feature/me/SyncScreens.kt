@@ -167,7 +167,7 @@ fun SyncSettingsScreen(vm: SyncSettingsViewModel = hiltViewModel()) {
                             state is SyncState.Attention -> "Needs you"
                             else -> "Up to date"
                         },
-                        style = Aiimin.type.title.copy(fontSize = 22.sp),
+                        style = Aiimin.type.cardTitle,
                     )
                     val retry = vm.retryAt()
                     Text(
@@ -175,10 +175,10 @@ fun SyncSettingsScreen(vm: SyncSettingsViewModel = hiltViewModel()) {
                             !signedIn -> "Sign in to aiimin.in to keep a copy on the website."
                             state is SyncState.Attention -> (state as SyncState.Attention).message
                             state is SyncState.Offline -> "Changes are saved here and go when you're back online."
-                            retry != null -> "Last try failed. Next try at " + clockFmt.format(Instant.ofEpochMilli(retry).atZone(ZoneId.systemDefault()))
+                            retry != null -> "Last try didn't go through. Next try at " + clockFmt.format(Instant.ofEpochMilli(retry).atZone(ZoneId.systemDefault()))
                             else -> syncedAgo(st.lastSyncAt)
                         },
-                        style = Aiimin.type.caption.copy(fontSize = 13.5.sp),
+                        style = Aiimin.type.note,
                     )
                 }
                 if (signedIn) AppButton(if (busy) "Syncing…" else "Sync now", { vm.syncNow() }, enabled = !busy, compact = true, icon = AppIcons.ArrowsClockwise)
@@ -189,10 +189,10 @@ fun SyncSettingsScreen(vm: SyncSettingsViewModel = hiltViewModel()) {
                 ListRow(
                     "${conflicts.size} ${if (conflicts.size == 1) "change" else "changes"} to choose",
                     subtitle = "Edited on this phone and on aiimin.in since the last sync",
-                    leading = { IconTile(AppIcons.WarningCircle, tint = c.accentText) },
+                    leading = { IconTile(AppIcons.WarningCircle, tint = c.warn) },
                     trailing = { Chevron() },
                     onClick = { nav.open(Route.Conflicts) },
-                    titleColor = c.accentText,
+                    titleColor = c.warn,
                 )
                 Hairline()
             }
@@ -214,8 +214,8 @@ fun SyncSettingsScreen(vm: SyncSettingsViewModel = hiltViewModel()) {
             SectionHeader("When")
             SwitchRow("Only on Wi-Fi", st.syncWifiOnly, { vm.wifiOnly(it) }, subtitle = "Background sync waits for Wi-Fi. Sync now always works.", icon = AppIcons.WifiHigh)
             Text(
-                "Sync runs when you open AIIMIN, every half hour in the background, and as soon as the network comes back. If a try fails, the next one waits a little longer each time, up to 30 minutes.",
-                style = Aiimin.type.caption.copy(fontSize = 13.sp, lineHeight = 19.sp), modifier = Modifier.padding(top = 6.dp),
+                "Sync runs when you open AIIMIN, every half hour in the background, and as soon as the network comes back. If a try doesn't go through, the next one waits a little longer each time, up to 30 minutes.",
+                style = Aiimin.type.note, modifier = Modifier.padding(top = 8.dp),
             )
 
             val replaced by vm.lastReplace.collectAsStateWithLifecycle()
@@ -223,7 +223,7 @@ fun SyncSettingsScreen(vm: SyncSettingsViewModel = hiltViewModel()) {
                 SectionHeader("Last replace")
                 ListRow(
                     "Undo replace", subtitle = "Bring back the $count ${if (count == 1) "item" else "items"} this phone moved to Trash",
-                    leading = { IconTile(AppIcons.ClockCounter, tint = c.accentText) }, onClick = { vm.undoReplace() },
+                    leading = { IconTile(AppIcons.ClockCounter, tint = c.warn) }, onClick = { vm.undoReplace() },
                 )
                 Hairline()
             }
@@ -241,7 +241,7 @@ fun SyncSettingsScreen(vm: SyncSettingsViewModel = hiltViewModel()) {
                 "On this phone" to "Your sign-in, journal and sensitive vault files are encrypted with a key kept in this phone's secure hardware.",
             ).forEach { (h, b) ->
                 Text(h, style = Aiimin.type.bodyStrong, modifier = Modifier.padding(top = 12.dp))
-                Text(b, style = Aiimin.type.caption.copy(fontSize = 13.5.sp, lineHeight = 20.sp), modifier = Modifier.padding(top = 2.dp))
+                Text(b, style = Aiimin.type.note, modifier = Modifier.padding(top = 2.dp))
             }
             Spacer(Modifier.height(40.dp))
         }
@@ -311,24 +311,24 @@ fun ConflictsScreen(vm: ConflictsViewModel = hiltViewModel()) {
             items(items, key = { it.id }) { conflict ->
                 val local = Snap.parse(conflict.local)
                 val remote = Snap.parse(conflict.remote)
-                Column(Modifier.fillMaxWidth().padding(vertical = 14.dp)) {
-                    Text(SyncRepository.kindLabel(conflict.kind).uppercase(), style = Aiimin.type.eyebrow.copy(color = c.accentText))
+                Column(Modifier.fillMaxWidth().padding(vertical = 16.dp)) {
+                    Text(SyncRepository.kindLabel(conflict.kind).uppercase(), style = Aiimin.type.eyebrow.copy(color = c.textMuted))
                     Text(conflict.title, style = Aiimin.type.headline, modifier = Modifier.padding(top = 4.dp))
                     Snap.diff(conflict.local, conflict.remote).forEach { f ->
                         Text(fieldNames[f] ?: f, style = Aiimin.type.caption.copy(fontWeight = FontWeight.SemiBold), modifier = Modifier.padding(top = 12.dp))
                         Row(Modifier.fillMaxWidth().padding(top = 4.dp)) {
                             Column(Modifier.weight(1f)) {
-                                Text("This phone", style = Aiimin.type.caption.copy(fontSize = 12.sp))
+                                Text("This phone", style = Aiimin.type.caption)
                                 Text(fieldValue(f, local[f]), style = Aiimin.type.body, maxLines = 4)
                             }
                             Spacer(Modifier.width(16.dp))
                             Column(Modifier.weight(1f)) {
-                                Text("aiimin.in", style = Aiimin.type.caption.copy(fontSize = 12.sp))
+                                Text("aiimin.in", style = Aiimin.type.caption)
                                 Text(fieldValue(f, remote[f]), style = Aiimin.type.body, maxLines = 4)
                             }
                         }
                     }
-                    Row(Modifier.fillMaxWidth().padding(top = 14.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Row(Modifier.fillMaxWidth().padding(top = 16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         AppButton("Keep this phone's", { vm.keep(conflict, true); toaster.show("Kept this phone's version") }, Modifier.weight(1f), compact = true)
                         AppButton("Keep aiimin.in's", { vm.keep(conflict, false); toaster.show("Kept the website's version") }, Modifier.weight(1f), kind = ButtonKind.SECONDARY, compact = true)
                     }
@@ -377,7 +377,7 @@ fun TrashScreen(vm: TrashViewModel = hiltViewModel()) {
                 SectionHeader("${items.size} ${if (items.size == 1) "item" else "items"}", action = "Empty trash", onAction = { confirmEmpty = true })
             }
             items(items, key = { it.kind + it.id }) { item ->
-                Row(Modifier.fillMaxWidth().heightIn(min = 60.dp).padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.fillMaxWidth().heightIn(min = 60.dp).padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                     IconTile(kindIcon(item.kind))
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
@@ -390,13 +390,13 @@ fun TrashScreen(vm: TrashViewModel = hiltViewModel()) {
                     }
                     Text(
                         "Restore",
-                        style = Aiimin.type.label.copy(color = c.accentText, fontSize = 14.sp),
-                        modifier = Modifier.padding(horizontal = 6.dp).heightIn(min = 48.dp).wrapClick { vm.restore(item); toaster.show("Restored") },
+                        style = Aiimin.type.labelLarge.copy(color = c.link),
+                        modifier = Modifier.padding(horizontal = 8.dp).heightIn(min = 48.dp).wrapClick { vm.restore(item); toaster.show("Restored") },
                     )
                     Text(
                         "Delete",
-                        style = Aiimin.type.label.copy(color = c.textMuted, fontSize = 14.sp),
-                        modifier = Modifier.padding(start = 6.dp).heightIn(min = 48.dp).wrapClick { vm.delete(item) },
+                        style = Aiimin.type.labelLarge.copy(color = c.textMuted),
+                        modifier = Modifier.padding(start = 8.dp).heightIn(min = 48.dp).wrapClick { vm.delete(item) },
                     )
                 }
                 Hairline()

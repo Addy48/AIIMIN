@@ -224,7 +224,10 @@ class MinimumRepository @Inject constructor(
     fun today(day: LocalDate): Flow<List<MinimumToday>> = combine(dao.active(), dao.ticks(day.toString()), dayState.observe(day.toString())) { mins, ticks, st ->
         val planned = Codecs.decodeList(st?.plannedMins).toSet()
         val byId = ticks.associateBy { it.minimumId }
+        // Two rows with the same name (left from before add() merged them) show as one: the kept one wins (issues log #20).
         mins.map { MinimumToday(it, byId[it.id], it.id in planned || planned.isEmpty()) }
+            .groupBy { it.minimum.name.trim().replace(Regex("\\s+"), " ").lowercase() }
+            .map { (_, same) -> same.firstOrNull { it.done } ?: same.firstOrNull { it.planned } ?: same.first() }
     }
 
     fun history(from: LocalDate) = dao.ticksSince(from.toString())

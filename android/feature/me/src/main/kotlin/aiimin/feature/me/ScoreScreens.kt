@@ -106,17 +106,17 @@ fun MeScreen(vm: MeViewModel = hiltViewModel()) {
     val r = life?.readout
     val name = settings.name.ifBlank { "You" }
     LazyColumn(Modifier.fillMaxSize().background(c.base), contentPadding = PaddingValues(bottom = 120.dp)) {
-        item { LargeHeader("Me") { RootActions(0) } }
+        item { LargeHeader("You") { RootActions(0) } }
         // Search row: every feature and setting is one search away (findability plan §2.3.5).
         item {
             Row(
                 Modifier.padding(horizontal = Aiimin.space.gutter, vertical = 4.dp).fillMaxWidth().clip(RoundedCornerShape(10.dp))
-                    .background(c.raised).clickable { nav.open(Route.Search) }.heightIn(min = 48.dp).padding(horizontal = 14.dp),
+                    .background(c.raised).clickable { nav.open(Route.Search) }.heightIn(min = 48.dp).padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 androidx.compose.material3.Icon(AppIcons.Search, null, tint = c.textMuted, modifier = Modifier.size(20.dp))
-                Spacer(Modifier.width(10.dp))
-                Text("Search features and settings", style = Aiimin.type.body.copy(color = c.textMuted))
+                Spacer(Modifier.width(12.dp))
+                Text("Search features and settings", style = Aiimin.type.body.copy(color = c.textMuted), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
             }
         }
         item {
@@ -125,11 +125,11 @@ fun MeScreen(vm: MeViewModel = hiltViewModel()) {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(Modifier.size(56.dp).clip(RoundedCornerShape(12.dp)).background(c.text), contentAlignment = Alignment.Center) {
-                    Text(name.split(" ").filter { it.isNotBlank() }.take(2).joinToString("") { it.take(1).uppercase() }, style = Aiimin.type.title.copy(color = c.base, fontSize = 22.sp))
+                    Text(name.split(" ").filter { it.isNotBlank() }.take(2).joinToString("") { it.take(1).uppercase() }, style = Aiimin.type.cardTitle.copy(color = c.base))
                 }
                 Spacer(Modifier.width(16.dp))
                 Column(Modifier.weight(1f)) {
-                    Text(name, style = Aiimin.type.title.copy(fontSize = 20.sp))
+                    Text(name, style = Aiimin.type.cardTitle)
                     Text(
                         listOfNotNull(settings.city.ifBlank { null }, plan.label + " plan", if (session?.signedIn == true) "synced" else "only on this phone").joinToString(" · "),
                         style = Aiimin.type.body.copy(color = c.textMuted),
@@ -141,7 +141,7 @@ fun MeScreen(vm: MeViewModel = hiltViewModel()) {
             Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
                 Hairline(Modifier.padding(top = 8.dp))
                 Row(
-                    Modifier.fillMaxWidth().clickable { nav.open(Route.Score) }.padding(vertical = 18.dp),
+                    Modifier.fillMaxWidth().clickable { nav.open(Route.Score) }.padding(vertical = 20.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Column(Modifier.weight(1f)) {
@@ -151,65 +151,58 @@ fun MeScreen(vm: MeViewModel = hiltViewModel()) {
                             if (settings.hideScore || score == null) {
                                 Text(if (settings.hideScore) "Hidden" else "Calibrating", style = Aiimin.type.title)
                             } else {
-                                Text(score.toString(), style = Aiimin.type.numberLarge.copy(fontSize = 40.sp, color = c.text))
-                                Spacer(Modifier.width(10.dp))
+                                Text(score.toString(), style = Aiimin.type.numberLarge.copy(color = c.text))
+                                Spacer(Modifier.width(12.dp))
                                 val rising = r.series.takeLast(8).mapNotNull { it.score }.let { it.size >= 2 && it.last() > it.first() }
-                                Text("${r.band.label}${if (rising) " · Rising ↑" else ""}", style = Aiimin.type.headline, modifier = Modifier.padding(bottom = 6.dp))
+                                Text("${r.band.label}${if (rising) " · Rising ↑" else ""}", style = Aiimin.type.headline, modifier = Modifier.padding(bottom = 8.dp))
                             }
                         }
                     }
                     Chevron()
                 }
                 Hairline()
-                Row(Modifier.fillMaxWidth().padding(vertical = 18.dp)) {
-                    MeStat("${r?.streak?.current ?: 0} days", "streak", Modifier.weight(1f))
-                    MeStat("${r?.battery?.value ?: 0}", "battery · ${r?.battery?.mode?.name?.lowercase()?.replaceFirstChar(Char::uppercase) ?: "Gentle"}", Modifier.weight(1f))
-                    if (!settings.hideXp) MeStat("%,d".format(settings.xp.xp), "XP · level ${settings.xp.level}", Modifier.weight(0.8f))
+                Row(Modifier.fillMaxWidth().padding(vertical = 20.dp)) {
+                    // C-003: kept days, never a "0 days streak" tile.
+                    MeStat("${r?.streak?.totalKept ?: 0}", if ((r?.streak?.totalKept ?: 0) == 1) "day kept" else "days kept", Modifier.weight(1f))
+                    MeStat(
+                        "${r?.battery?.value ?: 0}", "battery", Modifier.weight(1f),
+                        detail = r?.battery?.mode?.name?.lowercase()?.replaceFirstChar(Char::uppercase) ?: "Gentle",
+                    )
+                    if (!settings.hideXp) MeStat("%,d".format(settings.xp.xp), "XP", Modifier.weight(1f), detail = "level ${settings.xp.level}")
                 }
             }
         }
-        meGroup("Workspace", listOf(
-            MeLink(AppIcons.Note, "Notes", if (noteCount == 0) null else "$noteCount ${if (noteCount == 1) "note" else "notes"}${if (pinned > 0) " · $pinned pinned" else ""}") { nav.open(Route.Notes) },
-            MeLink(AppIcons.BookOpen, "Journal", "Private · encrypted on this phone") { nav.open(Route.Journal) },
-            MeLink(AppIcons.Calendar, "Calendar", "$events ${if (events == 1) "event" else "events"} this week") { nav.open(Route.Calendar) },
-            MeLink(AppIcons.Flag, "Goals", null) { nav.open(Route.Goals) },
+        // Part 17.3: "You" is four short groups. Features live in Progress and Your things; Settings hold settings.
+        meGroup("Progress", listOf(
+            MeLink(AppIcons.Pulse, "Why this score", "Day by day, what moved it") { nav.open(Route.WhyScore) },
+            MeLink(AppIcons.Sparkle, "Patterns", "What goes with what") { nav.open(Route.Patterns) },
             MeLink(AppIcons.ListChecks, "Weekly review", "Sundays, or any time") { nav.open(Route.WeeklyReview) },
-            MeLink(AppIcons.Timer, "Focus", null) { nav.open(Route.Focus()) },
-            MeLink(AppIcons.ListChecks, "Daily minimums", null) { nav.open(Route.Minimums) },
-            MeLink(AppIcons.Flag, "Upcoming tasks", null) { nav.open(Route.Upcoming) },
-            MeLink(AppIcons.ChatCircleText, "Assistant", "Ask or tell AIIMIN anything") { nav.open(Route.Assistant()) },
-        ))
-        meGroup("Insights", listOf(
+            MeLink(AppIcons.Flag, "Goals", null) { nav.open(Route.Goals) },
             MeLink(AppIcons.Sliders, "What counts for you", "Intentions, targets, weights") { nav.open(Route.Signals) },
             MeLink(AppIcons.BatteryHigh, "Discipline battery", r?.battery?.let { "${it.value}% · ${it.mode.name.lowercase().replaceFirstChar(Char::uppercase)}" }) { nav.open(Route.Battery) },
-            MeLink(AppIcons.Pulse, "Why this score", "Day by day, what moved it") { nav.open(Route.WhyScore) },
             MeLink(AppIcons.Phone, "Phone day", "Screen time and unlocks") { nav.open(Route.PhoneDay) },
             MeLink(AppIcons.Footprints, "Body", "Steps, sleep, heart rate") { nav.open(Route.Body) },
-            MeLink(AppIcons.Sparkle, "Patterns", "What goes with what") { nav.open(Route.Patterns) },
             MeLink(AppIcons.ClockCounter, "Activity", "Everything you did, from the log") { nav.open(Route.Activity) },
         ))
-        meGroup("Family & papers", listOf(
+        meGroup("Your things", listOf(
+            MeLink(AppIcons.Note, "Notes", if (noteCount == 0) null else "$noteCount ${if (noteCount == 1) "note" else "notes"}${if (pinned > 0) " · $pinned pinned" else ""}") { nav.open(Route.Notes) },
+            // Pour (Part 12) grows out of the journal in B7b; the private writing lives here until then.
+            MeLink(AppIcons.Drop, "Pour", "Private writing · on this phone") { nav.open(Route.Journal) },
+            MeLink(AppIcons.Calendar, "Calendar", "$events ${if (events == 1) "event" else "events"} this week") { nav.open(Route.Calendar) },
+            MeLink(AppIcons.FileText, "Documents", "Your vault") { nav.tab(aiimin.designsystem.nav.Tab.VAULT) },
+            MeLink(AppIcons.Timer, "Focus", null) { nav.open(Route.Focus()) },
+            MeLink(AppIcons.CheckSquare, "Daily minimums", null) { nav.open(Route.Minimums) },
+            MeLink(AppIcons.ListChecks, "Upcoming tasks", null) { nav.open(Route.Upcoming) },
             MeLink(AppIcons.FirstAid, "My emergency card", "Blood group, allergies, contacts") { nav.open(Route.EmergencyCard("me")) },
             MeLink(AppIcons.Users, "Family", "People and their papers") { nav.open(Route.Family) },
-            MeLink(AppIcons.CloudArrowUp, "Backups", "Keep a copy of your vault") { nav.open(Route.VaultBackup) },
-            MeLink(AppIcons.FirstAidKit, "Emergency kits", "What to grab when it matters") { nav.open(Route.EmergencyKits) },
-        ))
-        meGroup("Account", listOf(
-            MeLink(AppIcons.CloudCheck, "Account and sync", if (session?.signedIn == true) "Synced with aiimin.in" else "Only on this phone") { nav.open(Route.Account) },
-            MeLink(AppIcons.Devices, "Linked devices", "Browsers and phones on your account") { nav.open(Route.LinkedDevices) },
-            MeLink(AppIcons.Star, "Plan", plan.label + if (plan == aiimin.core.data.plan.Plan.FREE) " · see what plans add" else "") { nav.open(if (plan == aiimin.core.data.plan.Plan.FREE) Route.Plans else Route.Subscription) },
+            MeLink(AppIcons.ChatCircleText, "Assistant", "Ask or tell Raahi anything") { nav.open(Route.Assistant()) },
         ))
         meGroup("Settings", listOf(
-            MeLink(AppIcons.Moon, "My day, notifications and privacy", if (settings.dayMode == aiimin.core.engine.DayMode.Midnight) "Day ends at midnight" else "Day ends later, for night owls") { nav.open(Route.Settings) },
-            MeLink(AppIcons.Bell, "Notifications", "Inbox and quiet hours") { nav.open(Route.Notifications) },
-            MeLink(AppIcons.Footprints, "Phone data", "What the phone measures for you") { nav.open(Route.Sensors) },
-            MeLink(AppIcons.Wallet, "Money", "Ledgers, accounts, payee memory") { nav.open(Route.MoneySettings) },
-            MeLink(AppIcons.ArrowsClockwise, "Sync", "What goes to aiimin.in") { nav.open(Route.SyncSettings) },
-            MeLink(AppIcons.Chat, "Assistant and voice", "What it may read, recent captures") { nav.open(Route.AiSettings) },
-            MeLink(AppIcons.TextAa, "Appearance", "Text size, motion") { nav.open(Route.Appearance) },
-            MeLink(AppIcons.Translate, "Language and region", "English (India)") { nav.open(Route.Language) },
+            MeLink(AppIcons.Sliders, "Settings", "Day, notifications, privacy, phone data, money, appearance") { nav.open(Route.Settings) },
+            MeLink(AppIcons.CloudCheck, "Account and sync", if (session?.signedIn == true) "Synced with aiimin.in" else "Only on this phone") { nav.open(Route.Account) },
+            MeLink(AppIcons.Star, "Plan", plan.label + if (plan == aiimin.core.data.plan.Plan.FREE) " · see what plans add" else "") { nav.open(if (plan == aiimin.core.data.plan.Plan.FREE) Route.Plans else Route.Subscription) },
         ))
-        meGroup("Support", listOf(
+        meGroup("Help and legal", listOf(
             MeLink(AppIcons.Lifebuoy, "Help and feedback", null) { nav.open(Route.Help) },
             MeLink(AppIcons.Share, "Tell a friend", "Send them a link to the beta") {
                 val send = android.content.Intent(android.content.Intent.ACTION_SEND).setType("text/plain").putExtra(android.content.Intent.EXTRA_TEXT, inviteText())
@@ -221,10 +214,16 @@ fun MeScreen(vm: MeViewModel = hiltViewModel()) {
 }
 
 @Composable
-private fun MeStat(value: String, label: String, modifier: Modifier) {
-    Column(modifier) {
-        Text(value, style = Aiimin.type.title.copy(fontSize = 22.sp, fontFeatureSettings = "tnum"))
-        Text(label, style = Aiimin.type.caption)
+private fun MeStat(value: String, label: String, modifier: Modifier, detail: String? = null) {
+    // Equal columns keep each stat in its lane. Details move to a second line only when the column is narrow.
+    androidx.compose.foundation.layout.BoxWithConstraints(modifier.padding(end = 8.dp)) {
+        val splitDetail = detail != null && maxWidth < 140.dp
+        Column {
+            Text(value, style = Aiimin.type.cardTitle.copy(fontFeatureSettings = "tnum"), maxLines = 1)
+            val labelLine = if (detail != null && !splitDetail) "$label · $detail" else label
+            Text(labelLine, style = Aiimin.type.caption, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+            if (splitDetail) Text(detail, style = Aiimin.type.caption, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+        }
     }
 }
 
@@ -240,10 +239,10 @@ private fun androidx.compose.foundation.lazy.LazyListScope.meGroup(title: String
                     Modifier.fillMaxWidth().clickable(onClick = l.onClick).heightIn(min = 60.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    androidx.compose.material3.Icon(l.icon, null, tint = c.text, modifier = Modifier.size(22.dp))
+                    androidx.compose.material3.Icon(l.icon, null, tint = c.text, modifier = Modifier.size(24.dp))
                     Spacer(Modifier.width(16.dp))
-                    Column(Modifier.weight(1f).padding(vertical = 10.dp)) {
-                        Text(l.title, style = Aiimin.type.body.copy(color = c.text, fontSize = 16.sp))
+                    Column(Modifier.weight(1f).padding(vertical = 12.dp)) {
+                        Text(l.title, style = Aiimin.type.body.copy(color = c.text))
                         if (l.sub != null) Text(l.sub, style = Aiimin.type.caption)
                     }
                     Chevron()
@@ -303,8 +302,8 @@ fun ScoreScreen(vm: MeViewModel = hiltViewModel()) {
                         else -> {
                             Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 2.dp)) {
                                 Text(shown?.toString() ?: "—", style = Aiimin.type.heroNumber.copy(color = c.text))
-                                Spacer(Modifier.width(14.dp))
-                                Column(Modifier.padding(bottom = 14.dp)) {
+                                Spacer(Modifier.width(16.dp))
+                                Column(Modifier.padding(bottom = 16.dp)) {
                                     Text(band.label, style = Aiimin.type.headline.copy(color = c.text))
                                     Text(
                                         if (sel == null || idx == last) when {
@@ -328,21 +327,22 @@ fun ScoreScreen(vm: MeViewModel = hiltViewModel()) {
                                     append('.')
                                 },
                                 style = Aiimin.type.headline.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Normal, lineHeight = 26.sp),
-                                modifier = Modifier.padding(top = 10.dp),
+                                modifier = Modifier.padding(top = 12.dp),
                             )
                         }
                     }
                 }
-                Spacer(Modifier.height(18.dp))
+                Spacer(Modifier.height(20.dp))
                 Segmented(listOf("W", "M", "3M"), range, { range = it; selected = null })
                 if (!hidden && vals.size >= 2) {
                     val sorted = vals.sorted()
                     val lo = sorted[(sorted.size * 0.25).toInt()]
                     val hi = sorted[(sorted.size * 0.75).toInt().coerceAtMost(sorted.lastIndex)]
                     Spacer(Modifier.height(8.dp))
-                    ScrubLineChart(pts, sel, { selected = it }, bandLow = lo, bandHigh = hi, height = 200.dp)
-                    Hairline(Modifier.padding(top = 6.dp))
-                    Row(Modifier.fillMaxWidth().padding(top = 10.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                    // D-041: while calibrating the line is short and flat; a lower chart leaves no empty block above it.
+                    ScrubLineChart(pts, sel, { selected = it }, bandLow = lo, bandHigh = hi, height = if (scored.none { it.score != null }) 120.dp else 200.dp)
+                    Hairline(Modifier.padding(top = 8.dp))
+                    Row(Modifier.fillMaxWidth().padding(top = 12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text(scored.firstOrNull()?.snapshot?.day?.let { Dates.short(it) } ?: "", style = Aiimin.type.caption)
                         Text("Today", style = Aiimin.type.caption)
                     }
@@ -358,7 +358,7 @@ fun ScoreScreen(vm: MeViewModel = hiltViewModel()) {
                     SectionHeader("Calibrating")
                     Panel {
                         r.calibrating.entries.sortedBy { it.value }.forEach { (k, left) ->
-                            Row(Modifier.padding(vertical = 5.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Row(Modifier.padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                                 Text(life.intentions.def(k)?.name ?: k, style = Aiimin.type.body, modifier = Modifier.weight(1f))
                                 Meter((14 - left) / 14f, Modifier.width(90.dp), color = c.textMuted)
                                 Text("  ${14 - left}/14", style = Aiimin.type.caption.copy(fontFeatureSettings = "tnum"))
@@ -372,9 +372,10 @@ fun ScoreScreen(vm: MeViewModel = hiltViewModel()) {
                 val ups = r.contributors.filter { it.points > 0 }.take(3)
                 val downs = r.contributors.filter { it.points < 0 }.sortedBy { it.points }.take(3)
                 val rows = ups + downs
+                val maxContribution = rows.maxOfOrNull { kotlin.math.abs(it.points) }?.coerceAtLeast(0.1) ?: 1.0
                 if (rows.isEmpty()) Text("Not enough history yet.", style = Aiimin.type.caption)
                 rows.forEachIndexed { i, it ->
-                    ContributionRow(life.intentions.def(it.signal)?.name ?: it.signal, it.points, signalDetail(it.signal, life.history))
+                    ContributionRow(life.intentions.def(it.signal)?.name ?: it.signal, it.points, signalDetail(it.signal, life.history), maxContribution)
                     if (i < rows.lastIndex) Hairline()
                 }
             }
@@ -393,7 +394,7 @@ fun ScoreScreen(vm: MeViewModel = hiltViewModel()) {
                         val keys = life.intentions.cards.filter { (k, card) -> card.isScored && life.intentions.def(k)?.domain == d.key }.keys
                         if (keys.isEmpty()) return@forEach
                         val v = life.areas[d.key]
-                        Row(Modifier.padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Row(Modifier.padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                             Text(d.name, style = Aiimin.type.body, maxLines = 1, softWrap = false, modifier = Modifier.widthIn(min = 110.dp).padding(end = 8.dp)) // "Work / Craft" on one line (A-043)
                             Meter(((v ?: 0.0) / 100).toFloat().coerceIn(0f, 1f), Modifier.weight(1f), color = if (d.key == weakest) c.accent else c.text)
                             Text(if (v == null) "  —" else "  ${v.roundToInt()}", style = Aiimin.type.caption.copy(fontFeatureSettings = "tnum"), maxLines = 1, softWrap = false, modifier = Modifier.widthIn(min = 36.dp))
@@ -411,7 +412,7 @@ fun ScoreScreen(vm: MeViewModel = hiltViewModel()) {
                     if (d.clipped) Tag("Clipped", color = c.warn)
                     Spacer(Modifier.width(8.dp))
                     Text(d.di?.let { "%.0f".format(it) } ?: "—", style = Aiimin.type.numberSmall, modifier = Modifier.width(36.dp), textAlign = TextAlign.End)
-                    Spacer(Modifier.width(10.dp))
+                    Spacer(Modifier.width(12.dp))
                     MarkDot(mark)
                 }
             }
@@ -428,23 +429,24 @@ private fun MarkDot(m: StreakMark) {
         StreakMark.FROZEN -> c.domains[4] to "Freeze"
         StreakMark.REPAIRED -> c.violet to "Repaired"
         StreakMark.PAUSED -> c.textFaint to "Paused"
-        StreakMark.MISSED -> c.raised to "Missed"
+        StreakMark.MISSED -> c.raised to "Not kept"
     }
     // At least 78 dp, never a broken word: "Repaire / d" at 1.3× text (audit A-044).
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.widthIn(min = 78.dp)) {
-        Box(Modifier.size(10.dp).clip(CircleShape).background(col))
-        Spacer(Modifier.width(6.dp))
+        Box(Modifier.size(12.dp).clip(CircleShape).background(col))
+        Spacer(Modifier.width(8.dp))
         Text(label, style = Aiimin.type.caption, maxLines = 1, softWrap = false)
     }
 }
 
 @Composable
-private fun ContributionRow(name: String, pts: Double, detail: String?) {
+private fun ContributionRow(name: String, pts: Double, detail: String?, maxContribution: Double) {
     val c = Aiimin.colors
-    Row(Modifier.fillMaxWidth().padding(vertical = 14.dp), verticalAlignment = Alignment.Top) {
+    Row(Modifier.fillMaxWidth().padding(vertical = 16.dp), verticalAlignment = Alignment.Top) {
         Column(Modifier.weight(1f)) {
             Text(name, style = Aiimin.type.headline.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Normal))
             if (detail != null) Text(detail, style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(top = 2.dp))
+            Meter((kotlin.math.abs(pts) / maxContribution).toFloat(), Modifier.fillMaxWidth().padding(top = 8.dp), color = if (pts > 0) c.done else c.textMuted, height = 4.dp)
         }
         Text(
             (if (pts > 0) "+" else "−") + "%.1f".format(kotlin.math.abs(pts)),
@@ -547,7 +549,12 @@ fun SignalsScreen(vm: MeViewModel = hiltViewModel()) {
         LazyColumn(contentPadding = PaddingValues(Aiimin.space.gutter)) {
             item {
                 Text("Nothing is good or bad until you say what it means for your life. Harder targets apply now; easier ones wait 7 days.", style = Aiimin.type.caption)
-                Spacer(Modifier.height(10.dp))
+                // D-021: the dot shapes get a legend in words.
+                Row(Modifier.padding(top = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                    EvidenceDot('A'); Text("measured by the phone", style = Aiimin.type.caption, modifier = Modifier.padding(end = 12.dp))
+                    EvidenceDot('C'); Text("your tap", style = Aiimin.type.caption)
+                }
+                Spacer(Modifier.height(12.dp))
                 ListRow("Start from a role", subtitle = RolePreset.byKey(set.role)?.name ?: "Balanced", leading = { IconTile(AppIcons.Compass) }, trailing = { Chevron() }, onClick = { presets = true })
             }
             Domain.BUILT_IN.forEach { d ->
@@ -565,9 +572,11 @@ fun SignalsScreen(vm: MeViewModel = hiltViewModel()) {
                             if (card.direction in setOf(Direction.MORE, Direction.LESS)) "target ${withUnit(fmtTarget(card.target), def.unit)}" else if (card.direction == Direction.BAND) card.band?.let { "${fmtTarget(it.start)}–${withUnit(fmtTarget(it.endInclusive), def.unit)}" } else null,
                             if (card.isScored && cal < 14) "calibrating $cal/14" else null,
                             card.pending?.let { "change on ${Dates.short(it.applyOn)}" },
+                            // D-021: the weight reads with the rest of the line instead of floating at the right edge.
+                            listOf("Off", "Low", "Normal", "High").getOrNull(card.weight)?.takeIf { card.isScored }?.let { "${it.lowercase()} weight" },
                         ).joinToString(" · "),
+                        maxSubtitleLines = 3,
                         leading = { EvidenceDot(def.defaultTier.name.first()) },
-                        trailing = { Text(listOf("Off", "Low", "Normal", "High").getOrElse(card.weight) { "" }.takeIf { card.isScored } ?: "", style = Aiimin.type.caption) },
                         onClick = { nav.open(Route.Signal(k)) },
                     )
                 }
@@ -600,7 +609,7 @@ fun SignalsScreen(vm: MeViewModel = hiltViewModel()) {
             AppTextField(target, { target = it.filter { ch -> ch.isDigit() || ch == '.' } }, placeholder = "Daily target", keyboardType = KeyboardType.Decimal)
             PillRow { Domain.BUILT_IN.forEach { d -> Pill(d.name, domain == d.key, { domain = d.key }) } }
             if (kind != "Yes or no") PillRow { Pill("More is better", more, { more = true }); Pill("Less is better", !more, { more = false }) }
-            Text("Log it from the signal's page or the Today strip. It counts from tomorrow.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp))
+            Text("Log it from the signal's page or the Today strip. It counts from tomorrow.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp))
             Spacer(Modifier.height(12.dp))
             AppButton("Add", {
                 scope.launch { vm.addCustom(name, unit, domain, target.toDoubleOrNull() ?: 1.0, more || kind == "Yes or no"); custom = false; toaster.show("$name added · calibrates over 14 days") }
@@ -643,7 +652,7 @@ fun SignalScreen(key: String, vm: MeViewModel = hiltViewModel()) {
         LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(Aiimin.space.gutter)) {
             item {
                 Text(def.how, style = Aiimin.type.caption)
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(12.dp))
                 val hist = l?.history.orEmpty().takeLast(28).map { it.value(key)?.toFloat() }
                 if (hist.count { it != null } >= 2) {
                     Panel {
@@ -673,13 +682,13 @@ fun SignalScreen(key: String, vm: MeViewModel = hiltViewModel()) {
                         val gap = if (med != 0.0) ((target - med) / med * 100).roundToInt() else 0
                         Text(
                             "$label · " + when { gap > 0 -> "$gap% above"; gap < 0 -> "${-gap}% below"; else -> "at" } + " your typical day",
-                            style = Aiimin.type.caption.copy(color = if (label == "Easy") c.textMuted else c.accentText), modifier = Modifier.padding(top = 4.dp),
+                            style = Aiimin.type.caption.copy(color = if (label == "Easy") c.textMuted else c.warn), modifier = Modifier.padding(top = 4.dp),
                         )
                     }
                     suggestion?.let { sug ->
-                        Text("Suggested: ${fmtTarget(sug)} (your 60th percentile)", style = Aiimin.type.caption.copy(color = c.accentText), modifier = Modifier.padding(top = 4.dp).clip(Shapes.small).clickable { target = sug; blocked = null })
+                        Text("Suggested: ${fmtTarget(sug)} (your 60th percentile)", style = Aiimin.type.caption.copy(color = c.textMuted), modifier = Modifier.padding(top = 4.dp).clip(Shapes.small).clickable { target = sug; blocked = null })
                     }
-                    blocked?.let { Text(it, style = Aiimin.type.body.copy(color = c.accentText, fontSize = 14.sp), modifier = Modifier.padding(top = 6.dp)) }
+                    blocked?.let { Text(it, style = Aiimin.type.body.copy(color = c.warn), modifier = Modifier.padding(top = 8.dp)) }
                     SectionHeader("Weight")
                     Segmented(listOf("Low", "Normal", "High"), weight - 1, { weight = it + 1 })
                 }
@@ -739,9 +748,9 @@ fun BatteryScreen(vm: MeViewModel = hiltViewModel()) {
                 Spacer(Modifier.height(8.dp))
                 Text(
                     when (b.state) {
-                        BatteryState.OK -> "Kept minimums charge it; a kept day adds a bonus. Your first miss each week is free."
-                        BatteryState.LOW -> "Low battery — minimums shrink to their tiny versions, tiny ones count double, and misses cost half. The lower it is, the easier it climbs."
-                        BatteryState.COMEBACK -> "A rough patch, so let's restart small: keep any one minimum on 3 days and the battery returns to 40%. Nothing is deleted."
+                        BatteryState.OK -> "Kept minimums charge it; a kept day adds a bonus. One unkept day each week is free."
+                        BatteryState.LOW -> "Low battery: minimums shrink to their tiny versions, tiny ones count double, and unkept ones cost half. The lower it is, the easier it climbs."
+                        BatteryState.COMEBACK -> "A lighter stretch: keep any one minimum on 3 days and the battery returns to 40%. Nothing is deleted."
                     },
                     style = Aiimin.type.body,
                 )
@@ -758,27 +767,27 @@ fun BatteryScreen(vm: MeViewModel = hiltViewModel()) {
                         }
                     }
                 })
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(12.dp))
                 Panel {
                     val rows = when (mode) {
-                        BatteryMode.GENTLE -> listOf("Misses cost 2, at most 6 a day", "No zero state", "Two rest days a week plus pause", "Unlimited streak repair")
-                        BatteryMode.STANDARD -> listOf("Misses cost 3, at most 10 a day", "At zero, a 3-day comeback", "One rest day a week plus pause", "One repair per break")
-                        BatteryMode.HARDCORE -> listOf("Misses cost 5, at most 20 a day", "No free weekly miss, no freezes", "Declared illness only", "No streak repair")
+                        BatteryMode.GENTLE -> listOf("An unkept minimum costs 2, at most 6 a day", "No zero state", "Two rest days a week plus pause", "Unlimited repairs")
+                        BatteryMode.STANDARD -> listOf("An unkept minimum costs 3, at most 10 a day", "At zero, a 3-day comeback", "One rest day a week plus pause", "One repair per break")
+                        BatteryMode.HARDCORE -> listOf("An unkept minimum costs 5, at most 20 a day", "No free day, no freezes", "Declared illness only", "No repairs")
                     }
-                    rows.forEach { Text("· $it", style = Aiimin.type.body, modifier = Modifier.padding(vertical = 3.dp)) }
+                    aiimin.designsystem.component.BulletList(rows, style = Aiimin.type.body)
                 }
                 Text("Mode can change once every 7 days. If things get rough, the app will offer Gentle — it never switches for you.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp))
             }
             item {
-                SectionHeader("Streak")
+                SectionHeader("Kept days")
                 val st = l!!.readout.streak
                 Row(horizontalArrangement = Arrangement.SpaceEvenly, modifier = Modifier.fillMaxWidth()) {
-                    MiniFigure("${st.current}", "current")
-                    MiniFigure("${st.longest}", "longest")
+                    MiniFigure("${st.current}", "in a row")
+                    MiniFigure("${st.longest}", "longest run")
                     MiniFigure("${st.totalKept}", "days kept")
                     MiniFigure("${st.freezesBanked}", "freezes")
                 }
-                Text("A freeze is earned every 7 kept days (bank up to 2). Never sold. Two missed days in a row can't both be covered.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp))
+                Text("A freeze is earned every 7 kept days (bank up to 2). Never sold. One freeze covers one day off.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp))
             }
         }
     }

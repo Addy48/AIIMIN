@@ -13,6 +13,13 @@ object KeepAlive {
     fun show(stalledAt: Long?, needsKeepAlive: Boolean, unrestricted: Boolean, dismissedAt: Long?, now: Long): Boolean =
         stalledAt != null && now - stalledAt < DAY && (needsKeepAlive || !unrestricted) && (dismissedAt == null || now - dismissedAt >= WEEK)
 
+    /**
+     * The one-time card per phone maker (PRD 4.3): shows on makers known to stop background work, once per maker,
+     * whether or not anything has stalled yet. [shownFor] is the maker it was last shown on.
+     */
+    fun intro(maker: String, needsKeepAlive: Boolean, unrestricted: Boolean, shownFor: String?): Boolean =
+        needsKeepAlive && !unrestricted && shownFor?.trim()?.lowercase() != maker.trim().lowercase()
+
     fun steps(maker: String): String = when (maker.trim().lowercase()) {
         "xiaomi", "redmi", "poco" -> "In App info: turn on Autostart, then Battery saver › No restrictions."
         "samsung" -> "Settings › Battery › Background usage limits › Never sleeping apps › add AIIMIN."

@@ -98,9 +98,9 @@ fun GoalsScreen(vm: GoalsViewModel = hiltViewModel()) {
     var title by remember { mutableStateOf("") }
     val live = goals.filter { !it.archived }
     Column(Modifier.fillMaxSize().background(c.base)) {
-        TopBar("Goals", onBack = { nav.back() }) { AppIconButton(AppIcons.Plus, "New goal", { adding = true }) }
+        TopBar("Goals", onBack = { nav.back() }) { aiimin.designsystem.component.RaahiGuideButton(aiimin.designsystem.component.RaahiArea.GOALS); AppIconButton(AppIcons.Plus, "New goal", { adding = true }) }
         if (live.isEmpty() && !adding) {
-            EmptyState(AppIcons.Flag, "No goals yet", "A goal is something that takes weeks. Link tasks and milestones to it, and the progress works itself out.", action = "New goal", onAction = { adding = true })
+            EmptyState(raahi = aiimin.core.engine.raahi.RaahiPose.POINTING, icon = AppIcons.Flag, title = "No goals yet", body = "A goal is something that takes weeks. Link tasks and milestones to it, and the progress works itself out.", action = "New goal", onAction = { adding = true })
             return@Column
         }
         LazyColumn(contentPadding = PaddingValues(start = Aiimin.space.gutter, end = Aiimin.space.gutter, bottom = 40.dp)) {
@@ -109,7 +109,7 @@ fun GoalsScreen(vm: GoalsViewModel = hiltViewModel()) {
                     AppTextField(title, { title = it }, placeholder = "What do you want to reach?", onDone = {
                         if (title.isNotBlank()) { val id = vm.create(title); title = ""; adding = false; nav.open(Route.Goal(id)) }
                     })
-                    Row(Modifier.padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         AppButton("Create", { if (title.isNotBlank()) { val id = vm.create(title); title = ""; adding = false; nav.open(Route.Goal(id)) } }, compact = true, enabled = title.isNotBlank())
                         AppButton("Cancel", { adding = false; title = "" }, kind = ButtonKind.SECONDARY, compact = true)
                     }
@@ -130,7 +130,7 @@ fun GoalsScreen(vm: GoalsViewModel = hiltViewModel()) {
                             next?.let { "next: ${it.t}" },
                             g.due?.let { "by ${Dates.shortDm(LocalDate.parse(it))}" },
                         ).joinToString(" · "),
-                        style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp),
+                        style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp),
                     )
                 }
                 Hairline()
@@ -167,11 +167,18 @@ fun GoalScreen(id: String?, vm: GoalsViewModel = hiltViewModel()) {
             Spacer(Modifier.height(8.dp))
             var why by remember(g.id) { mutableStateOf(g.why) }
             AppTextField(why, { why = it; vm.update(g.id) { x -> x.copy(why = it) } }, placeholder = "Why it matters, in one line")
-            Spacer(Modifier.height(16.dp))
-            Box(Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)).background(c.border)) {
-                Box(Modifier.fillMaxWidth((progress ?: 0f).coerceIn(0f, 1f)).height(6.dp).background(c.text))
+            if ((progress ?: 0f) >= 1f) Row(Modifier.fillMaxWidth().padding(bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                aiimin.designsystem.component.Raahi(aiimin.core.engine.raahi.RaahiPose.QUIET_CELEBRATION, aiimin.designsystem.component.RaahiSize.CARD, motion = aiimin.core.engine.raahi.RaahiMotion.HOP, motionKey = g.id.hashCode().toLong())
+                Text(androidx.compose.ui.res.stringResource(aiimin.designsystem.R.string.raahi_goal_done), style = Aiimin.type.headline, modifier = Modifier.padding(start = 16.dp))
+            } else if (progress == null) Row(Modifier.fillMaxWidth().padding(bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                aiimin.designsystem.component.Raahi(aiimin.core.engine.raahi.RaahiPose.POINTING, aiimin.designsystem.component.RaahiSize.CARD)
+                Text(androidx.compose.ui.res.stringResource(aiimin.designsystem.R.string.raahi_goal_empty), style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(start = 16.dp))
             }
-            Text(progress?.let { "${(it * 100).toInt()}% · from ${g.milestones.count { m -> m.done }} of ${g.milestones.size} milestones and ${linked.count { t -> t.done }} of ${linked.size} tasks" } ?: "Progress appears once you add a milestone or link a task.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp))
+            Spacer(Modifier.height(16.dp))
+            Box(Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(3.dp)).background(c.border)) {
+                Box(Modifier.fillMaxWidth((progress ?: 0f).coerceIn(0f, 1f)).height(8.dp).background(c.text))
+            }
+            Text(progress?.let { "${(it * 100).toInt()}% · from ${g.milestones.count { m -> m.done }} of ${g.milestones.size} milestones and ${linked.count { t -> t.done }} of ${linked.size} tasks" } ?: "Progress appears once you add a milestone or link a task.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp))
             Row(Modifier.fillMaxWidth().clickable { datePick = true }.heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text("Target date", style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.weight(1f))
                 Text(g.due?.let { Dates.dayMonth(LocalDate.parse(it)) } ?: "Not set", style = Aiimin.type.body.copy(color = c.text))
@@ -219,6 +226,7 @@ data class WeekUi(
     val expiring: List<String>,
     val weekNo: Int,
     val upcoming: List<TaskEntity>,
+    val minsKept: Int = 0,
 )
 
 @HiltViewModel
@@ -246,7 +254,7 @@ class WeeklyReviewViewModel @Inject constructor(
             val cats = txns.groupBy { it.category }.mapValues { it.value.sumOf { t -> t.amountPaise } }.entries.sortedByDescending { it.value }.take(3).map { it.key to it.value }
             val docs = vault.visible.first().filter { (it.daysToExpiry ?: 999) in 0..30 }.map { "${it.doc.title} · ${it.daysToExpiry} days" }
             val upcoming = tasks.upcoming(today).first().filter { it.day != null }.take(10)
-            ui.value = WeekUi(series.map { it.score?.toFloat() }, kept, hist.size, focus.sum().toInt(), best, txns.sumOf { it.amountPaise }, cats, docs, java.time.temporal.IsoFields.WEEK_OF_WEEK_BASED_YEAR.let { today.get(it) }, upcoming)
+            ui.value = WeekUi(series.map { it.score?.toFloat() }, kept, hist.size, focus.sum().toInt(), best, txns.sumOf { it.amountPaise }, cats, docs, java.time.temporal.IsoFields.WEEK_OF_WEEK_BASED_YEAR.let { today.get(it) }, upcoming, hist.sumOf { it.minimums.kept })
         }
     }
 
@@ -281,13 +289,24 @@ fun WeeklyReviewScreen(vm: WeeklyReviewViewModel = hiltViewModel()) {
         val w = u
         if (w == null) { Skeleton(Modifier.padding(Aiimin.space.gutter).fillMaxWidth().height(220.dp)); return@Column }
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Aiimin.space.gutter)) {
-            Text("The week in one line", style = Aiimin.type.eyebrow.copy(color = c.textMuted), modifier = Modifier.padding(top = 8.dp, bottom = 6.dp))
+            // Weekly postcard (PRD 31.2 item 10): made from the person's own minimums, never a comparison.
+            Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                aiimin.designsystem.component.Raahi(aiimin.core.engine.raahi.RaahiPose.HOLDING_POSTCARD, aiimin.designsystem.component.RaahiSize.CARD)
+                Column(Modifier.padding(start = 16.dp)) {
+                    Text(androidx.compose.ui.res.stringResource(aiimin.designsystem.R.string.raahi_postcard_from), style = Aiimin.type.eyebrow.copy(color = c.textMuted))
+                    Text(
+                        when (w.minsKept) { 0 -> androidx.compose.ui.res.stringResource(aiimin.designsystem.R.string.raahi_postcard_none); 1 -> androidx.compose.ui.res.stringResource(aiimin.designsystem.R.string.raahi_postcard_one); else -> androidx.compose.ui.res.stringResource(aiimin.designsystem.R.string.raahi_postcard_some, w.minsKept) },
+                        style = Aiimin.type.headline,
+                    )
+                }
+            }
+            Text("The week in one line", style = Aiimin.type.eyebrow.copy(color = c.textMuted), modifier = Modifier.padding(top = 8.dp, bottom = 8.dp))
             AppTextField(line, { line = it }, placeholder = "One line about your week", singleLine = false)
             SectionHeader("Score")
             val pts = w.scores
             if (pts.count { it != null } >= 2) {
                 Sparkline(pts, height = 80.dp, color = c.text)
-                Text("${pts.filterNotNull().first().toInt()} → ${pts.filterNotNull().last().toInt()} over the week", style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp))
+                Text("${pts.filterNotNull().first().toInt()} → ${pts.filterNotNull().last().toInt()} over the week", style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp))
             } else Text("Not enough days yet.", style = Aiimin.type.caption)
             SectionHeader("Kept days")
             Text("${w.kept} of ${w.days}", style = Aiimin.type.title)

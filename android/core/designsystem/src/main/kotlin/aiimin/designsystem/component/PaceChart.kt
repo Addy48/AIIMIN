@@ -1,5 +1,6 @@
 package aiimin.designsystem.component
 
+import aiimin.designsystem.theme.LocalReduceMotion
 import aiimin.designsystem.theme.Aiimin
 import aiimin.designsystem.theme.Motion
 import androidx.compose.animation.core.Animatable
@@ -98,14 +99,15 @@ fun PaceChart(
     val axis = Aiimin.type.axis
     val haptics = LocalHapticFeedback.current
     val draw = remember { Animatable(0f) }
-    // Today ripples three times after the line draws in, then rests (no endless redraws).
+    // Today pulses once after the line draws in, then rests (Part 26.5: nothing loops).
     val pulse = remember { Animatable(1f) }
+    val reduce = LocalReduceMotion.current
     LaunchedEffect(data.daily, data.cumulative) {
         draw.snapTo(0f)
-        draw.animateTo(1f, tween(650, easing = Motion.enter))
-        repeat(3) {
+        draw.animateTo(1f, Motion.move(reduce, Motion.emphasised()))
+        if (!reduce) {
             pulse.snapTo(0f)
-            pulse.animateTo(1f, tween(1800, easing = Motion.standard))
+            pulse.animateTo(1f, Motion.ambient())
         }
     }
     val n = data.daily.size.coerceAtLeast(1)
@@ -169,8 +171,11 @@ fun PaceChart(
                     val padX = 7 * g.dp1
                     val chipW = l.size.width + padX * 2
                     val chipH = l.size.height + 6 * g.dp1
-                    val lx = (g.x(si) - chipW / 2f).coerceIn(0f, g.w - chipW)
-                    val ly = barTop - g.barZone * 0.6f - chipH
+                    // Keep clear of the "₹20k" guide labels on the left edge (24 Oct pass).
+                    val lx = (g.x(si) - chipW / 2f).coerceIn((40 * g.dp1).coerceAtMost(g.w - chipW), g.w - chipW)
+                    // D-006: the chip never sits on the running-total line; it moves above it, or below it when there is no room.
+                    val under = (0 until e).filter { g.x(it) in lx - 4 * g.dp1..lx + chipW + 4 * g.dp1 }.map { g.y(data.cumulative[it]) }
+                    val ly = spikeChipTop(barTop - g.barZone * 0.6f - chipH, chipH, under.minOrNull(), under.maxOrNull(), 5 * g.dp1, barTop - 3 * g.dp1)
                     drawLine(c.borderStrong, Offset(g.x(si), ly + chipH), Offset(g.x(si), barTop - 3 * g.dp1), strokeWidth = g.dp1)
                     chip(Offset(lx, ly), Size(chipW, chipH), c.surface, c.border, g.dp1)
                     drawText(l, topLeft = Offset(lx + padX, ly + 3 * g.dp1))
@@ -208,6 +213,20 @@ private class PaceGeometry(val data: PaceChartData, val w: Float, h: Float, dens
     fun x(i: Int) = (i + 0.5f) / n * w
     fun y(v: Double) = base - (v / vmax * plotH).toFloat()
     fun barTop(i: Int) = base - (data.daily[i] / dayMax * barZone).toFloat().coerceAtLeast(2 * dp1)
+}
+
+/**
+ * Where the spike label's chip goes (D-006): [preferred] unless it overlaps the line between [lineTop] and
+ * [lineBottom] (canvas y, top is 0); then above the line, or below it when the top has no room. Never below [floor].
+ */
+internal fun spikeChipTop(preferred: Float, chipH: Float, lineTop: Float?, lineBottom: Float?, gap: Float, floor: Float): Float {
+    if (lineTop == null || lineBottom == null) return preferred
+    val clear = preferred + chipH + gap <= lineTop || preferred - gap >= lineBottom
+    if (clear) return preferred
+    val above = lineTop - gap - chipH
+    if (above >= 0f) return above
+    val below = lineBottom + gap
+    return if (below + chipH <= floor) below else preferred.coerceAtLeast(0f)
 }
 
 private fun DrawScope.chip(at: Offset, size: Size, fill: Color, stroke: Color, dp1: Float) {
@@ -344,7 +363,7 @@ private fun PaceBase(data: PaceChartData, barTint: Color, reveal: () -> Float) {
                 data.daily.forEachIndexed { i, v ->
                     if (v <= 0.0) return@forEachIndexed
                     val t = g.barTop(i)
-                    drawRoundRect(barTint.copy(alpha = 0.45f), Offset(g.x(i) - g.barW / 2, t), Size(g.barW, g.base - t), CornerRadius(g.barW / 2))
+                    drawRoundRect(barTint.copy(alpha = 0.3f), Offset(g.x(i) - g.barW / 2, t), Size(g.barW, g.base - t), CornerRadius(g.barW / 2))
                 }
                 // Pace: the even climb to plan, with the plan named in a small chip at the end.
                 if (planY != null) {

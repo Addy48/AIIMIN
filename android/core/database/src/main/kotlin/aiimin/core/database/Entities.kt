@@ -166,6 +166,10 @@ data class TxnDraftEntity(
     val confidence: Double,
     /** pending · settled · dismissed */
     val status: String = "pending",
+    /** Ledger the payment is suggested for, from a rule or the place's memory (v8). */
+    @ColumnInfo(defaultValue = "PERSONAL") val ledger: String = "PERSONAL",
+    /** The smart rule that filed or sorted it, if any (v8). */
+    val ruleId: String? = null,
 )
 
 @Entity(tableName = "payee_rules")
@@ -182,6 +186,39 @@ data class PayeeRuleEntity(
     @ColumnInfo(defaultValue = "0") val hits: Int = 0,
     /** What was bought here lately, newest first, "|"-separated, five at most ("Chocolate|Milk") (v6, plan §3). */
     @ColumnInfo(defaultValue = "") val lastNotes: String = "",
+    /** Hand filings in a row with this same category; at 3 AIIMIN offers "Make this a rule?" (v8, Phase 2). */
+    @ColumnInfo(defaultValue = "0") val sameCount: Int = 0,
+    /** 0 not offered yet · 1 "Not now" · 2 made into a rule (v8). */
+    @ColumnInfo(defaultValue = "0") val ruleOffer: Int = 0,
+)
+
+/**
+ * A smart rule the person made (Part 5 Phase 2): every condition that is set must hold; rules run in [position]
+ * order before payee memory and the built-in merchant list. [autoBook] files a matching bank alert without asking.
+ */
+@Entity(tableName = "money_rules")
+data class MoneyRuleEntity(
+    @PrimaryKey val id: String,
+    val name: String,
+    val position: Int,
+    val enabled: Boolean = true,
+    /** Payee name or UPI handle contains this ("swiggy"); empty = any. */
+    val contains: String = "",
+    /** Amount from (inclusive), in paise. */
+    val minPaise: Long? = null,
+    /** Amount under (exclusive), in paise. */
+    val maxPaise: Long? = null,
+    val account4: String? = null,
+    /** The note or the bank message contains this; empty = any. */
+    val noteContains: String = "",
+    /** out · in · any */
+    val direction: String = "out",
+    val category: String,
+    val ledger: String = "PERSONAL",
+    val autoBook: Boolean = true,
+    val hits: Int = 0,
+    val createdAt: Long,
+    val updatedAt: Long,
 )
 
 /** A category the person made ("Pet"), shown next to the built-in ones (v6, plan §3). [kind] is out or in. */
@@ -269,6 +306,23 @@ data class NoteEntity(
     val remoteId: String? = null,
     val dirty: Boolean = true,
     val deleted: Boolean = false,
+    /** A palette tint key ("" plain, peach, leaf, sun, lilac, stone) (v9, Part 11). */
+    @ColumnInfo(defaultValue = "") val color: String = "",
+    @ColumnInfo(defaultValue = "0") val archived: Boolean = false,
+    /** Locked notes keep title and body only in [cipher] (device key); [title] and [body] are empty (v9). */
+    @ColumnInfo(defaultValue = "0") val locked: Boolean = false,
+    val cipher: String? = null,
+    val iv: String? = null,
+    /** typed · voice · share · scan · import (v9). */
+    @ColumnInfo(defaultValue = "typed") val source: String = "typed",
+    /** Where an import came from: keep · apple · file · aiimin (v9). */
+    @ColumnInfo(defaultValue = "") val sourceApp: String = "",
+    /** Stable key of an imported note, so a second import adds nothing twice (v9). */
+    val importKey: String? = null,
+    /** A one-time reminder about this note, epoch ms (v9). */
+    val reminderAt: Long? = null,
+    /** JSON [{file, mime, text}]: pictures and scans kept in the app's files, with the text read from them (v9). */
+    @ColumnInfo(defaultValue = "[]") val attachments: String = "[]",
 )
 
 /** Journal text is encrypted with a Keystore key; only the author reads it. */
@@ -289,6 +343,8 @@ data class JournalEntity(
     val deleted: Boolean = false,
     /** aiimin.in journal_entries id, only when journal sync is switched on (v2). */
     @ColumnInfo(defaultValue = "NULL") val remoteId: String? = null,
+    /** False for entries kept from Pour (PRD 12.2: nothing there is scored). */
+    @ColumnInfo(defaultValue = "1") val scored: Boolean = true,
 )
 
 @Entity(tableName = "focus_sessions", indices = [Index("startAt")])
@@ -329,7 +385,21 @@ data class DocEntity(
     val createdAt: Long,
     val openedAt: Long? = null,
     val deleted: Boolean = false,
-)
+    /** The cover this version belongs to (PRD Part 5 Phase 1); null means its own cover, keyed by [id]. */
+    val coverId: String? = null,
+    /** Registry key (india.tsv), e.g. car_insurance. */
+    val docType: String? = null,
+    /** Lifecycle A-E chosen by the person; null follows the registry. */
+    val lifecycle: String? = null,
+    /** Vehicle number, "home:<owner>" or the owner id: the cover's identity with [docType]. */
+    val subject: String? = null,
+    val startsOn: String? = null,
+    val provider: String? = null,
+    /** Only the current version of a cover reminds. Documents from before covers are each version 1 and current. */
+    @ColumnInfo(defaultValue = "1") val current: Boolean = true,
+) {
+    val cover: String get() = coverId ?: id
+}
 
 @Entity(tableName = "doc_shares", primaryKeys = ["docId", "who"])
 data class DocShareEntity(
@@ -420,6 +490,27 @@ data class NotificationEntity(
     val priority: Int,
     val read: Boolean = false,
     val dismissed: Boolean = false,
+)
+
+/**
+ * What the notification engine did with one key (PRD 2.1): posted, kept in the inbox or folded into the evening
+ * wrap-up, and whether the person opened or dismissed it. On the phone only; it drives the nudge budget,
+ * "Stop these?" and the learned timing.
+ */
+@Entity(tableName = "notify_log", indices = [Index("day")])
+data class NotifyLogEntity(
+    @PrimaryKey val key: String,
+    val rule: String,
+    val category: String,
+    val kind: String,
+    /** POST · IN_APP · DIGEST */
+    val delivery: String,
+    val day: String,
+    val shownAt: Long,
+    val shownMinute: Int,
+    val openedAt: Long? = null,
+    val openedMinute: Int? = null,
+    val dismissedAt: Long? = null,
 )
 
 /** What the phone measured for one logical day. Re-measured, never typed. */
@@ -540,4 +631,26 @@ data class SyncConflictEntity(
     val remote: String,
     val createdAt: Long,
     val resolved: Boolean = false,
+)
+
+/**
+ * Pour's tools (PRD 12.6): a cooling-off message, a letter never sent, or a worry. The text is encrypted with the
+ * journal key before it is written; nothing here syncs, shows in search, notifications text or the widget.
+ */
+@Entity(tableName = "pour_items", indices = [Index("kind"), Index("status")])
+data class PourItemEntity(
+    @PrimaryKey val id: String,
+    /** cool · letter · worry */
+    val kind: String,
+    /** Who a message or letter is to, encrypted with the text's key; empty for a worry. */
+    val toCipher: String = "",
+    val toIv: String = "",
+    val cipher: String,
+    val iv: String,
+    /** open · kept · act · released */
+    val status: String = "open",
+    /** Cooling-off: when "Still want to send it?" is asked. Letter: sealed until this moment. Null otherwise. */
+    val dueAt: Long? = null,
+    val createdAt: Long,
+    val updatedAt: Long,
 )

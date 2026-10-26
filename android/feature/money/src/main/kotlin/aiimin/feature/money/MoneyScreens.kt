@@ -1,5 +1,6 @@
 package aiimin.feature.money
 
+import aiimin.core.data.money.payeeLabel
 import aiimin.core.data.money.Categories
 import aiimin.core.data.money.Ledger
 import aiimin.core.data.money.MoneyRepository
@@ -91,7 +92,7 @@ internal val monthFmt = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH)
 internal fun TxnRow(t: TxnEntity, onClick: () -> Unit) {
     val c = Aiimin.colors
     Row(
-        Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = Aiimin.space.gutter, vertical = 10.dp),
+        Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = Aiimin.space.gutter, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(Modifier.size(36.dp).clip(CircleShape).background(c.raised), contentAlignment = Alignment.Center) {
@@ -99,7 +100,7 @@ internal fun TxnRow(t: TxnEntity, onClick: () -> Unit) {
         }
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
-            Text(if (t.giftHideFrom != null) "Gift" else t.title, style = Aiimin.type.bodyStrong, maxLines = 1)
+            Text(if (t.giftHideFrom != null) "Gift" else payeeLabel(t.title), style = Aiimin.type.bodyStrong, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
             Text(listOfNotNull(t.category, t.method.takeIf { it != "UPI" }, if (t.receiptDocId != null) "Receipt" else null, if (t.source == "sms" || t.source == "notification") "Bank alert" else null).joinToString(" · "), style = Aiimin.type.caption)
         }
         Text(
@@ -132,24 +133,24 @@ internal fun AddPaymentSheet(
         Spacer(Modifier.height(16.dp))
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
             Text("₹", style = Aiimin.type.numberLarge.copy(color = c.textMuted))
-            Spacer(Modifier.width(6.dp))
+            Spacer(Modifier.width(8.dp))
             Box(Modifier.weight(1f)) {
-                if (amount.isEmpty()) Text("0", style = Aiimin.type.numberLarge.copy(color = c.textFaint, fontSize = 40.sp))
+                if (amount.isEmpty()) Text("0", style = Aiimin.type.numberLarge.copy(color = c.textFaint))
                 BasicTextField(
                     amount, { v -> amount = v.filter { it.isDigit() || it == '.' }.take(10) },
-                    textStyle = Aiimin.type.numberLarge.copy(fontSize = 40.sp), singleLine = true, cursorBrush = SolidColor(c.accent),
+                    textStyle = Aiimin.type.numberLarge, singleLine = true, cursorBrush = SolidColor(c.accent),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), modifier = Modifier.fillMaxWidth(),
                 )
             }
         }
         Spacer(Modifier.height(12.dp))
         AppTextField(title, { title = it }, placeholder = if (income) "From (e.g. Salary, Client)" else "Where (e.g. Swiggy, Auto)")
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(12.dp))
         PillRow { (if (income) incomeCategories else spendCategories).forEach { k -> Pill(k, cat == k, { cat = k }) } }
         PillRow { Ledger.entries.forEach { e -> Pill(e.label, l == e, { l = e }) } }
         ListRow("Date", subtitle = Dates.relative(day, today), leading = { IconTile(AppIcons.Calendar) }, onClick = { pickDay = true })
         AppTextField(note, { note = it }, placeholder = if (income) "Note (optional)" else "What did you buy? (optional)")
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(16.dp))
         val paise = ((amount.toDoubleOrNull() ?: 0.0) * 100).toLong()
         AppButton("Save", { onSave(paise, if (income) "in" else "out", title.ifBlank { cat }, cat, l, day, note) }, Modifier.fillMaxWidth(), enabled = paise > 0)
     }
@@ -193,13 +194,13 @@ fun TxnScreen(id: String, vm: TxnViewModel = hiltViewModel()) {
                 Text("${Dates.long(LocalDate.parse(txn.day))} · ${txn.method}" + if (txn.source != "manual") " · from ${txn.source}" else "", style = Aiimin.type.caption)
                 Spacer(Modifier.height(16.dp))
                 AppTextField(title, { title = it }, label = if (txn.direction == "in") "From" else "Paid to")
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(12.dp))
                 SectionHeader("Category")
                 val cats by (if (txn.direction == "in") vm.categoriesIn else vm.categoriesOut).collectAsStateWithLifecycle()
                 PillRow { (cats.ifEmpty { if (txn.direction == "in") Categories.INCOME else Categories.SPEND } + listOf(cat)).distinct().forEach { k -> Pill(k, cat == k, { cat = k }) } }
                 SectionHeader("Ledger")
                 Segmented(Ledger.entries.map { it.label }, Ledger.entries.indexOf(ledger), { ledger = Ledger.entries[it] })
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(12.dp))
                 SwitchRow("Apply to this payee from now on", learn, { learn = it })
                 AppTextField(note, { note = it }, label = if (txn.direction == "in") "Note" else "What did you buy? (or a note)", singleLine = false, minLines = 2)
                 Spacer(Modifier.height(12.dp))
@@ -208,7 +209,7 @@ fun TxnScreen(id: String, vm: TxnViewModel = hiltViewModel()) {
             item {
                 SectionHeader("Receipt")
                 if (receipt != null && txn.receiptDocId != null) {
-                    ListRow(receipt!!, subtitle = "In your vault", leading = { IconTile(AppIcons.Receipt) }, onClick = { nav.open(Route.Doc(txn.receiptDocId!!)) })
+                    ListRow(receipt!!, subtitle = "In your vault", leading = { IconTile(AppIcons.Receipt) }, opens = Route.Doc(txn.receiptDocId!!), onClick = { nav.open(Route.Doc(txn.receiptDocId!!)) })
                 } else {
                     ListRow("Attach a receipt or warranty", subtitle = "Photo or PDF — saved to the vault and linked here", leading = { IconTile(AppIcons.Paperclip) }, onClick = { picker.launch(arrayOf("image/*", "application/pdf")) })
                 }
@@ -222,9 +223,9 @@ fun TxnScreen(id: String, vm: TxnViewModel = hiltViewModel()) {
                         ListRow("Split with…", subtitle = "Equal parts; they show in Splits until settled", leading = { IconTile(AppIcons.Users) }, onClick = { splitting = true })
                     } else {
                         shares.forEach { sh ->
-                            ListRow(sh.name.ifBlank { sh.who }, subtitle = if (sh.settled) "Settled" else "Owes you ${Money.whole(sh.paise)}", leading = { IconTile(AppIcons.Users) }, onClick = { nav.open(Route.SplitPerson(sh.who)) })
+                            ListRow(sh.name.ifBlank { sh.who }, subtitle = if (sh.settled) "Settled" else "Owes you ${Money.whole(sh.paise)}", leading = { IconTile(AppIcons.Users) }, opens = Route.SplitPerson(sh.who), onClick = { nav.open(Route.SplitPerson(sh.who)) })
                         }
-                        Text("Remove split", style = Aiimin.type.label.copy(color = c.accentText), modifier = Modifier.padding(vertical = 8.dp).pressable({ vm.clearSplit() }))
+                        Text("Remove split", style = Aiimin.type.label.copy(color = c.link), modifier = Modifier.padding(vertical = 8.dp).pressable({ vm.clearSplit() }))
                     }
                     if (splitting) SplitSheet(txn.amountPaise, people, { splitting = false }) { picked -> vm.split(picked); splitting = false; toaster.show("Split with ${picked.joinToString { it.second }}") }
                 }

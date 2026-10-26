@@ -1,5 +1,7 @@
 package aiimin.designsystem.component
 
+import aiimin.designsystem.theme.LightPalette
+
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
@@ -30,11 +32,11 @@ fun BrandMark(modifier: Modifier = Modifier, size: Dp = 32.dp) {
             cubicTo(80 * k, 192 * k, 208 * k, 112 * k, 256 * k, 112 * k)
             cubicTo(304 * k, 112 * k, 432 * k, 192 * k, 432 * k, 384 * k)
         }
-        drawPath(arch, Color(0xFFD1D5DB), alpha = 0.9f, style = Stroke(24 * k, cap = StrokeCap.Round))
+        drawPath(arch, LightPalette.markArch, alpha = 0.9f, style = Stroke(24 * k, cap = StrokeCap.Round))
         val peak = Path().apply { moveTo(144 * k, 384 * k); lineTo(256 * k, 176 * k); lineTo(368 * k, 384 * k) }
-        drawPath(peak, Color(0xFF14171A), style = Stroke(24 * k, cap = StrokeCap.Round, join = StrokeJoin.Round))
+        drawPath(peak, LightPalette.text, style = Stroke(24 * k, cap = StrokeCap.Round, join = StrokeJoin.Round))
         val inner = Path().apply { moveTo(192 * k, 368 * k); lineTo(256 * k, 272 * k); lineTo(320 * k, 368 * k) }
-        drawPath(inner, Color(0xFF6B7280), alpha = 0.85f, style = Stroke(18 * k, cap = StrokeCap.Round, join = StrokeJoin.Round))
-        drawCircle(Color(0xFFFF6B35), radius = 28 * k, center = p(256f, 240f))
+        drawPath(inner, LightPalette.markInner, alpha = 0.85f, style = Stroke(18 * k, cap = StrokeCap.Round, join = StrokeJoin.Round))
+        drawCircle(LightPalette.accent, radius = 28 * k, center = p(256f, 240f))
     }
 }

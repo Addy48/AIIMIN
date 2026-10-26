@@ -307,7 +307,7 @@ class SyncRepository @Inject constructor(
             t.failed > 0 -> SyncState.Attention("${t.failed} ${if (t.failed == 1) "item" else "items"} didn't sync. They'll retry.")
             else -> SyncState.Idle(now)
         }
-        log.log("sync", data = mapOf("pushed" to t.pushed, "pulled" to t.pulled, "failed" to t.failed, "conflicts" to t.conflicts), tier = Tier.A, source = "system")
+        log.log("sync", data = mapOf("pushed" to t.pushed, "pulled" to t.pulled, "errors" to t.failed, "conflicts" to t.conflicts), tier = Tier.A, source = "system")
         return SyncReport(t.pushed, t.pulled, t.failed, t.conflicts, now)
     }
 
@@ -458,7 +458,9 @@ class SyncRepository @Inject constructor(
         val toPush = mutableListOf<NoteEntity>()
 
         // Phone edits to notes the web also has: three-way check before anything is sent.
+        // Locked notes stay on this phone until encrypted note sync exists (Part 11.7 Q-3): never sent, never overwritten.
         for (n in notes.dirty()) {
+            if (n.locked && !n.deleted) continue
             val rid = n.remoteId
             val dto = rid?.let { byId[it] }
             if (n.deleted || dto == null) { toPush += n; continue }
@@ -522,6 +524,7 @@ class SyncRepository @Inject constructor(
             val rid = dto.id!!
             if (rid in linkedNow) continue
             val local = notes.byRemote(rid) ?: notes.get(rid)
+            if (local?.locked == true) continue
             if (local == null) {
                 val at = remoteAt(dto.updatedAt)
                 notes.upsert(NoteEntity(rid, dto.title?.ifBlank { null } ?: "Untitled", dto.content.orEmpty(), pinned = dto.pinned == true, createdAt = at, updatedAt = at, remoteId = rid, dirty = false))

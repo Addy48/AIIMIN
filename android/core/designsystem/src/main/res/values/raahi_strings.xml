@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Raahi's lines (PRD 1.1, 31.2 item 9): fixed text in a string file so they can be translated later. -->
+<resources>
+    <string name="raahi_guide_title">What can I do here?</string>
+    <string name="raahi_guide_money_1">Type or say what you spent, like "240 lunch". I file it for you.</string>
+    <string name="raahi_guide_money_2">Open Review when a payment needs a category. One tap each.</string>
+    <string name="raahi_guide_money_3">Ask me "how much on food this week" in chat. I answer from your own data.</string>
+    <string name="raahi_guide_vault_1">Add a document and its dates. I remind you before it expires.</string>
+    <string name="raahi_guide_vault_2">Save a new version and the old one stays in the timeline.</string>
+    <string name="raahi_guide_vault_3">Ask me "when does my car insurance end" in chat.</string>
+    <string name="raahi_guide_notes_1">Write anything. Tag with #tags and link notes with [[Title]].</string>
+    <string name="raahi_guide_notes_2">Search finds words inside notes and pictures.</string>
+    <string name="raahi_guide_notes_3">Set a reminder on a note and I bring it back at the right time.</string>
+    <string name="raahi_guide_patterns_1">I pair your days: sleep, steps, focus and screen time.</string>
+    <string name="raahi_guide_patterns_2">A pattern shows only when it is clear enough to trust.</string>
+    <string name="raahi_guide_patterns_3">These are hints, not rules. You decide what to change.</string>
+    <string name="raahi_guide_goals_1">A goal takes weeks. Add milestones and link tasks to it.</string>
+    <string name="raahi_guide_goals_2">Progress works itself out from what you finish.</string>
+    <string name="raahi_guide_goals_3">Ask me "what is next on my goal" in chat.</string>
+    <string name="raahi_saved_1">Saved. I have it.</string>
+    <string name="raahi_saved_many">Saved %1$d. I have them.</string>
+    <string name="raahi_postcard_from">From Raahi</string>
+    <string name="raahi_postcard_some">This week: %1$d small things.</string>
+    <string name="raahi_postcard_one">This week: 1 small thing.</string>
+    <string name="raahi_postcard_none">A quiet week. The next one is open.</string>
+    <string name="raahi_goal_done">Goal reached. Well done.</string>
+    <string name="raahi_goal_empty">Add a milestone or link a task. I will work out the progress.</string>
+</resources>

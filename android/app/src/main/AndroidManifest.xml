@@ -4,6 +4,10 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Reminders and events at their minute (PRD 2.1). Reminders and the calendar are core to AIIMIN, so it uses
+         USE_EXACT_ALARM (granted at install, Android 13+); Android 12 asks for SCHEDULE_EXACT_ALARM instead. -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
     <!-- In-app speech capture (no system dialog). -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -55,6 +59,7 @@
         android:name=".AiiminApplication"
         android:allowBackup="false"
         android:usesCleartextTraffic="false"
+        android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher"
@@ -107,6 +112,12 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/csv" />
             </intent-filter>
+            <!-- Part 11: a shared picture becomes a note. -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
         </activity>
 
         <!-- Health Connect permission-usage entry (Android 14+). -->
@@ -120,6 +131,35 @@
                 <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
             </intent-filter>
         </activity-alias>
+
+        <!-- PRD 1.4: the Today widget, 2x2 and 4x2 in one resizable provider. -->
+        <receiver android:name=".today.TodayWidgetReceiver" android:exported="true" android:label="Today">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/today_widget" />
+        </receiver>
+        <!-- Part 11: Notes widget and the "New note" quick-settings tile. -->
+        <receiver android:name=".notes.NotesWidgetReceiver" android:exported="true" android:label="Notes">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/notes_widget" />
+        </receiver>
+        <service
+            android:name=".notes.NewNoteTile"
+            android:exported="true"
+            android:icon="@drawable/ic_stat_aiimin"
+            android:label="@string/new_note_tile"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <!-- Notification engine v2: the exact alarm for the next due notice, and actions from the shade. -->
+        <receiver android:name=".notify.NotifyAlarmReceiver" android:exported="false" />
+        <receiver android:name=".notify.NotifyActionReceiver" android:exported="false" />
 
         <!-- Opt-in payment alerts via notification access (works without SMS). -->
         <receiver

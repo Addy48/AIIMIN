@@ -89,9 +89,9 @@ fun PaymentsScreen(vm: PaymentsViewModel = hiltViewModel()) {
         }
         Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
             AppTextField(q, { q = it }, placeholder = "Payee, category or ₹", leading = AppIcons.Search)
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(12.dp))
             Segmented(listOf("All", "Spent", "Received"), dir, { dir = it })
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(12.dp))
             PillRow {
                 Pill("Any category", cat == null, { cat = null })
                 cats.forEach { k -> Pill(k, cat == k, { cat = if (cat == k) null else k }) }
@@ -100,7 +100,7 @@ fun PaymentsScreen(vm: PaymentsViewModel = hiltViewModel()) {
             val inn = shown.filter { it.direction == "in" }.sumOf { it.amountPaise }
             Text(
                 "${shown.size} ${if (shown.size == 1) "payment" else "payments"} · ${Money.whole(out)} out" + if (inn > 0) " · ${Money.whole(inn)} in" else "",
-                style = Aiimin.type.caption, modifier = Modifier.padding(vertical = 10.dp),
+                style = Aiimin.type.caption, modifier = Modifier.padding(vertical = 12.dp),
             )
         }
         if (shown.isEmpty()) {
@@ -120,7 +120,7 @@ private fun PaymentList(shown: List<TxnEntity>, nav: aiimin.designsystem.nav.App
             item(key = "h$day") {
                 val d = LocalDate.parse(day)
                 val spent = rows.filter { it.direction == "out" }.sumOf { it.amountPaise }
-                Row(Modifier.fillMaxWidth().padding(top = 22.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.fillMaxWidth().padding(top = 24.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text(Dates.relative(d, LocalDate.now()).uppercase(), style = Aiimin.type.eyebrow.copy(color = c.textMuted), modifier = Modifier.weight(1f))
                     if (spent > 0) Text(Money.whole(spent), style = Aiimin.type.caption.copy(fontFeatureSettings = "tnum"))
                 }
@@ -163,7 +163,7 @@ fun CategoryScreen(name: String, vm: PaymentsViewModel = hiltViewModel()) {
         LazyColumn(contentPadding = PaddingValues(start = Aiimin.space.gutter, end = Aiimin.space.gutter, bottom = 40.dp)) {
             item {
                 Text("This month", style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(top = 8.dp))
-                Text(Money.whole(now), style = Aiimin.type.heroNumber.copy(fontSize = 46.sp, lineHeight = 48.sp))
+                Text(Money.whole(now), style = Aiimin.type.numberLarge)
                 val diff = now - prevToDate
                 Text(
                     when {

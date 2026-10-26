@@ -1,5 +1,7 @@
 package aiimin.designsystem.component
 
+import androidx.compose.ui.semantics.selected
+import aiimin.designsystem.theme.LocalReduceMotion
 import androidx.compose.foundation.selection.toggleable
 
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,7 +12,6 @@ import aiimin.designsystem.icon.AppIcons
 import aiimin.designsystem.theme.Aiimin
 import aiimin.designsystem.theme.Motion
 import aiimin.designsystem.theme.Shapes
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -39,6 +40,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -79,15 +81,17 @@ fun AppButton(
 ) {
     val c = Aiimin.colors
     // Handoff §5.7: primary = ink fill + white text; secondary = transparent with a 1dp outline. No gradients, no pills.
-    val onInk = if (c.isDark) c.base else Color.White
+    val onInk = c.onInk
     val (bg, fg, border) = when (kind) {
         ButtonKind.PRIMARY -> Triple(c.text, onInk, null)
         ButtonKind.SECONDARY -> Triple(Color.Transparent, c.text, c.borderStrong)
-        ButtonKind.GHOST -> Triple(Color.Transparent, c.accentText, null)
+        ButtonKind.GHOST -> Triple(Color.Transparent, c.link, null)
         ButtonKind.DANGER -> Triple(Color.Transparent, c.warn, c.warn)
     }
     Row(
         modifier
+            // Part 18: a compact (40 dp) button still has a 48 dp touch target.
+            .then(if (compact) Modifier.minimumInteractiveComponentSize() else Modifier)
             .alphaIf(!enabled)
             .pressable(if (enabled) onClick else null)
             .clip(Shapes.control)
@@ -116,7 +120,10 @@ fun AppButton(
 
 private fun Modifier.alphaIf(dim: Boolean) = if (dim) this.alpha(0.4f) else this
 
-/** 44 dp touch target, icon only, always labelled for TalkBack. */
+/**
+ * 48 dp touch target (Part 18), 22 dp icon, always labelled for TalkBack. The icon sits 13 dp inside the
+ * target, so bars place the button 3 dp from the screen edge to put the icon on the 16 dp margin (S1).
+ */
 @Composable
 fun AppIconButton(
     icon: ImageVector,
@@ -125,7 +132,7 @@ fun AppIconButton(
     modifier: Modifier = Modifier,
     tint: Color = Aiimin.colors.text,
     background: Color = Color.Transparent,
-    size: Dp = 44.dp,
+    size: Dp = 48.dp,
 ) {
     Box(
         modifier
@@ -136,7 +143,7 @@ fun AppIconButton(
             .semantics { this.contentDescription = contentDescription },
         contentAlignment = Alignment.Center,
     ) {
-        Icon(icon, null, tint = tint, modifier = Modifier.size(22.dp))
+        Icon(icon, null, tint = tint, modifier = Modifier.size(24.dp))
     }
 }
 
@@ -157,8 +164,8 @@ fun CheckCircle(
 ) {
     val c = Aiimin.colors
     val haptics = LocalHapticFeedback.current
-    val fill by animateColorAsState(if (checked) color else Color.Transparent, tween(Motion.FAST), label = "fill")
-    val tick by animateFloatAsState(if (checked) 1f else 0f, tween(150, easing = Motion.enter), label = "tick")
+    val fill = if (checked) color else Color.Transparent
+    val tick by animateFloatAsState(if (checked) 1f else 0f, Motion.move(LocalReduceMotion.current, Motion.quick()), label = "tick")
     val shape = RoundedCornerShape(6.dp)
     Box(
         modifier
@@ -176,15 +183,15 @@ fun CheckCircle(
     ) {
         Box(
             Modifier
-                .size(22.dp)
-                .then(if (proof && checked) Modifier.border(1.5.dp, color, RoundedCornerShape(8.dp)).padding(2.5.dp) else Modifier)
+                .size(24.dp)
+                .then(if (proof && checked) Modifier.border(1.5.dp, color, RoundedCornerShape(8.dp)).padding(4.dp) else Modifier)
                 .clip(shape)
                 .background(fill)
                 .then(if (checked) Modifier else Modifier.border(1.5.dp, c.textFaint, shape)),
             contentAlignment = Alignment.Center,
         ) {
             if (tick > 0.01f) {
-                Icon(AppIcons.Check, null, tint = if (c.isDark) c.base else Color.White, modifier = Modifier.size(15.dp).scale(0.6f + 0.4f * tick).alpha(tick))
+                Icon(AppIcons.Check, null, tint = c.onInk, modifier = Modifier.size(16.dp).scale(0.6f + 0.4f * tick).alpha(tick))
             }
         }
     }
@@ -193,7 +200,7 @@ fun CheckCircle(
 /** Title that strikes through when done (Things-style). */
 @Composable
 fun DoneText(text: String, done: Boolean, style: TextStyle = Aiimin.type.bodyStrong, modifier: Modifier = Modifier, maxLines: Int = 2) {
-    val color by animateColorAsState(if (done) Aiimin.colors.textFaint else style.color, tween(Motion.BASE), label = "doneText")
+    val color = if (done) Aiimin.colors.textFaint else style.color
     Text(
         text,
         style = style.copy(color = color, textDecoration = if (done) TextDecoration.LineThrough else null),
@@ -213,24 +220,27 @@ fun Pill(
     icon: ImageVector? = null,
     count: Int? = null,
 ) {
+    // 40 dp chip inside a 48 dp touch target (Part 18; S9). Rows of pills therefore need no extra gap.
     val c = Aiimin.colors
-    val onInk = if (c.isDark) c.base else Color.White
-    val bg by animateColorAsState(if (selected) c.text else Color.Transparent, tween(Motion.FAST), label = "pillBg")
-    val fg by animateColorAsState(if (selected) onInk else c.text, tween(Motion.FAST), label = "pillFg")
+    val onInk = c.onInk
+    val bg = if (selected) c.text else Color.Transparent
+    val fg = if (selected) onInk else c.text
     val chip = RoundedCornerShape(6.dp)
     Row(
         modifier
+            .minimumInteractiveComponentSize()
+            .semantics { this.selected = selected }
             .pressable(onClick, role = Role.Tab)
             .clip(chip)
             .background(bg)
             .then(if (selected) Modifier else Modifier.border(1.dp, c.borderStrong, chip))
-            .heightIn(min = 36.dp)
+            .heightIn(min = 40.dp)
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         if (icon != null) Icon(icon, null, tint = fg, modifier = Modifier.size(16.dp))
-        Text(text, style = Aiimin.type.label.copy(color = fg, fontSize = 14.sp), maxLines = 1)
+        Text(text, style = Aiimin.type.labelLarge.copy(color = fg), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
         if (count != null) Text(count.toString(), style = Aiimin.type.caption.copy(color = fg.copy(alpha = 0.7f)))
     }
 }
@@ -242,7 +252,6 @@ fun PillRow(content: @Composable () -> Unit) {
     androidx.compose.foundation.layout.FlowRow(
         Modifier.fillMaxWidth().padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) { content() }
 }
 
@@ -255,14 +264,15 @@ fun Segmented(options: List<String>, selected: Int, onSelect: (Int) -> Unit, mod
     val c = Aiimin.colors
     val inner = RoundedCornerShape(8.dp)
     BoxWithConstraints(
-        modifier.fillMaxWidth().height(40.dp).clip(Shapes.control).background(c.segmentTrack).padding(3.dp),
+        // A fixed 48 dp target: BoxWithConstraints can't be measured intrinsically, and the labels auto-size to fit.
+        modifier.fillMaxWidth().height(48.dp).clip(Shapes.control).background(c.segmentTrack).padding(4.dp),
     ) {
         val w = maxWidth / options.size
-        val x by animateDpAsState(w * selected, spring(dampingRatio = 0.85f, stiffness = 400f), label = "thumb")
+        val x by animateDpAsState(w * selected, Motion.move(LocalReduceMotion.current, Motion.springSoft()), label = "thumb")
         Box(
-            Modifier.offset(x = x).width(w).fillMaxHeight()
-                .shadow(1.dp, inner, ambientColor = Color(0x33000000), spotColor = Color(0x33000000))
-                .clip(inner).background(if (c.isDark) c.overlay else Color.White),
+            Modifier.offset { androidx.compose.ui.unit.IntOffset(x.roundToPx(), 0) }.width(w).fillMaxHeight()
+                .shadow(1.dp, inner, ambientColor = c.shadowKey, spotColor = c.shadowKey)
+                .clip(inner).background(c.paper),
         )
         Row(Modifier.fillMaxWidth()) {
             options.forEachIndexed { i, o ->
@@ -270,7 +280,12 @@ fun Segmented(options: List<String>, selected: Int, onSelect: (Int) -> Unit, mod
                     Modifier.width(w).fillMaxHeight().clip(inner).clickable(role = Role.Tab) { onSelect(i) },
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(o, style = Aiimin.type.label.copy(color = c.text, fontWeight = FontWeight.SemiBold), maxLines = 1, textAlign = TextAlign.Center)
+                    // Equal widths; at large text a long label steps its size down instead of touching its neighbour (D-007).
+                    val st = Aiimin.type.label.copy(color = c.text, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center)
+                    androidx.compose.foundation.text.BasicText(
+                        o, style = st, maxLines = 1, modifier = Modifier.padding(horizontal = 8.dp),
+                        autoSize = androidx.compose.foundation.text.TextAutoSize.StepBased(minFontSize = 10.sp, maxFontSize = st.fontSize, stepSize = 0.5.sp),
+                    )
                 }
             }
         }
@@ -298,7 +313,7 @@ fun AppTextField(
     val c = Aiimin.colors
     androidx.compose.foundation.layout.Column(modifier) {
         if (label != null) {
-            Text(label, style = Aiimin.type.caption, modifier = Modifier.padding(start = 4.dp, bottom = 6.dp))
+            Text(label, style = Aiimin.type.caption, modifier = Modifier.padding(start = 4.dp, bottom = 8.dp))
         }
         Row(
             Modifier
@@ -307,15 +322,21 @@ fun AppTextField(
                 .background(c.surface)
                 .border(1.dp, c.borderStrong, Shapes.control)
                 .heightIn(min = 48.dp)
-                .padding(horizontal = 14.dp, vertical = 12.dp),
+                .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = if (singleLine) Alignment.CenterVertically else Alignment.Top,
         ) {
             if (leading != null) {
-                Icon(leading, null, tint = c.textFaint, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.width(10.dp))
+                Icon(leading, null, tint = c.textFaint, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.width(12.dp))
             }
             Box(Modifier.weight(1f)) {
-                if (value.isEmpty()) Text(placeholder, style = textStyle.copy(color = c.textFaint))
+                // D-030/D-038: one line, and 3 dp clear of the cursor so the caret never sits on the first letter.
+                if (value.isEmpty()) {
+                    Text(
+                        placeholder, style = textStyle.copy(color = c.textFaint), modifier = Modifier.padding(start = 4.dp),
+                        maxLines = if (singleLine) 1 else Int.MAX_VALUE, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    )
+                }
                 BasicTextField(
                     value = value,
                     onValueChange = onValueChange,
@@ -346,12 +367,12 @@ fun SwitchRow(title: String, checked: Boolean, onChange: (Boolean) -> Unit, subt
         leading = icon?.let { { IconTile(it) } },
         onClick = null,
         trailing = {
-            val x by animateDpAsState(if (checked) 16.dp else 0.dp, tween(Motion.FAST, easing = Motion.enter), label = "knob")
-            val track by animateColorAsState(if (checked) c.text else c.borderStrong, tween(Motion.FAST), label = "track")
+            val x by animateDpAsState(if (checked) 16.dp else 0.dp, Motion.move(LocalReduceMotion.current, Motion.quick()), label = "knob")
+            val track = if (checked) c.text else c.borderStrong
             Box(
-                Modifier.width(46.dp).height(28.dp).clip(Shapes.control).background(track).padding(3.dp),
+                Modifier.width(48.dp).height(28.dp).clip(Shapes.control).background(track).padding(4.dp),
             ) {
-                Box(Modifier.offset(x = x + 2.dp).size(22.dp).clip(RoundedCornerShape(6.dp)).background(if (checked && c.isDark) c.base else Color.White))
+                Box(Modifier.offset(x = x + 2.dp).size(24.dp).clip(RoundedCornerShape(6.dp)).background(c.paper))
             }
         },
     )

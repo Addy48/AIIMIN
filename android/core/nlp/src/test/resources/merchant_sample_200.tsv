@@ -1,0 +1,203 @@
+# Seeded sample (fixed, hand-written 20 Oct 2026) of payee names as Indian bank SMS and UPI alerts show them after
+# BankSms.payeeName. Brands in several spellings, joined names, legal suffixes, branch names and neighbourhood shops.
+# name<TAB>expected category
+Swiggy	Food
+SWIGGY LIMITED	Food
+Swiggy Instamart	Grocery
+SWIGGYINSTAMART	Grocery
+Zomato Ltd	Food
+Blinkit	Grocery
+Grofers India Pvt Ltd	Grocery
+Zepto Marketplace	Grocery
+BigBasket	Grocery
+Supermarket Grocery Supplies Pvt Ltd	Grocery
+Avenue Supermarts Ltd	Grocery
+DMart Ready	Grocery
+Reliance Retail Smart Bazaar	Grocery
+JioMart	Grocery
+Ratnadeep Super Market	Grocery
+Nature's Basket	Grocery
+Spencers Retail	Grocery
+More Retail	Grocery
+Star Bazaar Andheri	Grocery
+Country Delight	Grocery
+Licious Bangalore	Grocery
+FreshToHome Foods	Grocery
+Shree Ganesh Kirana Stores	Grocery
+Balaji Provision Store	Grocery
+Sri Lakshmi General Stores	Grocery
+Amul Parlour	Grocery
+Mother Dairy Booth	Grocery
+Domino's Pizza	Food
+Jubilant Foodworks Ltd	Food
+Pizza Hut	Food
+McDonald's	Food
+Hardcastle Restaurants	Food
+KFC	Food
+Burger King India	Food
+Subway Sandwiches	Food
+Starbucks Tata	Food
+Cafe Coffee Day	Food
+Chaayos	Food
+Chai Point	Food
+Third Wave Coffee	Food
+Blue Tokai Coffee Roasters	Food
+Haldiram Snacks	Food
+Bikanervala	Food
+Barbeque Nation	Food
+Behrouz Biryani	Food
+Faasos	Food
+Wow Momo Foods	Food
+Paradise Biryani	Food
+Theobroma Foods	Food
+Baskin Robbins	Food
+Saravana Bhavan	Food
+A2B Adyar Ananda Bhavan	Food
+Hotel Annapurna Veg	Food
+Sharma Dhaba	Food
+Gupta Sweets	Food
+Krishna Bakery	Food
+New Punjabi Restaurant	Food
+Udupi Cafe	Food
+Om Sai Juice Centre	Food
+Uber India Systems	Transport
+Ola	Transport
+ANI Technologies	Transport
+Rapido Bike Taxi	Transport
+Namma Yatri	Transport
+BluSmart Mobility	Transport
+Delhi Metro Rail Corporation	Transport
+Bangalore Metro Rail Corp	Transport
+Bharat Petroleum Corporation	Transport
+BPCL Fuel Station	Transport
+Indian Oil Corporation	Transport
+IOCL Petrol Pump	Transport
+Hindustan Petroleum	Transport
+Shell India Markets	Transport
+Nayara Energy	Transport
+Jio-bp Mobility	Transport
+Om Sai Petroleum	Transport
+Sri Krishna Fuel Station	Transport
+FASTag Recharge	Transport
+NHAI Toll Plaza	Transport
+Parking Phoenix Mall	Transport
+IRCTC E Ticketing	Travel
+MakeMyTrip India	Travel
+Goibibo	Travel
+Cleartrip	Travel
+Yatra Online	Travel
+EaseMyTrip	Travel
+IndiGo	Travel
+InterGlobe Aviation	Travel
+Air India	Travel
+SpiceJet	Travel
+Akasa Air	Travel
+OYO Rooms	Travel
+Oravel Stays	Travel
+Airbnb	Travel
+Booking.com	Travel
+redBus	Travel
+Abhibus	Travel
+Taj Hotels	Travel
+Zostel	Travel
+Netflix Entertainment Services	Subs
+Spotify India	Subs
+Disney Hotstar	Subs
+Novi Digital Entertainment	Subs
+YouTube Premium	Subs
+Google Play	Subs
+Apple Services	Subs
+Amazon Prime	Subs
+SonyLIV	Subs
+ZEE5	Subs
+JioCinema	Subs
+Microsoft 365	Subs
+ChatGPT OpenAI	Subs
+Jio Prepaid Recharge	Bills
+Reliance Jio Infocomm	Bills
+Airtel Postpaid	Bills
+Vodafone Idea	Bills
+BSNL Bill	Bills
+ACT Fibernet	Bills
+Hathway Broadband	Bills
+Tata Play	Bills
+MSEDCL Electricity	Bills
+BESCOM Electricity	Bills
+Tata Power	Bills
+Adani Electricity	Bills
+BSES Electricity	Bills
+Mahanagar Gas	Bills
+Indraprastha Gas	Bills
+Indane Gas	Bills
+Bharat Gas Booking	Bills
+LIC	Bills
+HDFC Life Insurance	Bills
+ICICI Lombard	Bills
+Star Health Insurance	Bills
+Bajaj Finance EMI	Bills
+HDFC Credit Card Bill	Bills
+Delhi Jal Board	Bills
+Amazon Seller Services	Shopping
+Flipkart Internet	Shopping
+Myntra Designs	Shopping
+Ajio	Shopping
+Meesho	Shopping
+Nykaa E Retail	Shopping
+Croma Infiniti Retail	Shopping
+Reliance Digital	Shopping
+Vijay Sales	Shopping
+Decathlon Sports India	Shopping
+Lifestyle International	Shopping
+Pantaloons	Shopping
+Westside Trent	Shopping
+Zudio	Shopping
+Shoppers Stop	Shopping
+Bata India	Shopping
+Lenskart	Shopping
+IKEA India	Shopping
+Pepperfry	Shopping
+Tanishq	Shopping
+Titan Company	Shopping
+Max Fashion	Shopping
+H&M Hennes	Shopping
+Uniqlo India	Shopping
+Mobile Point Electronics	Shopping
+Apollo Pharmacy	Health
+MedPlus Health	Health
+Netmeds	Health
+PharmEasy	Health
+Tata 1mg	Health
+Practo	Health
+Dr Lal PathLabs	Health
+Thyrocare	Health
+Metropolis Healthcare	Health
+Fortis Hospital	Health
+Manipal Hospitals	Health
+Sharma Medical Store	Health
+Jai Hind Chemist	Health
+City Care Clinic	Health
+Smile Dental Clinic	Health
+Cult Fit	Health
+Gold's Gym	Health
+BookMyShow	Fun
+Bigtree Entertainment	Fun
+PVR Phoenix	Fun
+INOX Leisure	Fun
+Cinepolis India	Fun
+Wonderla Holidays	Fun
+Timezone Entertainment	Fun
+Steam Games	Fun
+PlayStation Store	Fun
+Dream11	Fun
+Byju's	Education
+Unacademy	Education
+Vedantu	Education
+Physics Wallah	Education
+Udemy	Education
+Coursera	Education
+Delhi Public School	Education
+St Xavier's College	Education
+Ferns N Petals	Gifts
+IGP Gifts	Gifts
+Archies Gallery	Gifts
+NoBroker Rent	Rent

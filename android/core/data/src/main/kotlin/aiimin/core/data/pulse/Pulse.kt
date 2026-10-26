@@ -108,6 +108,9 @@ class Pulse @Inject constructor(
                     beat(Reason.TICK)
                 }
             }
+        } else {
+            // Leaving the app: re-arm the next reminder at once, so a task added a moment ago is on time (PRD 2.1).
+            scope.launch { beat(Reason.WRITE, force = setOf(Job.NOTIFY), only = setOf(Job.NOTIFY)) }
         }
     }
 

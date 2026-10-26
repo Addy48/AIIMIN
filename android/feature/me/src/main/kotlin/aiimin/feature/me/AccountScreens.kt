@@ -1,5 +1,7 @@
 package aiimin.feature.me
 
+import aiimin.designsystem.component.ListRow
+import aiimin.designsystem.component.IconTile
 import aiimin.core.data.app.DataControlRepository
 import aiimin.core.data.app.ExportRepository
 import aiimin.core.data.app.PreferencesRepository
@@ -158,13 +160,13 @@ fun AccountScreen(vm: AccountViewModel = hiltViewModel()) {
             if (sess?.signedIn == true) {
                 SignedIn(sess, s, state, busy, vm, onSignOut = { signOut = true })
             } else {
-                Text("Keep it safe, and on the web too", style = Aiimin.type.title.copy(fontSize = 26.sp, lineHeight = 32.sp), modifier = Modifier.padding(top = 8.dp))
+                Text("Keep it safe, and on the web too", style = Aiimin.type.title, modifier = Modifier.padding(top = 8.dp))
                 Text(
                     "Sign in to aiimin.in to back up your tasks, notes and payments and see them on the website. The app works fully without an account, and you can sign in any time.",
-                    style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(top = 10.dp, bottom = 24.dp),
+                    style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(top = 12.dp, bottom = 24.dp),
                 )
                 AppButton("Sign in", { nav.open(Route.SignIn(false)) }, Modifier.fillMaxWidth())
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(12.dp))
                 AppButton("Create an account", { nav.open(Route.SignIn(true)) }, Modifier.fillMaxWidth(), kind = ButtonKind.SECONDARY)
                 Text(
                     "Only what you allow leaves the phone: tasks, notes and payments. Documents, bank-message text and health samples never do.",
@@ -172,7 +174,7 @@ fun AccountScreen(vm: AccountViewModel = hiltViewModel()) {
                 )
             }
             Spacer(Modifier.height(24.dp))
-            Text("Privacy and data", style = Aiimin.type.label.copy(color = c.accentText), modifier = Modifier.clickable { nav.open(Route.Privacy) }.padding(vertical = 8.dp))
+            Text("Privacy and data", style = Aiimin.type.label.copy(color = c.link), modifier = Modifier.clickable { nav.open(Route.Privacy) }.padding(vertical = 8.dp))
             Spacer(Modifier.height(32.dp))
         }
     }
@@ -200,9 +202,9 @@ fun AccountScreen(vm: AccountViewModel = hiltViewModel()) {
 private fun SignedIn(sess: Session, s: AppSettings?, state: SyncState, busy: Boolean, vm: AccountViewModel, onSignOut: () -> Unit) {
     val c = Aiimin.colors
     val context = LocalContext.current
-    Text(sess.name?.takeIf { it.isNotBlank() } ?: sess.osId ?: sess.label.orEmpty(), style = Aiimin.type.title.copy(fontSize = 26.sp), modifier = Modifier.padding(top = 8.dp))
+    Text(sess.name?.takeIf { it.isNotBlank() } ?: sess.osId ?: sess.label.orEmpty(), style = Aiimin.type.title, modifier = Modifier.padding(top = 8.dp))
     listOfNotNull(sess.osId?.let { "OS-ID $it" }, sess.email).forEach { Text(it, style = Aiimin.type.body.copy(color = c.textMuted)) }
-    if (!sess.verified) Text("Your email isn't verified yet. Check your inbox for the link from aiimin.in.", style = Aiimin.type.caption.copy(color = c.warn, fontSize = 13.sp), modifier = Modifier.padding(top = 8.dp))
+    if (!sess.verified) Text("Your email isn't verified yet. Check your inbox for the link from aiimin.in.", style = Aiimin.type.note.copy(color = c.warn), modifier = Modifier.padding(top = 8.dp))
     SectionHeader("Sync")
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
         Column(Modifier.weight(1f)) {
@@ -240,22 +242,22 @@ private fun SignedIn(sess: Session, s: AppSettings?, state: SyncState, busy: Boo
     Row(Modifier.fillMaxWidth().clickable { nav.open(Route.SyncSettings) }.heightIn(min = 60.dp), verticalAlignment = Alignment.CenterVertically) {
         Icon(AppIcons.Sliders, null, tint = c.text, modifier = Modifier.padding(end = 16.dp))
         Column(Modifier.weight(1f)) {
-            Text("Sync settings", style = Aiimin.type.body.copy(color = c.text, fontSize = 16.sp))
+            Text("Sync settings", style = Aiimin.type.body.copy(color = c.text))
             Text(if (on.isEmpty()) "Nothing syncs. Everything stays on this phone." else on.joinToString(", ").replaceFirstChar { it.uppercase() }, style = Aiimin.type.caption)
         }
         Icon(AppIcons.CaretRight, null, tint = c.textMuted)
     }
     Hairline()
-    Text("Documents, emergency cards and health samples never sync. What syncs is stored on aiimin.in as plain text.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 10.dp))
+    Text("Documents, emergency cards and health samples never sync. What syncs is stored on aiimin.in as plain text.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 12.dp))
     SectionHeader("Account")
     Row(Modifier.fillMaxWidth().clickable { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://www.aiimin.in"))) }.heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
         Icon(AppIcons.Export, null, tint = c.text, modifier = Modifier.padding(end = 16.dp))
-        Text("Open aiimin.in", style = Aiimin.type.body.copy(color = c.text, fontSize = 16.sp))
+        Text("Open aiimin.in", style = Aiimin.type.body.copy(color = c.text))
     }
     Hairline()
     Row(Modifier.fillMaxWidth().clickable(onClick = onSignOut).heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
         Icon(AppIcons.Lock, null, tint = c.text, modifier = Modifier.padding(end = 16.dp))
-        Text("Sign out", style = Aiimin.type.body.copy(color = c.text, fontSize = 16.sp))
+        Text("Sign out", style = Aiimin.type.body.copy(color = c.text))
     }
     Hairline()
 }
@@ -298,19 +300,22 @@ fun PrivacyScreen(vm: AccountViewModel = hiltViewModel(), me: MeViewModel = hilt
                 "Never leaves the phone" to "Document files, bank-message text, emergency cards and health samples.",
                 "Never done" to "Selling your data, ads, lending, or credit scoring.",
             ).forEach { (h, b) ->
-                Text(h, style = Aiimin.type.headline, modifier = Modifier.padding(top = 14.dp))
+                Text(h, style = Aiimin.type.headline, modifier = Modifier.padding(top = 16.dp))
                 Text(b, style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(top = 2.dp))
             }
             SectionHeader("Protection")
             SwitchRow("Lock the app", st.appLock, { v -> me.update { it.copy(appLock = v) } }, subtitle = "Fingerprint, face or screen lock when opening AIIMIN", icon = AppIcons.Fingerprint)
             SwitchRow("Hide AIIMIN in the app switcher", st.hideInRecents, { v -> me.update { it.copy(hideInRecents = v) } }, subtitle = "Also blocks screenshots", icon = AppIcons.LockSimple)
-            Row(Modifier.fillMaxWidth().clickable { me.verify() }.heightIn(min = 60.dp), verticalAlignment = Alignment.CenterVertically) {
-                Icon(AppIcons.ShieldCheck, null, tint = c.text, modifier = Modifier.padding(end = 16.dp))
-                Column {
-                    Text("Check data integrity", style = Aiimin.type.body.copy(color = c.text, fontSize = 16.sp))
-                    Text(when (integrity) { null -> "Verifies the hash chain of your activity log"; true -> "Intact. Nothing changed outside AIIMIN"; false -> "Data was changed outside AIIMIN" }, style = Aiimin.type.caption)
-                }
-            }
+            // D-035: the same row shape as the switches above, so icon and text share their columns.
+            ListRow(
+                "Check data integrity",
+                subtitle = when (integrity) { null -> "Verifies the hash chain of your activity log"; true -> "Intact. Nothing changed outside AIIMIN"; false -> "Data was changed outside AIIMIN" },
+                leading = { IconTile(AppIcons.ShieldCheck) },
+                onClick = { me.verify() },
+            )
+            Hairline()
+            SectionHeader("Your rights")
+            ListRow("Your rights", subtitle = "See, correct, export or erase your data, withdraw consent, name someone, complain", leading = { IconTile(AppIcons.Scales) }, onClick = { nav.open(Route.YourRights) }, maxSubtitleLines = 2)
             Hairline()
             SectionHeader("Your copy")
             Row(Modifier.fillMaxWidth().clickable {
@@ -322,7 +327,7 @@ fun PrivacyScreen(vm: AccountViewModel = hiltViewModel(), me: MeViewModel = hilt
             }.heightIn(min = 60.dp), verticalAlignment = Alignment.CenterVertically) {
                 Icon(AppIcons.Export, null, tint = c.text, modifier = Modifier.padding(end = 16.dp))
                 Column {
-                    Text("Export everything", style = Aiimin.type.body.copy(color = c.text, fontSize = 16.sp))
+                    Text("Export everything", style = Aiimin.type.body.copy(color = c.text))
                     Text("A zip of your log, tasks, notes and vault files", style = Aiimin.type.caption)
                 }
             }
@@ -334,8 +339,8 @@ fun PrivacyScreen(vm: AccountViewModel = hiltViewModel(), me: MeViewModel = hilt
                 DangerRow("Delete my aiimin.in account", "Removes your account and its data from aiimin.in, and erases this phone.") { sheet = "account"; pin = ""; err = null }
             }
             Row(Modifier.padding(top = 24.dp, bottom = 32.dp)) {
-                Text("Privacy Policy", style = Aiimin.type.label.copy(color = c.accentText), modifier = Modifier.clickable { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://www.aiimin.in/privacy"))) }.padding(end = 20.dp))
-                Text("Terms", style = Aiimin.type.label.copy(color = c.accentText), modifier = Modifier.clickable { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://www.aiimin.in/terms"))) })
+                Text("Privacy Policy", style = Aiimin.type.label.copy(color = c.link), modifier = Modifier.clickable { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://www.aiimin.in/privacy"))) }.padding(end = 20.dp))
+                Text("Terms", style = Aiimin.type.label.copy(color = c.link), modifier = Modifier.clickable { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://www.aiimin.in/terms"))) })
             }
         }
     }
@@ -353,7 +358,7 @@ fun PrivacyScreen(vm: AccountViewModel = hiltViewModel(), me: MeViewModel = hilt
             AppButton("Cancel", { sheet = null }, Modifier.fillMaxWidth(), kind = ButtonKind.SECONDARY)
         }
         "account" -> AppSheet({ sheet = null }, title = "Delete your aiimin.in account?") {
-            Text("Your account and all its data on aiimin.in are removed, and this phone is erased. Enter your PIN to confirm. This can't be undone.", style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(bottom = 16.dp))
+            Text("Your account and all its data on aiimin.in are removed at once, and this phone is erased. There is no waiting period yet, so this can't be undone. Enter your PIN to confirm.", style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(bottom = 16.dp))
             PinInput(pin, { pin = it; err = null })
             err?.let { Text(it, style = Aiimin.type.caption.copy(color = c.warn), modifier = Modifier.padding(top = 8.dp)) }
             Spacer(Modifier.height(16.dp))
@@ -372,9 +377,58 @@ fun PrivacyScreen(vm: AccountViewModel = hiltViewModel(), me: MeViewModel = hilt
 @Composable
 private fun DangerRow(title: String, sub: String, onClick: () -> Unit) {
     val c = Aiimin.colors
-    Column(Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 14.dp)) {
-        Text(title, style = Aiimin.type.body.copy(color = c.warn, fontSize = 16.sp, fontWeight = FontWeight.Medium))
+    Column(Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 16.dp)) {
+        Text(title, style = Aiimin.type.body.copy(color = c.warn, fontWeight = FontWeight.Medium))
         Text(sub, style = Aiimin.type.caption)
     }
     Hairline()
+}
+
+/** Part 21 s.9 and 9a, verbatim where the policy speaks; DPDP Rule 14 asks that the means and the identifier needed be shown. */
+object Rights {
+    const val EMAIL = "support@aiimin.in"
+    const val ASK = "You can ask to see, correct, export or erase your information, withdraw consent (as easily as you gave it), and have a grievance answered. Write to support@aiimin.in; we will reply within 30 days. If you are not satisfied, you may complain to the Data Protection Board of India once it is constituted. If you live in the European Union or United Kingdom, you may also complain to your local data protection authority."
+    const val WITHDRAW = "In the app go to Settings > Privacy and switch off sync, bank-message reading, health, usage, microphone or voice. This is as easy as turning them on. Turning one off does not remove what already sits on your phone; use \"Erase this phone\" for that."
+    const val NOMINATE = "You may name a person who can use your rights for you if you die or cannot act. Email support@aiimin.in from your sign-in address with their name and contact details. We check them before we act."
+    const val BOARD = "You may complain to the Data Protection Board of India (website: dpb.gov.in, once it is constituted). We ask that you contact us first, but you do not have to."
+    const val IDENTIFIER = "Write from your sign-in email, or include it, so we can find your account. Nothing else is needed."
+    const val REPLY = "Within 30 days; the law allows us at most 90 days."
+    const val BREACH = "If a personal-data breach affects you, we will tell you without delay in the app and by email. Our message will say what happened, when, how far it reached, what it may mean for you, what we have done, what you can do to protect yourself, and a person you can ask. We will also report it to the Data Protection Board without delay and send a full report within 72 hours."
+}
+
+@Composable
+fun YourRightsScreen(me: MeViewModel = hiltViewModel()) {
+    val nav = LocalNavigator.current
+    val context = LocalContext.current
+    val c = Aiimin.colors
+    fun mail(subject: String) = runCatching {
+        context.startActivity(Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:${Rights.EMAIL}")).putExtra(Intent.EXTRA_SUBJECT, subject))
+    }
+    Column(Modifier.fillMaxSize().background(c.base)) {
+        TopBar("Your rights", onBack = { nav.back() })
+        Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Aiimin.space.gutter)) {
+            Text(Rights.ASK, style = Aiimin.type.body, modifier = Modifier.padding(top = 4.dp))
+            SectionHeader("Do it in the app")
+            ListRow("Export everything", subtitle = "Settings > Privacy > Your copy", leading = { IconTile(AppIcons.Export) }, onClick = { nav.open(Route.Privacy) })
+            Hairline()
+            ListRow("Correct", subtitle = "Edit any entry where you see it; your name in Edit profile", leading = { IconTile(AppIcons.Pencil) }, onClick = { nav.open(Route.EditProfile) })
+            Hairline()
+            ListRow("Erase this phone or delete your account", subtitle = "Settings > Privacy > Erase", leading = { IconTile(AppIcons.Trash) }, onClick = { nav.open(Route.Privacy) })
+            SectionHeader("Withdraw consent")
+            Text(Rights.WITHDRAW, style = Aiimin.type.note)
+            SectionHeader("Ask us")
+            Text(Rights.IDENTIFIER, style = Aiimin.type.note)
+            Text("Reply time: ${Rights.REPLY.replaceFirstChar(Char::lowercase)}", style = Aiimin.type.note, modifier = Modifier.padding(top = 8.dp))
+            Spacer(Modifier.height(12.dp))
+            AppButton("Write to ${Rights.EMAIL}", { mail("My data rights") }, Modifier.fillMaxWidth(), kind = ButtonKind.SECONDARY, icon = AppIcons.EnvelopeSimple)
+            SectionHeader("Nominate someone")
+            Text(Rights.NOMINATE, style = Aiimin.type.note)
+            AppButton("Name a nominee by email", { mail("Nominee for my AIIMIN account") }, Modifier.padding(top = 12.dp), kind = ButtonKind.GHOST, compact = true)
+            SectionHeader("Complain")
+            Text(Rights.BOARD, style = Aiimin.type.note)
+            SectionHeader("If there is a breach")
+            Text(Rights.BREACH, style = Aiimin.type.note)
+            Text("Grievance contact: ${Rights.EMAIL}", style = Aiimin.type.label, modifier = Modifier.padding(top = 20.dp, bottom = 32.dp))
+        }
+    }
 }

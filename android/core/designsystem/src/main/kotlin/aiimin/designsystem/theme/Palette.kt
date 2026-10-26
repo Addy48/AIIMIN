@@ -8,7 +8,7 @@ import androidx.compose.ui.graphics.Color
  * The locked visual system (AIIMIN_DESIGN_HANDOFF §1). Evidence beige, warm ink,
  * one orange. `accent` is for fills only (now line, sun, selected bar, badges);
  * orange text on beige uses [accentText] because #FF6B35 text fails contrast.
- * No gradients, no purple. Dark is a designed warm counterpart, not an inversion.
+ * No gradients, no purple. Light theme only (PRD 1.1); [DarkPalette] is dormant code, never offered.
  */
 @Immutable
 data class Palette(
@@ -31,8 +31,10 @@ data class Palette(
     val textFaint: Color,
     /** Fills only. */
     val accent: Color,
-    /** Orange text and links. */
+    /** Orange text: the active tab and at most one accent in a screen's content (PRD 17.1 rule 6). */
     val accentText: Color,
+    /** Text links and text actions ("All tasks", "Manage", "Terms"): ink, so they never add orange. */
+    val link: Color,
     /** Text/icons placed on an accent fill. */
     val onAccent: Color,
     val accentSoft: Color,
@@ -59,6 +61,22 @@ data class Palette(
     /** Review stack cards peeking behind the front card. */
     val stackMid: Color,
     val stackBack: Color,
+    /** Text and icons on an ink (`text`) fill. */
+    val onInk: Color,
+    /** The action word on an ink toast (undo). */
+    val onInkAccent: Color,
+    /** A page: document thumbnails, edit cards, segmented thumb. */
+    val paper: Color,
+    /** The AIIMIN mark: pale arch and inner peak (logo-symbol.svg). */
+    val markArch: Color,
+    val markInner: Color,
+    /** Soft key shadow under raised controls. */
+    val shadowKey: Color,
+    /** Chart bars when nothing is emphasised, and the dimmed bars. */
+    val chartInk: Color,
+    val chartDim: Color,
+    /** Money spend bars and the spend chart line. */
+    val moneyGold: Color,
     /** Muted domain hues for bars and legends (no rings). */
     val domains: List<Color>,
 )
@@ -77,6 +95,7 @@ val LightPalette = Palette(
     textFaint = Color(0xFF8A8478),
     accent = Color(0xFFFF6B35),
     accentText = Color(0xFFC24E20),
+    link = Color(0xFF1A1916),
     onAccent = Color(0xFF1A1916),
     accentSoft = Color(0xFFF6E5DA),
     done = Color(0xFF2F6B4F),
@@ -100,6 +119,15 @@ val LightPalette = Palette(
     chartInactive = Color(0xFF5B5750),
     stackMid = Color(0xFFF0ECE5),
     stackBack = Color(0xFFE9E5DD),
+    onInk = Color(0xFFFFFFFF),
+    onInkAccent = Color(0xFFFFB08A),
+    paper = Color(0xFFFFFFFF),
+    markArch = Color(0xFFD1D5DB),
+    markInner = Color(0xFF6B7280),
+    shadowKey = Color(0x33000000),
+    chartInk = Color(0xFF8C8273),
+    chartDim = Color(0xFFD9D2C5),
+    moneyGold = Color(0xFFB8893A),
     domains = listOf(
         Color(0xFF2F6B4F), // body
         Color(0xFFC24E20), // craft
@@ -124,6 +152,7 @@ val DarkPalette = Palette(
     textFaint = Color(0xFF7A756B),
     accent = Color(0xFFFF7A47),
     accentText = Color(0xFFFF9467),
+    link = Color(0xFFF2EFE8),
     onAccent = Color(0xFF1A1916),
     accentSoft = Color(0xFF3A2418),
     done = Color(0xFF7FB89A),
@@ -147,6 +176,15 @@ val DarkPalette = Palette(
     chartInactive = Color(0xFF8A857A),
     stackMid = Color(0xFF201E1B),
     stackBack = Color(0xFF1A1816),
+    onInk = Color(0xFF141311),
+    onInkAccent = Color(0xFFFFB08A),
+    paper = Color(0xFF26231F),
+    markArch = Color(0xFFD1D5DB),
+    markInner = Color(0xFF6B7280),
+    shadowKey = Color(0x33000000),
+    chartInk = Color(0xFF8C8273),
+    chartDim = Color(0xFF45403A),
+    moneyGold = Color(0xFFD9B26A),
     domains = listOf(
         Color(0xFF7FB89A),
         Color(0xFFFF9467),
@@ -165,6 +203,26 @@ val PersonHues = listOf(
     Color(0xFF1A1916), Color(0xFF1A1916), Color(0xFF1A1916), Color(0xFF1A1916),
 )
 
+/** One living-sky keyframe (PRD 1.3, master plan keyframes): a tint drawn as a soft glow at a low alpha. */
+@Immutable
+data class SkyTint(val color: Color, val alpha: Float, val sun: Color)
+
+/**
+ * The living sky's seven keyframes (PRD 1.3, task B18). Alpha never above 0.22; night is blue-grey, never purple.
+ * The sun colour is the day arc's one orange element; at night the arc shows a moon ring instead.
+ */
+object Sky {
+    val night = SkyTint(Color(0xFF8FA6C8), 0.14f, Color(0xFFD8653E))
+    val preDawn = SkyTint(Color(0xFFA9B4C2), 0.12f, Color(0xFFFF9A5C))
+    val dawn = SkyTint(Color(0xFFFFB38A), 0.18f, Color(0xFFFF9A5C))
+    val morning = SkyTint(Color(0xFFFF9A5C), 0.22f, Color(0xFFFF8A4C))
+    val midday = SkyTint(Color(0xFFFFE2B8), 0.14f, Color(0xFFFF6B35))
+    val golden = SkyTint(Color(0xFFFF8A4C), 0.20f, Color(0xFFE8703F))
+    val dusk = SkyTint(Color(0xFFE07A5F), 0.18f, Color(0xFFD8653E))
+    /** The moon ring on the arc at night. */
+    val moon = Color(0xFF8FA6C8)
+}
+
 /** Time-of-day tint for the Today horizon only (handoff §1). */
 @Immutable
 data class Horizon(val sun: Color, val line: Color, val dottedFuture: Color)
@@ -173,12 +231,27 @@ object Horizons {
     val morning = Horizon(Color(0xFFFF8A4C), Color(0xFF1A1916), Color(0xFFD9CDBD))
     val midday = Horizon(Color(0xFFFF6B35), Color(0xFF1A1916), Color(0xFFD2CBBE))
     val evening = Horizon(Color(0xFFD8653E), Color(0xFF3A3530), Color(0xFFD0C7BA))
-    fun at(hour: Int, dark: Boolean): Horizon {
-        val h = when {
-            hour < 12 -> morning
-            hour < 17 -> midday
-            else -> evening
-        }
-        return if (dark) h.copy(line = Color(0xFFF2EFE8), dottedFuture = Color(0xFF4A4038)) else h
+    /** Light theme only (30.A): the dark variant was removed on 22 Oct. The sun's colour now comes from the living sky. */
+    fun at(hour: Int): Horizon = when {
+        hour < 12 -> morning
+        hour < 17 -> midday
+        else -> evening
     }
+}
+
+/**
+ * The opening screen's warm page (PRD Part 26.1b): sky stops, sun glow, rays, motes, vignette, shadow and
+ * grain. Used only by BootScene; values from `aiimin/05-design/boot/boot-prototype.html`.
+ */
+object BootColors {
+    val sky = listOf(0f to Color(0xFFF5F3EE), 0.38f to Color(0xFFF3EEE5), 0.62f to Color(0xFFF1E6D6), 1f to Color(0xFFEDE0CC))
+    val glow = listOf(0f to Color(0xF2FFD6B8), 0.32f to Color(0xA6FAE8D6), 0.68f to Color(0x00F5F3EE))
+    val ray = Color(0x42FFC896)
+    val mote = Color(0xFFFFD8AE)
+    val moteHalo = Color(0x8CFFC88C)
+    val vignette = Color(0x1C6E5032)
+    val shadow = Color(0x3362401E)
+    val shadowTight = Color(0x2962401E)
+    val highlight = Color(0xBFFFFFFF)
+    val grain = Color(0xFF8C8070)
 }

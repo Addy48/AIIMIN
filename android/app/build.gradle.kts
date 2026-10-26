@@ -21,8 +21,8 @@ android {
         // `aiimin.*` because `in` is a Kotlin keyword and backticking every file
         // is not craft.
         applicationId = "in.aiimin.app"
-        versionCode = 5
-        versionName = "4.0.0-beta01"
+        versionCode = 7
+        versionName = "4.0.0-beta03"
 
         ndk {
             abiFilters += listOf("arm64-v8a", "x86_64")
@@ -51,7 +51,9 @@ android {
             buildConfigField("String", "API_BASE_URL", "\"https://api.aiimin.in/api\"")
         }
         release {
-            applicationIdSuffix = ".v4"
+            // -Paiimin.idSuffix=.v4.fresh installs a second copy beside the main one, so onboarding can be
+            // checked from a fresh install without clearing any data.
+            applicationIdSuffix = (project.findProperty("aiimin.idSuffix") as String?) ?: ".v4"
             isMinifyEnabled = true
             isShrinkResources = true
             buildConfigField("String", "API_BASE_URL", "\"https://api.aiimin.in/api\"")
@@ -97,6 +99,7 @@ dependencies {
 
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.biometric)
+    implementation(libs.androidx.glance.appwidget)
 
     testImplementation(libs.bundles.unit.test)
     androidTestImplementation(libs.bundles.android.test)

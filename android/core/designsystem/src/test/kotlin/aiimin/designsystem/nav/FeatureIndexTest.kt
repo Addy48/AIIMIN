@@ -56,7 +56,7 @@ class FeatureIndexTest {
         override fun open(route: Route) { calls += "open:$route" }
         override fun back() { calls += "back" }
         override fun tab(tab: Tab) { calls += "tab:$tab" }
-        override fun capture(prefill: String?, voice: Boolean) { calls += "capture" }
+        override fun capture(prefill: String?, voice: Boolean, type: String?) { calls += "capture" }
     }
 
     @Test fun `go switches tabs for dock areas and opens everything else`() {

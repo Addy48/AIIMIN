@@ -12,4 +12,10 @@ class NotificationFamilyTest {
         assertThat(family("doc:xyz:30")).isEqualTo("doc:xyz:30")
         assertThat(family("event:e1")).isEqualTo("event:e1")
     }
+
+    @Test fun `weekly review cards share a family (D-045)`() {
+        assertThat(family("review:2026-W42")).isEqualTo("review:")
+        assertThat(family("review:2026-W43")).isEqualTo("review:")
+        assertThat(family("review:42")).isEqualTo("review:")
+    }
 }

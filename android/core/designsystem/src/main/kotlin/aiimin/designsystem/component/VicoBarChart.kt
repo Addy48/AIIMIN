@@ -1,5 +1,14 @@
 package aiimin.designsystem.component
 
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.material3.Text
 import aiimin.designsystem.theme.Aiimin
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -123,8 +132,8 @@ fun ScrubBarChart(
     val vmax = (maxValue ?: max(points.filter { !it.stub }.maxOfOrNull { it.value } ?: 1.0, max(max(bandHigh ?: 0.0, usual ?: 0.0), planLine ?: 0.0)) * 1.12).coerceAtLeast(1.0)
 
     // Warm taupe bars; ink marks today, the accent marks the bar you are reading or a period over plan.
-    val ink = if (emphasis != null) c.bandLine else Color(0xFF8C8273)
-    val dim = Color(0xFFD9D2C5)
+    val ink = if (emphasis != null) c.bandLine else c.chartInk
+    val dim = c.chartDim
     val future = c.futureBar
     val colW = when { n > 20 -> 6.dp; n > 10 -> 12.dp; else -> 24.dp }
     val rounded = RoundedCornerShape(topStart = colW / 2f, topEnd = colW / 2f, bottomStart = 2.dp, bottomEnd = 2.dp)
@@ -175,8 +184,8 @@ fun ScrubBarChart(
         buildList {
             if (planLine != null) add(
                 HorizontalLine(
-                    y = { planLine }, line = planStroke, labelComponent = if (planLabel != null) usualText else null,
-                    label = { planLabel.orEmpty() },
+                    // D-042: the line's words live in a legend above the chart, never on top of the bars.
+                    y = { planLine }, line = planStroke, labelComponent = null,
                     horizontalLabelPosition = com.patrykandpatrick.vico.compose.common.Position.Horizontal.End,
                     verticalLabelPosition = com.patrykandpatrick.vico.compose.common.Position.Vertical.Top,
                 ),
@@ -184,8 +193,7 @@ fun ScrubBarChart(
             if (bandLow != null && bandHigh != null) add(BehindBars(HorizontalBox(y = { bandLow..bandHigh }, box = bandBox)))
             if (usual != null) add(
                 HorizontalLine(
-                    y = { usual }, line = usualLine, labelComponent = if (usualLabel != null) usualText else null,
-                    label = { usualLabel.orEmpty() },
+                    y = { usual }, line = usualLine, labelComponent = null,
                     horizontalLabelPosition = com.patrykandpatrick.vico.compose.common.Position.Horizontal.End,
                     verticalLabelPosition = com.patrykandpatrick.vico.compose.common.Position.Vertical.Top,
                 ),
@@ -208,6 +216,17 @@ fun ScrubBarChart(
         decorations = decorations,
     )
 
+    val legend = listOfNotNull(planLabel?.takeIf { planLine != null }, usualLabel?.takeIf { usual != null })
+    if (legend.isNotEmpty()) {
+        Row(Modifier.fillMaxWidth().padding(bottom = 4.dp), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
+            legend.forEach { text ->
+                Canvas(Modifier.size(width = 16.dp, height = 8.dp)) {
+                    drawLine(c.bandLine, Offset(0f, size.height / 2), Offset(size.width, size.height / 2), strokeWidth = 1.5.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(4.dp.toPx(), 3.dp.toPx())))
+                }
+                Text(text, style = Aiimin.type.axis, modifier = Modifier.padding(start = 8.dp, end = 4.dp))
+            }
+        }
+    }
     Box(
         modifier.fillMaxWidth().height(height).semantics { contentDescription = description },
     ) {

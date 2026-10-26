@@ -26,7 +26,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-class Tool(val icon: ImageVector, val label: String, val onClick: () -> Unit)
+/** [opens] is the route the tile opens, so the tile grows into that screen (Part 26.5). */
+class Tool(val icon: ImageVector, val label: String, val opens: Any? = null, val onClick: () -> Unit)
 
 /**
  * A tab's secondary tools as a quiet 2-column grid (instead of a row of orange links).
@@ -37,18 +38,20 @@ fun ToolGrid(title: String, tools: List<Tool>, modifier: Modifier = Modifier) {
     val c = Aiimin.colors
     Column(modifier) {
         SectionHeader(title)
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             tools.chunked(2).forEach { pair ->
-                Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     pair.forEach { t ->
+                        val key = t.opens?.let(::sharedKeyOf)
                         Row(
-                            Modifier.weight(1f).fillMaxHeight().heightIn(min = 52.dp).clip(Shapes.card).background(c.surface)
-                                .border(1.dp, c.border, Shapes.card).pressable(t.onClick).padding(horizontal = 12.dp, vertical = 12.dp),
+                            Modifier.weight(1f).fillMaxHeight().heightIn(min = 52.dp).sharedContainer(key).clip(Shapes.card).background(c.surface)
+                                .border(1.dp, c.border, Shapes.card)
+                                .pressable({ key?.let(SharedNav::arm); t.onClick() }).padding(horizontal = 12.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Icon(t.icon, null, tint = c.text, modifier = Modifier.size(18.dp))
+                            Icon(t.icon, null, tint = c.text, modifier = Modifier.size(20.dp))
                             Spacer(Modifier.width(8.dp))
-                            Text(t.label, style = Aiimin.type.bodyStrong.copy(fontSize = 14.sp, lineHeight = 18.sp), maxLines = 2)
+                            Text(t.label, style = Aiimin.type.bodyStrong, maxLines = 2)
                         }
                     }
                     if (pair.size == 1) Spacer(Modifier.weight(1f))

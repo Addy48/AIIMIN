@@ -55,11 +55,11 @@ const LegalHub = () => {
                     Export and deletion are self-service and always available — you do not need to email anyone.
                 </Para>
                 <Para>
-                    <Link to="/account?section=privacy" style={link}>Account → Privacy → Export</Link> gives you a
+                    <Link to="/data-deletion" style={link}>Account → Privacy → Export</Link> gives you a
                     machine-readable copy of everything we hold, plus your files.
                 </Para>
                 <Para>
-                    <Link to="/account?section=privacy" style={link}>Account → Privacy → Delete</Link> lets you delete one
+                    <Link to="/data-deletion" style={link}>Account → Privacy → Delete</Link> lets you delete one
                     domain, wipe your life data while keeping your login, or delete your account entirely. Full detail at
                     {' '}<Link to="/data-deletion" style={link}>Data Deletion &amp; Export</Link>.
                 </Para>

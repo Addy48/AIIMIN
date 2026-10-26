@@ -1,5 +1,8 @@
 package aiimin.app.ui
 
+import aiimin.designsystem.component.keepFinalSize
+import aiimin.designsystem.component.sharedContainer
+import aiimin.designsystem.theme.LocalReduceMotion
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxWidth
 import aiimin.app.FocusDoneWorker
@@ -44,7 +47,7 @@ import aiimin.feature.money.MoneyScreen
 import aiimin.feature.money.PaymentsScreen
 import aiimin.feature.money.TxnScreen
 import aiimin.feature.notes.JournalScreen
-import aiimin.feature.notes.JournalWriteScreen
+import aiimin.feature.notes.PourScreen
 import aiimin.feature.notes.NoteScreen
 import aiimin.feature.notes.NotesScreen
 import aiimin.feature.today.CalendarScreen
@@ -143,6 +146,12 @@ class ShellViewModel @Inject constructor(
     val lastSyncAt = settings.settings.map { it.lastSyncAt }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
     val signedIn = auth.session.map { it.signedIn }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
+    /** Quick doors learn from what is opened (Part 17); counts stay on the phone. */
+    fun countOpen(route: Route) = viewModelScope.launch {
+        val key = route::class.simpleName.orEmpty().lowercase()
+        if (key.isNotBlank()) settings.update { it.copy(featureOpens = it.featureOpens + (key to ((it.featureOpens[key] ?: 0) + 1))) }
+    }
+
     fun afterSignIn() = viewModelScope.launch { sync.refreshState(); merge.value = sync.previewMerge().also { if (it?.webHasData != true) sync.sync() } }
     suspend fun planReplace() = sync.planReplace()
     fun mergeChoose(choice: aiimin.feature.onboarding.MergeChoice) = viewModelScope.launch {
@@ -177,7 +186,7 @@ private fun Tab.root(): Route = when (this) {
 /** Pending launch request from a notification or a share. */
 sealed interface LaunchRequest {
     data class Open(val route: Route) : LaunchRequest
-    data class Capture(val text: String) : LaunchRequest
+    data class Capture(val text: String, val type: String? = null) : LaunchRequest
 }
 
 @Composable
@@ -186,7 +195,7 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
     val context = LocalContext.current
     val stack = remember { mutableStateListOf<Route>(Route.Today) }
     var tabSwitch by remember { mutableStateOf(false) }
-    var capture by remember { mutableStateOf<Pair<String?, Boolean>?>(null) }
+    var capture by remember { mutableStateOf<Triple<String?, Boolean, String?>?>(null) }
     val toaster = remember { Toaster() }
     val focus by vm.focus.collectAsStateWithLifecycle()
     val unread by vm.unread.collectAsStateWithLifecycle()
@@ -203,7 +212,10 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
         object : AppNavigator {
             override fun open(route: Route) {
                 tabSwitch = false
-                if (stack.lastOrNull() != route) stack.add(route)
+                if (stack.lastOrNull() != route) {
+                    stack.add(route)
+                    vm.countOpen(route)
+                }
             }
 
             override fun back() {
@@ -219,8 +231,8 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
                 stack.add(root)
             }
 
-            override fun capture(prefill: String?, voice: Boolean) {
-                capture = prefill to voice
+            override fun capture(prefill: String?, voice: Boolean, type: String?) {
+                capture = Triple(prefill, voice, type)
             }
         }
     }
@@ -229,7 +241,7 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
     LaunchedEffect(request) {
         when (request) {
             is LaunchRequest.Open -> navigator.open(request.route)
-            is LaunchRequest.Capture -> navigator.capture(request.text)
+            is LaunchRequest.Capture -> navigator.capture(request.text, type = request.type)
             null -> return@LaunchedEffect
         }
         onRequestHandled()
@@ -246,6 +258,24 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
     }
 
     val top = stack.last()
+    // Every screen is the far end of a container transform keyed by its route (Part 26.5).
+    val sharedScreenDecorator = remember {
+        androidx.navigation3.runtime.NavEntryDecorator<Any>(onPop = { key -> aiimin.designsystem.component.SharedNav.forget(aiimin.designsystem.component.sharedKeyOf(key)) }) { entry ->
+            // Pushed screens end above the gesture bar (R6 S2); the inset is consumed here, so a screen's own
+            // bottom bar doesn't pad twice. Root tabs end on the dock, which takes the inset itself.
+            val root = ROOTS.any { it.toString() == entry.contentKey.toString() }
+            Box(
+                Modifier.fillMaxSize().sharedContainer(aiimin.designsystem.component.sharedKeyOf(entry.contentKey)).background(c.base)
+                    .then(
+                        if (root) Modifier
+                        else Modifier.windowInsetsPadding(
+                            androidx.compose.foundation.layout.WindowInsets.navigationBars.only(androidx.compose.foundation.layout.WindowInsetsSides.Bottom),
+                        ),
+                    ),
+            ) { Box(Modifier.keepFinalSize()) { entry.Content() } }
+        }
+    }
+    val reduce = LocalReduceMotion.current
     BackHandler(enabled = stack.size == 1 && top != Route.Today) { navigator.tab(Tab.TODAY) }
 
     val syncUi = remember(syncState) {
@@ -271,25 +301,37 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
                             .only(androidx.compose.foundation.layout.WindowInsetsSides.Horizontal),
                     ),
             ) {
+                androidx.compose.animation.SharedTransitionLayout(Modifier.weight(1f)) {
+                CompositionLocalProvider(aiimin.designsystem.component.LocalSharedScope provides this) {
                 NavDisplay(
                     backStack = stack,
                     onBack = { navigator.back() },
-                    modifier = Modifier.weight(1f),
-                    entryDecorators = listOf(rememberSaveableStateHolderNavEntryDecorator(), rememberViewModelStoreNavEntryDecorator()),
+                    modifier = Modifier.fillMaxSize(),
+                    sharedTransitionScope = this,
+                    entryDecorators = listOf(rememberSaveableStateHolderNavEntryDecorator(), rememberViewModelStoreNavEntryDecorator(), sharedScreenDecorator),
+                    // Part 26.5: push = standard, back = exit (faster), tabs cross-fade; a card that opens its screen
+                    // grows into it (container transform) while the screens cross-fade; reduce motion = 200 ms fade.
                     transitionSpec = {
-                        if (tabSwitch) {
-                            fadeIn(tween(Motion.FAST + 30)).togetherWith(fadeOut(tween(Motion.FAST)))
-                        } else {
-                            slideInHorizontally(tween(280, easing = Motion.enter)) { it }
-                                .togetherWith(slideOutHorizontally(tween(280, easing = Motion.enter)) { -it / 3 } + fadeOut(tween(280), targetAlpha = 0.6f))
+                        when {
+                            reduce -> fadeIn(Motion.reducedFade()).togetherWith(fadeOut(Motion.reducedFade()))
+                            aiimin.designsystem.component.SharedNav.opening(sharedKeyOfScene(targetState)) ->
+                                fadeIn(Motion.standard()).togetherWith(fadeOut(Motion.quick()))
+                            tabSwitch -> fadeIn(Motion.quick()).togetherWith(fadeOut(Motion.tap()))
+                            else -> slideInHorizontally(Motion.standard()) { it }
+                                .togetherWith(slideOutHorizontally(Motion.standard()) { -it / 3 } + fadeOut(Motion.standard(), targetAlpha = 0.6f))
                         }
                     },
                     popTransitionSpec = {
-                        (slideInHorizontally(tween(260, easing = Motion.enter)) { -it / 3 } + fadeIn(tween(260), initialAlpha = 0.6f))
-                            .togetherWith(slideOutHorizontally(tween(240, easing = Motion.exit)) { it })
+                        if (reduce) fadeIn(Motion.reducedFade()).togetherWith(fadeOut(Motion.reducedFade()))
+                        else if (aiimin.designsystem.component.SharedNav.closing(sharedKeyOfScene(initialState))) fadeIn(Motion.quick()).togetherWith(fadeOut(Motion.exit()))
+                        else (slideInHorizontally(Motion.standard()) { -it / 3 } + fadeIn(Motion.standard(), initialAlpha = 0.6f))
+                            .togetherWith(slideOutHorizontally(Motion.exit()) { it })
                     },
                     predictivePopTransitionSpec = {
-                        (slideInHorizontally { -it / 3 } + fadeIn(initialAlpha = 0.6f)).togetherWith(slideOutHorizontally { it })
+                        if (reduce) fadeIn(Motion.reducedFade()).togetherWith(fadeOut(Motion.reducedFade()))
+                        else if (aiimin.designsystem.component.SharedNav.closing(sharedKeyOfScene(initialState))) fadeIn(Motion.quick()).togetherWith(fadeOut(Motion.exit()))
+                        else (slideInHorizontally(Motion.standard()) { -it / 3 } + fadeIn(Motion.standard(), initialAlpha = 0.6f))
+                            .togetherWith(slideOutHorizontally(Motion.exit()) { it })
                     },
                     entryProvider = entryProvider {
                         entry<Route.Today> { TodayScreen() }
@@ -330,6 +372,9 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
                         entry<Route.Language> { aiimin.feature.me.LanguageScreen() }
                         entry<Route.Help> { aiimin.feature.me.HelpScreen() }
                         entry<Route.About> { aiimin.feature.me.AboutScreen() }
+                        entry<Route.NotifySettings> { aiimin.feature.me.NotifySettingsScreen() }
+                        entry<Route.RaahiSettings> { aiimin.feature.me.RaahiSettingsScreen() }
+                        entry<Route.AboutRaahi> { aiimin.feature.me.AboutRaahiScreen() }
                         entry<Route.Running> { aiimin.feature.me.RunningScreen() }
                         entry<Route.Accounts> { aiimin.feature.money.AccountsScreen() }
                         entry<Route.MoodYear> { aiimin.feature.notes.MoodYearScreen() }
@@ -350,6 +395,7 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
                             )
                         }
                         entry<Route.Privacy> { aiimin.feature.me.PrivacyScreen() }
+                        entry<Route.YourRights> { aiimin.feature.me.YourRightsScreen() }
                         entry<Route.HealthPrivacy> { aiimin.feature.onboarding.HealthPrivacyScreen(onBack = { navigator.back() }) }
                         entry<Route.PhoneDay> { PhoneDayScreen() }
                         entry<Route.MoneyInbox> { MoneyInboxScreen() }
@@ -359,30 +405,37 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
                         entry<Route.Payments> { PaymentsScreen() }
                         entry<Route.Category> { CategoryScreen(it.name) }
                         entry<Route.Doc> { DocScreen(it.id) }
+                        entry<Route.DocInfo> { aiimin.feature.vault.DocInfoScreen(it.id) }
+                        entry<Route.Asset> { aiimin.feature.vault.AssetScreen(it.key) }
                         entry<Route.Person> { PersonScreen(it.id) }
                         entry<Route.Family> { FamilyScreen() }
                         entry<Route.EmergencyCard> { EmergencyCardScreen(it.personId) }
                         entry<Route.Notes> { NotesScreen() }
                         entry<Route.Note> { NoteScreen(it.id) }
+                        entry<Route.NotesImport> { aiimin.feature.notes.NotesImportScreen() }
                         entry<Route.Journal> { JournalScreen() }
-                        entry<Route.JournalWrite> { JournalWriteScreen(it.id) }
+                        entry<Route.JournalWrite> { PourScreen(it.id, prefill = it.prefill, tool = it.tool) }
                         entry<Route.Assistant> { AssistantScreen(it) }
                     },
                 )
+                }
+                }
                 AnimatedVisibility(
                     visible = top in ROOTS,
-                    enter = slideInVertically(tween(Motion.BASE, easing = Motion.enter)) { it } + fadeIn(tween(Motion.FAST)),
-                    exit = slideOutVertically(tween(Motion.FAST, easing = Motion.exit)) { it } + fadeOut(tween(Motion.FAST)),
+                    enter = if (reduce) fadeIn(Motion.reducedFade()) else slideInVertically(Motion.standard()) { it } + fadeIn(Motion.quick()),
+                    exit = if (reduce) fadeOut(Motion.reducedFade()) else slideOutVertically(Motion.exit()) { it } + fadeOut(Motion.exit()),
                 ) {
                     Dock(
                         items = listOf(
                             DockItem("Today", AppIcons.CalendarCheck, top == Route.Today, { navigator.tab(Tab.TODAY) }, iconFill = AppIcons.CalendarCheckFill),
                             DockItem("Money", AppIcons.Wallet, top == Route.Money, { navigator.tab(Tab.MONEY) }, iconFill = AppIcons.WalletFill, count = reviewCount),
                             DockItem("Vault", AppIcons.Archive, top == Route.Vault, { navigator.tab(Tab.VAULT) }, iconFill = AppIcons.ArchiveFill, badge = expiringSoon),
-                            DockItem("Me", AppIcons.UserCircle, top == Route.Me, { navigator.tab(Tab.ME) }, iconFill = AppIcons.UserCircleFill),
+                            // Part 17.1: "Me" is renamed "You".
+                            DockItem("You", AppIcons.UserCircle, top == Route.Me, { navigator.tab(Tab.ME) }, iconFill = AppIcons.UserCircleFill),
                         ),
                         onPlus = { navigator.capture() },
                         onPlusLong = { navigator.capture(voice = true) },
+                        plusOpen = capture != null,
                     )
                 }
             }
@@ -396,10 +449,10 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
             androidx.compose.foundation.layout.Spacer(
                 Modifier.align(Alignment.TopCenter).fillMaxWidth()
                     .windowInsetsTopHeight(androidx.compose.foundation.layout.WindowInsets.Companion.statusBars)
-                    .background(c.base.copy(alpha = 0.96f)),
+                    .background(c.base),
             )
         }
-        capture?.let { (prefill, voice) -> CaptureSheet(prefill, voice, onDismiss = { capture = null }) }
+        capture?.let { (prefill, voice, type) -> CaptureSheet(prefill, voice, onDismiss = { capture = null }, initialType = type) }
         merge?.takeIf { it.webHasData }?.let { aiimin.feature.onboarding.MergeSheet(it, { vm.planReplace() }) { choice -> vm.mergeChoose(choice) } }
         if (syncSheet) SyncSheet(syncState, signedIn, syncing, lastSyncAt, onSync = { vm.syncNow() }, onOpenAccount = { syncSheet = false; navigator.open(Route.Account) }, onDismiss = { syncSheet = false })
     }
@@ -419,7 +472,7 @@ private fun FocusPill(f: ActiveFocus, modifier: Modifier, onClick: () -> Unit) {
     val left = f.plannedMin * 60_000L - f.elapsedMs(now)
     val ms = kotlin.math.abs(left)
     Row(
-        modifier.clip(Shapes.control).background(c.overlay).border(1.dp, c.borderStrong, Shapes.control).clickable(onClick = onClick).padding(horizontal = 14.dp, vertical = 10.dp),
+        modifier.clip(Shapes.control).background(c.overlay).border(1.dp, c.borderStrong, Shapes.control).clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(if (f.running) AppIcons.Timer else AppIcons.Pause, null, tint = c.accent, modifier = Modifier.size(16.dp))
@@ -463,3 +516,6 @@ private fun SyncSheet(
 
 /** The widest a screen's content gets; wider windows centre it (same as Material's bottom sheets). */
 private val CONTENT_MAX_WIDTH = 640.dp
+
+private fun sharedKeyOfScene(scene: androidx.navigation3.scene.Scene<*>): String =
+    aiimin.designsystem.component.sharedKeyOf(scene.entries.last().contentKey)

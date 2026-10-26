@@ -26,11 +26,14 @@ data class AiScope(val allowed: Set<AiModule>) {
 sealed interface Proposal {
     val module: AiModule
 
-    data class Expense(val title: String, val amount: Long, val category: String) : Proposal {
+    /** [paise] is exact; [amount] is whole rupees for old callers. */
+    data class Expense(val title: String, val paise: Long, val category: String, val currency: String = "INR") : Proposal {
+        val amount: Long get() = paise / 100
         override val module get() = AiModule.MONEY
     }
 
-    data class Income(val title: String, val amount: Long, val category: String) : Proposal {
+    data class Income(val title: String, val paise: Long, val category: String, val currency: String = "INR") : Proposal {
+        val amount: Long get() = paise / 100
         override val module get() = AiModule.MONEY
     }
 
@@ -93,14 +96,15 @@ object Assistant {
         return splitItems(text).mapNotNull { part ->
             val clean = part.replaceFirst(LEAD_IN, "")
             // "spent 250 on lunch and 120 on auto": a bare amount after an expense is another expense.
-            val p = CaptureParser.parse(clean).let { c ->
+            val now = today.atTime(java.time.LocalTime.now())
+            val p = CaptureParser.parse(clean, now = now).let { c ->
                 if (lastWasMoney && c.type != CaptureType.EXPENSE && c.type != CaptureType.INCOME && LEADING_AMOUNT.containsMatchIn(clean)) {
-                    CaptureParser.parse("spent $clean")
+                    CaptureParser.parse("spent $clean", now = now)
                 } else c
             }
             lastWasMoney = p.type == CaptureType.EXPENSE
             val type = p.type ?: return@mapNotNull null
-            val date = if (p.dayWord == "tomorrow") today.plusDays(1) else today
+            val date = p.date ?: today
             when {
                 SCHEDULING.containsMatchIn(part) && (p.time24 != null || p.dayWord != null) -> Proposal.CalendarBlock(
                     title = p.label.ifEmpty { clean }
@@ -111,8 +115,8 @@ object Assistant {
                     time24 = p.time24 ?: "10:00",
                     date = date,
                 )
-                type == CaptureType.EXPENSE -> Proposal.Expense(p.label.ifEmpty { "Expense" }, p.amount, p.category ?: "Other")
-                type == CaptureType.INCOME -> Proposal.Income(p.label.ifEmpty { "Income" }, p.amount, p.category ?: "Income")
+                type == CaptureType.EXPENSE && p.paise > 0 -> Proposal.Expense(p.label.ifEmpty { "Expense" }, p.paise, p.category ?: "Other", p.currency)
+                type == CaptureType.INCOME && p.paise > 0 -> Proposal.Income(p.label.ifEmpty { "Income" }, p.paise, p.category ?: "Income", p.currency)
                 type == CaptureType.NOTE -> Proposal.Note(p.label.ifEmpty { clean }.take(60), clean)
                 type == CaptureType.TASK || type == CaptureType.HABIT -> Proposal.Task(
                     title = p.label.ifEmpty { clean }

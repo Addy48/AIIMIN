@@ -31,7 +31,7 @@ object FeatureIndex {
         f("Today", "Your day on one screen", Route.Today, { AppIcons.CalendarCheck }, "home", "dashboard", "day"),
         f("Calendar", "Events and plans by day", Route.Calendar, { AppIcons.Calendar }, "events", "schedule", "agenda", "meetings"),
         f("Focus", "Timer for one thing", Route.Focus(), { AppIcons.Timer }, "pomodoro", "deep work", "timer", "concentrate"),
-        f("Daily minimums", "The few things you keep every day", Route.Minimums, { AppIcons.CheckSquare }, "minimums", "habits", "routine", "streak"),
+        f("Daily minimums", "The few things you keep every day", Route.Minimums, { AppIcons.CheckSquare }, "minimums", "habits", "routine", "kept days"),
         f("Upcoming tasks", "Everything planned ahead", Route.Upcoming, { AppIcons.ListChecks }, "tasks", "todo", "to do", "later"),
         f("Plan my day", "Pick what today is for", Route.PlanDay(), { AppIcons.Sunrise }, "plan", "morning", "schedule today"),
         f("Plan tomorrow", "Set up tomorrow tonight", Route.PlanDay(tomorrow = true), { AppIcons.MoonStars }, "tomorrow", "evening plan"),
@@ -54,6 +54,7 @@ object FeatureIndex {
 
         // Notes and journal
         f("Notes", "Everything you wrote down", Route.Notes, { AppIcons.Note }, "note", "memo", "write"),
+        f("Bring in notes", "Google Keep, Apple Notes, Markdown; save all notes", Route.NotesImport, { AppIcons.Upload }, "import notes", "keep", "google keep", "takeout", "apple notes", "export notes", "markdown"),
         f("Journal", "Private, encrypted on this phone", Route.Journal, { AppIcons.BookOpen }, "diary", "mood", "gratitude"),
         f("Write in journal", "Start today's entry", Route.JournalWrite(), { AppIcons.PenNib }, "new entry", "write journal", "dear diary"),
         f("Mood year", "A year of moods at a glance", Route.MoodYear, { AppIcons.Smiley }, "mood", "year in pixels", "feelings"),
@@ -66,7 +67,7 @@ object FeatureIndex {
         f("Bank and cash accounts", "Where your money sits", Route.Accounts, { AppIcons.Bank }, "accounts", "bank", "cash", "wallets"),
         f("Splits", "Who owes whom", Route.Splits, { AppIcons.HandCoins }, "split", "owe", "lent", "borrowed", "settle up"),
         f("Bills and subscriptions", "What's due next", Route.Recurring, { AppIcons.Repeat }, "bills", "recurring", "subscriptions", "emi", "rent"),
-        f("Places and categories", "Shops AIIMIN remembers and your own categories", Route.PayeeMemory, { AppIcons.Bookmark }, "payee memory", "payees", "merchants", "places", "rules", "categories", "new category"),
+        f("Places and rules", "Your rules, shops AIIMIN remembers, your own categories", Route.PayeeMemory, { AppIcons.Bookmark }, "payee memory", "payees", "merchants", "places", "rules", "smart rules", "new rule", "categories", "new category"),
         f("Money settings", "Ledgers, bank messages, payee memory", Route.MoneySettings, { AppIcons.Coins }, "ledgers", "currency", "sms import"),
         f("Past bank messages", "Bring in SMS one by one, by month or a whole year", Route.SmsImport, { AppIcons.ChatText }, "sms", "import", "bank sms", "old messages", "parse", "filter"),
 
@@ -78,7 +79,7 @@ object FeatureIndex {
         f("Backups", "Keep a copy of your vault", Route.VaultBackup, { AppIcons.CloudArrowUp }, "backup", "export", "restore", "copy"),
 
         // Account and settings
-        f("Me", "You, your plan and settings", Route.Me, { AppIcons.UserCircle }, "profile", "you"),
+        f("You", "Your progress, things and settings", Route.Me, { AppIcons.UserCircle }, "profile", "you"),
         f("Search", "Find anything", Route.Search, { AppIcons.Search }, "find", "look up"),
         f("Settings", "Every setting in one place", Route.Settings, { AppIcons.Gear }, "preferences", "options"),
         f("Account and sync", "Sign in, profile, what syncs", Route.Account, { AppIcons.Key }, "pin", "password", "sign in", "login", "os-id", "osid", "account"),
@@ -89,6 +90,9 @@ object FeatureIndex {
         f("Linked devices", "Browsers and phones on your account", Route.LinkedDevices, { AppIcons.Devices }, "devices", "sessions", "logout other", "browsers"),
         f("Phone data", "What the phone measures for you", Route.Sensors, { AppIcons.Pulse }, "sensors", "permissions", "health connect", "usage access"),
         f("Assistant and voice", "What it may read, recent captures", Route.AiSettings, { AppIcons.Mic }, "ai settings", "voice", "microphone"),
+        f("Notification settings", "How many, which kinds, lock screen", Route.NotifySettings, { AppIcons.Bell }, "notification settings", "nudges", "quiet", "lock screen", "playful"),
+        f("Raahi", "How chatty Raahi is: Full, Quiet or Off", Route.RaahiSettings, { AppIcons.ChatCircleText }, "raahi", "companion", "chatty", "greeting", "character"),
+        f("About Raahi", "Who Raahi is and what it can see", Route.AboutRaahi, { AppIcons.Info }, "about raahi", "ai", "who is raahi"),
         f("Appearance", "Text size, motion", Route.Appearance, { AppIcons.TextAa }, "theme", "font size", "text size", "dark mode", "motion"),
         f("Language and region", "Language, currency, dates", Route.Language, { AppIcons.Translate }, "language", "hindi", "region", "date format"),
         f("How AIIMIN is running", "Background jobs and their last run", Route.Running, { AppIcons.Wrench }, "background", "jobs", "battery saver", "not updating"),

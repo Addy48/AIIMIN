@@ -3,6 +3,7 @@ package aiimin.core.nlp
 enum class MoneyDirection { IN, OUT }
 
 data class BankAlert(
+    /** Whole rupees, rounded: only for filters and totals. Anything that is saved uses [paise]. */
     val amount: Long,
     val direction: MoneyDirection,
     /** Payee or payer as shown to the person ("Zomato"). */
@@ -12,6 +13,8 @@ data class BankAlert(
     /** Account last 4 digits, when present — secondary duplicate key with amount + date. */
     val accountLast4: String?,
     val upiId: String?,
+    /** Exact amount in paise ("Rs.176.50" is 17650, never 177). */
+    val paise: Long = amount * 100,
 )
 
 /**
@@ -33,10 +36,13 @@ object BankSms {
 
     fun parse(text: String): BankAlert? {
         val amt = AMOUNT.find(text) ?: return null
-        val amount = amt.groupValues[1].replace(",", "").toDoubleOrNull() ?: return null
+        val exact = amt.groupValues[1].replace(",", "").toBigDecimalOrNull() ?: return null
+        val amount = exact.toDouble()
         val out = OUT.containsMatchIn(text)
         val inc = IN.containsMatchIn(text)
-        val inbound = inc && !out
+        // "Your a/c … is credited for Rs 700 and debited from a/c …" names both sides. The direction is the side that
+        // names the person's own account, which every bank introduces first ("Your a/c", "Acct XX224", "Your VPA … linked a/c").
+        val inbound = if (inc && out) ownSideIsCredit(text) else inc && !out
         // Money in: who sent it ("by NEFT from ACME PVT LTD"); "debited from A/c" is never a payee.
         val counterparty = (if (inbound) FROM.find(text)?.groupValues?.get(1) else null) ?: COUNTERPARTY.find(text)?.groupValues?.get(1)
         val name = counterparty?.let(::payeeName)?.ifEmpty { null } ?: "Bank transaction"
@@ -47,7 +53,30 @@ object BankSms {
             reference = REFERENCE.find(text)?.groupValues?.get(1),
             accountLast4 = ACCOUNT.find(text)?.groupValues?.get(1),
             upiId = UPI_ID.find(text)?.groupValues?.get(1)?.lowercase(),
+            paise = exact.movePointRight(2).setScale(0, java.math.RoundingMode.HALF_UP).toLong(),
         )
+    }
+
+    private val OWN_ACCOUNT = Regex("""\byour\s+(?:a/c|acct|account|vpa|card)\b|(?:a/c|acct|account)\s*(?:no\.?)?\s*[x*]+\d{3,4}""", I)
+    private val DEBIT_WORD = Regex("""debit""", I)
+    private val CREDIT_WORD = Regex("""credit""", I)
+
+    /**
+     * When a message says both "credited" and "debited": true when the credit is on the person's own account.
+     * The own account is the first account the message names; the verb that follows it (else the nearest one before it) is theirs.
+     */
+    fun ownSideIsCredit(text: String): Boolean {
+        val own = OWN_ACCOUNT.find(text)?.range?.first ?: 0
+        val d = DEBIT_WORD.findAll(text).map { it.range.first }.toList()
+        val c = CREDIT_WORD.findAll(text).map { it.range.first }.toList()
+        val dAfter = d.firstOrNull { it >= own }
+        val cAfter = c.firstOrNull { it >= own }
+        return when {
+            dAfter != null && cAfter != null -> cAfter < dAfter
+            cAfter != null -> true
+            dAfter != null -> false
+            else -> (c.lastOrNull() ?: -1) > (d.lastOrNull() ?: -1)
+        }
     }
 
     private val HANDLE = Regex("""^([a-z0-9._\-]+)@[a-z]+\s*(.*)$""", I)

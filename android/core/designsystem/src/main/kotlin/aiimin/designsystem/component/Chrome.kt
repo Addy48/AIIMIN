@@ -1,5 +1,8 @@
 package aiimin.designsystem.component
 
+import androidx.compose.foundation.layout.wrapContentSize
+import aiimin.designsystem.theme.LocalReduceMotion
+import androidx.compose.animation.core.StartOffset
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.layout.offset
@@ -27,6 +30,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -55,6 +59,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -79,7 +84,8 @@ import kotlinx.coroutines.delay
 @Composable
 fun TopBar(title: String, onBack: (() -> Unit)?, modifier: Modifier = Modifier, actions: @Composable RowScope.() -> Unit = {}) {
     Row(
-        modifier.fillMaxWidth().statusBarsPadding().height(56.dp).padding(start = 4.dp, end = 8.dp),
+        // 3 dp + the 48 dp button's 13 dp inset puts back and action icons on the 16 dp margin (S1).
+        modifier.fillMaxWidth().statusBarsPadding().height(56.dp).padding(start = 4.dp, end = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (onBack != null) AppIconButton(AppIcons.ArrowLeft, "Back", onBack) else Spacer(Modifier.width(16.dp))
@@ -99,16 +105,37 @@ fun TopBar(title: String, onBack: (() -> Unit)?, modifier: Modifier = Modifier, 
  * then sync, search, assistant, bell. [overline] is the one-line status under the title.
  */
 @Composable
-fun LargeHeader(title: String, modifier: Modifier = Modifier, overline: String? = null, actions: @Composable RowScope.() -> Unit = {}) {
-    Row(
-        modifier.fillMaxWidth().statusBarsPadding().heightIn(min = 56.dp).padding(start = Aiimin.space.gutter, end = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(Modifier.weight(1f).padding(vertical = 6.dp)) {
-            Text(title, style = Aiimin.type.title, modifier = Modifier.semantics { heading() })
-            if (overline != null) Text(overline, style = Aiimin.type.caption)
+fun LargeHeader(
+    title: String,
+    modifier: Modifier = Modifier,
+    overline: String? = null,
+    actionsBelowAtCompactWidth: Boolean = false,
+    actions: @Composable RowScope.() -> Unit = {},
+) {
+    BoxWithConstraints(modifier.fillMaxWidth().statusBarsPadding().padding(start = Aiimin.space.gutter, end = 4.dp)) {
+        val fontScale = LocalDensity.current.fontScale
+        val stacked = actionsBelowAtCompactWidth && (maxWidth <= 360.dp || (fontScale >= 1.2f && maxWidth < 440.dp))
+        if (stacked) {
+            Column(Modifier.fillMaxWidth()) {
+                Row(Modifier.fillMaxWidth().heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f).padding(vertical = 8.dp)) {
+                        Text(title, style = Aiimin.type.title, maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis, modifier = Modifier.semantics { heading() })
+                        // One line: a status, not a paragraph (D-001).
+                        if (overline != null) Text(overline, style = Aiimin.type.caption, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+                }
+                Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically, content = actions)
+            }
+        } else {
+            Row(Modifier.fillMaxWidth().heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f).padding(vertical = 8.dp)) {
+                    Text(title, style = Aiimin.type.title, maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis, modifier = Modifier.semantics { heading() })
+                    // One line: a status, not a paragraph (D-001).
+                    if (overline != null) Text(overline, style = Aiimin.type.caption, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+                Row(verticalAlignment = Alignment.CenterVertically, content = actions)
+            }
         }
-        Row(verticalAlignment = Alignment.CenterVertically, content = actions)
     }
 }
 
@@ -133,13 +160,14 @@ data class DockItem(
  * The centre button is a 56 dp square (radius 12), ink fill, white plus.
  */
 @Composable
-fun Dock(items: List<DockItem>, onPlus: () -> Unit, onPlusLong: () -> Unit, modifier: Modifier = Modifier) {
+fun Dock(items: List<DockItem>, onPlus: () -> Unit, onPlusLong: () -> Unit, modifier: Modifier = Modifier, plusOpen: Boolean = false) {
     val c = Aiimin.colors
-    val onInk = if (c.isDark) c.base else Color.White
+    val onInk = c.onInk
     Column(modifier.fillMaxWidth().background(c.base)) {
         Hairline()
         Row(
-            Modifier.fillMaxWidth().navigationBarsPadding().height(72.dp).padding(horizontal = 4.dp),
+            // At least 72 dp; grows at large text so the labels never clip (Part 18, 2.0x).
+            Modifier.fillMaxWidth().navigationBarsPadding().heightIn(min = 72.dp).padding(horizontal = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             val half = items.size / 2
@@ -147,7 +175,14 @@ fun Dock(items: List<DockItem>, onPlus: () -> Unit, onPlusLong: () -> Unit, modi
             Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
                 val source = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
                 val pressed by source.collectIsPressedAsState()
-                val sc by androidx.compose.animation.core.animateFloatAsState(if (pressed) 0.94f else 1f, tween(120), label = "plus")
+                val reduce = LocalReduceMotion.current
+                val sc by androidx.compose.animation.core.animateFloatAsState(if (pressed && !reduce) Motion.PRESS_SCALE else 1f, Motion.tap(), label = "plus")
+                // Part 26.5: the "+" turns 45 degrees while its sheet is open, on the sheet's own token.
+                val turn by androidx.compose.animation.core.animateFloatAsState(
+                    if (plusOpen) Motion.PLUS_OPEN_DEGREES else 0f,
+                    Motion.move(reduce, if (plusOpen) Motion.emphasised() else Motion.exit()),
+                    label = "plusTurn",
+                )
                 Box(
                     Modifier
                         .size(56.dp)
@@ -158,7 +193,7 @@ fun Dock(items: List<DockItem>, onPlus: () -> Unit, onPlusLong: () -> Unit, modi
                         .semantics { contentDescription = "Capture" },
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(AppIcons.Plus, null, tint = onInk, modifier = Modifier.size(26.dp))
+                    Icon(AppIcons.Plus, null, tint = onInk, modifier = Modifier.size(28.dp).graphicsLayer { rotationZ = turn })
                 }
             }
             items.drop(half).forEach { DockButton(it) }
@@ -179,20 +214,29 @@ private fun RowScope.DockButton(item: DockItem) {
             .padding(vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        // Part 26.5: the selected icon fills and its label fades in over 160 ms (cross-fades; opacity only).
+        val fill by androidx.compose.animation.core.animateFloatAsState(
+            if (item.selected) 1f else 0f, Motion.fade(LocalReduceMotion.current, Motion.quick()), label = "tabFill",
+        )
         Box {
-            Icon(if (item.selected) item.iconFill else item.icon, null, tint = color, modifier = Modifier.size(25.dp))
+            Icon(item.icon, null, tint = color, modifier = Modifier.size(24.dp).graphicsLayer { alpha = 1f - fill })
+            Icon(item.iconFill, null, tint = color, modifier = Modifier.size(24.dp).graphicsLayer { alpha = fill })
             if (item.count > 0) {
-                Box(
-                    Modifier.align(Alignment.TopEnd).offset(x = 9.dp, y = (-5).dp).heightIn(min = 16.dp).widthIn(min = 16.dp)
-                        .clip(RoundedCornerShape(4.dp)).background(c.text).padding(horizontal = 4.dp),
-                    contentAlignment = Alignment.Center,
-                ) { Text(if (item.count > 9) "9+" else item.count.toString(), style = Aiimin.type.caption.copy(color = if (c.isDark) c.base else Color.White, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)) }
+                // Anchored on the icon's top-right corner, ringed in the page colour, mostly outside the icon (S5, D-004).
+                // A zero-size anchor: the badge never changes the icon's layout (so labels stay level at any text size).
+                Box(Modifier.align(Alignment.TopEnd).size(0.dp)) {
+                    CountBadge(item.count, Modifier.wrapContentSize(Alignment.TopStart, unbounded = true).offset(x = (-6).dp, y = (-8).dp))
+                }
             } else if (item.badge) {
-                Box(Modifier.align(Alignment.TopEnd).offset(x = 6.dp, y = (-3).dp).size(7.dp).clip(CircleShape).background(c.accent))
+                Box(Modifier.align(Alignment.TopEnd).offset(x = 6.dp, y = (-3).dp).size(8.dp).clip(CircleShape).background(c.accent))
             }
         }
-        Spacer(Modifier.height(3.dp))
-        Text(item.label, style = Aiimin.type.caption.copy(color = color, fontWeight = if (item.selected) FontWeight.SemiBold else FontWeight.Medium, fontSize = 11.5.sp))
+        Spacer(Modifier.height(4.dp))
+        // Part 26.5: the selected label fades in over 160 ms (two layers cross-fade; opacity only).
+        Box(contentAlignment = Alignment.Center) {
+            Text(item.label, style = Aiimin.type.caption.copy(color = c.textMuted, fontWeight = FontWeight.Medium), modifier = Modifier.graphicsLayer { alpha = 1f - fill })
+            Text(item.label, style = Aiimin.type.caption.copy(color = c.accentText, fontWeight = FontWeight.SemiBold), modifier = Modifier.graphicsLayer { alpha = fill })
+        }
     }
 }
 
@@ -233,7 +277,7 @@ fun AppSheet(
         shape = Shapes.sheet,
         contentWindowInsets = { WindowInsets(0) },
         dragHandle = {
-            Box(Modifier.padding(top = 10.dp, bottom = 8.dp).size(width = 38.dp, height = 4.dp).clip(RoundedCornerShape(2.dp)).background(c.borderStrong))
+            Box(Modifier.padding(top = 12.dp, bottom = 8.dp).size(width = 40.dp, height = 4.dp).clip(RoundedCornerShape(2.dp)).background(c.borderStrong))
         },
     ) {
         Column(Modifier.fillMaxWidth().navigationBarsPadding().imePadding().padding(horizontal = 20.dp).padding(bottom = 16.dp)) {
@@ -273,10 +317,11 @@ class Toaster {
 fun ToastHost(toaster: Toaster, modifier: Modifier = Modifier) {
     val c = Aiimin.colors
     val t = toaster.current
+    val reduce = LocalReduceMotion.current
     AnimatedVisibility(
         visible = t != null,
-        enter = slideInVertically(tween(Motion.BASE, easing = Motion.enter)) { it / 2 } + fadeIn(tween(Motion.FAST)),
-        exit = slideOutVertically(tween(Motion.FAST, easing = Motion.exit)) { it / 2 } + fadeOut(tween(Motion.FAST)),
+        enter = if (reduce) fadeIn(Motion.reducedFade()) else slideInVertically(Motion.standard()) { it / 2 } + fadeIn(Motion.quick()),
+        exit = if (reduce) fadeOut(Motion.reducedFade()) else slideOutVertically(Motion.exit()) { it / 2 } + fadeOut(Motion.exit()),
         modifier = modifier,
     ) {
         val toast = t ?: return@AnimatedVisibility
@@ -290,24 +335,29 @@ fun ToastHost(toaster: Toaster, modifier: Modifier = Modifier) {
                 .padding(horizontal = 16.dp, vertical = 8.dp)
                 .fillMaxWidth()
                 .clip(Shapes.control)
-                .background(if (c.isDark) c.overlay else c.text)
+                .background(c.text)
                 .semantics { contentDescription = toast.text },
         ) {
-            Row(Modifier.padding(start = 16.dp, end = 6.dp).heightIn(min = 52.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(toast.text, style = Aiimin.type.body.copy(color = if (c.isDark) c.text else Color.White), modifier = Modifier.weight(1f), maxLines = 2)
+            Row(Modifier.padding(start = 16.dp, end = 8.dp).heightIn(min = 52.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(toast.text, style = Aiimin.type.body.copy(color = c.onInk), modifier = Modifier.weight(1f), maxLines = 2)
                 if (toast.actionLabel != null && toast.action != null) {
                     Text(
                         toast.actionLabel,
-                        style = Aiimin.type.bodyStrong.copy(color = Color(0xFFFFB08A)),
+                        style = Aiimin.type.bodyStrong.copy(color = c.onInkAccent),
                         modifier = Modifier.clip(Shapes.small).clickable {
                             toast.action.invoke()
                             toaster.dismiss(toast.id)
-                        }.padding(horizontal = 12.dp, vertical = 10.dp),
+                        }.padding(horizontal = 12.dp, vertical = 12.dp),
                     )
                 }
             }
             if (toast.action != null) {
-                Box(Modifier.fillMaxWidth(progress.value).height(2.dp).background(Color(0xFFFFB08A)))
+                // The undo window drains as a scale, not a width change (Part 26.5: transform and opacity only).
+                Box(
+                    Modifier.fillMaxWidth().height(2.dp)
+                        .graphicsLayer { scaleX = progress.value; transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0f, 0.5f) }
+                        .background(c.onInkAccent),
+                )
             }
         }
     }
@@ -315,48 +365,65 @@ fun ToastHost(toaster: Toaster, modifier: Modifier = Modifier) {
 
 // ------------------------------------------------------------------ empty / loading
 
+/**
+ * Empty state on the page grid: left-aligned with everything else on the screen (D-012). [sidePadding] puts it
+ * on the 16 dp margins; pass 0 when the list around it already has them.
+ */
 @Composable
-fun EmptyState(icon: ImageVector, title: String, body: String, modifier: Modifier = Modifier, action: String? = null, onAction: (() -> Unit)? = null) {
+fun EmptyState(
+    icon: ImageVector, title: String, body: String, modifier: Modifier = Modifier, action: String? = null, onAction: (() -> Unit)? = null,
+    sidePadding: androidx.compose.ui.unit.Dp = Aiimin.space.gutter,
+    /** Raahi's card pose for empty screens (PRD 1.1, 20.4); the icon shows instead when Raahi is Off. Never on money, vault or security screens. */
+    raahi: aiimin.core.engine.raahi.RaahiPose? = null,
+) {
     val c = Aiimin.colors
-    Column(modifier.fillMaxWidth().padding(vertical = 28.dp, horizontal = 24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Icon(icon, null, tint = c.textFaint, modifier = Modifier.size(32.dp))
-        Spacer(Modifier.height(14.dp))
-        Text(title, style = Aiimin.type.cardTitle.copy(fontSize = 20.sp), textAlign = TextAlign.Center)
-        Spacer(Modifier.height(6.dp))
-        Text(body, style = Aiimin.type.caption.copy(textAlign = TextAlign.Center, fontSize = 14.sp, lineHeight = 20.sp), modifier = Modifier.padding(horizontal = 8.dp))
+    Column(modifier.fillMaxWidth().padding(vertical = 24.dp, horizontal = sidePadding), horizontalAlignment = Alignment.Start) {
+        if (raahi != null && aiimin.core.engine.raahi.RaahiRules.showsArt(LocalRaahiMode.current)) Raahi(raahi, RaahiSize.CARD)
+        else Icon(icon, null, tint = c.textFaint, modifier = Modifier.size(32.dp))
+        Spacer(Modifier.height(16.dp))
+        Text(title, style = Aiimin.type.cardTitle)
+        Spacer(Modifier.height(8.dp))
+        Text(body, style = Aiimin.type.note)
         if (action != null && onAction != null) {
-            Spacer(Modifier.height(18.dp))
+            Spacer(Modifier.height(16.dp))
             AppButton(action, onAction, kind = ButtonKind.SECONDARY, compact = true)
         }
     }
 }
 
 /**
- * Content-shaped shimmer block. Invisible for the first 300 ms, then fades in: most loads finish
- * sooner, and a grey flash before real content reads as slower than a blank moment.
+ * Content-shaped placeholder block. Invisible for the first 300 ms, then fades in once: most loads finish
+ * sooner, and a grey flash before real content reads as slower than a blank moment. No shimmer loop (Part 26.5).
  */
 @Composable
 fun Skeleton(modifier: Modifier) {
     val c = Aiimin.colors
-    val t = rememberInfiniteTransition(label = "sk")
-    val a by t.animateFloat(0.55f, 1f, infiniteRepeatable(tween(1200), RepeatMode.Reverse), label = "skA")
     val shown = remember { Animatable(0f) }
+    val reduce = LocalReduceMotion.current
     LaunchedEffect(Unit) {
         delay(300)
-        shown.animateTo(1f, tween(200))
+        shown.animateTo(1f, Motion.fade(reduce, Motion.standard()))
     }
-    Box(modifier.graphicsLayer { alpha = a * shown.value }.clip(Shapes.small).background(c.raised))
+    Box(modifier.graphicsLayer { alpha = shown.value }.clip(Shapes.small).background(c.raised))
 }
 
-/** Three dots that breathe while the assistant works. */
+/**
+ * Three dots that breathe slowly while Raahi works (the stand-in for Raahi's thinking loop, Part 20.3,
+ * on the ambient token). Reduce motion: still dots.
+ */
 @Composable
 fun ThinkingDots() {
     val c = Aiimin.colors
-    val t = rememberInfiniteTransition(label = "dots")
-    Row(horizontalArrangement = Arrangement.spacedBy(5.dp), modifier = Modifier.padding(8.dp)) {
-        repeat(3) { i ->
-            val a by t.animateFloat(0.25f, 1f, infiniteRepeatable(tween(600, delayMillis = i * 150), RepeatMode.Reverse), label = "d$i")
-            Box(Modifier.size(6.dp).graphicsLayer { alpha = a }.clip(CircleShape).background(c.textMuted))
+    val reduce = LocalReduceMotion.current
+    Row(horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.padding(8.dp).semantics { contentDescription = "Thinking" }) {
+        if (reduce) {
+            repeat(3) { Box(Modifier.size(8.dp).graphicsLayer { alpha = 0.7f }.clip(CircleShape).background(c.textMuted)) }
+        } else {
+            val t = rememberInfiniteTransition(label = "dots")
+            repeat(3) { i ->
+                val a by t.animateFloat(0.3f, 1f, infiniteRepeatable(Motion.ambient(), RepeatMode.Reverse, StartOffset(i * Motion.STAGGER * 10)), label = "d$i")
+                Box(Modifier.size(8.dp).graphicsLayer { alpha = a }.clip(CircleShape).background(c.textMuted))
+            }
         }
     }
 }

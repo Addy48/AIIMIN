@@ -75,6 +75,18 @@ class DeviceRepository @Inject constructor(
     fun usageSettingsIntent() = usage.settingsIntent()
     suspend fun launchableApps() = usage.launchableApps()
 
+    /**
+     * Sleep starts for the last [nights] nights (oldest first; null where no 4-hour screen-off stretch), from the
+     * phone's own screen on/off events. Needs Usage access; nothing leaves the phone (PRD 1.2 day-end learning).
+     */
+    suspend fun nightStarts(nights: Int, today: java.time.LocalDate, zone: java.time.ZoneId): List<java.time.LocalTime?> {
+        if (!usage.hasAccess()) return emptyList()
+        val from = today.minusDays(nights.toLong()).atTime(20, 0).atZone(zone).toInstant()
+        val to = today.atTime(12, 0).atZone(zone).toInstant()
+        val events = usage.screenEvents(from, to)
+        return (nights downTo 1).map { back -> aiimin.core.engine.today.DayEndLearner.sleepStart(events, today.minusDays(back.toLong()), zone) }
+    }
+
     suspend fun access(): SensorAccess = SensorAccess(
         usage = usage.hasAccess(),
         health = health.availability(),

@@ -1,14 +1,17 @@
 package aiimin.core.nlp
 
-import kotlin.math.roundToLong
+import java.time.LocalDate
+import java.time.LocalDateTime
 
-enum class CaptureType { EXPENSE, INCOME, NOTE, HABIT, TASK, JOURNAL }
+enum class CaptureType { EXPENSE, INCOME, NOTE, HABIT, TASK, JOURNAL, EVENT, RECURRING, DOCUMENT, MINIMUM, FOCUS }
 
 /** What the capture box should assume when the text alone is ambiguous. */
 enum class CaptureMode { ALL, TASK, EXPENSE, NOTE, MOOD, HABIT }
 
 data class Capture(
+    /** Null when the engine is not sure: the caller must ask (the type chooser), never guess. */
     val type: CaptureType?,
+    /** Whole rupees, kept for old callers. Use [paise] for anything that is saved. */
     val amount: Long = 0,
     val label: String = "",
     val category: String? = null,
@@ -18,216 +21,69 @@ data class Capture(
     val timeLabel: String? = null,
     /** "17:30", for scheduling. */
     val time24: String? = null,
-    /** today / tomorrow / tonight / morning / afternoon / evening. */
+    /** today / tomorrow when the line named them. */
     val dayWord: String? = null,
     val raw: String = "",
+    /** Exact money in the smallest unit; 0 when the line had no certain amount. */
+    val paise: Long = 0,
+    val currency: String = "INR",
+    val date: LocalDate? = null,
+    val recurrence: String? = null,
+    val minutes: Int? = null,
+    /** True when the line needs the type chooser. */
+    val choose: Boolean = false,
 )
 
 /**
- * One line of plain language → one structured item. India-first: ₹, Rs,
- * "1.5k", "2 lakh". Times and mood scores are removed before amounts are read,
- * so "at 17:30" or "7/10" never become money. Prototype reference: `parseCap`.
+ * One line of plain language → one structured item (the first clause). Thin wrapper over [CaptureEngine],
+ * which does the real work (Hinglish normalising, exact paise, currency, dates, kinds, confidence).
  */
 object CaptureParser {
 
-    private val I = RegexOption.IGNORE_CASE
-    private const val AMT = """((?:\d[\d,]*(?:\.\d+)?|\.\d+)\s*(?:k|lakhs?|lac|cr|crores?)?)"""
-    private const val INCOME_WORDS = """received|refund\w*|credited|cashback|salary|deposited|reimburs\w*|bonus"""
-
     private val TAG = Regex("""#(\w+)""")
-    private val TIME_12 = Regex("""\b(\d{1,2}(?::\d{2})?)\s*(am|pm)\b""", I)
-    /** "at 5", "at 5:30" with no am/pm: read as the next sensible clock time (1–7 → evening, 8–11 → morning). */
-    private val TIME_AT = Regex("""\bat\s+(\d{1,2})(?::([0-5]\d))?\b(?!\s*(?:%|k\b|rs|₹|/))""", I)
-    private val TIME_24 = Regex("""\b([01]?\d|2[0-3]):([0-5]\d)\b""")
-    private val DAY_PART = Regex("""\b(tomorrow|tonight|today|morning|afternoon|evening)\b""", I)
     private val MOOD = Regex("""(\d{1,2})\s*/\s*10""")
-    private val INCOME_WORD = Regex("""\b($INCOME_WORDS|income)\b""", I)
-    private val INCOME_BEFORE = Regex("""(?:$INCOME_WORDS|got)[^\d\n]{0,20}$AMT""", I)
-    private val INCOME_AFTER = Regex("""$AMT[^\d\n]{0,20}(?:$INCOME_WORDS|income)""", I)
-    private val SPEND = Regex("""(?:paid|spent|gave|bought|cost|charged?|charges)[^\d\n]{0,20}$AMT""", I)
-    private val BARE = Regex("""(?:₹|rs\.?)\s*$AMT""", I)
-    private val ANY_AMOUNT = Regex(AMT, I)
-    private val NOTE = Regex("""^(?:note|n)[:\-\s]+(.+)""", I)
-    private val HABIT = Regex("""^habit[:\-\s]+(.+)""", I)
-    private val HABIT_PHRASE = Regex("""\b(?:read \d+ pages|workout|ran \d+k|meditat\w*|journalled?|journaling)\b""", I)
-    private val TASK_VERB = Regex("""^(?:call|email|review|meet|schedule|buy|fix|debug|write|finish|ship|deploy|prep|clean|organize|send|draft|plan)\b""", I)
-    private val TASK = Regex("""^(?:task|t)[:\-\s]+(.+)""", I)
-    private val SPEND_KEYWORDS = Regex(
-        """\b(swiggy|zomato|uber|ola|rapido|metro|petrol|fuel|lunch|dinner|breakfast|coffee|chai|grocery|groceries|bigbasket|blinkit|zepto|dmart|rent|bill|recharge|netflix|amazon|flipkart|auto|rickshaw|cab|taxi|bus|train|movie|snacks|tea|parking|toll|medicine|pharmacy)\b""",
-        I,
-    )
-    private val LEADING_NUMBER = Regex("""^(\d*\.?\d+)""")
 
-    fun parse(text: String, mode: CaptureMode = CaptureMode.ALL): Capture {
+    fun parse(text: String, mode: CaptureMode = CaptureMode.ALL, now: LocalDateTime = LocalDateTime.now()): Capture {
         val t = text.trim()
         if (t.isEmpty()) return Capture(type = null)
         val tags = TAG.findAll(t).map { "#" + it.groupValues[1] }.toList()
-
-        var timeLabel: String? = null
-        var time24: String? = null
-        val m12 = TIME_12.find(t)
-        // "at 5:30" with no am/pm is a clock time people mean in the evening, not 05:30.
-        val mAt = TIME_AT.find(t)?.takeIf { m12 == null && it.groupValues[1].toInt() in 1..12 }
-        val m24 = TIME_24.find(t)?.takeIf { mAt == null }
-        if (m12 != null) {
-            val parts = m12.groupValues[1].split(":")
-            val hh = parts[0].toInt()
-            val mm = parts.getOrNull(1)?.toInt() ?: 0
-            val h = (hh % 12) + if (m12.groupValues[2].equals("pm", true)) 12 else 0
-            time24 = "%02d:%02d".format(h, mm)
-            timeLabel = clockLabel(h, mm)
-        } else if (m24 != null) {
-            val h = m24.groupValues[1].toInt()
-            val mm = m24.groupValues[2].toInt()
-            time24 = "%02d:%02d".format(h, mm)
-            timeLabel = clockLabel(h, mm)
-        } else mAt?.let { at ->
-            val hh = at.groupValues[1].toInt()
-            if (hh in 1..12) {
-                val mm = at.groupValues[2].toIntOrNull() ?: 0
-                // People say "at 5" for 5 in the evening and "at 9" for 9 in the morning.
-                val h = when (hh) { 12 -> 12; in 1..7 -> hh + 12; else -> hh }
-                time24 = "%02d:%02d".format(h, mm)
-                timeLabel = clockLabel(h, mm)
-            }
+        val forced = when (mode) {
+            CaptureMode.TASK -> Kind.TASK
+            CaptureMode.EXPENSE -> Kind.EXPENSE
+            CaptureMode.NOTE -> Kind.NOTE
+            CaptureMode.MOOD -> Kind.JOURNAL
+            CaptureMode.HABIT -> Kind.MINIMUM
+            CaptureMode.ALL -> null
         }
-        val dayWord = DAY_PART.find(t)?.groupValues?.get(1)?.lowercase()
-
-        val clean = t.replace(Regex("""\d{1,2}\s*/\s*10"""), " ")
-            .replace(Regex("""\b\d{1,2}:\d{2}\b"""), " ")
-            .replace(Regex("""\b\d{1,2}\s*(?:am|pm)\b""", I), " ")
-            .let { c -> if (mAt != null) c.replace(TIME_AT, " ") else c }
-            .trim()
-
-        val incomeWord = INCOME_WORD.containsMatchIn(clean)
-        val mR = INCOME_BEFORE.find(clean)
-        val mRafter = INCOME_AFTER.find(clean)
-        val mA = SPEND.find(clean)
-        val mBare = BARE.find(clean)
-        val mM = MOOD.find(t)
-        val mN = NOTE.find(t)
-        val mH = HABIT.find(t)
-        val habitPhrase = HABIT_PHRASE.find(t)
-        val mTaskVerb = TASK_VERB.find(t)
-        val mT = TASK.find(t)
-
-        var type: CaptureType? = null
-        var amount = 0L
-        val mood = mM?.groupValues?.get(1)?.toInt()?.coerceIn(1, 10)
-
-        val incAmt = maxOf(amountOf(mR), amountOf(mRafter))
-        val bareAmt = amountOf(mBare)
-        val spendAmt = amountOf(mA)
-        when {
-            incomeWord && (incAmt > 0 || bareAmt > 0) && spendAmt == 0L -> {
-                type = CaptureType.INCOME
-                amount = if (incAmt > 0) incAmt else bareAmt
-            }
-            spendAmt > 0 -> {
-                type = CaptureType.EXPENSE
-                amount = spendAmt
-            }
-            bareAmt > 0 -> {
-                type = CaptureType.EXPENSE
-                amount = bareAmt
-            }
-            incomeWord && incAmt > 0 -> {
-                type = CaptureType.INCOME
-                amount = incAmt
-            }
-            SPEND_KEYWORDS.containsMatchIn(clean) -> {
-                val v = amountOf(ANY_AMOUNT.find(clean))
-                if (v > 0) {
-                    type = CaptureType.EXPENSE
-                    amount = v
-                }
-            }
+        val item = CaptureEngine.analyze(t, now, forced = forced).items.firstOrNull() ?: return Capture(type = null, raw = t, tags = tags)
+        val mood = MOOD.find(t)?.groupValues?.get(1)?.toInt()?.coerceIn(1, 10)
+        val today = now.toLocalDate()
+        val dayWord = when (item.date) { today -> "today"; today.plusDays(1) -> "tomorrow"; else -> null } ?: item.dayPart.takeIf { it == "morning" || it == "evening" || it == "afternoon" }
+        val type = when (item.kind) {
+            Kind.EXPENSE -> CaptureType.EXPENSE
+            Kind.INCOME -> CaptureType.INCOME
+            Kind.TASK -> CaptureType.TASK
+            Kind.EVENT -> CaptureType.EVENT
+            Kind.NOTE -> CaptureType.NOTE
+            Kind.JOURNAL -> CaptureType.JOURNAL
+            Kind.RECURRING -> CaptureType.RECURRING
+            Kind.DOCUMENT -> CaptureType.DOCUMENT
+            Kind.MINIMUM -> CaptureType.MINIMUM
+            Kind.FOCUS -> CaptureType.FOCUS
+            Kind.FEATURE, Kind.CHOOSE -> null
         }
-        if (mN != null) type = type ?: CaptureType.NOTE
-        if (mH != null) {
-            type = CaptureType.HABIT
-        } else if (habitPhrase != null && mN == null && mT == null) {
-            type = CaptureType.HABIT
-        }
-        if (mT != null || (type == null && mTaskVerb != null && mR == null && mA == null && mM == null && mN == null && mH == null)) {
-            type = CaptureType.TASK
-        }
-        if (mM != null && type == null) type = CaptureType.JOURNAL
-
-        if (type == null && mode != CaptureMode.ALL) {
-            when (mode) {
-                CaptureMode.TASK -> type = CaptureType.TASK
-                CaptureMode.EXPENSE -> {
-                    type = CaptureType.EXPENSE
-                    amount = Regex("""[\d,]+(?:\.\d+)?""").find(t)?.value?.replace(",", "")?.toDoubleOrNull()?.roundToLong() ?: 0
-                }
-                CaptureMode.NOTE -> type = CaptureType.NOTE
-                CaptureMode.MOOD -> type = CaptureType.JOURNAL
-                CaptureMode.HABIT -> type = CaptureType.HABIT
-                CaptureMode.ALL -> Unit
-            }
-        }
-
-        var label = ""
-        var category: String? = null
-        if (type == CaptureType.EXPENSE || type == CaptureType.INCOME) {
-            category = categoryOf(t)
-            val isIncome = Regex("""received|refund|credited|salary|deposited|cashback|income|bonus|reimburs""").containsMatchIn(t.lowercase())
-            if (type == CaptureType.INCOME && !isIncome && amount == 0L) type = CaptureType.NOTE
-            label = moneyLabel(t)
-        }
-        when (type) {
-            CaptureType.NOTE -> label = t.replaceFirst(Regex("""^(note|n)[:\-\s]+""", I), "").take(40).ifEmpty { "Quick capture" }
-            CaptureType.JOURNAL -> label = "Journal entry"
-            CaptureType.HABIT -> label = (mH?.groupValues?.get(1) ?: habitPhrase?.value ?: t).take(30)
-            CaptureType.TASK -> label = t.replaceFirst(Regex("""^(task|t)[:\-\s]+""", I), "").take(40)
-            else -> Unit
-        }
-        if (type == null) {
-            type = CaptureType.NOTE
-            label = t.take(40)
-        }
-        return Capture(type, amount, label, category, mood, tags, timeLabel, time24, dayWord, t)
+        val paise = item.paise ?: 0L
+        return Capture(
+            type = type, amount = paise / 100, label = item.label.ifEmpty { if (type == CaptureType.NOTE) t.take(40) else "" }, category = item.category, mood = mood, tags = tags,
+            timeLabel = item.time24?.let { clockLabel(it) }, time24 = item.time24, dayWord = dayWord, raw = t,
+            paise = paise, currency = item.currency, date = item.date, recurrence = item.recurrence, minutes = item.minutes, choose = item.kind == Kind.CHOOSE,
+        )
     }
 
-    fun categoryOf(text: String): String? {
-        val low = text.lowercase()
-        return when {
-            Regex("""\b(swiggy|zomato|food|dinner|lunch|breakfast|cafe|coffee|chai|restaurant|hotel)\b""").containsMatchIn(low) -> "Food"
-            Regex("""\b(petrol|metro|uber|ola|rapido|cab|taxi|fuel|auto|rickshaw|autorickshaw|bus|train|parking|toll)\b""").containsMatchIn(low) -> "Transport"
-            Regex("""\b(jio|airtel|netflix|prime|spotify|subscription|sub)\b""").containsMatchIn(low) -> "Subs"
-            Regex("""\b(bigbasket|blinkit|zepto|dmart|grocery|groceries|provisions|supermarket|store|kirana)\b""").containsMatchIn(low) -> "Grocery"
-            else -> null
-        }
-    }
+    fun categoryOf(text: String): String? = CaptureLexicon.category(text.lowercase().split(Regex("""\W+""")).filter { it.isNotEmpty() }, text.lowercase())
 
-    /** "paid 450 for lunch" → "Lunch" (the prototype kept the "for"). */
-    private fun moneyLabel(t: String): String {
-        val name = t.replaceFirst(Regex("""^(paid|spent|received|got|bought|cost|charged?)\s*""", I), "")
-            .replaceFirst(Regex("""(₹|\brs\.?)""", I), "")
-            .replaceFirst(Regex("""\d[\d,]*(?:\.\d+)?\s*(?:k|lakhs?|lac|cr|crores?)?""", I), "")
-            .replaceFirst(Regex("""\b\d{1,2}:\d{2}\b"""), "")
-            .trim()
-            .replaceFirst(Regex("""^(for|on|at|to|towards)\s+""", I), "")
-            .split(Regex("""\s+""")).filter { it.isNotBlank() }.take(3).joinToString(" ")
-            .ifEmpty { "Expense" }
-        return name.replaceFirstChar { it.uppercase() }
+    private fun clockLabel(hhmm: String): String {
+        val (h, m) = hhmm.split(":").map { it.toInt() }
+        return "${if (h % 12 == 0) 12 else h % 12}:${"%02d".format(m)} ${if (h < 12) "AM" else "PM"}"
     }
-
-    private fun amountOf(m: MatchResult?): Long {
-        val g = m?.groupValues?.getOrNull(1)?.takeIf { it.isNotEmpty() } ?: return 0
-        val raw = g.replace(Regex("""[,\s]"""), "").lowercase()
-        val mult = when {
-            raw.endsWith("k") -> 1_000.0
-            Regex("""(lakhs?|lac)$""").containsMatchIn(raw) -> 100_000.0
-            Regex("""(crores?|cr)$""").containsMatchIn(raw) -> 10_000_000.0
-            else -> 1.0
-        }
-        val v = LEADING_NUMBER.find(raw)?.value?.toDoubleOrNull() ?: return 0
-        val total = v * mult
-        return if (total.isFinite()) kotlin.math.floor(total + 0.5).toLong() else 0
-    }
-
-    private fun clockLabel(h: Int, m: Int): String =
-        "${if (h % 12 == 0) 12 else h % 12}:${"%02d".format(m)} ${if (h < 12) "AM" else "PM"}"
 }

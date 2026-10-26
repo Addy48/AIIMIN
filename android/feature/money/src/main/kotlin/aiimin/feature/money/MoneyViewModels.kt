@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -66,6 +67,9 @@ class MoneyViewModel @Inject constructor(
         .onEach { tlog("month") }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
+    /** Accounts bank messages named that are not added yet (owner, 20 Oct). Declared before init, which fills it. */
+    val found = MutableStateFlow<List<aiimin.core.data.money.SeenAccount>>(emptyList())
+
     init {
         viewModelScope.launch {
             val t = clock.today()
@@ -73,10 +77,19 @@ class MoneyViewModel @Inject constructor(
             month.value = YearMonth.from(t)
             money.ensureBudgetCarried()
             runCatching { accountsRepo.ensureSeeded() }
+            refreshFound()
             runCatching { bills.refresh() }
             quietAccounts.value = runCatching { accountsRepo.views().filter { it.quiet() }.map { it.account.id }.toSet() }.getOrDefault(emptySet())
         }
     }
+
+    private suspend fun refreshFound() { found.value = runCatching { accountsRepo.suggestions() }.getOrDefault(emptyList()) }
+    /** New alerts may name new accounts: Money re-reads them each time it comes to the front. */
+    fun refreshFoundNow() = viewModelScope.launch { refreshFound() }
+    fun linkTarget(s: aiimin.core.data.money.SeenAccount) = s.linkTarget(extras.value?.accounts.orEmpty())?.name
+    // The card leaves at once, so a second tap can't reach it (one account per number).
+    fun acceptFound(s: aiimin.core.data.money.SeenAccount) { found.value = found.value - s; viewModelScope.launch { accountsRepo.accept(s); refreshFound() } }
+    fun dismissFound(s: aiimin.core.data.money.SeenAccount) { found.value = found.value - s; viewModelScope.launch { accountsRepo.dismiss(s.last4); refreshFound() } }
 
     fun accountOf(t: TxnEntity): String? = extras.value?.accounts?.let { accountsRepo.accountFor(t, it)?.id }
 
@@ -97,9 +110,24 @@ class MoneyViewModel @Inject constructor(
 }
 
 @HiltViewModel
-class InboxViewModel @Inject constructor(private val money: MoneyRepository) : ViewModel() {
+class InboxViewModel @Inject constructor(private val money: MoneyRepository, settings: aiimin.core.data.settings.SettingsStore) : ViewModel() {
     val pending = money.pending().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
-    suspend fun settle(id: String, category: String, ledger: Ledger, title: String, learn: Boolean, note: String? = null) = money.settle(id, category, ledger, title, learn, note)
+    /** Personal plus the ledgers turned on in Money settings, for the per-payment picker (4.4). */
+    val ledgers = settings.settings.map { s -> Ledger.entries.filter { it == Ledger.PERSONAL || it.name in s.ledgersOn } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), listOf(Ledger.PERSONAL))
+    /** A place filed the same way three times by hand: "Make this a rule?" (Phase 2). */
+    val offer = MutableStateFlow<aiimin.core.database.PayeeRuleEntity?>(null)
+
+    init { viewModelScope.launch { runCatching { money.resortPending() } } }
+
+    suspend fun settle(id: String, category: String, ledger: Ledger, title: String, learn: Boolean, note: String? = null, upiId: String? = null, byHand: Boolean = true): String? {
+        val txn = money.settle(id, category, ledger, title, learn, note, byHand)
+        if (txn != null && learn && byHand && offer.value == null) offer.value = money.ruleOffer(title, upiId)
+        return txn
+    }
+
+    fun makeRule(place: aiimin.core.database.PayeeRuleEntity) = viewModelScope.launch { offer.value = null; money.makeRule(place) }
+    fun notNow(place: aiimin.core.database.PayeeRuleEntity) = viewModelScope.launch { offer.value = null; money.dismissRuleOffer(place) }
     fun dismiss(id: String) = viewModelScope.launch { money.dismiss(id) }
     val categoriesOut = money.categories(inbound = false).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
     val categoriesIn = money.categories(inbound = true).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())

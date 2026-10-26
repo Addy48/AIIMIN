@@ -12,4 +12,6 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     api(libs.androidx.activity.compose)
     implementation(libs.vico.compose)
+    implementation(libs.androidx.navigation3.ui)
+    implementation(project(":core:engine"))
 }

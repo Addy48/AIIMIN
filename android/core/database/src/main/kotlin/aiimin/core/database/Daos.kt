@@ -259,6 +259,27 @@ interface MoneyDao {
     @Query("SELECT * FROM payee_rules WHERE `key` = :key")
     suspend fun rule(key: String): PayeeRuleEntity?
 
+    @Query("SELECT * FROM payee_rules")
+    suspend fun rulesNow(): List<PayeeRuleEntity>
+
+    /** A new guess for a draft that is still pending; a draft settled or dismissed meanwhile is left alone. */
+    @Query("UPDATE txn_drafts SET title = :title, category = :category, ledger = :ledger, ruleId = :ruleId WHERE id = :id AND status = 'pending'")
+    suspend fun resortDraft(id: String, title: String, category: String, ledger: String, ruleId: String?)
+
+    /** Smart rules (Phase 2), in the order they run. */
+    @Query("SELECT * FROM money_rules ORDER BY position, createdAt")
+    fun moneyRules(): Flow<List<MoneyRuleEntity>>
+
+    @Query("SELECT * FROM money_rules ORDER BY position, createdAt")
+    suspend fun moneyRulesNow(): List<MoneyRuleEntity>
+
+    @Upsert suspend fun upsertMoneyRule(r: MoneyRuleEntity)
+
+    @Upsert suspend fun upsertMoneyRules(r: List<MoneyRuleEntity>)
+
+    @Query("DELETE FROM money_rules WHERE id = :id")
+    suspend fun deleteMoneyRule(id: String)
+
     @Upsert suspend fun upsertBudget(b: BudgetEntity)
 
     @Query("SELECT * FROM budgets WHERE month = :month")
@@ -281,10 +302,28 @@ interface NoteDao {
     @Query("SELECT * FROM notes WHERE id = :id")
     fun observe(id: String): Flow<NoteEntity?>
 
-    @Query("SELECT * FROM notes WHERE deleted = 0 ORDER BY pinned DESC, updatedAt DESC")
+    @Query("SELECT * FROM notes WHERE deleted = 0 AND archived = 0 ORDER BY pinned DESC, updatedAt DESC")
     fun all(): Flow<List<NoteEntity>>
 
-    @Query("SELECT * FROM notes WHERE deleted = 0 AND (title LIKE :q OR body LIKE :q) ORDER BY updatedAt DESC LIMIT 30")
+    @Query("SELECT * FROM notes WHERE deleted = 0 AND archived = 1 ORDER BY updatedAt DESC")
+    fun archived(): Flow<List<NoteEntity>>
+
+    /** Every note kept (archived too), for export. */
+    @Query("SELECT * FROM notes WHERE deleted = 0 ORDER BY createdAt")
+    suspend fun keptNow(): List<NoteEntity>
+
+    @Query("SELECT importKey FROM notes WHERE importKey IS NOT NULL")
+    suspend fun importKeys(): List<String>
+
+    @Query("SELECT id FROM notes")
+    suspend fun ids(): List<String>
+
+    /** Notes with a reminder still to come (Part 11 "Time"); locked notes too, their text is never shown. */
+    @Query("SELECT * FROM notes WHERE deleted = 0 AND reminderAt IS NOT NULL")
+    suspend fun withReminders(): List<NoteEntity>
+
+    /** Locked notes never match: their text is not in [title] or [body]. */
+    @Query("SELECT * FROM notes WHERE deleted = 0 AND locked = 0 AND (title LIKE :q OR body LIKE :q) ORDER BY updatedAt DESC LIMIT 30")
     suspend fun search(q: String): List<NoteEntity>
 
     @Query("SELECT * FROM notes WHERE deleted = 0 AND body LIKE :needle")
@@ -304,6 +343,10 @@ interface NoteDao {
 
     @Query("DELETE FROM notes WHERE id = :id AND deleted = 1")
     suspend fun deleteForever(id: String)
+
+    /** Removes a note that was never shown (a shared picture that could not be read). */
+    @Query("DELETE FROM notes WHERE id = :id")
+    suspend fun deleteNow(id: String)
 }
 
 @Dao
@@ -330,6 +373,30 @@ interface JournalDao {
 
     @Query("UPDATE journal SET dirty = 0, remoteId = :remoteId WHERE id = :id AND updatedAt = :updatedAt")
     suspend fun markSynced(id: String, remoteId: String?, updatedAt: Long)
+
+    /** Pour's "Let go": the row is gone from the phone, not kept in trash. */
+    @Query("DELETE FROM journal WHERE id = :id")
+    suspend fun deleteNow(id: String)
+}
+
+@Dao
+interface PourDao {
+    @Upsert suspend fun upsert(p: PourItemEntity)
+
+    @Query("SELECT * FROM pour_items WHERE kind = :kind AND status IN ('open', 'kept') ORDER BY createdAt DESC")
+    fun open(kind: String): Flow<List<PourItemEntity>>
+
+    @Query("SELECT * FROM pour_items WHERE id = :id")
+    suspend fun get(id: String): PourItemEntity?
+
+    @Query("SELECT * FROM pour_items WHERE kind = 'cool' AND status = 'open' AND dueAt IS NOT NULL")
+    suspend fun coolingNow(): List<PourItemEntity>
+
+    @Query("SELECT COUNT(*) FROM pour_items WHERE kind = 'worry' AND status = 'open'")
+    suspend fun worryCount(): Int
+
+    @Query("DELETE FROM pour_items WHERE id = :id")
+    suspend fun deleteNow(id: String)
 }
 
 @Dao
@@ -361,6 +428,16 @@ interface VaultDao {
 
     @Query("SELECT * FROM docs WHERE deleted = 0 AND expires IS NOT NULL ORDER BY expires")
     suspend fun withExpiry(): List<DocEntity>
+
+    /** Expiry reminders follow the current version of each cover only. */
+    @Query("SELECT * FROM docs WHERE deleted = 0 AND current = 1 AND expires IS NOT NULL ORDER BY expires")
+    suspend fun currentWithExpiry(): List<DocEntity>
+
+    @Query("SELECT * FROM docs WHERE deleted = 0 AND (coverId = :cover OR id = :cover) ORDER BY version DESC")
+    suspend fun cover(cover: String): List<DocEntity>
+
+    @Query("SELECT * FROM docs WHERE deleted = 0 AND (coverId = :cover OR id = :cover) ORDER BY version DESC")
+    fun observeCover(cover: String): Flow<List<DocEntity>>
 
     @Query("SELECT * FROM docs WHERE deleted = 0 AND sha256 = :hash LIMIT 1")
     suspend fun byHash(hash: String): DocEntity?
@@ -426,6 +503,13 @@ interface NotificationDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertIfNew(n: NotificationEntity): Long
 
+    /** Rewrites stored notifications of one kind to today's wording (copy pass B2). */
+    @Query("UPDATE notifications SET title = :title, body = :body WHERE ruleKey LIKE :prefix || '%' AND (title != :title OR body != :body)")
+    suspend fun reword(prefix: String, title: String, body: String): Int
+
+    @Query("UPDATE notifications SET body = :body WHERE ruleKey LIKE :prefix || '%' AND body LIKE '%streak%'")
+    suspend fun rewordBody(prefix: String, body: String): Int
+
     @Query("SELECT * FROM notifications WHERE dismissed = 0 ORDER BY at DESC LIMIT 100")
     fun all(): Flow<List<NotificationEntity>>
 
@@ -443,6 +527,31 @@ interface NotificationDao {
 
     @Query("UPDATE notifications SET dismissed = 1 WHERE id IN (:ids)")
     suspend fun dismissAll(ids: List<String>)
+
+    @Query("SELECT * FROM notifications WHERE ruleKey = :key LIMIT 1")
+    suspend fun byKey(key: String): NotificationEntity?
+
+    @Query("SELECT ruleKey FROM notifications WHERE ruleKey IN (:keys)")
+    suspend fun existingKeys(keys: List<String>): List<String>
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun log(l: NotifyLogEntity): Long
+
+    @Query("UPDATE notify_log SET openedAt = :at, openedMinute = :minute WHERE `key` = :key AND openedAt IS NULL")
+    suspend fun opened(key: String, at: Long, minute: Int)
+
+    @Query("UPDATE notify_log SET dismissedAt = :at WHERE `key` = :key AND dismissedAt IS NULL AND openedAt IS NULL")
+    suspend fun dismissedLog(key: String, at: Long)
+
+    @Query("SELECT * FROM notify_log WHERE day >= :from ORDER BY shownAt")
+    suspend fun logSince(from: String): List<NotifyLogEntity>
+
+    /** Opened nudges ever: the budget earns from all of them (PRD 2.1, 30.A). */
+    @Query("SELECT COUNT(*) FROM notify_log WHERE kind = 'NUDGE' AND openedAt IS NOT NULL")
+    suspend fun openedNudges(): Int
+
+    @Query("SELECT * FROM notify_log WHERE day >= :from ORDER BY shownAt")
+    fun logSinceFlow(from: String): Flow<List<NotifyLogEntity>>
 }
 
 @Dao
@@ -646,7 +755,17 @@ interface LedgerDao {
 
     @Query("SELECT DISTINCT account4 FROM txns WHERE account4 IS NOT NULL UNION SELECT DISTINCT account4 FROM txn_drafts WHERE account4 IS NOT NULL")
     suspend fun knownLast4(): List<String>
+
+    /** Every masked account number bank alerts carried, with the alert text when kept (owner, 20 Oct). */
+    @Query(
+        "SELECT account4, raw, detectedAt AS at FROM txn_drafts WHERE account4 IS NOT NULL AND status = 'pending' " +
+            "UNION ALL SELECT account4, NULL AS raw, at FROM txns WHERE account4 IS NOT NULL AND source IN ('sms', 'notification', 'paste') AND deleted = 0",
+    )
+    suspend fun seenAccounts(): List<SeenAccountRow>
 }
+
+/** One alert's masked account number (see [LedgerDao.seenAccounts]). */
+data class SeenAccountRow(val account4: String, val raw: String?, val at: Long)
 
 @Dao
 interface PulseDao {

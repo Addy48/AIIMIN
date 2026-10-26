@@ -99,14 +99,6 @@ class UsageReader @Inject constructor(@ApplicationContext private val context: C
             }
             cursor = sliceEnd
         }
-        // Debug builds only: keep the exact event stream of the last read so a mismatch with
-        // Digital Wellbeing can be replayed off the phone. Private app storage, never synced.
-        if (context.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE != 0) runCatching {
-            java.io.File(context.filesDir, "usage-debug-" + Instant.ofEpochMilli(start).atZone(zone).toLocalDate() + ".tsv").printWriter().use { w ->
-                w.println("homes\t" + homePackages().joinToString(","))
-                events.forEach { e -> w.println("${e.at}\t${e.kind}\t${e.pkg}\t${e.cls}") }
-            }
-        }
         val homes = homePackages()
         val lateFrom = Instant.ofEpochMilli(start).atZone(zone).toLocalDate().atTime(lateHour, 0).atZone(zone).toInstant().toEpochMilli()
         val r = UsageTimeline.compute(
@@ -169,18 +161,28 @@ class UsageReader @Inject constructor(@ApplicationContext private val context: C
             .map { it.activityInfo.packageName }.toSet()
     }
 
-    private fun counts(pkg: String, homes: Set<String>): Boolean {
-        if (pkg.isEmpty() || pkg == "android" || pkg in homes) return false
-        if (pkg.startsWith("com.android.systemui") || pkg.startsWith("com.android.permissioncontroller") ||
-            pkg.startsWith("com.google.android.permissioncontroller") || pkg.startsWith("com.android.packageinstaller") ||
-            pkg.startsWith("com.google.android.packageinstaller") || pkg.startsWith("com.android.providers.") ||
-            pkg.startsWith("com.google.android.gms") || pkg == "com.android.settings.intelligence" ||
-            // Digital Wellbeing leaves its own screens out of its total; so do we, or a self-check never matches.
-            pkg == "com.google.android.apps.wellbeing"
-        ) {
-            return false
+    private fun counts(pkg: String, homes: Set<String>): Boolean = aiimin.core.sensing.logic.ScreenFilter.counts(pkg, homes)
+
+    /** Screen on (true) and off (false) moments between [from] and [to], for the learned day end (PRD 1.2). */
+    suspend fun screenEvents(from: Instant, to: Instant): List<Pair<Long, Boolean>> = withContext(Dispatchers.IO) {
+        if (!hasAccess()) return@withContext emptyList()
+        val out = ArrayList<Pair<Long, Boolean>>(512)
+        var cursor = from.toEpochMilli()
+        val end = minOf(to.toEpochMilli(), System.currentTimeMillis())
+        while (cursor < end) {
+            val sliceEnd = minOf(cursor + SLICE_MS, end)
+            val it = usm.queryEvents(cursor, sliceEnd)
+            val ev = UsageEvents.Event()
+            while (it.hasNextEvent()) {
+                it.getNextEvent(ev)
+                when (ev.eventType) {
+                    UsageEvents.Event.SCREEN_INTERACTIVE -> out += ev.timeStamp to true
+                    UsageEvents.Event.SCREEN_NON_INTERACTIVE -> out += ev.timeStamp to false
+                }
+            }
+            cursor = sliceEnd
         }
-        return true
+        out
     }
 
     private fun kindOf(type: Int): UsageTimeline.Kind? = when (type) {

@@ -47,6 +47,10 @@ data class AppSettings(
     val xp: XpState = XpState.fresh(),
     val hideScore: Boolean = false,
     val hideXp: Boolean = false,
+    /** Home-screen widget shows task and event titles (PRD 1.4); off by default, so only times and counts show. */
+    val widgetTitles: Boolean = false,
+    /** Pour's worry time (12.6): minute of the day for the daily 15-minute slot; null when not set. */
+    val worryMin: Int? = null,
     val workApps: Set<String> = emptySet(),
     /** Apps that don't count as distraction during focus (a music player, a reference app). */
     val focusAllowedApps: Set<String> = emptySet(),
@@ -59,14 +63,69 @@ data class AppSettings(
     val reduceMotion: Boolean = false,
     val appLock: Boolean = false,
     val hideInRecents: Boolean = false,
+    /** Shake the phone on any screen to send feedback with a screenshot (opens the mail app; nothing is sent by AIIMIN). */
+    val shakeFeedback: Boolean = true,
     val journalSync: Boolean = false,
     /** What may leave the phone when signed in (see [SyncKinds]). Journal has its own switch. */
     val syncScope: Set<String> = SyncKinds.DEFAULT,
     /** Background sync only on Wi-Fi or other unmetered networks. */
     val syncWifiOnly: Boolean = false,
-    val dob: String? = null,
+    /** Age band only (PRD 4.7): the date of birth is used once and never stored. */
+    val ageBand: String? = null,
+    /** Country (ISO 3166 alpha-2) confirmed on onboarding screen 1; India is the first-cut market. */
+    val country: String = "IN",
     val primaryBank: String? = null,
     val banks: List<String> = emptyList(),
+    /** Masked account numbers the person marked "Not mine" (never offered again). */
+    val dismissedAccounts: Set<String> = emptySet(),
+    /** The day (ISO) the full opening last played; later cold starts that day get the short one (Part 26.2). */
+    val lastBootDay: String? = null,
+    /** The first day this install opened (first-week card, Quick doors learning). */
+    val installDay: String? = null,
+    /** Wake and sleep from onboarding screen 2 (PRD 1.6): Today's arc runs from one to the other. */
+    val wakeMin: Int = 7 * 60,
+    val sleepMin: Int = 23 * 60,
+    /** Day-end hour in minutes after midnight (PRD 1.2): drives "Wrap up" and the Evening section only. */
+    val dayEndMin: Int = 22 * 60,
+    /** SET (from onboarding), LEARNING (after "Yes" on the card), PINNED (edited by hand). */
+    val dayEndMode: String = "SET",
+    val dayEndChangedOn: String? = null,
+    /** The day the learned day-end card was last answered "Keep"; asked again after 7 days. */
+    val dayEndAskedOn: String? = null,
+    /** "What now?" kinds skipped (three drop a kind one step) and kinds hidden today (day|KIND,KIND). */
+    val whatNowSkips: Map<String, Int> = emptyMap(),
+    val whatNowHidden: String? = null,
+    /** The day the Monday / 1st "Plan your week/month" line was shown, so it shows once. */
+    val landmarkShownOn: String? = null,
+    /** Opens per screen (route key) for the Quick doors, and doors pinned by hand. On the phone only. */
+    val featureOpens: Map<String, Int> = emptyMap(),
+    val pinnedDoors: List<String> = emptyList(),
+    /** First-week ladder: a capture has been saved at least once. */
+    val firstCaptureDone: Boolean = false,
+    /** Stored notifications were reworded to the B2 copy once. */
+    val notificationsReworded: Boolean = false,
+    /** Raahi mode (PRD 1.1): FULL, QUIET (default) or OFF; read through [aiimin.core.engine.raahi.RaahiMode.of]. */
+    val raahiMode: String = "QUIET",
+    /** "Hide for today" from a long-press on Raahi (32.4 I-5): the day it was hidden; Raahi is back the next day. */
+    val raahiHiddenOn: String? = null,
+    /** Raahi motions played today ([aiimin.core.engine.raahi.RaahiBudget.encode]); Quiet stops at 3. */
+    val raahiBudget: String? = null,
+    /** The last day the app was opened (ISO), for "Welcome back" (1.6b). */
+    val lastOpenDay: String? = null,
+    /** The day a greeting last showed, and the day the name was last used in one (at most once a day). */
+    val greetedOn: String? = null,
+    val nameGreetedOn: String? = null,
+    /** Notifications (PRD 2.1): nudge ceiling (2 to 6), Playful wording, lock-screen details, the optional groups. */
+    val notifyCeiling: Int = 4,
+    val playful: Boolean = false,
+    val lockDetails: Boolean = false,
+    val notifyBillsDocs: Boolean = true,
+    val notifyBrief: Boolean = true,
+    val notifyWrapUp: Boolean = true,
+    val notifyNudges: Boolean = true,
+    /** Categories stopped from "Stop these?" (in-app only), and categories already asked. */
+    val stoppedCategories: Set<String> = emptySet(),
+    val stopAnswered: Set<String> = emptySet(),
     val cashWallet: Boolean = true,
     val lifeScoreSharedWith: Set<String> = emptySet(),
     val stepCounterState: String? = null,
@@ -74,6 +133,8 @@ data class AppSettings(
     val lastSyncAt: Long? = null,
     /** When the person closed the "phone is pausing AIIMIN" card; it stays away for a week. */
     val keepAliveDismissedAt: Long? = null,
+    /** The phone maker the one-time "keep AIIMIN running" card was shown for (4.3). */
+    val keepAliveIntroMaker: String? = null,
     /** When Pulse last found a job that had missed two background runs (the phone paused AIIMIN). */
     val stallDetectedAt: Long? = null,
     /** First day bank alerts count from (yyyy-MM-dd), chosen when importing past messages. */
@@ -132,10 +193,13 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         val xp = stringPreferencesKey("xp")
         val hideScore = booleanPreferencesKey("hide_score")
         val hideXp = booleanPreferencesKey("hide_xp")
+        val widgetTitles = booleanPreferencesKey("widget_titles")
+        val worryMin = intPreferencesKey("worry_min")
         val workApps = stringSetPreferencesKey("work_apps")
         val focusAllowedApps = stringSetPreferencesKey("focus_allowed_apps")
         val screenStrategy = stringPreferencesKey("screen_strategy")
         val keepAliveDismissed = stringPreferencesKey("keep_alive_dismissed")
+        val keepAliveIntro = stringPreferencesKey("keep_alive_intro_maker")
         val stallDetected = stringPreferencesKey("stall_detected")
         val moneyTrackFrom = stringPreferencesKey("money_track_from")
         val smsFilter = stringPreferencesKey("sms_filter")
@@ -146,13 +210,48 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         val reduceMotion = booleanPreferencesKey("reduce_motion")
         val appLock = booleanPreferencesKey("app_lock")
         val hideRecents = booleanPreferencesKey("hide_recents")
+        val shakeFeedback = booleanPreferencesKey("shake_feedback")
         val journalSync = booleanPreferencesKey("journal_sync")
         val syncScope = stringSetPreferencesKey("sync_scope")
         val syncScopeV2 = booleanPreferencesKey("sync_scope_v2")
         val syncWifiOnly = booleanPreferencesKey("sync_wifi_only")
+        /** Old builds stored the full date of birth; read once into a band, then removed. */
         val dob = stringPreferencesKey("dob")
+        val ageBand = stringPreferencesKey("age_band")
+        val country = stringPreferencesKey("country")
         val primaryBank = stringPreferencesKey("primary_bank")
         val banks = stringPreferencesKey("banks")
+        val dismissedAccounts = stringSetPreferencesKey("dismissed_accounts")
+        val lastBootDay = stringPreferencesKey("last_boot_day")
+        val installDay = stringPreferencesKey("install_day")
+        val dayEndMin = intPreferencesKey("day_end_min")
+        val wakeMin = intPreferencesKey("wake_min")
+        val sleepMin = intPreferencesKey("sleep_min")
+        val dayEndMode = stringPreferencesKey("day_end_mode")
+        val dayEndChangedOn = stringPreferencesKey("day_end_changed_on")
+        val dayEndAskedOn = stringPreferencesKey("day_end_asked_on")
+        val whatNowSkips = stringPreferencesKey("what_now_skips")
+        val whatNowHidden = stringPreferencesKey("what_now_hidden")
+        val landmarkShownOn = stringPreferencesKey("landmark_shown_on")
+        val featureOpens = stringPreferencesKey("feature_opens")
+        val pinnedDoors = stringPreferencesKey("pinned_doors")
+        val firstCaptureDone = booleanPreferencesKey("first_capture_done")
+        val notificationsReworded = booleanPreferencesKey("notifications_reworded")
+        val raahiMode = stringPreferencesKey("raahi_mode")
+        val raahiHiddenOn = stringPreferencesKey("raahi_hidden_on")
+        val raahiBudget = stringPreferencesKey("raahi_budget")
+        val lastOpenDay = stringPreferencesKey("last_open_day")
+        val greetedOn = stringPreferencesKey("greeted_on")
+        val nameGreetedOn = stringPreferencesKey("name_greeted_on")
+        val notifyCeiling = intPreferencesKey("notify_ceiling")
+        val playful = booleanPreferencesKey("playful")
+        val lockDetails = booleanPreferencesKey("lock_details")
+        val notifyBillsDocs = booleanPreferencesKey("notify_bills_docs")
+        val notifyBrief = booleanPreferencesKey("notify_brief")
+        val notifyWrapUp = booleanPreferencesKey("notify_wrapup")
+        val notifyNudges = booleanPreferencesKey("notify_nudges")
+        val stoppedCategories = stringSetPreferencesKey("stopped_categories")
+        val stopAnswered = stringSetPreferencesKey("stop_answered")
         val cashWallet = booleanPreferencesKey("cash_wallet")
         val scoreShare = stringSetPreferencesKey("score_share")
         val stepCounter = stringPreferencesKey("step_counter")
@@ -191,6 +290,8 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         xp = p[K.xp]?.let { runCatching { Codecs.decodeXp(it) }.getOrNull() } ?: XpState.fresh(),
         hideScore = p[K.hideScore] ?: false,
         hideXp = p[K.hideXp] ?: false,
+        widgetTitles = p[K.widgetTitles] ?: false,
+        worryMin = p[K.worryMin],
         workApps = p[K.workApps] ?: emptySet(),
         focusAllowedApps = p[K.focusAllowedApps] ?: emptySet(),
         screenStrategy = p[K.screenStrategy],
@@ -200,19 +301,53 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         reduceMotion = p[K.reduceMotion] ?: false,
         appLock = p[K.appLock] ?: false,
         hideInRecents = p[K.hideRecents] ?: false,
+        shakeFeedback = p[K.shakeFeedback] ?: true,
         journalSync = p[K.journalSync] ?: false,
         // Scopes saved before v2 only knew tasks/notes/money; the kinds added later start on.
         syncScope = p[K.syncScope]?.let { if (p[K.syncScopeV2] == true) it else it + SyncKinds.ADDED_V2 } ?: SyncKinds.DEFAULT,
         syncWifiOnly = p[K.syncWifiOnly] ?: false,
-        dob = p[K.dob],
+        ageBand = p[K.ageBand] ?: p[K.dob]?.let { runCatching { aiimin.core.engine.profile.AgeBand.of(LocalDate.parse(it), LocalDate.now()) }.getOrNull() },
+        country = p[K.country] ?: "IN",
         primaryBank = p[K.primaryBank],
         banks = p[K.banks]?.split("|")?.filter { it.isNotBlank() }.orEmpty(),
+        dismissedAccounts = p[K.dismissedAccounts] ?: emptySet(),
+        lastBootDay = p[K.lastBootDay],
+        installDay = p[K.installDay],
+        dayEndMin = p[K.dayEndMin] ?: 22 * 60,
+        wakeMin = p[K.wakeMin] ?: 7 * 60,
+        sleepMin = p[K.sleepMin] ?: 23 * 60,
+        dayEndMode = p[K.dayEndMode] ?: "SET",
+        dayEndChangedOn = p[K.dayEndChangedOn],
+        dayEndAskedOn = p[K.dayEndAskedOn],
+        whatNowSkips = decodeCounts(p[K.whatNowSkips]),
+        whatNowHidden = p[K.whatNowHidden],
+        landmarkShownOn = p[K.landmarkShownOn],
+        featureOpens = decodeCounts(p[K.featureOpens]),
+        pinnedDoors = p[K.pinnedDoors]?.split("|")?.filter { it.isNotBlank() }.orEmpty(),
+        firstCaptureDone = p[K.firstCaptureDone] ?: false,
+        notificationsReworded = p[K.notificationsReworded] ?: false,
+        raahiMode = p[K.raahiMode] ?: "QUIET",
+        raahiHiddenOn = p[K.raahiHiddenOn],
+        raahiBudget = p[K.raahiBudget],
+        lastOpenDay = p[K.lastOpenDay],
+        greetedOn = p[K.greetedOn],
+        nameGreetedOn = p[K.nameGreetedOn],
+        notifyCeiling = (p[K.notifyCeiling] ?: 4).coerceIn(2, 6),
+        playful = p[K.playful] ?: false,
+        lockDetails = p[K.lockDetails] ?: false,
+        notifyBillsDocs = p[K.notifyBillsDocs] ?: true,
+        notifyBrief = p[K.notifyBrief] ?: true,
+        notifyWrapUp = p[K.notifyWrapUp] ?: true,
+        notifyNudges = p[K.notifyNudges] ?: true,
+        stoppedCategories = p[K.stoppedCategories] ?: emptySet(),
+        stopAnswered = p[K.stopAnswered] ?: emptySet(),
         cashWallet = p[K.cashWallet] ?: true,
         lifeScoreSharedWith = p[K.scoreShare] ?: emptySet(),
         stepCounterState = p[K.stepCounter],
         focusActive = p[K.focus],
         lastSyncAt = p[K.lastSync]?.toLongOrNull(),
         keepAliveDismissedAt = p[K.keepAliveDismissed]?.toLongOrNull(),
+        keepAliveIntroMaker = p[K.keepAliveIntro],
         stallDetectedAt = p[K.stallDetected]?.toLongOrNull(),
         moneyTrackFrom = p[K.moneyTrackFrom],
         smsFilter = p[K.smsFilter],
@@ -247,6 +382,8 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
             p[K.xp] = Codecs.encodeXp(s.xp)
             p[K.hideScore] = s.hideScore
             p[K.hideXp] = s.hideXp
+            p[K.widgetTitles] = s.widgetTitles
+            s.worryMin?.let { p[K.worryMin] = it } ?: p.remove(K.worryMin)
             p[K.workApps] = s.workApps
             p[K.focusAllowedApps] = s.focusAllowedApps
             s.screenStrategy?.let { p[K.screenStrategy] = it } ?: p.remove(K.screenStrategy)
@@ -256,19 +393,54 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
             p[K.reduceMotion] = s.reduceMotion
             p[K.appLock] = s.appLock
             p[K.hideRecents] = s.hideInRecents
+            p[K.shakeFeedback] = s.shakeFeedback
             p[K.journalSync] = s.journalSync
             p[K.syncScope] = s.syncScope
             p[K.syncScopeV2] = true
             p[K.syncWifiOnly] = s.syncWifiOnly
-            s.dob?.let { p[K.dob] = it } ?: p.remove(K.dob)
+            s.ageBand?.let { p[K.ageBand] = it } ?: p.remove(K.ageBand)
+            p.remove(K.dob)
+            p[K.country] = s.country
             s.primaryBank?.let { p[K.primaryBank] = it } ?: p.remove(K.primaryBank)
             p[K.banks] = s.banks.joinToString("|")
+            p[K.dismissedAccounts] = s.dismissedAccounts
+            s.lastBootDay?.let { p[K.lastBootDay] = it } ?: p.remove(K.lastBootDay)
+            s.installDay?.let { p[K.installDay] = it } ?: p.remove(K.installDay)
+            p[K.dayEndMin] = s.dayEndMin
+            p[K.wakeMin] = s.wakeMin
+            p[K.sleepMin] = s.sleepMin
+            p[K.dayEndMode] = s.dayEndMode
+            s.dayEndChangedOn?.let { p[K.dayEndChangedOn] = it } ?: p.remove(K.dayEndChangedOn)
+            s.dayEndAskedOn?.let { p[K.dayEndAskedOn] = it } ?: p.remove(K.dayEndAskedOn)
+            p[K.whatNowSkips] = encodeCounts(s.whatNowSkips)
+            s.whatNowHidden?.let { p[K.whatNowHidden] = it } ?: p.remove(K.whatNowHidden)
+            s.landmarkShownOn?.let { p[K.landmarkShownOn] = it } ?: p.remove(K.landmarkShownOn)
+            p[K.featureOpens] = encodeCounts(s.featureOpens)
+            p[K.pinnedDoors] = s.pinnedDoors.joinToString("|")
+            p[K.firstCaptureDone] = s.firstCaptureDone
+            p[K.notificationsReworded] = s.notificationsReworded
+            p[K.raahiMode] = s.raahiMode
+            s.raahiHiddenOn?.let { p[K.raahiHiddenOn] = it } ?: p.remove(K.raahiHiddenOn)
+            s.raahiBudget?.let { p[K.raahiBudget] = it } ?: p.remove(K.raahiBudget)
+            s.lastOpenDay?.let { p[K.lastOpenDay] = it } ?: p.remove(K.lastOpenDay)
+            s.greetedOn?.let { p[K.greetedOn] = it } ?: p.remove(K.greetedOn)
+            s.nameGreetedOn?.let { p[K.nameGreetedOn] = it } ?: p.remove(K.nameGreetedOn)
+            p[K.notifyCeiling] = s.notifyCeiling.coerceIn(2, 6)
+            p[K.playful] = s.playful
+            p[K.lockDetails] = s.lockDetails
+            p[K.notifyBillsDocs] = s.notifyBillsDocs
+            p[K.notifyBrief] = s.notifyBrief
+            p[K.notifyWrapUp] = s.notifyWrapUp
+            p[K.notifyNudges] = s.notifyNudges
+            p[K.stoppedCategories] = s.stoppedCategories
+            p[K.stopAnswered] = s.stopAnswered
             p[K.cashWallet] = s.cashWallet
             p[K.scoreShare] = s.lifeScoreSharedWith
             s.stepCounterState?.let { p[K.stepCounter] = it } ?: p.remove(K.stepCounter)
             s.focusActive?.let { p[K.focus] = it } ?: p.remove(K.focus)
             s.lastSyncAt?.let { p[K.lastSync] = it.toString() } ?: p.remove(K.lastSync)
             s.keepAliveDismissedAt?.let { p[K.keepAliveDismissed] = it.toString() } ?: p.remove(K.keepAliveDismissed)
+            s.keepAliveIntroMaker?.let { p[K.keepAliveIntro] = it } ?: p.remove(K.keepAliveIntro)
             s.stallDetectedAt?.let { p[K.stallDetected] = it.toString() } ?: p.remove(K.stallDetected)
             s.moneyTrackFrom?.let { p[K.moneyTrackFrom] = it } ?: p.remove(K.moneyTrackFrom)
             s.smsFilter?.let { p[K.smsFilter] = it } ?: p.remove(K.smsFilter)
@@ -300,3 +472,9 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         return id
     }
 }
+
+/** "a:3|b:1" <-> map; tolerant of junk so a bad value never breaks settings. */
+internal fun decodeCounts(raw: String?): Map<String, Int> =
+    raw?.split("|")?.mapNotNull { e -> e.substringBefore(':').takeIf { it.isNotBlank() }?.let { k -> e.substringAfter(':', "").toIntOrNull()?.let { k to it } } }?.toMap().orEmpty()
+
+internal fun encodeCounts(m: Map<String, Int>): String = m.entries.joinToString("|") { "${it.key}:${it.value}" }

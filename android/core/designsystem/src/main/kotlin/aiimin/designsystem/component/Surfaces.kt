@@ -1,5 +1,7 @@
 package aiimin.designsystem.component
 
+import aiimin.designsystem.theme.LocalReduceMotion
+import aiimin.designsystem.theme.Motion
 import androidx.compose.foundation.shape.RoundedCornerShape
 import aiimin.designsystem.icon.AppIcons
 import aiimin.designsystem.theme.Aiimin
@@ -36,6 +38,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -50,16 +54,53 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 
-/** Gentle press feedback used by every tappable surface (scale 0.98, 120 ms). */
+/** Press feedback used by every tappable surface (Part 26.5 `tap`: 0.97 scale, 90 ms; none with reduce motion). */
 @Composable
 fun Modifier.pressable(onClick: (() -> Unit)?, role: Role = Role.Button, onClickLabel: String? = null): Modifier {
     if (onClick == null) return this
     val source = remember { MutableInteractionSource() }
     val pressed by source.collectIsPressedAsState()
-    val s by animateFloatAsState(if (pressed) 0.98f else 1f, tween(120), label = "press")
+    val s by animateFloatAsState(if (pressed && !LocalReduceMotion.current) Motion.PRESS_SCALE else 1f, Motion.tap(), label = "press")
     return this
         .scale(s)
         .clickable(interactionSource = source, indication = null, role = role, onClickLabel = onClickLabel, onClick = onClick)
+}
+
+
+/**
+ * When the app may play its entrance ([ready]), and a [gen] that grows when the person comes back after a few
+ * minutes away, so the screen they return to rises in again ("welcome back"). Set by MainActivity.
+ */
+class Reveal(val ready: Boolean, val gen: Int)
+
+val LocalReveal = androidx.compose.runtime.compositionLocalOf { Reveal(true, 0) }
+
+/**
+ * List entry (Part 26.5): the item fades in and rises 12 dp, 30 ms after the one before it (first 8 only). It waits
+ * for the boot hand-off and replays once on a return after a few minutes away; reduce motion shows it at once.
+ */
+@Composable
+fun Modifier.enterStagger(index: Int): Modifier {
+    val reduce = LocalReduceMotion.current
+    val r = LocalReveal.current
+    var played by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableIntStateOf(if (reduce) Int.MAX_VALUE else -1) }
+    val p = remember { androidx.compose.animation.core.Animatable(if (played >= r.gen && r.ready) 1f else 0f) }
+    androidx.compose.runtime.LaunchedEffect(r.ready, r.gen, reduce) {
+        when {
+            reduce -> p.snapTo(1f)
+            !r.ready -> Unit
+            played >= r.gen -> p.snapTo(1f)
+            else -> {
+                p.snapTo(0f)
+                p.animateTo(1f, Motion.standard(delay = Motion.staggerDelay(index)))
+                played = r.gen
+            }
+        }
+    }
+    return this.graphicsLayer {
+        alpha = p.value
+        translationY = (1f - p.value) * Motion.RISE_DP * density
+    }
 }
 
 /**
@@ -70,21 +111,26 @@ fun Modifier.pressable(onClick: (() -> Unit)?, role: Role = Role.Button, onClick
 fun Panel(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
-    padding: PaddingValues = PaddingValues(vertical = 12.dp),
+    /** Default: 16 dp all round for a filled or bordered card (S8), 12 dp top and bottom for a flat group. */
+    padding: PaddingValues? = null,
     color: Color = Color.Transparent,
     shape: Shape = Shapes.card,
     bordered: Boolean = false,
+    /** The route this panel opens, so it grows into that screen (Part 26.5 container transform). */
+    opens: Any? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val c = Aiimin.colors
+    val key = opens?.let(::sharedKeyOf)
     Column(
         modifier
             .fillMaxWidth()
-            .pressable(onClick)
+            .sharedContainer(key)
+            .pressable(onClick?.let { click -> { key?.let(SharedNav::arm); click() } })
             .clip(shape)
             .background(color)
             .then(if (bordered) Modifier.border(1.dp, c.border, shape) else Modifier)
-            .padding(padding),
+            .padding(padding ?: if (bordered || color != Color.Transparent) PaddingValues(16.dp) else PaddingValues(vertical = 12.dp)),
         content = content,
     )
     if (!bordered && color == Color.Transparent) Hairline()
@@ -102,17 +148,17 @@ fun SectionHeader(
     val hasAction = action != null && onAction != null
     Row(
         // With an action the row is the action's 48 dp touch height, so the header grows ~4 dp, not ~30.
-        modifier.fillMaxWidth().padding(top = if (hasAction) 0.dp else 18.dp, bottom = if (hasAction) 0.dp else 8.dp),
+        modifier.fillMaxWidth().padding(top = if (hasAction) 8.dp else 24.dp, bottom = if (hasAction) 0.dp else 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(title.uppercase(), style = Aiimin.type.eyebrow, modifier = Modifier.weight(1f))
         trailing?.invoke(this)
         if (hasAction) {
             Box(
-                Modifier.heightIn(min = 48.dp).widthIn(min = 48.dp).clip(Shapes.small).clickable(onClick = onAction!!).padding(horizontal = 6.dp),
+                Modifier.heightIn(min = 48.dp).widthIn(min = 48.dp).clip(Shapes.small).clickable(onClick = onAction!!).padding(horizontal = 8.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(action!!, style = Aiimin.type.label.copy(color = Aiimin.colors.accentText, fontSize = 14.sp, fontWeight = FontWeight.Medium))
+                Text(action!!, style = Aiimin.type.labelLarge.copy(color = Aiimin.colors.link, fontWeight = FontWeight.Medium))
             }
         }
     }
@@ -121,8 +167,10 @@ fun SectionHeader(
 /** Icon inside a soft tinted square; the standard leading element of a row. */
 @Composable
 fun IconTile(icon: ImageVector, tint: Color = Aiimin.colors.textMuted, background: Color = Color.Transparent, size: Dp = 36.dp) {
-    // A bare icon by default; a tinted square only when it carries status (warn, danger, done).
-    Box(Modifier.size(size).clip(Shapes.small).background(background), contentAlignment = Alignment.Center) {
+    // A bare icon by default, flush with the margin like the text above it (S1); a tinted square only when it
+    // carries status (warn, danger, done).
+    val bare = background == Color.Transparent
+    Box(Modifier.size(size).clip(Shapes.small).background(background), contentAlignment = if (bare) Alignment.CenterStart else Alignment.Center) {
         Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(if (background == Color.Transparent) size * 0.6f else size * 0.5f))
     }
 }
@@ -138,18 +186,24 @@ fun ListRow(
     titleColor: Color = Aiimin.colors.text,
     // Two lines by default: at 1.15× and 1.3× text one line cut targets and instructions mid-word (audit A-018).
     maxSubtitleLines: Int = 2,
+    /** The route this row opens, so it grows into that screen (Part 26.5 container transform). */
+    opens: Any? = null,
 ) {
+    val key = opens?.let(::sharedKeyOf)
     Row(
         modifier
             .fillMaxWidth()
             .heightIn(min = 52.dp)
-            .then(if (onClick != null) Modifier.clip(Shapes.row).clickable(onClick = onClick) else Modifier)
-            .padding(vertical = 10.dp, horizontal = 4.dp),
+            .sharedContainer(key)
+            .then(if (onClick != null) Modifier.clip(Shapes.row).clickable { key?.let(SharedNav::arm); onClick() } else Modifier)
+            .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        // S1: one row shape everywhere. No side padding, so the leading icon starts and the trailing item ends
+        // exactly on the 16 dp page margins; the leading slot is 40 dp so every title starts on one column.
         if (leading != null) {
-            leading()
-            Spacer(Modifier.width(12.dp))
+            Box(Modifier.width(40.dp), contentAlignment = Alignment.CenterStart) { leading() }
+            Spacer(Modifier.width(8.dp))
         }
         Column(Modifier.weight(1f)) {
             Text(title, style = Aiimin.type.bodyStrong.copy(color = titleColor), maxLines = 2, overflow = TextOverflow.Ellipsis)
@@ -159,7 +213,7 @@ fun ListRow(
         }
         if (trailing != null) {
             Spacer(Modifier.width(8.dp))
-            trailing()
+            Box(contentAlignment = Alignment.CenterEnd) { trailing() }
         }
     }
 }
@@ -180,7 +234,7 @@ fun Avatar(name: String, hueIndex: Int, modifier: Modifier = Modifier, size: Dp 
     val c = Aiimin.colors
     val initials = name.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }.take(2).joinToString("") { it.first().uppercase() }.ifEmpty { "?" }
     val shape = RoundedCornerShape(if (size >= 56.dp) 12.dp else 8.dp)
-    val onInk = if (c.isDark) c.base else Color.White
+    val onInk = c.onInk
     Box(
         modifier.size(size).clip(shape).then(if (outlined) Modifier.border(1.dp, c.borderStrong, shape) else Modifier.background(c.text)),
         contentAlignment = Alignment.Center,
@@ -193,12 +247,12 @@ fun Avatar(name: String, hueIndex: Int, modifier: Modifier = Modifier, size: Dp 
 @Composable
 fun Tag(text: String, color: Color = Aiimin.colors.textMuted, background: Color = Aiimin.colors.raised, icon: ImageVector? = null) {
     Row(
-        Modifier.clip(Shapes.tag).background(background).padding(horizontal = 7.dp, vertical = 3.dp),
+        Modifier.clip(Shapes.tag).background(background).padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         if (icon != null) Icon(icon, null, tint = color, modifier = Modifier.size(12.dp))
-        Text(text, style = Aiimin.type.caption.copy(color = color, fontWeight = FontWeight.SemiBold, fontSize = 11.sp), maxLines = 1)
+        Text(text, style = Aiimin.type.caption.copy(color = color, fontWeight = FontWeight.SemiBold), maxLines = 1)
     }
 }
 
@@ -213,7 +267,7 @@ fun EvidenceDot(tier: Char, modifier: Modifier = Modifier, size: Dp = 10.dp) {
     val ink = c.text
     val bg = c.base
     val d = size
-    androidx.compose.foundation.Canvas(modifier.size(d + 8.dp).semantics { contentDescription = when (tier) { 'A' -> "Measured"; 'B' -> "Backed by proof"; 'C' -> "Your tap"; else -> "Late or unsure" } }) {
+    androidx.compose.foundation.Canvas(modifier.size(d + 8.dp).semantics { contentDescription = when (tier) { 'A' -> "Measured"; 'B' -> "Backed by proof"; 'C' -> "Your tap"; else -> "Added later or unsure" } }) {
         val cx = this.size.width / 2f
         val cy = this.size.height / 2f
         val r = d.toPx() / 2f
@@ -260,9 +314,9 @@ fun ExpiryVial(percentLeft: Float?, modifier: Modifier = Modifier) {
 fun DocThumb(modifier: Modifier = Modifier, locked: Boolean = false, tint: Color? = null) {
     val c = Aiimin.colors
     val shape = RoundedCornerShape(5.dp)
-    Box(modifier.size(width = 40.dp, height = 52.dp).clip(shape).background(tint ?: Color.White).border(1.dp, c.borderStrong, shape).padding(horizontal = 6.dp, vertical = 8.dp)) {
+    Box(modifier.size(width = 40.dp, height = 52.dp).clip(shape).background(tint ?: c.paper).border(1.dp, c.borderStrong, shape).padding(horizontal = 8.dp, vertical = 8.dp)) {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Box(Modifier.fillMaxWidth(0.55f).height(3.dp).background(c.text))
+            Box(Modifier.fillMaxWidth(0.55f).height(4.dp).background(c.text))
             Box(Modifier.fillMaxWidth().height(2.dp).background(c.borderStrong))
             Box(Modifier.fillMaxWidth(0.8f).height(2.dp).background(c.borderStrong))
             Box(Modifier.fillMaxWidth(0.6f).height(2.dp).background(c.borderStrong))

@@ -21,6 +21,11 @@ class AndroidLintConventionPlugin : Plugin<Project> {
                     configure<Lint> { configureLint() }
                 }
             }
+            val guard = tasks.register("checkThemeTokens", ThemeTokenGuard::class.java) {
+                sources.from(fileTree("src/main") { include("**/*.kt") })
+                report.set(layout.buildDirectory.file("reports/theme-tokens.txt"))
+            }
+            tasks.matching { it.name == "preBuild" }.configureEach { dependsOn(guard) }
         }
     }
 }

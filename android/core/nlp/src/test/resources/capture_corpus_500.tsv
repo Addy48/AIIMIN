@@ -1,0 +1,500 @@
+1	expense_en	en	spent 12.75 on mobile recharge		1	expense;1275;INR;;;;recharge
+2	expense_en	en	paid 7.25 for groceries		1	expense;725;INR;;;;grocer
+3	expense_en	en	dinner 7.25		1	expense;725;INR;;;;dinner
+4	expense_en	en	bought coffee for 560		1	expense;56000;INR;;;;coffee
+5	expense_en	en	gave 12.75 for dinner		1	expense;1275;INR;;;;dinner
+6	expense_en	en	spent Rs 45 on medicines		1	expense;4500;INR;;;;medicines
+7	expense_en	en	paid Rs. 999 for coffee		1	expense;99900;INR;;;;coffee
+8	expense_en	en	wifi bill Rs 1200		1	expense;120000;INR;;;;wifi
+9	expense_en	en	999 rupees haircut		1	expense;99900;INR;;;;haircut
+10	expense_en	en	paid 45 rupees for parking		1	expense;4500;INR;;;;parking
+11	expense_en	en	pizza INR 85		1	expense;8500;INR;;;;pizza
+12	expense_en	en	dinner rs.3500		1	expense;350000;INR;;;;dinner
+13	expense_en	en	spent 149 on chai		1	expense;14900;INR;;;;chai
+14	expense_en	en	paid 60 for mobile recharge		1	expense;6000;INR;;;;recharge
+15	expense_en	en	milk and eggs 45		1	expense;4500;INR;;;;milk
+16	expense_en	en	bought taxi to airport for 1850		1	expense;185000;INR;;;;taxi
+17	expense_en	en	gave 1200 for books		1	expense;120000;INR;;;;books
+18	expense_en	en	spent Rs 45 on uber		1	expense;4500;INR;;;;uber
+19	expense_en	en	paid Rs. 85 for coffee		1	expense;8500;INR;;;;coffee
+20	expense_en	en	medicines Rs 45		1	expense;4500;INR;;;;medicines
+21	expense_en	en	45 rupees mobile recharge		1	expense;4500;INR;;;;recharge
+22	expense_en	en	paid 12.75 rupees for mobile recharge		1	expense;1275;INR;;;;recharge
+23	expense_en	en	biryani INR 2750		1	expense;275000;INR;;;;biryani
+24	expense_en	en	gift for mom rs.560		1	expense;56000;INR;;;;gift
+25	expense_en	en	spent 85 on coffee		1	expense;8500;INR;;;;coffee
+26	expense_en	en	paid 19.50 for petrol		1	expense;1950;INR;;;;petrol
+27	expense_en	en	groceries 1200		1	expense;120000;INR;;;;grocer
+28	expense_en	en	bought electricity bill for 45		1	expense;4500;INR;;;;electricity
+29	expense_en	en	gave 325 for lunch		1	expense;32500;INR;;;;lunch
+30	expense_en	en	spent Rs 325 on haircut		1	expense;32500;INR;;;;haircut
+31	expense_en	en	paid Rs. 560 for laundry		1	expense;56000;INR;;;;laundry
+32	expense_en	en	taxi to airport Rs 3500		1	expense;350000;INR;;;;taxi
+33	expense_en	en	325 rupees electricity bill		1	expense;32500;INR;;;;electricity
+34	expense_en	en	paid 3500 rupees for groceries		1	expense;350000;INR;;;;grocer
+35	expense_en	en	auto INR 7.25		1	expense;725;INR;;;;auto
+36	expense_en	en	petrol rs.1850		1	expense;185000;INR;;;;petrol
+37	expense_verbless	en	pizza - 8000		1	expense;800000;INR;;;;pizza
+38	expense_verbless	en	gas cylinder 3500		1	expense;350000;INR;;;;gas
+39	expense_verbless	en	45 for gas cylinder		1	expense;4500;INR;;;;gas
+40	expense_verbless	en	tuition fees 12000		1	expense;1200000;INR;;;;tuition
+41	expense_verbless	en	maid 3000		1	expense;300000;INR;;;;maid
+42	expense_verbless	en	chai 20		1	expense;2000;INR;;;;chai
+43	expense_verbless	en	auto 80		1	expense;8000;INR;;;;auto
+44	expense_verbless	en	rent 18000		1	expense;1800000;INR;;;;rent
+45	expense_verbless	en	school fees 25000		1	expense;2500000;INR;;;;school
+46	expense_verbless	en	bike service 1500		1	expense;150000;INR;;;;bike
+47	expense_verbless	en	water can 60		1	expense;6000;INR;;;;water
+48	expense_verbless	en	newspaper 150		1	expense;15000;INR;;;;newspaper
+49	expense_verbless	en	milk 28		1	expense;2800;INR;;;;milk
+50	expense_verbless	en	curd 45		1	expense;4500;INR;;;;curd
+51	expense_verbless	en	fuel 1000		1	expense;100000;INR;;;;fuel
+52	expense_verbless	en	toll 85		1	expense;8500;INR;;;;toll
+53	expense_verbless	en	parking 40		1	expense;4000;INR;;;;parking
+54	expense_verbless	en	barber 200		1	expense;20000;INR;;;;barber
+55	expense_verbless	en	popcorn 250		1	expense;25000;INR;;;;popcorn
+56	expense_verbless	en	flowers 120		1	expense;12000;INR;;;;flowers
+57	expense_verbless	en	dry cleaning 450		1	expense;45000;INR;;;;dry
+58	expense_verbless	en	ola 210		1	expense;21000;INR;;;;ola
+59	expense_verbless	en	insurance premium 9800		1	expense;980000;INR;;;;insurance
+60	expense_verbless	en	LIC 4500		1	expense;450000;INR;;;;lic
+61	expense_verbless	en	ice cream 90		1	expense;9000;INR;;;;ice
+62	expense_verbless	en	dth 350		1	expense;35000;INR;;;;dth
+63	expense_verbless	en	500 petrol		1	expense;50000;INR;;;;petrol
+64	expense_hinglish	hinglish	240 ka lunch kiya		1	expense;24000;INR;;;;
+65	expense_hinglish	hinglish	chai pe 20 kharch		1	expense;2000;INR;;;;
+66	expense_hinglish	hinglish	auto ko 120 diye		1	expense;12000;INR;;;;
+67	expense_hinglish	hinglish	bijli bill 1850 bhara		1	expense;185000;INR;;;;
+68	expense_hinglish	hinglish	sabzi leke aaya 340 ki		1	expense;34000;INR;;;;
+69	expense_hinglish	hinglish	mummy ko 500 bheje		1	expense;50000;INR;;;;
+70	expense_hinglish	hinglish	500 ka petrol dalwaya		1	expense;50000;INR;;;;
+71	expense_hinglish	hinglish	kal 800 ka khana order kiya		1	expense;80000;INR;2026-10-19;;;
+72	expense_hinglish	hinglish	doodh 60 rupaye		1	expense;6000;INR;;;;
+73	expense_hinglish	hinglish	recharge 299 ka kiya		1	expense;29900;INR;;;;
+74	expense_hinglish	hinglish	pizza pe 650 uda diye		1	expense;65000;INR;;;;
+75	expense_hinglish	hinglish	movie ka ticket 400 ka liya		1	expense;40000;INR;;;;
+76	expense_hinglish	hinglish	dost ko 1000 udhaar diye		1	expense;100000;INR;;;;
+77	expense_hinglish	hinglish	school fees 15000 bhari		1	expense;1500000;INR;;;;
+78	expense_hinglish	hinglish	kirana 2200 ka		1	expense;220000;INR;;;;
+79	expense_hinglish	hinglish	gym ki fees 1800 di		1	expense;180000;INR;;;;
+80	expense_hinglish	hinglish	dawai 340 ki li		1	expense;34000;INR;;;;
+81	expense_hinglish	hinglish	bike service 1200 lagi		1	expense;120000;INR;;;;
+82	expense_hinglish	hinglish	chai samosa 50 rupay		1	expense;5000;INR;;;;
+83	expense_hinglish	hinglish	rickshaw 40 diya		1	expense;4000;INR;;;;
+84	expense_hinglish	hinglish	wifi ka bill 799 bhara		1	expense;79900;INR;;;;
+85	expense_hinglish	hinglish	salon me 350 diye		1	expense;35000;INR;;;;
+86	expense_hinglish	hinglish	laundry ke 180 diye		1	expense;18000;INR;;;;
+87	expense_hinglish	hinglish	sasta wala lunch 90 ka		1	expense;9000;INR;;;;
+88	expense_hinglish	hinglish	thela wale ko 30 rupaye diye		1	expense;3000;INR;;;;
+89	expense_hinglish	hinglish	aaj 250 ka khana khaya		1	expense;25000;INR;2026-10-20;;;
+90	expense_hinglish	hinglish	parso 1500 ka shopping kiya		1	expense;150000;INR;2026-10-18;;;
+91	expense_hinglish	hinglish	do sau rupaye ka chai		1	expense;20000;INR;;;;
+92	expense_hinglish	hinglish	paanch sau ka petrol		1	expense;50000;INR;;;;
+93	expense_hinglish	hinglish	dedh sau ka khana		1	expense;15000;INR;;;;
+94	expense_hinglish	hinglish	dhai sau diye taxi ko		1	expense;25000;INR;;;;
+95	expense_hinglish	hinglish	hazaar rupaye ka grocery		1	expense;100000;INR;;;;
+96	expense_hinglish	hinglish	19.50 ki chai li		1	expense;1950;INR;;;;
+97	expense_hinglish	hinglish	250.75 ki dawai		1	expense;25075;INR;;;;
+98	expense_hinglish	hinglish	kharch 75 sabzi pe		1	expense;7500;INR;;;;
+99	expense_hinglish	hinglish	bhaiya ko 100 diye		1	expense;10000;INR;;;;
+100	expense_hinglish	hinglish	bijli ka bill 2,350 bhara		1	expense;235000;INR;;;;
+101	expense_hinglish	hinglish	1,20,000 ki fees bhari		1	expense;12000000;INR;;;;
+102	expense_hinglish	hinglish	sava sau ka auto		1	expense;12500;INR;;;;
+103	expense_hinglish	hinglish	pachaas rupaye ka chai		1	expense;5000;INR;;;;
+104	expense_hinglish	hinglish	subah 40 ka nashta kiya		1	expense;4000;INR;;;;
+105	expense_hinglish	hinglish	raat ko 600 ka dinner kiya		1	expense;60000;INR;;;;
+106	expense_devanagari	hindi	२४० का लंच किया	240 ka lunch kiya	0	expense;24000;INR;;;;
+107	expense_devanagari	hindi	चाय पे 20 खर्च	chai pe 20 kharch	0	expense;2000;INR;;;;
+108	expense_devanagari	hindi	ऑटो को 120 दिए	auto ko 120 diye	0	expense;12000;INR;;;;
+109	expense_devanagari	hindi	बिजली बिल 1850 भरा	bijli bill 1850 bhara	0	expense;185000;INR;;;;
+110	expense_devanagari	hindi	मम्मी को 500 भेजे	mummy ko 500 bheje	0	expense;50000;INR;;;;
+111	expense_devanagari	hindi	500 का पेट्रोल डलवाया	500 ka petrol dalwaya	0	expense;50000;INR;;;;
+112	expense_devanagari	hindi	दूध 60 रुपये	doodh 60 rupaye	0	expense;6000;INR;;;;
+113	expense_devanagari	hindi	रिचार्ज 299 का किया	recharge 299 ka kiya	0	expense;29900;INR;;;;
+114	expense_devanagari	hindi	पिज़्ज़ा पे 650 उड़ा दिए	pizza pe 650 uda diye	0	expense;65000;INR;;;;
+115	expense_devanagari	hindi	दोस्त को 1000 उधार दिए	dost ko 1000 udhaar diye	0	expense;100000;INR;;;;
+116	expense_devanagari	hindi	स्कूल फीस 15000 भरी	school fees 15000 bhari	0	expense;1500000;INR;;;;
+117	expense_devanagari	hindi	किराना 2200 का	kirana 2200 ka	0	expense;220000;INR;;;;
+118	expense_devanagari	hindi	दवाई 340 की ली	dawai 340 ki li	0	expense;34000;INR;;;;
+119	expense_devanagari	hindi	रिक्शा 40 दिया	rickshaw 40 diya	0	expense;4000;INR;;;;
+120	expense_devanagari	hindi	वाईफाई का बिल 799 भरा	wifi ka bill 799 bhara	0	expense;79900;INR;;;;
+121	expense_devanagari	hindi	सैलून में 350 दिए	salon me 350 diye	0	expense;35000;INR;;;;
+122	expense_devanagari	hindi	सब्ज़ी 340 की	sabzi 340 ki	0	expense;34000;INR;;;;
+123	expense_devanagari	hindi	दो सौ रुपये की चाय	do sau rupaye ki chai	0	expense;20000;INR;;;;
+124	expense_devanagari	hindi	पाँच सौ का पेट्रोल	paanch sau ka petrol	0	expense;50000;INR;;;;
+125	expense_devanagari	hindi	डेढ़ सौ का खाना	dedh sau ka khana	0	expense;15000;INR;;;;
+126	expense_devanagari	hindi	हज़ार रुपये का राशन	hazaar rupaye ka ration	0	expense;100000;INR;;;;
+127	expense_devanagari	hindi	कल 800 का खाना ऑर्डर किया	kal 800 ka khana order kiya	0	expense;80000;INR;2026-10-19;;;
+128	expense_devanagari	hindi	₹250 का खाना	rs 250 ka khana	0	expense;25000;INR;;;;
+129	expense_devanagari	hindi	खाना 180 रुपये	khana 180 rupaye	0	expense;18000;INR;;;;
+130	expense_devanagari	hindi	मैंने 90 की चाय पी	maine 90 ki chai pi	0	expense;9000;INR;;;;
+131	expense_devanagari	hindi	किराया 18000 दिया	kiraya 18000 diya	0	expense;1800000;INR;;;;
+132	amount_format	en	spent 1.5k on groceries		1	expense;150000;INR;;;;
+133	amount_format	en	paid 2k for rent advance		1	expense;200000;INR;;;;
+134	amount_format	en	spent 2 lakh on car		1	expense;20000000;INR;;;;
+135	amount_format	en	paid 1,20,000 for tuition		1	expense;12000000;INR;;;;
+136	amount_format	en	spent 12,500 on laptop repair		1	expense;1250000;INR;;;;
+137	amount_format	en	paid 5k to plumber		1	expense;500000;INR;;;;
+138	amount_format	en	lunch 0.5k		1	expense;50000;INR;;;;
+139	amount_format	en	spent two hundred on snacks		1	expense;20000;INR;;;;
+140	amount_format	en	paid five hundred for auto		1	expense;50000;INR;;;;
+141	amount_format	en	spent 250.75 on medicines		1	expense;25075;INR;;;;
+142	amount_format	en	dinner rs.480		1	expense;48000;INR;;;;
+143	amount_format	en	coffee INR 180		1	expense;18000;INR;;;;
+144	amount_format	en	bought shoes 3999/-		1	expense;399900;INR;;;;
+145	amount_format	en	paid 1 crore for flat		1	expense;1000000000;INR;;;;
+146	amount_format	en	spent 2.5 lakh on wedding		1	expense;25000000;INR;;;;
+147	amount_format	en	paid 75,000 for course		1	expense;7500000;INR;;;;
+148	amount_format	en	spent 1,00,000 on trip		1	expense;10000000;INR;;;;
+149	amount_format	en	chai 12.50		1	expense;1250;INR;;;;
+150	amount_format	en	paid 0.75 for sample		1	expense;75;INR;;;;
+151	amount_format	en	spent two thousand five hundred on shoes		1	expense;250000;INR;;;;
+152	amount_format	en	paid twenty five for chai		1	expense;2500;INR;;;;
+153	amount_format	en	spent 1.25 lakh on bike		1	expense;12500000;INR;;;;
+154	amount_format	en	auto 99.99		1	expense;9999;INR;;;;
+155	amount_format	en	paid three hundred and fifty for lunch		1	expense;35000;INR;;;;
+156	amount_format	en	spent 10k on phone repair		1	expense;1000000;INR;;;;
+157	amount_format	en	paid 3 lakh for car loan		1	expense;30000000;INR;;;;
+158	amount_format	en	dinner for 1,250.50		1	expense;125050;INR;;;;
+159	amount_format	en	spent rupees 640 on tea		1	expense;64000;INR;;;;
+160	income	en	got salary 52000		1	income;5200000;INR;;;;
+161	income	en	salary credited 45000		1	income;4500000;INR;;;;
+162	income	en	received 3000 from Rahul		1	income;300000;INR;;;;
+163	income	en	freelance payment 18000 received		1	income;1800000;INR;;;;
+164	income	hinglish	cashback 50 mila		1	income;5000;INR;;;;
+165	income	hinglish	refund 799 aaya		1	income;79900;INR;;;;
+166	income	en	rent received 20000		1	income;2000000;INR;;;;
+167	income	hinglish	diwali bonus 10000 mila		1	income;1000000;INR;;;;
+168	income	hinglish	salary aayi 61000		1	income;6100000;INR;;;;
+169	income	hinglish	Rahul ne 2500 bheje		1	income;250000;INR;;;;
+170	income	en	got 2 lakh salary		1	income;20000000;INR;;;;
+171	income	en	refund of 1,299 received		1	income;129900;INR;;;;
+172	income	en	received interest 340.50		1	income;34050;INR;;;;
+173	income	en	dividend 1200 credited		1	income;120000;INR;;;;
+174	income	hinglish	mummy ne 1000 diye		1	income;100000;INR;;;;
+175	income	hinglish	tax refund 8400 mila		1	income;840000;INR;;;;
+176	income	en	sold old phone for 7500		1	income;750000;INR;;;;
+177	income	en	bonus 25000 received		1	income;2500000;INR;;;;
+178	income	hinglish	pocket money 500 mila		1	income;50000;INR;;;;
+179	income	en	got 1500 cashback		1	income;150000;INR;;;;
+180	currency_western	en	usd 12.50 coffee at starbucks		1	expense;1250;USD;;;;
+181	currency_western	en	paid 45 pounds for train to London		1	expense;4500;GBP;;;;
+182	currency_western	en	30 euros groceries at lidl		1	expense;3000;EUR;;;;
+183	currency_western	en	aud 20 uber to the airport		1	expense;2000;AUD;;;;
+184	currency_western	en	spent 8 dollars on lunch		1	expense;800;USD;;;;
+185	currency_western	en	rent 1400 dollars due on the 1st		1	expense;140000;USD;;;;
+186	currency_western	en	tip 5 dollars		1	expense;500;USD;;;;
+187	currency_western	en	spent 12 euro on pizza		1	expense;1200;EUR;;;;
+188	currency_western	en	paid 300 aed for taxi		1	expense;30000;AED;;;;
+189	currency_western	en	bought coffee for 3.50 usd		1	expense;350;USD;;;;
+190	currency_western	en	dinner 60 pounds		1	expense;6000;GBP;;;;
+191	currency_western	en	spent 25 gbp on books		1	expense;2500;GBP;;;;
+192	currency_western	en	paid 15 eur for museum		1	expense;1500;EUR;;;;
+193	currency_western	en	bus ticket 2.75 dollars		1	expense;275;USD;;;;
+194	currency_western	en	hotel 120 euros per night		1	expense;12000;EUR;;;;
+195	currency_western	en	bought gift for 40 dollars		1	expense;4000;USD;;;;
+196	currency_western	en	uber 18.30 usd		1	expense;1830;USD;;;;
+197	currency_western	en	groceries 87.45 aud		1	expense;8745;AUD;;;;
+198	currency_western	en	paid 1,200 dollars for flight		1	expense;120000;USD;;;;
+199	currency_western	en	spent 9.99 usd on subscription		1	expense;999;USD;;;;
+200	currency_western	en	lunch 14 pounds		1	expense;1400;GBP;;;;
+201	currency_western	en	coffee 4 sgd		1	expense;400;SGD;;;;
+202	currency_symbol	en	$12.50 coffee		0	expense;1250;USD;;;;
+203	currency_symbol	en	£45 train ticket		0	expense;4500;GBP;;;;
+204	currency_symbol	en	€30 groceries		0	expense;3000;EUR;;;;
+205	currency_symbol	en	paid $8 for lunch		0	expense;800;USD;;;;
+206	currency_symbol	en	₹250 chai		0	expense;25000;INR;;;;
+207	currency_symbol	en	spent ₹1,20,000 on fees		0	expense;12000000;INR;;;;
+208	task_en	en	call Ravi at 5		1	task;;;2026-10-20;17:00;;ravi
+209	task_en	en	email passport tomorrow at 4:30		1	task;;;2026-10-21;16:30;;passport
+210	task_en	en	message the car tomorrow morning		1	task;;;2026-10-21;;;car
+211	task_en	en	text Mom tonight		1	task;;;2026-10-20;;;mom
+212	task_en	en	book the landlord at 9am		1	task;;;2026-10-20;09:00;;landlord
+213	task_en	en	renew plants on Friday		1	task;;;2026-10-23;;;plants
+214	task_en	en	send the CA next Monday		1	task;;;2026-10-26;;;ca
+215	task_en	en	submit report day after tomorrow		1	task;;;2026-10-22;;;report
+216	task_en	en	pay dentist on 25th		1	task;;;2026-10-25;;;dentist
+217	task_en	en	order the plumber at 17:30		1	task;;;2026-10-20;17:30;;plumber
+218	task_en	en	clean tickets today 6pm		1	task;;;2026-10-20;18:00;;tickets
+219	task_en	en	fix Arjun on 3 Nov		1	task;;;2026-11-03;;;arjun
+220	task_en	en	visit Priya tomorrow 8am		1	task;;;2026-10-21;08:00;;priya
+221	task_en	en	pick up gift on Saturday at 11		1	task;;;2026-10-24;11:00;;gift
+222	task_en	en	drop school form at 5		1	task;;;2026-10-20;17:00;;school
+223	task_en	en	meet the bank tomorrow at 4:30		1	task;;;2026-10-21;16:30;;bank
+224	task_en	en	write laundry tomorrow morning		1	task;;;2026-10-21;;;laundry
+225	task_en	en	review tax documents tonight		1	task;;;2026-10-20;;;tax
+226	task_en	en	print insurance at 9am		1	task;;;2026-10-20;09:00;;insurance
+227	task_en	en	water electricity bill on Friday		1	task;;;2026-10-23;;;electricity
+228	task_en	en	cancel Ravi next Monday		1	task;;;2026-10-26;;;ravi
+229	task_en	en	buy passport day after tomorrow		1	task;;;2026-10-22;;;passport
+230	task_en	en	collect the car on 25th		1	task;;;2026-10-25;;;car
+231	task_en	en	return Mom at 17:30		1	task;;;2026-10-20;17:30;;mom
+232	task_en	en	schedule the landlord today 6pm		1	task;;;2026-10-20;18:00;;landlord
+233	task_en	en	update plants on 3 Nov		1	task;;;2026-11-03;;;plants
+234	task_en	en	check the CA tomorrow 8am		1	task;;;2026-10-21;08:00;;ca
+235	task_en	en	call report on Saturday at 11		1	task;;;2026-10-24;11:00;;report
+236	task_en	en	email dentist at 5		1	task;;;2026-10-20;17:00;;dentist
+237	task_en	en	message the plumber tomorrow at 4:30		1	task;;;2026-10-21;16:30;;plumber
+238	task_en	en	text tickets tomorrow morning		1	task;;;2026-10-21;;;tickets
+239	task_en	en	book Arjun tonight		1	task;;;2026-10-20;;;arjun
+240	task_en	en	renew Priya at 9am		1	task;;;2026-10-20;09:00;;priya
+241	task_hinglish	hinglish	kal 5 baje Ravi ko call karna		1	task;;;2026-10-21;17:00;;
+242	task_hinglish	hinglish	parso doctor appointment 4 baje		1	event;;;2026-10-22;16:00;;
+243	task_hinglish	hinglish	aaj shaam gym jaana hai		1	task;;;2026-10-20;;;
+244	task_hinglish	hinglish	agle somvar bill bharna		1	task;;;2026-10-26;;;
+245	task_hinglish	hinglish	subah 7 baje uthna		1	task;;;2026-10-20;07:00;;
+246	task_hinglish	hinglish	kal dopahar CA se baat karni hai		1	task;;;2026-10-21;;;
+247	task_hinglish	hinglish	raat 10 baje dawai leni hai		1	task;;;2026-10-20;22:00;;
+248	task_hinglish	hinglish	shanivar ko ghar saaf karna		1	task;;;2026-10-24;;;
+249	task_hinglish	hinglish	mummy ko phone karna shaam ko		1	task;;;2026-10-20;;;
+250	task_hinglish	hinglish	kal subah yoga		1	task;;;2026-10-21;;;
+251	task_hinglish	hinglish	is hafte passport renew karna		1	task;;;2026-10-20;;;
+252	task_hinglish	hinglish	aaj raat tak report bhejni hai		1	task;;;2026-10-20;;;
+253	task_hinglish	hinglish	kal 3 baje bank jaana		1	task;;;2026-10-21;15:00;;
+254	task_hinglish	hinglish	Priya ko birthday wish karna kal		1	task;;;2026-10-21;;;
+255	task_hinglish	hinglish	budhvar ko electricity bill bharna		1	task;;;2026-10-21;;;
+256	task_hinglish	hinglish	kal tickets book karna		1	task;;;2026-10-21;;;
+257	task_hinglish	hinglish	aaj 6 baje doodh lena hai		1	task;;;2026-10-20;18:00;;
+258	task_hinglish	hinglish	shukravar ko Ravi se milna hai		1	task;;;2026-10-23;;;
+259	task_hinglish	hinglish	parso insurance renew karna		1	task;;;2026-10-22;;;
+260	task_hinglish	hinglish	kal raat 9 baje mummy ko call karna		1	task;;;2026-10-21;21:00;;
+261	task_hinglish	hinglish	ravivar ko gaadi dhona		1	task;;;2026-10-25;;;
+262	task_hinglish	hinglish	aaj dopahar 2 baje meeting hai		1	event;;;2026-10-20;14:00;;
+263	task_hinglish	hinglish	agle mangalvar school form jama karna		1	task;;;2026-10-27;;;
+264	task_hinglish	hinglish	kal subah 6 baje gym		1	task;;;2026-10-21;06:00;;
+265	task_hinglish	hinglish	aaj plants ko paani dena		1	task;;;2026-10-20;;;
+266	task_hinglish	hinglish	kal sabzi lana		1	task;;;2026-10-21;;;
+267	task_hinglish	hinglish	bijli bill bharna hai kal		1	task;;;2026-10-21;;;
+268	task_devanagari	hindi	कल 5 बजे रवि को कॉल करना	kal 5 baje Ravi ko call karna	0	task;;;2026-10-21;17:00;;
+269	task_devanagari	hindi	आज शाम जिम जाना है	aaj shaam gym jaana hai	0	task;;;2026-10-20;;;
+270	task_devanagari	hindi	अगले सोमवार बिल भरना	agle somvar bill bharna	0	task;;;2026-10-26;;;
+271	task_devanagari	hindi	सुबह 7 बजे उठना	subah 7 baje uthna	0	task;;;2026-10-20;07:00;;
+272	task_devanagari	hindi	रात 10 बजे दवाई लेनी है	raat 10 baje dawai leni hai	0	task;;;2026-10-20;22:00;;
+273	task_devanagari	hindi	शनिवार को घर साफ करना	shanivar ko ghar saaf karna	0	task;;;2026-10-24;;;
+274	task_devanagari	hindi	कल सुबह योग	kal subah yoga	0	task;;;2026-10-21;;;
+275	task_devanagari	hindi	आज रात तक रिपोर्ट भेजनी है	aaj raat tak report bhejni hai	0	task;;;2026-10-20;;;
+276	task_devanagari	hindi	कल 3 बजे बैंक जाना	kal 3 baje bank jaana	0	task;;;2026-10-21;15:00;;
+277	task_devanagari	hindi	परसों इंश्योरेंस रिन्यू करना	parso insurance renew karna	0	task;;;2026-10-22;;;
+278	task_devanagari	hindi	कल टिकट बुक करना	kal tickets book karna	0	task;;;2026-10-21;;;
+279	task_devanagari	hindi	आज 6 बजे दूध लेना है	aaj 6 baje doodh lena hai	0	task;;;2026-10-20;18:00;;
+280	task_devanagari	hindi	शुक्रवार को रवि से मिलना है	shukravar ko Ravi se milna hai	0	task;;;2026-10-23;;;
+281	task_devanagari	hindi	कल रात 9 बजे मम्मी को फोन करना	kal raat 9 baje mummy ko phone karna	0	task;;;2026-10-21;21:00;;
+282	task_devanagari	hindi	रविवार को गाड़ी धोना	ravivar ko gaadi dhona	0	task;;;2026-10-25;;;
+283	task_devanagari	hindi	कल सब्ज़ी लाना	kal sabzi lana	0	task;;;2026-10-21;;;
+284	task_devanagari	hindi	आज पौधों को पानी देना	aaj paudhon ko paani dena	0	task;;;2026-10-20;;;
+285	task_devanagari	hindi	मंगलवार को स्कूल फॉर्म जमा करना	mangalvar ko school form jama karna	0	task;;;2026-10-27;;;
+286	task_devanagari	hindi	बिजली बिल भरना है कल	bijli bill bharna hai kal	0	task;;;2026-10-21;;;
+287	task_devanagari	hindi	परसों डॉक्टर के पास जाना	parso doctor ke paas jaana	0	task;;;2026-10-22;;;
+288	event	en	meeting with Arjun at 3pm tomorrow		1	event;;;2026-10-21;15:00;;
+289	event	en	dentist appointment Friday 11am		1	event;;;2026-10-23;11:00;;
+290	event	en	flight to Goa on 3 Nov at 6:40am		1	event;;;2026-11-03;06:40;;
+291	event	en	Mom's birthday on 12 December		0	event;;;2026-12-12;;;
+292	event	en	parent teacher meeting Saturday 9:30		1	event;;;2026-10-24;09:30;;
+293	event	en	lunch with Riya on Sunday 1pm		1	event;;;2026-10-25;13:00;;
+294	event	en	call with client at 4:30 today		1	event;;;2026-10-20;16:30;;
+295	event	en	yoga class tomorrow 6am		1	event;;;2026-10-21;06:00;;
+296	event	en	interview on 28th at 2pm		1	event;;;2026-10-28;14:00;;
+297	event	en	wedding on 15 Feb		1	event;;;2027-02-15;;;
+298	event	en	anniversary on 9 March		1	event;;;2027-03-09;;;
+299	event	en	train at 22:15 tonight		1	event;;;2026-10-20;22:15;;
+300	event	en	doctor visit next Tuesday 5pm		1	event;;;2026-10-27;17:00;;
+301	event	en	webinar Thursday 7pm		1	event;;;2026-10-22;19:00;;
+302	event	en	team standup tomorrow 10am		1	event;;;2026-10-21;10:00;;
+303	event	en	movie with friends Saturday 8pm		1	event;;;2026-10-24;20:00;;
+304	event	en	exam on 2 Nov at 9am		1	event;;;2026-11-02;09:00;;
+305	event	en	concert on 14 Nov 7pm		1	event;;;2026-11-14;19:00;;
+306	event	en	dinner with Neha tomorrow 8:30pm		1	event;;;2026-10-21;20:30;;
+307	event	en	board meeting Monday 11am		1	event;;;2026-10-26;11:00;;
+308	event	en	cricket match on Sunday 4pm		1	event;;;2026-10-25;16:00;;
+309	event	hinglish	kal meeting hai 11 baje		1	event;;;2026-10-21;11:00;;
+310	recurring	en	pay rent 15000 every month on 1st		1	recurring;1500000;INR;;;monthly;
+311	recurring	en	netflix 649 monthly		1	recurring;64900;INR;;;monthly;
+312	recurring	en	gym every Monday 6am		1	recurring;;;;06:00;weekly;
+313	recurring	en	sip 5000 on 5th every month		1	recurring;500000;INR;;;monthly;
+314	recurring	en	every Sunday call mom		1	recurring;;;;;weekly;
+315	recurring	en	water plants every alternate day		1	recurring;;;;;alternate;
+316	recurring	en	spotify 119 every month		1	recurring;11900;INR;;;monthly;
+317	recurring	hinglish	har mahine 2000 ki sip		1	recurring;200000;INR;;;monthly;
+318	recurring	hinglish	rozana subah 6 baje walk		1	recurring;;;;06:00;daily;
+319	recurring	hinglish	har somvar gym jaana		1	recurring;;;;;weekly;
+320	recurring	en	wifi bill 799 monthly		1	recurring;79900;INR;;;monthly;
+321	recurring	en	insurance 12000 yearly		1	recurring;1200000;INR;;;yearly;
+322	recurring	en	daily vitamins at 9am		1	recurring;;;;09:00;daily;
+323	recurring	en	weekly review every Friday 5pm		1	recurring;;;;17:00;weekly;
+324	recurring	en	maid 3000 every month		1	recurring;300000;INR;;;monthly;
+325	document_expiry	en	passport expires 3 March 2029		1	document;;;2029-03-03;;;
+326	document_expiry	en	car insurance renewal on 14 Nov		1	document;;;2026-11-14;;;
+327	document_expiry	en	driving licence expiry 2031		1	document;;;;;;
+328	document_expiry	en	health insurance renews 1 Jan		1	document;;;2027-01-01;;;
+329	document_expiry	en	PUC expires next month		1	document;;;;;;
+330	document_expiry	en	fastag recharge due 5th		1	document;;;2026-11-05;;;
+331	document_expiry	en	rent agreement ends 30 June 2027		1	document;;;2027-06-30;;;
+332	document_expiry	en	warranty on fridge ends Dec 2026		1	document;;;;;;
+333	document_expiry	en	aadhaar update due 15 Dec		1	document;;;2026-12-15;;;
+334	document_expiry	en	visa valid till 9 Sept 2028		1	document;;;2028-09-09;;;
+335	document_expiry	en	bike insurance expires 22 Nov		1	document;;;2026-11-22;;;
+336	document_expiry	hinglish	passport kal expire hoga		1	document;;;2026-10-21;;;
+337	document_expiry	hinglish	licence renew karna hai 2031 tak		1	document;;;;;;
+338	document_expiry	en	pan card expiry 12 May 2030		1	document;;;2030-05-12;;;
+339	document_expiry	en	lease ends on 31 March 2027		1	document;;;2027-03-31;;;
+340	minimum_log	en	done walking 20 minutes		1	minimum;;;;;;
+341	minimum_log	en	walked 30 min		1	minimum;;;;;;
+342	minimum_log	en	read 10 pages done		1	minimum;;;;;;
+343	minimum_log	en	meditated 10 minutes		1	minimum;;;;;;
+344	minimum_log	en	drank 3 litres water		1	minimum;;;;;;
+345	minimum_log	en	did my morning stretch		1	minimum;;;;;;
+346	minimum_log	en	no sugar today done		1	minimum;;;;;;
+347	minimum_log	en	studied 2 hours		1	minimum;;;;;;
+348	minimum_log	en	ran 5k this morning		1	minimum;;;;;;
+349	minimum_log	en	did 20 pushups		1	minimum;;;;;;
+350	minimum_log	en	slept 8 hours		1	minimum;;;;;;
+351	minimum_log	en	cycled 45 minutes		1	minimum;;;;;;
+352	minimum_log	en	yoga 30 min done		1	minimum;;;;;;
+353	minimum_log	hinglish	aaj 30 minute walk kiya		1	minimum;;;;;;
+354	minimum_log	hinglish	10 pages padhe		1	minimum;;;;;;
+355	focus	en	focus 25 minutes on report		1	focus;;;;;;
+356	focus	en	focus for 45 min on exam prep		1	focus;;;;;;
+357	focus	en	start focus 90 minutes		1	focus;;;;;;
+358	focus	en	deep work 50 min on design		1	focus;;;;;;
+359	focus	en	pomodoro 25		1	focus;;;;;;
+360	focus	en	start 25 min focus on coding		1	focus;;;;;;
+361	focus	en	focus 30 min padhai		1	focus;;;;;;
+362	focus	en	begin focus 60 min		1	focus;;;;;;
+363	journal	en	journal: long day but the pitch landed		1	journal;;;;;;
+364	journal	en	feeling anxious about exams tomorrow		1	journal;;;;;;
+365	journal	en	grateful for a calm morning		1	journal;;;;;;
+366	journal	en	today was rough, tired and irritated		1	journal;;;;;;
+367	journal	en	mood 4 good day		1	journal;;;;;;
+368	journal	en	had a great call with mom, feeling light		1	journal;;;;;;
+369	journal	en	couldn't sleep, mind racing		0	journal;;;;;;
+370	journal	en	proud of finishing the report		1	journal;;;;;;
+371	journal	en	i felt really happy today		1	journal;;;;;;
+372	journal	en	feeling low and drained		1	journal;;;;;;
+373	journal	en	journal today I spent time with family and it felt good		1	journal;;;;;;
+374	journal	en	stressed about money but hopeful		1	journal;;;;;;
+375	journal	hinglish	aaj ka din bahut accha tha		1	journal;;;;;;
+376	journal	hinglish	thoda thaka hua hu aaj		1	journal;;;;;;
+377	journal	hinglish	mann nahi lag raha aaj		1	journal;;;;;;
+378	journal	hinglish	aaj mummy ne phone kiya, accha laga		1	journal;;;;;;
+379	journal	hinglish	bahut tension hai aaj		1	journal;;;;;;
+380	journal	hinglish	aaj dil khush hai		1	journal;;;;;;
+381	journal_devanagari	hindi	आज का दिन बहुत अच्छा था	aaj ka din bahut accha tha	0	journal;;;;;;
+382	journal_devanagari	hindi	थोड़ा थका हुआ हूँ आज	thoda thaka hua hu aaj	0	journal;;;;;;
+383	journal_devanagari	hindi	मन नहीं लग रहा आज	mann nahi lag raha aaj	0	journal;;;;;;
+384	journal_devanagari	hindi	आज मम्मी ने फोन किया, अच्छा लगा	aaj mummy ne phone kiya, accha laga	0	journal;;;;;;
+385	journal_devanagari	hindi	बहुत टेंशन है आज	bahut tension hai aaj	0	journal;;;;;;
+386	journal_devanagari	hindi	आज दिल खुश है	aaj dil khush hai	0	journal;;;;;;
+387	note_prefix_digits	en	note: wifi password is in the drawer		1	note;;;;;;
+388	note_prefix_digits	en	idea: weekend trip to Lonavala		1	note;;;;;;
+389	note_prefix_digits	en	note gift ideas for mom silk dupatta		1	note;;;;;;
+390	note_prefix_digits	en	list: milk, eggs, bread, coffee		1	note;;;;;;
+391	note_prefix_digits	en	note: dentist number 98 followed by X		1	note;;;;;;
+392	note_prefix_digits	en	idea for app: widget for sunrise time		1	note;;;;;;
+393	note_prefix_digits	en	note: locker number 4521		1	note;;;;;;
+394	note_prefix_digits	en	note: flat 302 gate code 8890		1	note;;;;;;
+395	note_prefix_digits	en	idea: 3 ways to save 5000 a month		1	note;;;;;;
+396	note_prefix_digits	en	list: 2 shirts, 1 jeans, 4 socks		1	note;;;;;;
+397	note_prefix_digits	en	note: pin code 560037		1	note;;;;;;
+398	note_prefix_digits	en	note: Ravi's number 98450 12345		0	note;;;;;;
+399	note_prefix_digits	en	remember the 12 steps for onboarding		1	note;;;;;;
+400	note_prefix_digits	en	note: bus 500D goes to Whitefield		1	note;;;;;;
+401	note_prefix_digits	en	idea: 50 30 20 budget rule		1	note;;;;;;
+402	note_prefix_digits	en	note: order 7788 arrives in 5 days		1	note;;;;;;
+403	note_prefix_digits	en	note: meeting room 4B		1	note;;;;;;
+404	note_prefix_digits	en	list: 500 ml water, 2 apples		1	note;;;;;;
+405	note_prefix_digits	en	note: invoice 2026-114 pending		1	note;;;;;;
+406	note_prefix_digits	en	note: gate code 4455		1	note;;;;;;
+407	split_udhaar	en	split 1200 dinner with Riya and Karan		1	expense;120000;INR;;;;
+408	split_udhaar	en	paid 3000 for trip, split with Rahul		1	expense;300000;INR;;;;
+409	split_udhaar	en	lent Arjun 2000		1	expense;200000;INR;;;;
+410	split_udhaar	en	split rent 24000 with 3 people		1	expense;2400000;INR;;;;
+411	split_udhaar	en	Riya paid 900 for lunch, my share 450		1	expense;45000;INR;;;;
+412	split_udhaar	hinglish	dost ko 1000 udhaar diye		1	expense;100000;INR;;;;
+413	split_udhaar	en	Rahul owes me 500		1	choose;;;;;;
+414	split_udhaar	en	I owe Priya 350		1	choose;;;;;;
+415	split_udhaar	hinglish	udhaar wapas mila 700		1	income;70000;INR;;;;
+416	split_udhaar	en	split 600 cab with Neha		1	expense;60000;INR;;;;
+417	split_udhaar	hinglish	Ravi ne 1500 udhaar liye		1	choose;;;;;;
+418	split_udhaar	en	returned 2000 to Amit		1	expense;200000;INR;;;;
+419	multi_intent	en	spend 240 on lunch and call Ravi at 5		1	expense;24000;INR;;;;|task;;;2026-10-20;17:00;;
+420	multi_intent	en	paid 120 for auto and buy milk tomorrow		1	expense;12000;INR;;;;|task;;;2026-10-21;;;
+421	multi_intent	en	spent 500 on petrol, then book tickets for Friday		1	expense;50000;INR;;;;|task;;;2026-10-23;;;
+422	multi_intent	en	lunch 200 and chai 30 and auto 80		1	expense;20000;INR;;;;|expense;3000;INR;;;;|expense;8000;INR;;;;
+423	multi_intent	hinglish	240 ka lunch aur kal Ravi ko call karna		1	expense;24000;INR;;;;|task;;;2026-10-21;;;
+424	multi_intent	hinglish	chai 20 aur auto 40 diye, shaam ko gym jaana		1	expense;2000;INR;;;;|expense;4000;INR;;;;|task;;;2026-10-20;;;
+425	multi_intent	en	received 3000 from Rahul and paid 1200 for dinner		1	income;300000;INR;;;;|expense;120000;INR;;;;
+426	multi_intent	en	paid 450 for groceries and remind me to pay rent on 1st		1	expense;45000;INR;;;;|task;;;2026-11-01;;;
+427	multi_intent	en	coffee 150 and meeting with Sam tomorrow 3pm		1	expense;15000;INR;;;;|event;;;2026-10-21;15:00;;
+428	multi_intent	en	spent 90 on chai then call mom at 6		1	expense;9000;INR;;;;|task;;;2026-10-20;18:00;;
+429	multi_intent	en	bought vegetables 320 and call plumber tomorrow		1	expense;32000;INR;;;;|task;;;2026-10-21;;;
+430	multi_intent	en	auto 60, lunch 180, coffee 120		1	expense;6000;INR;;;;|expense;18000;INR;;;;|expense;12000;INR;;;;
+431	multi_intent	hinglish	kal 5 baje call karna aur 300 ka petrol bhara		1	task;;;2026-10-21;17:00;;|expense;30000;INR;;;;
+432	multi_intent	en	paid 800 for gym and book dentist on Friday		1	expense;80000;INR;;;;|task;;;2026-10-23;;;
+433	multi_intent	en	got salary 50000 and paid rent 15000		1	income;5000000;INR;;;;|expense;1500000;INR;;;;
+434	multi_intent	en	milk 28 and bread 40		1	expense;2800;INR;;;;|expense;4000;INR;;;;
+435	multi_intent	en	lunch 250 note: team likes the new place		1	expense;25000;INR;;;;|note;;;;;;
+436	multi_intent	en	spent 100 on snacks and email Priya tomorrow		1	expense;10000;INR;;;;|task;;;2026-10-21;;;
+437	multi_intent	en	dinner 600, cab 220 and send report by evening		1	expense;60000;INR;;;;|expense;22000;INR;;;;|task;;;2026-10-20;;;
+438	multi_intent	en	paid 75 for parking, then pick up laundry at 6		1	expense;7500;INR;;;;|task;;;2026-10-20;18:00;;
+439	ambiguous	en	240		1	choose;;;;;;
+440	ambiguous	en	lunch		1	choose;;;;;;
+441	ambiguous	en	call		1	choose;;;;;;
+442	ambiguous	en	5 pm		1	choose;;;;;;
+443	ambiguous	en	tomorrow		1	choose;;;;;;
+444	ambiguous	en	maybe 500 on shopping		1	choose;;;;;;
+445	ambiguous	en	Ravi		1	choose;;;;;;
+446	ambiguous	en	500		1	choose;;;;;;
+447	ambiguous	en	Priya		1	choose;;;;;;
+448	ambiguous	en	rent		1	choose;;;;;;
+449	ambiguous	en	tomorrow morning		1	choose;;;;;;
+450	ambiguous	en	1200		1	choose;;;;;;
+451	ambiguous	en	dentist		1	choose;;;;;;
+452	ambiguous	en	paid 50 + 30 + 20 for snacks		1	choose;;;;;;
+453	ambiguous	en	spent -50 on chai		1	choose;;;;;;
+454	ambiguous	en	paid 1e3 for auto		1	choose;;;;;;
+455	ambiguous	en	lunch 24O		1	choose;;;;;;
+456	ambiguous	en	30 40		1	choose;;;;;;
+457	ambiguous	en	ok		1	choose;;;;;;
+458	ambiguous	en	5000 ya 6000 shayad		1	choose;;;;;;
+459	noisy_typos	en	lunhc 240		1	expense;24000;INR;;;;
+460	noisy_typos	en	chia 20 and auto 40		1	expense;2000;INR;;;;|expense;4000;INR;;;;
+461	noisy_typos	en	spnt 500 on grocries		1	expense;50000;INR;;;;
+462	noisy_typos	en	SPENT 240 ON LUNCH		1	expense;24000;INR;;;;
+463	noisy_typos	en	2026-11-03 submit form		1	task;;;2026-11-03;;;
+464	noisy_typos	en	spent 240 on lunch!!!		0	expense;24000;INR;;;;
+465	noisy_typos	en	spent  240   on   lunch		1	expense;24000;INR;;;;
+466	noisy_typos	en	did not spend anything today		1	note;;;;;;
+467	noisy_typos	en	nothing to log		1	note;;;;;;
+468	noisy_typos	en	approx 300 for dinner		1	expense;30000;INR;;;;
+469	noisy_typos	en	paid 450 4 lunch		1	expense;45000;INR;;;;
+470	noisy_typos	en	pd 200 for chai		1	expense;20000;INR;;;;
+471	noisy_typos	en	rs 99 chai		1	expense;9900;INR;;;;
+472	noisy_typos	en	240 rupees lunch.		1	expense;24000;INR;;;;
+473	noisy_typos	en	Spent Rs.1,200 on Groceries		1	expense;120000;INR;;;;
+474	feature_word	en	vault		1	feature;;;;;;vault
+475	feature_word	en	focus		1	feature;;;;;;focus
+476	feature_word	en	budget		1	feature;;;;;;budget
+477	feature_word	en	emergency		1	feature;;;;;;emergency
+478	feature_word	en	screen time		1	feature;;;;;;screen time
+479	feature_word	en	weekly review		1	feature;;;;;;weekly review
+480	feature_word	en	settings		1	feature;;;;;;settings
+481	feature_word	en	notes		1	feature;;;;;;notes
+482	feature_word	en	journal		1	feature;;;;;;journal
+483	feature_word	en	money		1	feature;;;;;;money
+484	feature_word	en	family		1	feature;;;;;;family
+485	feature_word	en	score		1	feature;;;;;;score
+486	voice_style	en	uh i spent like two hundred rupees on chai		1	expense;20000;INR;;;;
+487	voice_style	en	remind me to call ravi tomorrow at five		1	task;;;2026-10-21;17:00;;
+488	voice_style	en	so i paid five hundred for auto today		1	expense;50000;INR;;;;
+489	voice_style	en	um add a note buy milk and bread		1	note;;;;;;
+490	voice_style	en	i need to book tickets for friday		1	task;;;2026-10-23;;;
+491	voice_style	hinglish	kal subah saat baje gym jaana hai		1	task;;;2026-10-21;07:00;;
+492	voice_style	hinglish	aaj maine do sau pachaas ka khana khaya		1	expense;25000;INR;;;;
+493	voice_style	hinglish	mujhe kal teen baje doctor ke paas jaana hai		1	task;;;2026-10-21;15:00;;
+494	voice_style	en	spent twelve hundred on groceries		1	expense;120000;INR;;;;
+495	voice_style	en	paid ten thousand for rent		1	expense;1000000;INR;;;;
+496	voice_style	en	remind me to pay the electricity bill on the tenth		1	task;;;2026-11-10;;;
+497	voice_style	en	had a meeting with sam at three pm tomorrow		1	event;;;2026-10-21;15:00;;
+498	voice_style	hinglish	chai pe bees rupaye kharch kiye		1	expense;2000;INR;;;;
+499	voice_style	en	received salary of fifty two thousand		1	income;5200000;INR;;;;
+500	voice_style	hinglish	pizza ke liye chhe sau diye		1	expense;60000;INR;;;;

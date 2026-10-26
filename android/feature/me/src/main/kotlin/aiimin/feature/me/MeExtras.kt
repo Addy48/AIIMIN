@@ -128,7 +128,8 @@ fun EditProfileScreen(vm: ProfileViewModel = hiltViewModel()) {
     val st = s ?: return
     var name by remember { mutableStateOf(st.name) }
     var role by remember { mutableStateOf(st.role) }
-    var dob by remember { mutableStateOf(st.dob) }
+    var band by remember { mutableStateOf(st.ageBand) }
+    var under by remember { mutableStateOf(false) }
     var city by remember { mutableStateOf(st.city) }
     var upi by remember { mutableStateOf(st.myUpiId) }
     var pickDob by remember { mutableStateOf(false) }
@@ -136,28 +137,35 @@ fun EditProfileScreen(vm: ProfileViewModel = hiltViewModel()) {
         TopBar("Edit profile", onBack = { nav.back() })
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Aiimin.space.gutter)) {
             Box(Modifier.padding(top = 8.dp).size(64.dp).clip(RoundedCornerShape(12.dp)).background(c.text), contentAlignment = Alignment.Center) {
-                Text(name.split(" ").filter { it.isNotBlank() }.take(2).joinToString("") { it.take(1).uppercase() }.ifBlank { "?" }, style = Aiimin.type.title.copy(color = c.base, fontSize = 24.sp))
+                Text(name.split(" ").filter { it.isNotBlank() }.take(2).joinToString("") { it.take(1).uppercase() }.ifBlank { "?" }, style = Aiimin.type.cardTitle.copy(color = c.base))
             }
             Spacer(Modifier.height(16.dp))
             AppTextField(name, { name = it }, label = "First name")
             SectionHeader("What your days are like")
             PillRow { ROLES.forEach { (k, label) -> Pill(label, role == k, { role = k }) } }
-            if (role != st.role) Text("Your intentions stay as they are. Change them in What counts for you if this role should count different things.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp))
+            if (role != st.role) Text("Your intentions stay as they are. Change them in What counts for you if this role should count different things.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp))
             SectionHeader("Optional")
-            ListRow("Date of birth", subtitle = dob?.let { runCatching { DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH).format(LocalDate.parse(it)) }.getOrNull() } ?: "Not set", trailing = { Chevron() }, onClick = { pickDob = true })
+            // PRD 4.7: only the age band is kept; a new date of birth is turned into a band and dropped.
+            ListRow("Age", subtitle = band ?: "Not set", trailing = { Chevron() }, onClick = { pickDob = true })
+            if (under) Text("AIIMIN accounts are for people 18 and over.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 4.dp))
             AppTextField(city, { city = it }, label = "City", placeholder = "Only used for greetings")
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(12.dp))
             AppTextField(upi, { upi = it.trim() }, label = "Your UPI ID", placeholder = "you@bank")
             Text("Used to build pay links when someone owes you. AIIMIN never sends UPI collect requests and never sees your PIN.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 4.dp))
             Spacer(Modifier.height(20.dp))
             AppButton("Save", {
-                vm.save { it.copy(name = name.trim(), role = role, dob = dob, city = city.trim(), myUpiId = upi) }
+                vm.save { it.copy(name = name.trim(), role = role, ageBand = band, city = city.trim(), myUpiId = upi) }
                 toaster.show("Saved"); nav.back()
             }, Modifier.fillMaxWidth(), enabled = name.isNotBlank() && (upi.isBlank() || upi.contains('@')))
             Spacer(Modifier.height(32.dp))
         }
     }
-    if (pickDob) DatePick(dob?.let { runCatching { LocalDate.parse(it) }.getOrNull() } ?: LocalDate.now().minusYears(25), { dob = it.toString(); pickDob = false }, { pickDob = false })
+    if (pickDob) DatePick(LocalDate.now().minusYears(25), { d ->
+        val b = aiimin.core.engine.profile.AgeBand.of(d, LocalDate.now())
+        under = b == null
+        if (b != null) band = b
+        pickDob = false
+    }, { pickDob = false })
 }
 
 // =================================================================== P3 Plans · P3a Compare · P4 Checkout · P5 Subscription
@@ -187,13 +195,13 @@ fun PlansScreen(vm: PlansViewModel = hiltViewModel()) {
     var checkout by remember { mutableStateOf<PlanPrices?>(null) }
     val prices = (store as? StoreState.Ready)?.prices.orEmpty()
     Column(Modifier.fillMaxSize().background(c.base)) {
-        TopBar("Plans", onBack = { nav.back() }) { Text("Restore", style = Aiimin.type.label.copy(color = c.accentText, fontSize = 14.sp), modifier = Modifier.pressable({ vm.restore() }).padding(12.dp)) }
+        TopBar("Plans", onBack = { nav.back() }) { Text("Restore", style = Aiimin.type.labelLarge.copy(color = c.link), modifier = Modifier.pressable({ vm.restore() }).padding(12.dp)) }
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Aiimin.space.gutter)) {
             Text(
                 if (ent.plan == Plan.FREE) "AIIMIN is free for one person, for as long as you like. Plans add more people, all your history and more help." else "You're on ${ent.plan.label}. Thank you for supporting AIIMIN.",
-                style = Aiimin.type.body.copy(fontSize = 16.sp, lineHeight = 23.sp), modifier = Modifier.padding(top = 8.dp),
+                style = Aiimin.type.body, modifier = Modifier.padding(top = 8.dp),
             )
-            Spacer(Modifier.height(14.dp))
+            Spacer(Modifier.height(16.dp))
             Segmented(listOf("Monthly", "Yearly"), period.ordinal, { period = Period.entries[it] })
             when (val st = store) {
                 StoreState.Loading -> Text("Loading prices from Google Play…", style = Aiimin.type.caption, modifier = Modifier.padding(top = 12.dp))
@@ -206,7 +214,7 @@ fun PlansScreen(vm: PlansViewModel = hiltViewModel()) {
                 val pp = prices.firstOrNull { it.plan == plan }
                 PlanBlock(plan, pp, period, current = ent.plan == plan, selected = picked == plan) { if (plan != ent.plan) picked = plan }
             }
-            Text("Compare plans", style = Aiimin.type.label.copy(color = c.accentText, fontSize = 15.sp), modifier = Modifier.padding(vertical = 14.dp).pressable({ compare = true }))
+            Text("Compare plans", style = Aiimin.type.labelLarge.copy(color = c.link), modifier = Modifier.padding(vertical = 16.dp).pressable({ compare = true }))
             SectionHeader("Plainly")
             Text(
                 "No ads. No lending. We never sell your data. Prices include GST. Cancel anytime in Google Play. If you go back to Free, nothing is deleted.",
@@ -226,8 +234,8 @@ fun PlansScreen(vm: PlansViewModel = hiltViewModel()) {
                 AppButton(if (ent.plan == Plan.FREE) "Stay on Free" else "Keep ${ent.plan.label}", { nav.back() }, Modifier.fillMaxWidth(), kind = ButtonKind.SECONDARY)
             } else {
                 AppButton("Continue with ${sel.plan.label} · ${price.formatted}/${if (period == Period.YEARLY) "year" else "month"}", { checkout = sel }, Modifier.fillMaxWidth())
-                Text("Renews every ${if (period == Period.YEARLY) "year" else "month"} at ${price.formatted} incl. GST. Cancel anytime in Google Play.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp))
-                Text("Stay on ${ent.plan.label}", style = Aiimin.type.label.copy(color = c.textMuted, fontSize = 14.sp), modifier = Modifier.padding(top = 6.dp).pressable({ picked = null }).padding(vertical = 6.dp))
+                Text("Renews every ${if (period == Period.YEARLY) "year" else "month"} at ${price.formatted} incl. GST. Cancel anytime in Google Play.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp))
+                Text("Stay on ${ent.plan.label}", style = Aiimin.type.labelLarge.copy(color = c.textMuted), modifier = Modifier.padding(top = 8.dp).pressable({ picked = null }).padding(vertical = 8.dp))
             }
         }
     }
@@ -238,9 +246,9 @@ fun PlansScreen(vm: PlansViewModel = hiltViewModel()) {
 @Composable
 private fun StoreNote(text: String, action: String?, onAction: () -> Unit) {
     val c = Aiimin.colors
-    Column(Modifier.fillMaxWidth().padding(top = 12.dp).clip(RoundedCornerShape(12.dp)).background(c.raised).padding(14.dp)) {
+    Column(Modifier.fillMaxWidth().padding(top = 12.dp).clip(RoundedCornerShape(12.dp)).background(c.raised).padding(16.dp)) {
         Text(text, style = Aiimin.type.body)
-        if (action != null) Text(action, style = Aiimin.type.label.copy(color = c.accentText, fontSize = 14.sp), modifier = Modifier.padding(top = 8.dp).pressable(onAction))
+        if (action != null) Text(action, style = Aiimin.type.labelLarge.copy(color = c.link), modifier = Modifier.padding(top = 8.dp).pressable(onAction))
     }
 }
 
@@ -253,18 +261,19 @@ private fun PlanBlock(plan: Plan, pp: PlanPrices?, period: Period, current: Bool
             .border(if (selected) 2.dp else 1.dp, if (selected) c.text else c.border, shape).pressable(onClick).padding(16.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(plan.label, style = Aiimin.type.title.copy(fontSize = 20.sp), modifier = Modifier.weight(1f))
+            Text(plan.label, style = Aiimin.type.cardTitle, modifier = Modifier.weight(1f))
             if (current) Tag("Your plan")
         }
         Text(plan.promise, style = Aiimin.type.caption.copy(color = c.accentText, fontWeight = FontWeight.SemiBold))
         val price = aiimin.core.data.plan.planPriceLabel(plan, pp?.monthly?.formatted, pp?.yearly?.formatted, pp?.yearlySavingPct, yearly = period == Period.YEARLY)
-        Text(price, style = Aiimin.type.headline.copy(fontSize = 18.sp), modifier = Modifier.padding(top = 8.dp))
-        Text(plan.hero, style = Aiimin.type.body, modifier = Modifier.padding(top = 6.dp))
-        plan.adds.forEach { Text("· $it", style = Aiimin.type.caption.copy(fontSize = 13.sp, lineHeight = 19.sp), modifier = Modifier.padding(top = 3.dp)) }
+        Text(price, style = Aiimin.type.headline, modifier = Modifier.padding(top = 8.dp))
+        Text(plan.hero, style = Aiimin.type.body, modifier = Modifier.padding(top = 8.dp))
+        // D-032: a real list with a hanging indent.
+        aiimin.designsystem.component.BulletList(plan.adds, Modifier.padding(top = 8.dp), style = Aiimin.type.note)
         if (plan.coming.isNotEmpty()) {
             // Planned, shown on purpose, never sold as included today (A-036).
-            Text("COMING", style = Aiimin.type.eyebrow, modifier = Modifier.padding(top = 10.dp))
-            plan.coming.forEach { Text("· $it", style = Aiimin.type.caption.copy(fontSize = 13.sp, lineHeight = 19.sp, color = c.textFaint), modifier = Modifier.padding(top = 3.dp)) }
+            Text("COMING", style = Aiimin.type.eyebrow, modifier = Modifier.padding(top = 12.dp))
+            aiimin.designsystem.component.BulletList(plan.coming, Modifier.padding(top = 8.dp), style = Aiimin.type.note.copy(color = c.textFaint))
         }
     }
 }
@@ -291,7 +300,7 @@ private val COMPARE: List<Pair<String, List<Pair<String, List<String>>>>> = list
     ),
     "Vault & family" to listOf(
         "Documents on your phone" to listOf("Unlimited", "Unlimited", "Unlimited", "Unlimited"), "Family profiles" to listOf("2", "6", "6", "6 people"),
-        "Automatic vault backups (coming)" to listOf("Manual", "Weekly", "Weekly", "Weekly"), "Trusted people for emergency access (coming)" to listOf("1", "1", "3", "Any"),
+        "Automatic vault backups" to listOf("Manual", "Weekly", "Weekly", "Weekly"), "Trusted people for emergency access (coming)" to listOf("1", "1", "3", "Any"),
     ),
     "Insight" to listOf("Chart history" to listOf("3 months", "All", "All", "All"), "Patterns, monthly review (coming)" to listOf("—", "—", "✓", "✓")),
     "Sync" to listOf("Linked browsers" to listOf("1", "4", "4", "4 each")),
@@ -305,7 +314,7 @@ private fun CompareSheet(onDismiss: () -> Unit) {
             Column {
                 Row { Cell("", 170.dp, true); Plan.entries.forEach { Cell(it.label, 92.dp, true) } }
                 COMPARE.forEach { (group, rows) ->
-                    Text(group.uppercase(), style = Aiimin.type.eyebrow, modifier = Modifier.padding(top = 14.dp, bottom = 4.dp))
+                    Text(group.uppercase(), style = Aiimin.type.eyebrow, modifier = Modifier.padding(top = 16.dp, bottom = 4.dp))
                     rows.forEach { (label, cells) ->
                         Row(Modifier.padding(vertical = 4.dp)) { Cell(label, 170.dp); cells.forEach { Cell(it, 92.dp) } }
                         Hairline()
@@ -318,7 +327,7 @@ private fun CompareSheet(onDismiss: () -> Unit) {
 
 @Composable
 private fun Cell(t: String, w: androidx.compose.ui.unit.Dp, head: Boolean = false) {
-    Text(t, style = if (head) Aiimin.type.bodyStrong else Aiimin.type.caption.copy(fontSize = 13.sp, color = Aiimin.colors.text), modifier = Modifier.width(w).padding(end = 8.dp))
+    Text(t, style = if (head) Aiimin.type.bodyStrong else Aiimin.type.note.copy(color = Aiimin.colors.text), modifier = Modifier.width(w).padding(end = 8.dp))
 }
 
 /** P4 · plan details, then Google Play's own payment sheet. */
@@ -331,20 +340,20 @@ private fun CheckoutSheet(vm: PlansViewModel, pp: PlanPrices, period: Period, on
     AppSheet(onDismiss, title = "${pp.plan.label} · ${if (period == Period.YEARLY) "yearly" else "monthly"}") {
         when (outcome) {
             "ok" -> {
-                Text("You're on ${pp.plan.label}.", style = Aiimin.type.title.copy(fontSize = 22.sp))
-                pp.plan.adds.take(3).forEach { Text("· $it", style = Aiimin.type.body, modifier = Modifier.padding(top = 4.dp)) }
-                Spacer(Modifier.height(14.dp))
+                Text("You're on ${pp.plan.label}.", style = Aiimin.type.cardTitle)
+                aiimin.designsystem.component.BulletList(pp.plan.adds.take(3), Modifier.padding(top = 8.dp))
+                Spacer(Modifier.height(16.dp))
                 AppButton("Done", { vm.outcome.value = null; onDismiss(); nav.back() }, Modifier.fillMaxWidth())
             }
             else -> {
                 Text("${price?.formatted ?: "—"} every ${if (period == Period.YEARLY) "year" else "month"}, GST included. Starts today; renews until you cancel in Google Play.", style = Aiimin.type.body)
                 Text("What changes right away: ${pp.plan.adds.first().lowercase()}.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp))
-                outcome?.takeIf { it != "cancelled" }?.let { Text(it, style = Aiimin.type.body.copy(color = Aiimin.colors.accentText), modifier = Modifier.padding(top = 10.dp)) }
-                Spacer(Modifier.height(14.dp))
+                outcome?.takeIf { it != "cancelled" }?.let { Text(it, style = Aiimin.type.body.copy(color = Aiimin.colors.link), modifier = Modifier.padding(top = 12.dp)) }
+                Spacer(Modifier.height(16.dp))
                 AppButton("Start", { (context as? Activity)?.let { vm.buy(it, pp, period) } }, Modifier.fillMaxWidth(), enabled = price != null && pp.plan != Plan.FAMILY)
-                Row(Modifier.padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Text("Terms", style = Aiimin.type.label.copy(color = Aiimin.colors.accentText), modifier = Modifier.pressable({ open(context, AppContact.TERMS) }))
-                    Text("How to cancel", style = Aiimin.type.label.copy(color = Aiimin.colors.accentText), modifier = Modifier.pressable({ open(context, vm.manageUrl(pp.plan)) }))
+                Row(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Text("Terms", style = Aiimin.type.label.copy(color = Aiimin.colors.link), modifier = Modifier.pressable({ open(context, AppContact.TERMS) }))
+                    Text("How to cancel", style = Aiimin.type.label.copy(color = Aiimin.colors.link), modifier = Modifier.pressable({ open(context, vm.manageUrl(pp.plan)) }))
                 }
             }
         }
@@ -361,7 +370,7 @@ fun SubscriptionScreen(vm: PlansViewModel = hiltViewModel()) {
     Column(Modifier.fillMaxSize().background(c.base)) {
         TopBar("Your plan", onBack = { nav.back() })
         Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
-            Text(ent.plan.label, style = Aiimin.type.title.copy(fontSize = 28.sp), modifier = Modifier.padding(top = 8.dp))
+            Text(ent.plan.label, style = Aiimin.type.title, modifier = Modifier.padding(top = 8.dp))
             Text(
                 when {
                     ent.plan == Plan.FREE -> "Free for as long as you like."
@@ -371,14 +380,14 @@ fun SubscriptionScreen(vm: PlansViewModel = hiltViewModel()) {
                 style = Aiimin.type.body.copy(color = c.textMuted),
             )
             ent.orderId?.let { Text("Order $it", style = Aiimin.type.caption, modifier = Modifier.padding(top = 4.dp)) }
-            Spacer(Modifier.height(18.dp))
+            Spacer(Modifier.height(20.dp))
             AppButton(if (ent.plan == Plan.FREE) "See plans" else "Change plan", { nav.open(Route.Plans) }, Modifier.fillMaxWidth())
             if (ent.plan != Plan.FREE) {
                 Spacer(Modifier.height(8.dp))
                 AppButton("Manage or cancel in Google Play", { open(context, vm.manageUrl(ent.plan)) }, Modifier.fillMaxWidth(), kind = ButtonKind.SECONDARY)
-                Text("If you cancel: nothing is deleted. Features beyond Free pause at the end of the period.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 10.dp))
+                Text("If you cancel: nothing is deleted. Features beyond Free pause at the end of the period.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 12.dp))
             }
-            Text("Restore purchases", style = Aiimin.type.label.copy(color = c.accentText, fontSize = 14.sp), modifier = Modifier.padding(top = 16.dp).pressable({ vm.restore() }).padding(vertical = 8.dp))
+            Text("Restore purchases", style = Aiimin.type.labelLarge.copy(color = c.link), modifier = Modifier.padding(top = 16.dp).pressable({ vm.restore() }).padding(vertical = 8.dp))
         }
     }
 }
@@ -437,13 +446,13 @@ fun LinkedDevicesScreen(vm: DevicesViewModel = hiltViewModel()) {
                         Text(deviceName(s.userAgent) + if (mine) " · this phone" else "", style = Aiimin.type.bodyStrong)
                         Text(listOfNotNull(s.ipAddress, s.updatedAt?.take(10)?.let { "active $it" }).joinToString(" · "), style = Aiimin.type.caption)
                     }
-                    if (!mine && s.token != null) Text("Remove", style = Aiimin.type.label.copy(color = c.accentText, fontSize = 14.sp), modifier = Modifier.pressable({ vm.remove(s.token!!) }).padding(10.dp))
+                    if (!mine && s.token != null) Text("Remove", style = Aiimin.type.labelLarge.copy(color = c.link), modifier = Modifier.pressable({ vm.remove(s.token!!) }).padding(12.dp))
                 }
                 Hairline()
             }
             Text(
                 "To add a browser, sign in on aiimin.in with your OS-ID or email and PIN. Removing one signs it out at once.",
-                style = Aiimin.type.caption, modifier = Modifier.padding(top = 14.dp, bottom = 32.dp),
+                style = Aiimin.type.caption, modifier = Modifier.padding(top = 16.dp, bottom = 32.dp),
             )
         }
     }
@@ -468,13 +477,13 @@ fun MoneySettingsScreen(vm: ProfileViewModel = hiltViewModel()) {
             Text("Payments below this roll up per payee per week on Money (each still counts once in your budget).", style = Aiimin.type.caption)
             PillRow { listOf(50, 100, 200, 500).forEach { r -> Pill("Under ₹$r", st.rollupBelow == r, { vm.save { it.copy(rollupBelow = r) } }) } }
             SectionHeader("More")
-            ListRow("Bank messages", subtitle = "Bring in past SMS, choose which banks and payments count", leading = { IconTile(AppIcons.ChatText) }, trailing = { Chevron() }, onClick = { nav.open(Route.SmsImport) })
-            ListRow("Accounts", subtitle = "Banks, cards, wallets, cash · primary per ledger", leading = { IconTile(AppIcons.Bank) }, trailing = { Chevron() }, onClick = { nav.open(Route.Accounts) })
-            ListRow("Places and categories", subtitle = "Shops AIIMIN remembers, what you bought, your own categories", leading = { IconTile(AppIcons.Tag) }, trailing = { Chevron() }, onClick = { nav.open(Route.PayeeMemory) })
-            ListRow("Recurring and bills", subtitle = "Subscriptions, rent, AutoPay", leading = { IconTile(AppIcons.Repeat) }, trailing = { Chevron() }, onClick = { nav.open(Route.Recurring) })
-            ListRow("Splits", subtitle = "Who owes whom", leading = { IconTile(AppIcons.Handshake) }, trailing = { Chevron() }, onClick = { nav.open(Route.Splits) })
-            ListRow("Monthly plan", subtitle = "Total, fixed costs and category caps", leading = { IconTile(AppIcons.Target) }, trailing = { Chevron() }, onClick = { nav.open(Route.Budget) })
-            Text("Currency is ₹. Bank messages are read on this phone and their text stays here.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 14.dp, bottom = 32.dp))
+            ListRow("Bank messages", subtitle = "Bring in past SMS, choose which banks and payments count", leading = { IconTile(AppIcons.ChatText) }, trailing = { Chevron() }, opens = Route.SmsImport, onClick = { nav.open(Route.SmsImport) })
+            ListRow("Accounts", subtitle = "Banks, cards, wallets, cash · primary per ledger", leading = { IconTile(AppIcons.Bank) }, trailing = { Chevron() }, opens = Route.Accounts, onClick = { nav.open(Route.Accounts) })
+            ListRow("Places and rules", subtitle = "Your rules, shops AIIMIN remembers, what you bought, your own categories", leading = { IconTile(AppIcons.Tag) }, trailing = { Chevron() }, opens = Route.PayeeMemory, onClick = { nav.open(Route.PayeeMemory) })
+            ListRow("Recurring and bills", subtitle = "Subscriptions, rent, AutoPay", leading = { IconTile(AppIcons.Repeat) }, trailing = { Chevron() }, opens = Route.Recurring, onClick = { nav.open(Route.Recurring) })
+            ListRow("Splits", subtitle = "Who owes whom", leading = { IconTile(AppIcons.Handshake) }, trailing = { Chevron() }, opens = Route.Splits, onClick = { nav.open(Route.Splits) })
+            ListRow("Monthly plan", subtitle = "Total, fixed costs and category caps", leading = { IconTile(AppIcons.Target) }, trailing = { Chevron() }, opens = Route.Budget, onClick = { nav.open(Route.Budget) })
+            Text("Currency is ₹. Bank messages are read on this phone and their text stays here.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 16.dp, bottom = 32.dp))
         }
     }
 }
@@ -492,15 +501,15 @@ fun AppearanceScreen(vm: ProfileViewModel = hiltViewModel()) {
         TopBar("Appearance", onBack = { nav.back() })
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Aiimin.space.gutter)) {
             SectionHeader("Theme")
-            ListRow("Light", subtitle = "Paper background all day. A dark theme is being designed and isn't available yet.", leading = { IconTile(AppIcons.Sun) }, maxSubtitleLines = 2)
+            ListRow("Light", subtitle = "Paper background all day.", leading = { IconTile(AppIcons.Sun) }, maxSubtitleLines = 2)
             SectionHeader("Text size")
             Text("On top of your phone's own text size.", style = Aiimin.type.caption)
             PillRow { listOf(0.9f to "Smaller", 1f to "Default", 1.15f to "Larger", 1.3f to "Largest").forEach { (v, l) -> Pill(l, kotlin.math.abs(st.textScale - v) < 0.01f, { vm.save { it.copy(textScale = v) } }) } }
             // A labelled sample, so the line reads as a preview of the chosen size, not stray text (audit A-033).
-            Text("Preview", style = Aiimin.type.caption, modifier = Modifier.padding(top = 10.dp))
-            Text("Your day so far · ₹1,240 spent · 3 of 3 kept", style = Aiimin.type.body.copy(fontSize = (16 * st.textScale).sp), modifier = Modifier.padding(top = 2.dp))
+            Text("Preview", style = Aiimin.type.caption, modifier = Modifier.padding(top = 12.dp))
+            Text("Your day so far · ₹1,240 spent · 3 of 3 kept", style = Aiimin.type.body.let { b -> b.copy(fontSize = b.fontSize * st.textScale, lineHeight = b.lineHeight * st.textScale) }, modifier = Modifier.padding(top = 2.dp))
             SectionHeader("Motion and touch")
-            SwitchRow("Reduce motion", st.reduceMotion, { v -> vm.save { it.copy(reduceMotion = v) } }, subtitle = "Charts and meters stop animating")
+            SwitchRow("Reduce motion", st.reduceMotion, { v -> vm.save { it.copy(reduceMotion = v) } }, subtitle = "Movement becomes a short fade")
             SwitchRow("Haptics", st.haptics, { v -> vm.save { it.copy(haptics = v) } }, subtitle = "A light tick when scrubbing charts and confirming")
             Spacer(Modifier.height(32.dp))
         }
@@ -518,7 +527,7 @@ fun LanguageScreen(vm: ProfileViewModel = hiltViewModel()) {
         TopBar("Language and region", onBack = { nav.back() })
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Aiimin.space.gutter)) {
             SectionHeader("App language")
-            ListRow("English (India)", subtitle = "Hindi is coming later", leading = { IconTile(AppIcons.Translate) })
+            ListRow("English (India)", subtitle = "You can speak or type in Hindi or Hinglish too", leading = { IconTile(AppIcons.Translate) })
             SectionHeader("Voice")
             PillRow { listOf("en-IN" to "English (India)", "hi-IN" to "हिन्दी", "auto" to "Auto").forEach { (k, l) -> Pill(l, st.voiceLanguage == k, { vm.save { it.copy(voiceLanguage = k) } }) } }
             Text("What capture listens for. Auto follows your phone's language.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 4.dp))
@@ -550,6 +559,8 @@ fun HelpScreen() {
     val c = Aiimin.colors
     var feedback by remember { mutableStateOf("") }
     var diag by remember { mutableStateOf(true) }
+    val me: MeViewModel = hiltViewModel()
+    val st by me.settings.collectAsStateWithLifecycle()
     Column(Modifier.fillMaxSize().background(c.base)) {
         TopBar("Help and feedback", onBack = { nav.back() })
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Aiimin.space.gutter)) {
@@ -563,7 +574,10 @@ fun HelpScreen() {
                 val i = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:")).putExtra(Intent.EXTRA_EMAIL, arrayOf(AppContact.SUPPORT_EMAIL)).putExtra(Intent.EXTRA_SUBJECT, "AIIMIN feedback").putExtra(Intent.EXTRA_TEXT, body)
                 runCatching { context.startActivity(i) }
             }, Modifier.fillMaxWidth(), enabled = feedback.isNotBlank(), icon = AppIcons.EnvelopeSimple)
-            Text("Opens your mail app; nothing is sent until you press send there.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp))
+            Text("Opens your mail app; nothing is sent until you press send there.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp))
+            st?.let { s ->
+                SwitchRow("Shake to send feedback", s.shakeFeedback, { v -> me.update { it.copy(shakeFeedback = v) } }, subtitle = "Shake your phone on any screen to send a note with a screenshot of it", icon = AppIcons.EnvelopeSimple)
+            }
             SectionHeader("Contact")
             ListRow(AppContact.SUPPORT_EMAIL, subtitle = "Support, privacy and data requests", leading = { IconTile(AppIcons.EnvelopeSimple) }, onClick = {
                 runCatching { context.startActivity(Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:${AppContact.SUPPORT_EMAIL}"))) }
@@ -593,11 +607,11 @@ fun AboutScreen() {
             }
             Text("Your day, your money and your family's papers, in one calm place.", style = Aiimin.type.bodyStrong, modifier = Modifier.padding(top = 16.dp))
             Text("No ads, no lending, no selling data. It only ever compares you with you.", style = Aiimin.type.body, modifier = Modifier.padding(top = 4.dp))
-            ListRow("How AIIMIN is running", subtitle = "Background jobs and when each last ran", leading = { IconTile(AppIcons.Pulse) }, trailing = { Chevron() }, onClick = { nav.open(Route.Running) }, modifier = Modifier.padding(top = 12.dp))
+            ListRow("How AIIMIN is running", subtitle = "Background jobs and when each last ran", leading = { IconTile(AppIcons.Pulse) }, trailing = { Chevron() }, opens = Route.Running, onClick = { nav.open(Route.Running) }, modifier = Modifier.padding(top = 12.dp))
             SectionHeader("Legal")
             ListRow("Privacy Policy", leading = { IconTile(AppIcons.ShieldCheck) }, trailing = { Chevron() }, onClick = { open(context, AppContact.PRIVACY) })
             ListRow("Terms", leading = { IconTile(AppIcons.Scroll) }, trailing = { Chevron() }, onClick = { open(context, AppContact.TERMS) })
-            ListRow("Health Connect data use", subtitle = "Steps and sleep are read to score your own day and never leave this phone", leading = { IconTile(AppIcons.Heartbeat) }, trailing = { Chevron() }, onClick = { nav.open(Route.HealthPrivacy) }, maxSubtitleLines = 2)
+            ListRow("Health Connect data use", subtitle = "Steps and sleep are read to score your own day and never leave this phone", leading = { IconTile(AppIcons.Heartbeat) }, trailing = { Chevron() }, opens = Route.HealthPrivacy, onClick = { nav.open(Route.HealthPrivacy) }, maxSubtitleLines = 2)
             ListRow("Open-source licences", leading = { IconTile(AppIcons.Code) }, trailing = { Chevron() }, onClick = { licences = true })
             Text("Wellness information, not medical advice. For personal budgeting only; not investment, tax or credit advice.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 16.dp, bottom = 32.dp))
         }

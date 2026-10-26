@@ -1,0 +1,461 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import {
+  AirplaneTilt, ArrowRight, ChatCircleText, Check, DeviceMobile, EyeSlash, FileLock, Lock,
+  Microphone, Plus, Timer, Receipt, ShieldCheck, Sun, Users, WifiSlash, Browser, ChartLineUp, DownloadSimple,
+} from '@phosphor-icons/react';
+import Shell, { Meta, Phone, raahi } from './Shell';
+import JoinForm from './JoinForm';
+import { PLANS, REFERRAL, FOUNDING, foundingPrice, inr, yearlySaving } from '../marketing/plans';
+import { API_URL } from '../utils/api';
+
+// The opening-screen motif (PRD Part 26): one sun rises once behind the phone. Reduced motion: already risen.
+function useCount() {
+  const [n, setN] = useState(null);
+  useEffect(() => {
+    let live = true;
+    fetch(`${API_URL}/waitlist/count`).then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (live && typeof d?.count === 'number' && d.count >= 25) setN(d.count); })
+      .catch(() => {});
+    return () => { live = false; };
+  }, []);
+  return n;
+}
+
+const MOMENTS = [
+  {
+    time: 'Morning',
+    title: 'Wake up to one clear next thing.',
+    body: 'Today opens on the one task that matters right now. Tap Focus and give it 25 quiet minutes. Your daily minimums, small promises like a 20-minute walk, sit just below.',
+    facts: [
+      [Microphone, 'Say it out loud and it becomes a task, a reminder or a note.'],
+      [Sun, 'One short good morning from Raahi. No guilt trips, no streaks to lose.'],
+      [Timer, 'A focus timer from 15 to 90 minutes for that one thing.'],
+    ],
+    screen: '/site/screens/focus.webp', alt: 'The Focus screen: a 25-minute timer for "Call the CA about advance tax"',
+  },
+  {
+    time: 'Afternoon',
+    title: 'Your spending, written down for you.',
+    body: 'When your bank sends a payment text, AIIMIN can draft it as an expense on your phone. Review and confirm it, and AIIMIN can remember the shop next time.',
+    facts: [
+      [Receipt, 'Only bank texts. OTPs, offers and personal chats are skipped.'],
+      [Lock, 'Read on your phone. The text never leaves it.'],
+      [Users, 'Split a bill with the people you share costs with.'],
+    ],
+    screen: '/site/screens/spend.webp', alt: "October's biggest payments, each drafted from a bank text: Ola ₹1,860, Myntra ₹1,340, Café Goodluck ₹1,260, then spending by category",
+  },
+  {
+    time: 'Evening',
+    title: "Family papers, ready when you need them.",
+    body: 'Keep identity documents, insurance and the car RC, plus emergency details for the people you look after. Set expiry reminders for the dates that matter.',
+    facts: [
+      [FileLock, 'Files stay on this phone. AIIMIN never uploads them.'],
+      [ShieldCheck, 'An emergency card with blood group, allergies and who to call.'],
+      [WifiSlash, 'Everything opens without internet.'],
+    ],
+    screen: '/site/screens/vault.webp', alt: "The Vault for Meera's family: a profile for each person, an emergency card, and a car insurance policy that ends in 11 days",
+  },
+];
+
+const PROMISES = [
+  [DeviceMobile, 'It lives on your phone', 'Your tasks, spending, papers and journal are saved on this phone. No account is needed.'],
+  [EyeSlash, 'No ads, ever', 'There is no ad or tracking code inside the app. Nothing about you is sold.'],
+  [AirplaneTilt, 'Works without signal', 'Add things, get reminders and open your papers in airplane mode.'],
+  [ChatCircleText, 'AI that says it is AI', 'When Raahi writes something for you, it is clearly labelled. Greetings are written by people.'],
+];
+
+const LINES = [
+  ['First open', "Hi Meera. Let's start small."],
+  ['Morning', 'Morning. 3 minimums today.'],
+  ['Back after a week', 'Welcome back. No catch-up needed. Start with today.'],
+  ['End of day', 'Day closed. Rest well.'],
+];
+
+const FAQ = [
+  ['What does it cost?', <p key="a">Plus is ₹49 a month, Pro ₹99 and Family ₹179, billed through Google Play, with about a quarter off when you pay yearly. The first {FOUNDING.seats} testers keep 50% off any of them for life. A Free plan covers the essentials for one person. Testers pay nothing during the beta and hear 14 days before paid plans begin.</p>],
+  ['Which phones does it work on?', <p key="a">AIIMIN works on Android phones running Android 8 or later. There is no iPhone app yet.</p>],
+  ['Does AIIMIN read my messages?', <><p key="a">Only if you say yes, and only texts from banks. OTPs, offers and personal chats are skipped. The text is read on your phone and is never sent anywhere.</p><p key="b">You can switch it off any time, and the rest of the app keeps working.</p></>],
+  ['Is my data safe?', <p key="a">Your data stays on your phone. Sensitive documents are locked with a key only your phone holds. If you set up a backup, it is encrypted with your passphrase and saved to a folder you choose. <Link to="/privacy">Read the privacy policy</Link>.</p>],
+  ['Who is Raahi?', <p key="a">Raahi is the small traveller who keeps you company through the day, and the name on everything the app's AI writes. Raahi never guilts you, and you can switch Raahi off. <Link to="/brand">Meet Raahi</Link>.</p>],
+  ['How do I install it?', <p key="a">When your invite is ready we email you a link. Open it on your phone, tap download, allow the install once, and you are in. The <Link to="/app">Android app page</Link> shows each step. Play Store comes later.</p>],
+  ['Can I delete everything?', <p key="a">Yes, in one tap from Settings › Privacy. Uninstalling the app removes everything stored on your phone. <Link to="/data-deletion">How deletion works</Link>.</p>],
+];
+
+/**
+ * Desktop: the three moments scroll past one pinned phone, which changes screen as each moment reaches the middle of
+ * the viewport. Phones get the swipe gallery above instead (the pinned stage is hidden under 821px).
+ */
+function Story() {
+  const [active, setActive] = useState(0);
+  const [ready, setReady] = useState(false);
+  const refs = useRef([]);
+  useEffect(() => {
+    if (!('IntersectionObserver' in window)) return undefined;
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) setActive(Number(e.target.dataset.i)); });
+    }, { rootMargin: '-45% 0px -45% 0px' });
+    refs.current.forEach((el) => el && io.observe(el));
+    setReady(true);
+    return () => io.disconnect();
+  }, []);
+  return (
+    <div className="s-story" data-ready={ready}>
+      <div className="s-story__steps">
+        {MOMENTS.map((m, i) => (
+          <article key={m.time} className="s-moment" data-i={i} data-active={i === active} ref={(el) => { refs.current[i] = el; }}>
+            <p className="s-moment__time"><i aria-hidden="true" />{m.time}</p>
+            <h3>{m.title}</h3>
+            <p>{m.body}</p>
+            <ul className="s-facts s-rv s-stagger">
+              {m.facts.map(([I, t]) => <li key={t}><I aria-hidden="true" />{t}</li>)}
+            </ul>
+          </article>
+        ))}
+      </div>
+      <div className="s-story__stage">
+        <div className="s-story__pin">
+          <div className="s-stage">
+            <figure className="s-device">
+              <div className="s-phone">
+                <div className="s-phone__screen">
+                  {MOMENTS.map((m, i) => (
+                    <img key={m.time} src={m.screen} alt={i === active ? m.alt : ''} aria-hidden={i !== active} width="1440" height="2960" loading="lazy" decoding="async" data-on={i === active} />
+                  ))}
+                </div>
+              </div>
+            </figure>
+          </div>
+          <div className="s-story__dots" role="group" aria-label="Jump to a moment">
+            {MOMENTS.map((m, i) => (
+              <button key={m.time} type="button" data-on={i === active} aria-pressed={i === active}
+                onClick={() => refs.current[i]?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' })}>
+                {m.time}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// The hero walks one sample day: the Today screen at four real times, with the sun moving behind the phone.
+const DAY = [
+  { key: 'morning', label: 'Morning', time: '8:44 am', alt: 'Today at 8:44 in the morning: the day arc just begun, and the next task, Call the CA about advance tax' },
+  { key: 'afternoon', label: 'Afternoon', time: '1:05 pm', alt: 'Today at 1:05 in the afternoon: the day arc climbing, with the line All clear, Raahi is resting, and the three minimums below' },
+  { key: 'evening', label: 'Evening', time: '6:50 pm', alt: 'Today at 6:50 in the evening: the day arc past its peak, with Walk 20 minutes as the next minimum' },
+  { key: 'night', label: 'Night', time: '10:15 pm', alt: 'Today at 10:15 at night: the day arc almost finished, with three minimums still open' },
+];
+const STEP_MS = 4200;
+
+function HeroDay() {
+  const [i, setI] = useState(0);
+  const [held, setHeld] = useState(false);
+  const [visible, setVisible] = useState(true);
+  const [still, setStill] = useState(false);
+  const [first, setFirst] = useState(true); // the sunrise plays once, on load
+  const ref = useRef(null);
+  useEffect(() => { if (i !== 0) setFirst(false); }, [i]);
+  useEffect(() => {
+    setStill(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    if (!('IntersectionObserver' in window) || !ref.current) return undefined;
+    const io = new IntersectionObserver(([e]) => setVisible(e.isIntersecting), { threshold: 0.25 });
+    io.observe(ref.current);
+    return () => io.disconnect();
+  }, []);
+  const running = !still && !held && visible;
+  useEffect(() => {
+    if (!running) return undefined;
+    const t = setTimeout(() => { if (!document.hidden) setI((n) => (n + 1) % DAY.length); }, STEP_MS);
+    return () => clearTimeout(t);
+  }, [i, running]);
+  return (
+    <div className="s-hero__stage s-dayhero" data-phase={DAY[i].key} data-first={first} ref={ref}
+      onPointerEnter={() => setHeld(true)} onPointerLeave={() => setHeld(false)}
+      onFocus={() => setHeld(true)} onBlur={() => setHeld(false)}>
+      <span className="s-hero__sun" aria-hidden="true" />
+      <figure className="s-device">
+        <div className="s-phone">
+          <div className="s-phone__screen">
+            {DAY.map((d, n) => (
+              <img key={d.key} src={`/site/screens/day-${d.key}.webp`} alt={n === i ? d.alt : ''} aria-hidden={n !== i}
+                width="1440" height="2960" data-on={n === i}
+                loading={n === 0 ? 'eager' : 'lazy'} fetchPriority={n === 0 ? 'high' : undefined} decoding="async" />
+            ))}
+          </div>
+        </div>
+      </figure>
+      <div className="s-dayrail" role="group" aria-label="One sample day">
+        {DAY.map((d, n) => (
+          <button key={d.key} type="button" aria-pressed={n === i} data-run={n === i && running} onClick={() => setI(n)}>
+            <span className="s-dayrail__bar" aria-hidden="true"><i key={`${i}-${n}`} /></span>
+            <b>{d.label}</b><span className="num">{d.time}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Set to a screenshot of the web view (demo profile only) when it is ready; until then the frame shows the promise. */
+const DESK_SHOT = null;
+const WEB = [
+  [ChartLineUp, 'Your month on a big screen', 'Charts and spending from your phone, laid out for a laptop. Free shows 3 months; Plus shows all of it.'],
+  [Browser, 'Private, and off until you want it', 'Sync with aiimin.in stays off until you switch it on. Plus links up to 4 browsers.'],
+  [DownloadSimple, 'Export any time', 'Take your data out as a file whenever you like, on every plan.'],
+];
+
+function WebCompanion() {
+  return (
+    <section className="s-sec" aria-labelledby="web-h">
+      <div className="s-wrap s-web">
+        <div className="s-web__copy s-rv">
+          <h2 id="web-h" className="s-h2">Your phone, with a bigger screen.</h2>
+          <p className="s-lede">AIIMIN lives on your phone. When you want room to think, open the same month at aiimin.in on your laptop.</p>
+          <ul className="s-web__list s-rv s-stagger">
+            {WEB.map(([I, b, t]) => <li key={b}><I aria-hidden="true" /><div><b>{b}</b><span>{t}</span></div></li>)}
+          </ul>
+        </div>
+        <figure className="s-browser s-rv" aria-label={DESK_SHOT ? 'AIIMIN on the web' : undefined}>
+          <div className="s-browser__bar" aria-hidden="true"><i /><i /><i /><span>aiimin.in</span></div>
+          {DESK_SHOT
+            ? <img src={DESK_SHOT} alt="AIIMIN on the web: the month's spending and charts for the sample profile" loading="lazy" />
+            : (
+              <div className="s-browser__soon">
+                <span className="s-browser__sun" aria-hidden="true" />
+                <p><b>The web view is getting its own look.</b> First screens arrive with the public launch.</p>
+              </div>
+            )}
+        </figure>
+      </div>
+    </section>
+  );
+}
+
+const PAID = PLANS.filter((p) => p.monthly > 0);
+const FREE = PLANS.find((p) => p.monthly === 0);
+const BEST_FOR = {
+  plus: 'For one person who wants every month of their history and every ledger.',
+  pro: 'For people who want AIIMIN to explain their money and write their reviews.',
+  family: 'For the person who looks after everyone’s papers, money and plans.',
+};
+const MAX_SAVING = Math.max(...PAID.map(yearlySaving));
+
+function Plans() {
+  const [yearly, setYearly] = useState(false);
+  return (
+    <section className="s-sec" id="plans" aria-labelledby="plans-h">
+      <div className="s-wrap">
+        <div className="s-plans-head s-rv">
+          <div>
+            <h2 id="plans-h" className="s-h2">Pay for what it does for you.</h2>
+            <p className="s-lede">Each plan lists only what works in the app today. Billing goes through Google Play, and nothing renews without telling you first.</p>
+          </div>
+          <div className="s-bill" role="group" aria-label="Billing period">
+            <button type="button" aria-pressed={!yearly} onClick={() => setYearly(false)}>Monthly</button>
+            <button type="button" aria-pressed={yearly} onClick={() => setYearly(true)}>Yearly <small>save up to {MAX_SAVING}%</small></button>
+          </div>
+        </div>
+        <div className="s-plans s-rv s-stagger">
+          {PAID.map((p) => {
+            const price = yearly ? p.yearly : p.monthly;
+            return (
+              <article key={p.id} className="s-plan" data-rec={!!p.recommended}>
+                <header>
+                  <p className="s-plan__name">{p.name}{p.recommended && <small>Recommended</small>}</p>
+                  <p className="s-plan__promise">{p.promise}</p>
+                </header>
+                <p className="s-plan__price num">{inr(price)}<span>{yearly ? ' / year' : ' / month'}</span></p>
+                <p className="s-plan__year num">{yearly ? `${inr(Math.round(p.yearly / 12))} a month, ${yearlySaving(p)}% less than monthly` : `or ${inr(p.yearly)} a year`}</p>
+                <p className="s-plan__found num"><b>{inr(foundingPrice(price))}</b> for founding members</p>
+                <p className="s-plan__hero">{BEST_FOR[p.id]}</p>
+                <ul>{p.includes.map((i) => <li key={i}><Check weight="bold" aria-hidden="true" />{i}</li>)}</ul>
+                {p.coming?.length > 0 && <p className="s-plan__soon"><b>Coming next:</b> {p.coming.join(' · ')}</p>}
+              </article>
+            );
+          })}
+        </div>
+        <div className="s-plan-free s-rv">
+          <p><b>Starting out on your own?</b> The {FREE.name} plan covers the essentials for one person: Today, Money from your bank texts, and papers for you and 2 family profiles.</p>
+          <a className="s-link" href="#join">Get early access <ArrowRight weight="bold" aria-hidden="true" /></a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Founding({ count }) {
+  const left = count != null ? Math.max(FOUNDING.seats - count, 0) : null;
+  const full = left === 0;
+  const pro = PLANS.find((p) => p.id === 'pro');
+  const fam = PLANS.find((p) => p.id === 'family');
+  return (
+    <section className="s-sec--tight" aria-labelledby="found-h">
+      <div className="s-wrap">
+        <div className="s-offer s-rv">
+          <div className="s-offer__main">
+            <h2 id="found-h" className="s-h2">{full ? `All ${FOUNDING.seats} founding spots are taken.` : 'Founding members pay half. For life.'}</h2>
+            <p className="s-lede">{full
+              ? 'Join the list to get the beta as soon as there is room.'
+              : `The first ${FOUNDING.seats} testers keep 50% off any paid plan for as long as they stay on it. You test AIIMIN before anyone else and tell us what to fix.`}</p>
+            {!full && (
+              <dl className="s-offer__prices">
+                {[pro, fam].map((p) => (
+                  <div key={p.id}>
+                    <dt>{p.name}</dt>
+                    <dd className="num"><s>{inr(p.monthly)}</s> <b>{inr(foundingPrice(p.monthly))}</b><span> / month</span></dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+            {left != null && !full && (
+              <div className="s-offer__meter">
+                <span className="num"><b>{count.toLocaleString('en-IN')}</b> of {FOUNDING.seats} founding spots claimed</span>
+                <i style={{ '--fill': `${Math.min(count / FOUNDING.seats, 1) * 100}%` }} aria-hidden="true" />
+              </div>
+            )}
+            <div className="s-offer__form"><JoinForm button={full ? 'Get early access' : 'Claim my founding spot'} compact /></div>
+          </div>
+          <div className="s-offer__ref">
+            <h3 className="s-found__h3">Invite friends. Earn Plus and Pro.</h3>
+            <p>Each friend who joins with your link gets {REFERRAL.friendGets}, and you move up the queue.</p>
+            <ol className="s-ladder s-rv s-stagger">
+              {REFERRAL.tiers.map((t) => (
+                <li key={t.friends}><span className="s-ladder__n num">{t.friends}</span><div><b>{t.friends === 1 ? '1 friend' : `${t.friends} friends`}</b><span>{t.reward}</span></div></li>
+              ))}
+            </ol>
+            <p className="s-small">{REFERRAL.rules} We show you how many friends joined, never who.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default function WaitlistPage() {
+  const count = useCount();
+  const [line, setLine] = useState(0);
+  const [out, setOut] = useState(false);
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+    const t = setInterval(() => {
+      setOut(true);
+      setTimeout(() => { setLine((l) => (l + 1) % LINES.length); setOut(false); }, 350);
+    }, 3600);
+    return () => clearInterval(t);
+  }, []);
+
+  return (
+    <Shell>
+      <Meta
+        title="AIIMIN · Know what's next"
+        description="One calm Android app for your day, your spending and your family's papers. Bank texts help fill in expenses; your documents stay on your phone. Founding members pay half, for life."
+        path="/waitlist"
+      />
+
+      <section className="s-hero">
+        <div className="s-wrap s-hero__grid">
+          <div className="s-hero__copy">
+            <h1>Know what's<br />next<span className="s-dot">.</span></h1>
+            <p className="s-hero__sub">Your day, your money and your family's papers in one calm Android app. Your bank texts become a clear month, read and kept on your phone.</p>
+          </div>
+          <div className="s-hero__actions">
+            <JoinForm id="join" button="Get early access" />
+            <div className="s-hero__beta">
+              <span><Check weight="bold" /> First {FOUNDING.seats} members pay half, for life</span>
+              <span><Check weight="bold" /> Android 8 and up</span>
+              {count && <span className="num"><Check weight="bold" /> {count.toLocaleString('en-IN')} people waiting</span>}
+            </div>
+          </div>
+          <HeroDay />
+        </div>
+      </section>
+
+      <section className="s-sec" aria-labelledby="day-h">
+        <div className="s-wrap">
+          <div className="s-head2 s-rv">
+            <h2 id="day-h" className="s-h2">One app for the three things that pile up.</h2>
+            <p className="s-lede">AIIMIN brings the next thing that matters into view, then leaves room for the rest of your day.</p>
+          </div>
+          <div className="s-moment-gallery-wrap">
+            <p className="s-gallery-hint">Swipe to see 3 sample screens</p>
+            <div className="s-moment-gallery" aria-label="Sample app screens">
+              {MOMENTS.map((m) => (
+                <div key={m.time} className="s-moment-gallery__item">
+                  <Phone src={m.screen} alt={m.alt} caption={m.time} />
+                </div>
+              ))}
+            </div>
+          </div>
+          <Story />
+        </div>
+      </section>
+
+      <section className="s-sec--tight" aria-labelledby="trust-h">
+        <div className="s-wrap">
+          <div className="s-ink s-rv">
+            <span className="s-ink__sun" aria-hidden="true" />
+            <h2 id="trust-h" className="s-h2">What's yours stays on your phone.</h2>
+            <p className="s-lede">This is how the app works today, not a promise for later. The <Link to="/privacy" style={{ color: '#fff' }}>privacy policy</Link> says the same in full.</p>
+            <div className="s-promises s-rv s-stagger">
+              {PROMISES.map(([I, b, t]) => (
+                <div key={b} className="s-promise"><I aria-hidden="true" /><div><b>{b}</b><span>{t}</span></div></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <WebCompanion />
+
+      <section className="s-sec" aria-labelledby="raahi-h">
+        <div className="s-wrap s-raahi">
+          <div className="s-raahi__art s-rv">
+            <img src={raahi('scene_sitting_sunset')} alt="Raahi sitting on a hill, watching the sun set" width="640" height="579" loading="lazy" />
+            <p className="s-bubble" data-out={out} aria-live="polite">{LINES[line][1]}</p>
+          </div>
+          <div className="s-rv">
+            <h2 id="raahi-h" className="s-h2">Meet Raahi.</h2>
+            <p className="s-lede">Raahi means traveller. It walks your day beside the clock, says one short line when you open the app, and rests when you do. No sad faces, no guilt, no streaks to lose.</p>
+            <ul className="s-lines s-rv s-stagger">
+              {LINES.map(([w, l]) => <li key={w}><em>{w}</em><b>"{l}"</b></li>)}
+            </ul>
+            <p className="s-ai"><b>Plainly:</b> Raahi is also the name on the app's AI. Anything it writes for you is marked "Written by Raahi, an AI. Check the numbers."</p>
+            <p style={{ marginTop: 24 }}><Link className="s-btn s-btn--ghost" to="/brand">More about Raahi <ArrowRight weight="bold" /></Link></p>
+          </div>
+        </div>
+      </section>
+
+      <Plans />
+
+      <Founding count={count} />
+
+      <section className="s-sec--tight" aria-labelledby="faq-h">
+        <div className="s-wrap s-faq-wrap">
+          <div className="s-faq-wrap__head s-rv">
+            <h2 id="faq-h" className="s-h2">Questions, answered.</h2>
+            <p className="s-lede">Something else? Write to <a href="mailto:support@aiimin.in">support@aiimin.in</a>.</p>
+          </div>
+          <div className="s-faq">
+            {FAQ.map(([q, a]) => (
+              <details key={q}><summary>{q}<Plus aria-hidden="true" /></summary><div>{a}</div></details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="s-sec">
+        <div className="s-wrap">
+          <div className="s-cta s-rv">
+            <div>
+              <h2 className="s-h2">Start small. Keep going.</h2>
+              <p>Join with just your email. The first {FOUNDING.seats} keep half price for life.</p>
+            </div>
+            <JoinForm button="Get early access" compact />
+          </div>
+        </div>
+      </section>
+    </Shell>
+  );
+}

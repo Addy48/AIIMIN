@@ -1,5 +1,7 @@
 package aiimin.feature.vault
 
+import androidx.compose.foundation.lazy.itemsIndexed
+import aiimin.designsystem.component.enterStagger
 import aiimin.designsystem.component.RootActions
 import aiimin.designsystem.component.DocThumb
 import aiimin.designsystem.component.ExpiryVial
@@ -104,6 +106,8 @@ internal fun categoryIcon(cat: String): ImageVector = when (cat) {
     else -> AppIcons.Package
 }
 
+private const val ALL_OWNERS = "__all_owners__"
+
 internal fun kindIcon(ext: String, mime: String): ImageVector = when (kindOf(ext, mime)) {
     DocKind.PDF -> AppIcons.FilePdf
     DocKind.DOCX -> AppIcons.FileDoc
@@ -118,8 +122,9 @@ internal fun ExpiryTag(days: Long?) {
     val c = Aiimin.colors
     if (days == null) return
     when {
-        days < 0 -> Tag("Expired", color = c.danger, background = c.dangerSoft)
-        days == 0L -> Tag("Expires today", color = c.danger, background = c.dangerSoft)
+        // Lapsed and today use the warn colour: the brand has no red.
+        days < 0 -> Tag("Lapsed", color = c.warn, background = c.warnSoft)
+        days == 0L -> Tag("Ends today", color = c.warn, background = c.warnSoft)
         days <= 30 -> Tag("$days days", color = c.warn, background = c.warnSoft)
         days <= 90 -> Tag("$days days", color = c.textMuted)
         else -> Unit
@@ -136,7 +141,7 @@ fun VaultScreen(vm: VaultViewModel = hiltViewModel()) {
     val busy by vm.busy.collectAsStateWithLifecycle()
     val last by vm.lastImport.collectAsStateWithLifecycle()
     var cat by remember { mutableStateOf<String?>(null) }
-    var owner by remember { mutableStateOf(ME) }
+    var owner by remember { mutableStateOf(ALL_OWNERS) }
     var query by remember { mutableStateOf("") }
     var adding by remember { mutableStateOf(false) }
     val toaster = LocalToaster.current
@@ -146,6 +151,7 @@ fun VaultScreen(vm: VaultViewModel = hiltViewModel()) {
         LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 32.dp)) {
             item {
                 LargeHeader("Vault") {
+                    aiimin.designsystem.component.RaahiGuideButton(aiimin.designsystem.component.RaahiArea.VAULT)
                     RootActions(0)
                     AppIconButton(AppIcons.Plus, "Add document", { adding = true })
                 }
@@ -157,22 +163,30 @@ fun VaultScreen(vm: VaultViewModel = hiltViewModel()) {
                     ) { Text("Previewing as ${people.firstOrNull { it.id == viewer }?.name ?: "someone"}. This is exactly what they could see. Tap to return.", style = Aiimin.type.label) }
                 }
             }
-            // person chips: Emergency first, then each vault; wrapping, never scrolling
+            // Owner chips wrap naturally at every screen width.
             item {
                 FlowRow(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 2.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    PersonChip("Emergency", selected = false, emergency = true) { nav.open(Route.EmergencyCard(ME)) }
+                    PersonChip("Everyone", owner == ALL_OWNERS) { owner = ALL_OWNERS; cat = null }
                     people.forEach { p -> PersonChip(if (p.id == ME) "Me" else p.name, owner == p.id, onLong = { nav.open(Route.Person(p.id)) }) { owner = p.id; cat = null } }
                     PersonChip("Household", owner == HOUSEHOLD) { owner = HOUSEHOLD; cat = null }
                     PersonChip("Person", false, dashed = true, icon = AppIcons.Plus) { nav.open(Route.Family) }
                 }
             }
             item {
-                Box(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 14.dp)) {
-                    Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).clip(Shapes.control).background(c.raised).padding(horizontal = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+                ListRow(
+                    "Emergency card", subtitle = "Ready when a family member needs help",
+                    modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 8.dp),
+                    leading = { IconTile(AppIcons.FirstAid) }, trailing = { aiimin.designsystem.component.Chevron() },
+                    onClick = { nav.open(Route.EmergencyCard(ME)) },
+                )
+            }
+            item {
+                Box(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 16.dp)) {
+                    Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).clip(Shapes.control).background(c.raised).padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
                         Icon(AppIcons.Search, null, tint = c.textFaint, modifier = Modifier.size(20.dp))
-                        Spacer(Modifier.width(10.dp))
+                        Spacer(Modifier.width(12.dp))
                         androidx.compose.foundation.layout.Box(Modifier.weight(1f)) {
-                            if (query.isEmpty()) Text("Find by name, or the last 4 digits", style = Aiimin.type.body.copy(color = c.textFaint))
+                            if (query.isEmpty()) Text("Find by name, or the last 4 digits", style = Aiimin.type.body.copy(color = c.textFaint), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, modifier = Modifier.padding(start = 4.dp))
                             androidx.compose.foundation.text.BasicTextField(query, { query = it }, singleLine = true, textStyle = Aiimin.type.body, cursorBrush = androidx.compose.ui.graphics.SolidColor(c.text), modifier = Modifier.fillMaxWidth())
                         }
                     }
@@ -183,14 +197,14 @@ fun VaultScreen(vm: VaultViewModel = hiltViewModel()) {
                 item { Skeleton(Modifier.padding(Aiimin.space.gutter).fillMaxWidth().height(200.dp)) }
                 return@LazyColumn
             }
-            val mine = all.filter { it.doc.owner == owner }
+            val mine = all.filter { owner == ALL_OWNERS || it.doc.owner == owner }
             val q = query.trim().lowercase()
             val shown = mine.filter { (cat == null || it.doc.category == cat) && (q.isEmpty() || it.doc.title.lowercase().contains(q) || (it.doc.number ?: "").lowercase().contains(q) || (it.doc.number ?: "").takeLast(4) == q) }
-            val expiring = all.filter { (it.daysToExpiry ?: 9999) in -30..90 }.sortedBy { it.daysToExpiry }.take(3)
+            val expiring = all.filter { (owner == ALL_OWNERS || it.doc.owner == owner) && (it.daysToExpiry ?: 9999) in -30..90 }.sortedBy { it.daysToExpiry }.take(3)
             if (q.isEmpty() && expiring.isNotEmpty()) {
                 item {
                     Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
-                        SectionHeader("Expiring soon", action = "See all", onAction = { nav.open(Route.Family) })
+                        SectionHeader("Needs attention")
                         expiring.forEach { d ->
                             Row(Modifier.fillMaxWidth().pressable({ nav.open(Route.Doc(d.doc.id)) }).heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
                                 Column(Modifier.weight(1f)) {
@@ -198,7 +212,7 @@ fun VaultScreen(vm: VaultViewModel = hiltViewModel()) {
                                     Text(d.ownerName, style = Aiimin.type.caption)
                                 }
                                 val n = d.daysToExpiry ?: 0
-                                Text(if (n < 0) "expired" else "expires in $n days", style = Aiimin.type.label.copy(color = if (n <= 30) c.accentText else c.textMuted, fontWeight = if (n <= 30) FontWeight.SemiBold else FontWeight.Normal, fontSize = 13.5.sp))
+                                Text(if (n < 0) "lapsed" else "ends in $n days", style = Aiimin.type.label.copy(color = if (n <= 30) c.warn else c.textMuted, fontWeight = if (n <= 30) FontWeight.SemiBold else FontWeight.Normal))
                             }
                             Hairline()
                         }
@@ -210,18 +224,24 @@ fun VaultScreen(vm: VaultViewModel = hiltViewModel()) {
                 item {
                     Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
                         SectionHeader("Ready packs")
-                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) { packs.forEach { p -> PackCard(p, Modifier.weight(1f)) { adding = true } }; if (packs.size == 1) Spacer(Modifier.weight(1f)) }
+                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) { packs.forEach { p -> PackCard(p, Modifier.weight(1f)) { adding = true } }; if (packs.size == 1) Spacer(Modifier.weight(1f)) }
                     }
                 }
             }
             item {
-                Column(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 18.dp)) {
+                Column(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 20.dp)) {
                     // Filter chips only once there is something to filter ("All 0" said nothing).
                     if (mine.isNotEmpty()) FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Pill("All ${mine.size}", cat == null, { cat = null })
                         DOC_CATEGORIES.filter { k -> mine.any { it.doc.category == k } }.forEach { k -> Pill("$k ${mine.count { it.doc.category == k }}", cat == k, { cat = k }) }
                     }
-                    SectionHeader((if (owner == ME) "My" else if (owner == HOUSEHOLD) "Household" else (people.firstOrNull { it.id == owner }?.name ?: "") + "'s") + " · " + (if (q.isEmpty()) "recently opened" else "results"))
+                    val ownerName = when (owner) {
+                        ALL_OWNERS -> "Everyone"
+                        ME -> "My"
+                        HOUSEHOLD -> "Household"
+                        else -> (people.firstOrNull { it.id == owner }?.name ?: "Person") + "'s"
+                    }
+                    SectionHeader("$ownerName · " + (if (q.isEmpty()) "recently opened" else "results"))
                 }
             }
             if (shown.isEmpty()) {
@@ -234,25 +254,30 @@ fun VaultScreen(vm: VaultViewModel = hiltViewModel()) {
                     )
                 }
             }
-            items(shown.sortedByDescending { it.doc.createdAt }, key = { it.doc.id }) { d ->
-                DocRow(d) { nav.open(Route.Doc(d.doc.id)) }
-                Hairline(Modifier.padding(start = Aiimin.space.gutter + 54.dp, end = Aiimin.space.gutter))
+            itemsIndexed(shown.sortedByDescending { it.doc.createdAt }, key = { _, it -> it.doc.id }) { i, d ->
+                Column(Modifier.enterStagger(i)) {
+                    DocRow(d) { nav.open(Route.Doc(d.doc.id)) }
+                    Hairline(Modifier.padding(start = Aiimin.space.gutter + 56.dp, end = Aiimin.space.gutter))
+                }
             }
             item {
                 // The empty state already promises files stay on the phone; the count line is for a vault with papers.
                 if (all.isNotEmpty()) Text(
                     "${all.size} ${if (all.size == 1) "document" else "documents"} · ${"%.1f".format(all.sumOf { it.doc.sizeBytes } / 1_048_576.0)} MB on this phone. Files stay on this phone; AIIMIN never uploads them.",
-                    style = Aiimin.type.caption.copy(fontSize = 12.sp), modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 16.dp),
+                    style = Aiimin.type.caption, modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 16.dp),
                 )
+                val backupLine = remember(all.size) { vm.backupLine() }
+                if (all.isNotEmpty()) backupLine?.let {
+                    Text(it, style = Aiimin.type.caption.copy(color = if (it.startsWith("This week")) c.warn else c.textMuted), modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 4.dp).clickable { nav.open(Route.VaultBackup) })
+                }
                 // Everything else the vault does, as a quiet 2-column grid instead of a row of orange links.
                 aiimin.designsystem.component.ToolGrid(
                     "Vault tools",
                     listOf(
-                        aiimin.designsystem.component.Tool(AppIcons.Users, "Family") { nav.open(Route.Family) },
-                        aiimin.designsystem.component.Tool(AppIcons.FirstAid, "Emergency card") { nav.open(Route.EmergencyCard(ME)) },
-                        aiimin.designsystem.component.Tool(AppIcons.CloudArrowUp, "Backups") { nav.open(Route.VaultBackup) },
-                        aiimin.designsystem.component.Tool(AppIcons.FirstAidKit, "Emergency kits") { nav.open(Route.EmergencyKits) },
-                        aiimin.designsystem.component.Tool(AppIcons.Eye, "Who saw what") { nav.open(Route.Activity) },
+                        aiimin.designsystem.component.Tool(AppIcons.Users, "Family", opens = Route.Family) { nav.open(Route.Family) },
+                        aiimin.designsystem.component.Tool(AppIcons.CloudArrowUp, "Backups", opens = Route.VaultBackup) { nav.open(Route.VaultBackup) },
+                        aiimin.designsystem.component.Tool(AppIcons.FirstAidKit, "Emergency kits", opens = Route.EmergencyKits) { nav.open(Route.EmergencyKits) },
+                        aiimin.designsystem.component.Tool(AppIcons.Eye, "Who saw what", opens = Route.Activity) { nav.open(Route.Activity) },
                     ),
                     Modifier.padding(horizontal = Aiimin.space.gutter),
                 )
@@ -261,7 +286,7 @@ fun VaultScreen(vm: VaultViewModel = hiltViewModel()) {
         }
         if (busy) {
             Box(Modifier.align(Alignment.BottomCenter).padding(bottom = 100.dp).clip(Shapes.control).background(c.text).padding(horizontal = 16.dp, vertical = 12.dp)) {
-                Text("Reading your document…", style = Aiimin.type.label.copy(color = if (c.isDark) c.base else androidx.compose.ui.graphics.Color.White))
+                Text("Reading your document…", style = Aiimin.type.label.copy(color = c.onInk))
             }
         }
     }
@@ -276,32 +301,38 @@ fun VaultScreen(vm: VaultViewModel = hiltViewModel()) {
         var pick by remember { mutableStateOf(false) }
         var category by remember(r.docId) { mutableStateOf(r.category) }
         var title by remember(r.docId) { mutableStateOf("") }
+        var join by remember(r.docId) { mutableStateOf(defaultChoice(r)) }
         LaunchedEffect(r.docId) { title = vm.doc(r.docId)?.title.orEmpty() }
         val scope = rememberCoroutineScope()
         suspend fun commit() {
             vm.doc(r.docId)?.let { d -> vm.saveDoc(d.copy(category = category, title = title.trim().ifBlank { d.title })) }
-            vm.setExpiry(r.docId, expires, task)
+            vm.saveVersion(r.docId, join, expires, task)
             vm.clearImport()
         }
         AppSheet({ scope.launch { commit() } }, title = "Saved to the vault", subtitle = r.duplicateOf?.let { "This file is already in the vault as “${it.title}”." }) {
             AppTextField(title, { title = it }, label = "Title")
             if (r.duplicateOf != null) {
-                Row(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     AppButton("Open the old one", { scope.launch { vm.removeCopy(r.docId); vm.clearImport(); nav.open(Route.Doc(r.duplicateOf!!.id)) } }, compact = true, kind = ButtonKind.SECONDARY)
                     AppButton("Remove this copy", { scope.launch { vm.removeCopy(r.docId); vm.clearImport(); toaster.show("Copy removed") } }, compact = true, kind = ButtonKind.GHOST)
                 }
             }
-            SectionHeader("Category")
+            if (r.duplicateOf == null) VersionPrompt(r, join) { join = it }
+            SectionHeader(r.typeName?.let { "Category · looks like a $it" } ?: "Category")
             PillRow { DOC_CATEGORIES.forEach { k -> Pill(k, category == k, { category = k }) } }
             r.number?.let { ListRow("Number found", subtitle = it, leading = { IconTile(AppIcons.Barcode) }) }
             ListRow(
-                "Expires", subtitle = expires?.let { "${Dates.long(it)} — found in the document" } ?: "No date found. Add one for reminders.",
+                "Expires", subtitle = expires?.let { "${Dates.longYear(it)} · found in the document" } ?: "No date found. Add one for reminders.",
                 leading = { IconTile(AppIcons.Hourglass) }, onClick = { pick = true },
             )
+            if (expires == null) r.suggestedEnd?.let { s ->
+                // The registry's length is only a suggestion; a date read from the paper always wins.
+                ListRow("Usually ends ${Dates.longYear(s)}", subtitle = "Check your document. Tap to use this date", leading = { IconTile(AppIcons.CalendarCheck) }, onClick = { expires = s })
+            }
             if (expires != null) SwitchRow("Add a renewal task", task, { task = it }, subtitle = "Two weeks before, with reminders at 90/60/30/7 days")
-            Text("Stored only on this phone. Documents you store are your responsibility; keep the originals.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp))
+            Text("Stored only on this phone. Documents you store are your responsibility; keep the originals.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp))
             Spacer(Modifier.height(12.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 AppButton("Open", { scope.launch { commit(); nav.open(Route.Doc(r.docId)) } }, Modifier.weight(1f), kind = ButtonKind.SECONDARY)
                 AppButton("Done", { scope.launch { commit(); toaster.show(if (expires != null) "Saved · reminders set" else "Saved") } }, Modifier.weight(1f))
             }
@@ -317,8 +348,8 @@ private fun DocRow(d: DocView, onClick: () -> Unit) {
     val left = days?.let { (it / 365f).coerceIn(0f, 1f) }
     Row(Modifier.fillMaxWidth().pressable(onClick).padding(horizontal = Aiimin.space.gutter).heightIn(min = 76.dp), verticalAlignment = Alignment.CenterVertically) {
         DocThumb(locked = d.doc.sensitive)
-        Spacer(Modifier.width(14.dp))
-        Column(Modifier.weight(1f).padding(vertical = 10.dp)) {
+        Spacer(Modifier.width(16.dp))
+        Column(Modifier.weight(1f).padding(vertical = 12.dp)) {
             Text(d.doc.title, style = Aiimin.type.bodyStrong, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
             Text(
                 listOfNotNull(d.ownerName, d.doc.category, d.doc.number?.let { n -> if (d.doc.sensitive) null else n.takeLast(4).let { "••••$it" } }, if (d.access is Access.Granted && (d.access as Access.Granted).why != Access.Why.OWN_ITEM) "Shared with you" else null).joinToString(" · "),
@@ -326,11 +357,11 @@ private fun DocRow(d: DocView, onClick: () -> Unit) {
             )
             val line = when {
                 days == null -> "No expiry"
-                days < 0 -> "Expired ${-days} days ago"
+                days < 0 -> "Lapsed ${-days} days ago"
                 days <= 120 -> "Expires ${d.doc.expires?.let { Dates.short(LocalDate.parse(it)) }} · $days days"
                 else -> "Valid to ${d.doc.expires?.let { Dates.short(LocalDate.parse(it)) }}"
             }
-            Text(line, style = Aiimin.type.caption.copy(color = if (days != null && days <= 36) c.accentText else c.textMuted, fontWeight = if (days != null && days <= 36) androidx.compose.ui.text.font.FontWeight.SemiBold else androidx.compose.ui.text.font.FontWeight.Normal))
+            Text(line, style = Aiimin.type.caption.copy(color = if (days != null && days <= 36) c.warn else c.textMuted, fontWeight = if (days != null && days <= 36) androidx.compose.ui.text.font.FontWeight.SemiBold else androidx.compose.ui.text.font.FontWeight.Normal))
         }
         ExpiryVial(left)
     }
@@ -339,9 +370,9 @@ private fun DocRow(d: DocView, onClick: () -> Unit) {
 @Composable
 private fun PersonChip(text: String, selected: Boolean, emergency: Boolean = false, dashed: Boolean = false, icon: androidx.compose.ui.graphics.vector.ImageVector? = null, onLong: (() -> Unit)? = null, onClick: () -> Unit) {
     val c = Aiimin.colors
-    val onInk = if (c.isDark) c.base else androidx.compose.ui.graphics.Color.White
+    val onInk = c.onInk
     val shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
-    val emColor = androidx.compose.ui.graphics.Color(0xFFB4462A)
+    val emColor = c.danger
     val fg = when { emergency -> c.warn; selected -> onInk; dashed -> c.textMuted; else -> c.text }
     @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
     Row(
@@ -351,11 +382,11 @@ private fun PersonChip(text: String, selected: Boolean, emergency: Boolean = fal
                 if (!selected) Modifier.border(if (emergency) 1.5.dp else 1.dp, if (emergency) emColor else c.borderStrong, shape) else Modifier,
             )
             .combinedClickable(onClick = onClick, onLongClick = onLong)
-            .heightIn(min = 40.dp).padding(horizontal = 14.dp),
-        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp),
+            .heightIn(min = 40.dp).padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        if (emergency) Icon(AppIcons.Heartbeat, null, tint = fg, modifier = Modifier.size(17.dp)) else if (icon != null) Icon(icon, null, tint = fg, modifier = Modifier.size(15.dp))
-        Text(text, style = Aiimin.type.label.copy(color = fg, fontSize = 14.5.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Medium))
+        if (emergency) Icon(AppIcons.Heartbeat, null, tint = fg, modifier = Modifier.size(16.dp)) else if (icon != null) Icon(icon, null, tint = fg, modifier = Modifier.size(16.dp))
+        Text(text, style = Aiimin.type.labelLarge.copy(color = fg, fontWeight = androidx.compose.ui.text.font.FontWeight.Medium))
     }
 }
 
@@ -375,14 +406,14 @@ private fun readyPacks(mine: List<DocView>): List<Pack> {
 private fun PackCard(p: Pack, modifier: Modifier, onClick: () -> Unit) {
     val c = Aiimin.colors
     val shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp)
-    Column(modifier.clip(shape).background(c.surface).border(1.dp, c.border, shape).pressable(onClick).padding(14.dp)) {
-        Text(p.title, style = Aiimin.type.headline.copy(fontSize = 16.sp, lineHeight = 20.sp), minLines = 2)
+    Column(modifier.clip(shape).background(c.surface).border(1.dp, c.border, shape).pressable(onClick).padding(16.dp)) {
+        Text(p.title, style = Aiimin.type.headline, minLines = 2)
         Spacer(Modifier.height(12.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-            repeat(p.total) { i -> Box(Modifier.weight(1f).height(5.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(2.dp)).background(if (i < p.have) c.text else c.borderStrong)) }
+        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            repeat(p.total) { i -> Box(Modifier.weight(1f).height(4.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(2.dp)).background(if (i < p.have) c.text else c.borderStrong)) }
         }
-        Spacer(Modifier.height(10.dp))
-        Text("${p.have} of ${p.total} ready" + (p.missing?.let { " · $it" } ?: ""), style = Aiimin.type.caption.copy(color = if (p.missing != null) c.accentText else c.done, fontWeight = androidx.compose.ui.text.font.FontWeight.Medium, fontSize = 12.sp))
+        Spacer(Modifier.height(12.dp))
+        Text("${p.have} of ${p.total} ready" + (p.missing?.let { " · $it" } ?: ""), style = Aiimin.type.caption.copy(color = if (p.missing != null) c.warn else c.done, fontWeight = androidx.compose.ui.text.font.FontWeight.Medium))
     }
 }
 

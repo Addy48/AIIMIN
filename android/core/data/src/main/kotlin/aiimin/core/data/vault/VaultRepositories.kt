@@ -15,6 +15,11 @@ import aiimin.core.database.FamilyDao
 import aiimin.core.database.PersonEntity
 import aiimin.core.database.VaultDao
 import aiimin.core.engine.Tier
+import aiimin.core.engine.vault.CoverDoc
+import aiimin.core.engine.vault.Covers
+import aiimin.core.engine.vault.Lifecycle
+import aiimin.core.engine.vault.Registry
+import aiimin.core.engine.vault.Renewal
 import aiimin.core.nlp.DocumentFields
 import aiimin.core.privacy.Access
 import aiimin.core.privacy.AccessLevel
@@ -57,7 +62,32 @@ data class DocView(val doc: DocEntity, val access: Access, val ownerName: String
     val daysToExpiry: Long? get() = doc.expires?.let { ChronoUnit.DAYS.between(LocalDate.now(), LocalDate.parse(it)) }
 }
 
-data class ImportResult(val docId: String, val duplicateOf: DocEntity?, val category: String, val expires: LocalDate?, val number: String?)
+/**
+ * What a save found. [covers] are current versions of covers this document may renew ("Is this a new version of ...?"),
+ * each with what joining would mean (normal, a gap, or a long overlap that asks "Keep both active?").
+ */
+data class ImportResult(
+    val docId: String,
+    val duplicateOf: DocEntity?,
+    val category: String,
+    val expires: LocalDate?,
+    val number: String?,
+    val typeName: String? = null,
+    val covers: List<Pair<DocEntity, Renewal>> = emptyList(),
+    /** The registry's usual end, shown as a suggestion when no expiry could be read. */
+    val suggestedEnd: LocalDate? = null,
+)
+
+private fun String?.day(): LocalDate? = this?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+
+/** The rules' view of a saved document. */
+fun DocEntity.coverDoc() = CoverDoc(id, cover, docType, subject, startsOn.day(), expires.day(), version, current)
+
+/** The lifecycle in force: the person's choice, else the registry's. */
+fun DocEntity.life(): Lifecycle? = lifecycle?.let { runCatching { Lifecycle.valueOf(it) }.getOrNull() } ?: Registry.byKey(docType)?.lifecycle
+
+/** Only a cover's current version reminds, and an issued-once document (PAN, Aadhaar) never does. */
+fun remindable(docs: List<DocEntity>): List<DocEntity> = docs.filter { !it.deleted && it.current && it.expires != null && it.life() != Lifecycle.A }
 
 @Singleton
 class FamilyRepository @Inject constructor(
@@ -228,17 +258,150 @@ class VaultRepository @Inject constructor(
         }
         val pages = if (kind == DocKind.PDF) extractor.pageCount(src) else 1
         src.delete()
+        val type = Registry.detect(title, text)
+        val subject = Covers.subjectOf(type, owner, fields.vehicle)
+        val starts = Covers.startOf(type, fields.starts, fields.expires)
+        val covers = matches(id, owner, type?.key, subject, starts)
         dao.upsert(
             DocEntity(
                 id = id, owner = owner, sha256 = hash, title = title.trim().take(120), category = category, mime = mime, ext = ext,
                 sizeBytes = if (size > 0) size else bytes.size.toLong(), path = dest.name, encrypted = sensitive, sensitive = sensitive,
                 text = if (sensitive) "" else text, expires = fields.expires?.toString(), number = fields.number, vehicle = fields.vehicle,
                 pages = pages, createdAt = System.currentTimeMillis(),
+                docType = type?.key, subject = subject, startsOn = starts?.toString(), provider = fields.provider,
             ),
         )
-        log.log("doc.add", "doc", id, mapOf("owner" to owner, "kind" to kind.name, "sensitive" to sensitive), Tier.A)
-        ImportResult(id, dup, category, fields.expires, fields.number)
+        log.log("doc.add", "doc", id, mapOf("owner" to owner, "kind" to kind.name, "sensitive" to sensitive, "type" to type?.key), Tier.A)
+        ImportResult(id, dup, category, Covers.expiryFor(type, fields.expires, starts), fields.number, type?.name, covers, if (fields.expires == null) Covers.suggestedEnd(type, starts) else null)
     }
+
+    /**
+     * "Is this a new version of ...?" Yes: the document joins [coverId] as its next version and becomes the only
+     * current one, so reminders move to it. Keeping both active leaves two covers (rule 2), so nothing is called here.
+     */
+    suspend fun joinCover(docId: String, coverId: String) {
+        val d = dao.get(docId) ?: return
+        val versions = dao.cover(coverId).filter { it.id != docId }
+        if (versions.isEmpty()) return
+        versions.filter { it.current }.forEach { old ->
+            dao.upsert(old.copy(current = false))
+            calendar.forDoc(old.id).forEach { calendar.delete(it.id) }
+            // The old "Renew ..." task is done: the renewal is here.
+            tasks.search("Renew ${old.title}").filter { !it.done && it.title == "Renew ${old.title}" }.forEach { tasks.toggle(it.id) }
+        }
+        dao.upsert(d.copy(coverId = coverId, version = Covers.nextVersion(versions.map { it.coverDoc() }), current = true))
+        log.log("doc.version", "doc", docId, mapOf("cover" to coverId), Tier.A)
+    }
+
+    fun observeCover(coverId: String) = dao.observeCover(coverId)
+
+    @Volatile private var backfilled = false
+
+    /**
+     * Documents saved before covers have no type or subject. Read them once from what was already found in each
+     * (title, text, vehicle, expiry), so an older policy can be offered as the cover a new one renews.
+     */
+    suspend fun backfillCovers() {
+        if (backfilled) return
+        dao.allNow().filter { it.docType == null && it.coverId == null }.forEach { d ->
+            val type = Registry.detect(d.title, d.text) ?: return@forEach
+            val f = DocumentFields.extract(d.text)
+            dao.upsert(
+                d.copy(
+                    docType = type.key, subject = Covers.subjectOf(type, d.owner, d.vehicle ?: f.vehicle),
+                    startsOn = Covers.startOf(type, f.starts, d.expires.day() ?: f.expires)?.toString(), provider = f.provider,
+                    expires = d.expires ?: f.expires?.toString(),
+                ),
+            )
+        }
+        backfilled = true
+    }
+
+    private suspend fun matches(id: String, owner: String, type: String?, subject: String?, starts: LocalDate?, before: Long = Long.MAX_VALUE): List<Pair<DocEntity, Renewal>> {
+        backfillCovers()
+        val others = dao.allNow().filter { it.id != id && it.owner == owner && it.createdAt < before }
+        return Covers.match(Registry.byKey(type), subject, others.map { it.coverDoc() }).mapNotNull { m ->
+            others.firstOrNull { it.id == m.id }?.let { it to Covers.renewal(m.ends, starts) }
+        }
+    }
+
+    /**
+     * Covers an unanswered document may renew (a file shared in from another app lands here without the save sheet).
+     * Only older documents count, and a document answered "No, separate" ([keepSeparate]) is never asked again.
+     */
+    suspend fun candidates(docId: String): List<Pair<DocEntity, Renewal>> {
+        val d = dao.get(docId) ?: return emptyList()
+        if (d.coverId != null || d.deleted) return emptyList()
+        return matches(d.id, d.owner, d.docType, d.subject, d.startsOn.day(), before = d.createdAt)
+    }
+
+    /** "No, separate": the document is its own cover, on purpose (coverId set to itself). */
+    suspend fun keepSeparate(docId: String) {
+        val d = dao.get(docId) ?: return
+        if (d.coverId == null) dao.upsert(d.copy(coverId = d.id))
+    }
+
+    /** Lifecycle A-E for this document; null goes back to the registry's choice (rule 9). */
+    suspend fun setLifecycle(docId: String, life: Lifecycle?) {
+        val d = dao.get(docId) ?: return
+        dao.upsert(d.copy(lifecycle = life?.name))
+        if (life == Lifecycle.A) calendar.forDoc(docId).forEach { calendar.delete(it.id) }
+        log.log("doc.lifecycle", "doc", docId, mapOf("life" to life?.name))
+    }
+    suspend fun coverNow(coverId: String) = dao.cover(coverId)
+
+    /** Rescanning a blurry copy replaces the file inside the same version (rule 5); dates read again only fill blanks. */
+    suspend fun replaceFile(docId: String, uri: Uri) = withContext(Dispatchers.IO) {
+        val d = dao.get(docId) ?: return@withContext
+        val cr = context.contentResolver
+        val tmp = File(context.cacheDir, "rescan-$docId")
+        cr.openInputStream(uri)?.use { input -> tmp.outputStream().use { input.copyTo(it) } } ?: error("Can't read that file")
+        val mime = cr.getType(uri) ?: d.mime
+        val ext = MimeTypeMap.getSingleton().getExtensionFromMimeType(mime) ?: d.ext
+        val bytes = tmp.readBytes()
+        val kind = kindOf(ext, mime)
+        val text = extractor.extract(tmp, kind)
+        val fields = DocumentFields.extract(text)
+        val dest = File(dir, "$docId-r${System.currentTimeMillis()}.$ext${if (d.encrypted) ".enc" else ""}")
+        if (d.encrypted) {
+            val (cipher, iv) = crypto.encrypt(bytes, Crypto.VAULT)
+            dest.outputStream().use { it.write(iv); it.write(cipher) }
+        } else {
+            tmp.copyTo(dest, overwrite = true)
+        }
+        val pages = if (kind == DocKind.PDF) extractor.pageCount(tmp) else 1
+        tmp.delete()
+        File(dir, d.path).takeIf { it.name != dest.name }?.delete()
+        dao.upsert(
+            d.copy(
+                path = dest.name, mime = mime, ext = ext, sizeBytes = bytes.size.toLong(), pages = pages,
+                sha256 = MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) },
+                text = if (d.sensitive) "" else text, number = d.number ?: fields.number, expires = d.expires ?: fields.expires?.toString(),
+                startsOn = d.startsOn ?: fields.starts?.toString(), provider = d.provider ?: fields.provider,
+            ),
+        )
+        log.log("doc.rescan", "doc", docId, tier = Tier.A)
+    }
+
+    /** Deleting a version keeps the cover; if it was current, the newest one left takes over (rule 8). */
+    suspend fun deleteVersion(id: String): DocEntity? {
+        val d = dao.get(id) ?: return null
+        val rest = dao.cover(d.cover).filter { it.id != id }
+        dao.upsert(d.copy(deleted = true))
+        if (d.current && rest.none { it.current }) rest.maxByOrNull { it.version }?.let { dao.upsert(it.copy(current = true)) }
+        log.log("doc.delete", "doc", id, mapOf("version" to d.version))
+        return d
+    }
+
+    /** Deleting a whole cover, asked first in the UI. Returns what was removed so it can be undone. */
+    suspend fun deleteCover(coverId: String): List<DocEntity> {
+        val all = dao.cover(coverId)
+        all.forEach { dao.upsert(it.copy(deleted = true)) }
+        log.log("doc.delete_cover", "doc", coverId, mapOf("versions" to all.size))
+        return all
+    }
+
+    suspend fun restoreAll(docs: List<DocEntity>) = docs.forEach { dao.upsert(it.copy(deleted = false)) }
 
     /** A readable copy for the viewer / share sheet. Sensitive files decrypt to cache. */
     suspend fun fileFor(doc: DocEntity, action: String = "view"): File = withContext(Dispatchers.IO) {
@@ -269,7 +432,11 @@ class VaultRepository @Inject constructor(
         return d
     }
 
-    suspend fun restore(d: DocEntity) = dao.upsert(d.copy(deleted = false))
+    suspend fun restore(d: DocEntity) {
+        // Undoing the delete of a current version makes it current again, alone.
+        if (d.current) dao.cover(d.cover).filter { it.id != d.id && it.current }.forEach { dao.upsert(it.copy(current = false)) }
+        dao.upsert(d.copy(deleted = false))
+    }
 
     suspend fun setShare(docId: String, who: String, level: AccessLevel, whenKind: String, until: LocalDate? = null) {
         dao.upsertShare(DocShareEntity(docId, who, level.name, whenKind, until?.toString()))
@@ -289,7 +456,8 @@ class VaultRepository @Inject constructor(
         val d = dao.get(docId) ?: return
         dao.upsert(d.copy(expires = expires?.toString()))
         calendar.forDoc(docId).forEach { calendar.delete(it.id) }
-        if (expires != null) {
+        // Issued once never reminds; an older version leaves reminding to the current one.
+        if (expires != null && d.current && d.life() != Lifecycle.A) {
             val l = clock.logical()
             calendar.create("${d.title} expires", l.startOf(expires).toInstant(), l.endOf(expires).toInstant(), allDay = true, source = "vault", docId = docId)
             if (renewalTask) {
@@ -301,7 +469,7 @@ class VaultRepository @Inject constructor(
 
     suspend fun expiring(withinDays: Int): List<DocEntity> {
         val today = clock.today()
-        return dao.withExpiry().filter {
+        return remindable(dao.currentWithExpiry()).filter {
             val days = ChronoUnit.DAYS.between(today, LocalDate.parse(it.expires!!))
             days in -30..withinDays.toLong()
         }

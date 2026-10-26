@@ -1,7 +1,8 @@
 package aiimin.designsystem.component
 
+import aiimin.designsystem.theme.LocalReduceMotion
+import aiimin.designsystem.theme.Motion
 import aiimin.designsystem.theme.Aiimin
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -75,16 +76,17 @@ internal fun ScrubBarChartCanvas(
     val axis = Aiimin.type.axis
     val haptics = LocalHapticFeedback.current
     val grow = remember { Animatable(0f) }
+    val reduce = LocalReduceMotion.current
     LaunchedEffect(points) {
         grow.snapTo(0f)
-        grow.animateTo(1f, tween(200, easing = aiimin.designsystem.theme.Motion.enter))
+        grow.animateTo(1f, Motion.move(reduce, Motion.quick()))
     }
     val currentSelected = rememberUpdatedState(selected)
     val currentPoints = rememberUpdatedState(points)
     val barCount = points.size.coerceAtLeast(1)
     fun indexAt(x: Float, width: Float): Int = ((x / width) * barCount).toInt().coerceIn(0, barCount - 1)
 
-    val colorSel by animateColorAsState(c.accent, tween(120), label = "selBar")
+    val colorSel = c.accent
     Canvas(
         modifier
             .fillMaxWidth()
@@ -127,7 +129,9 @@ internal fun ScrubBarChartCanvas(
     ) {
         val dp1 = 1.dp.toPx()
         val w = size.width
-        val topPad = 14 * dp1
+        // D-042: with a target line, its label gets its own lane above the bars, so no bar runs under it.
+        val usualLayout = if (usual != null && usualLabel != null) measurer.measure(usualLabel, axis.copy(color = c.textMuted)) else null
+        val topPad = 14 * dp1 + (usualLayout?.let { it.size.height + 6 * dp1 } ?: 0f)
         val bottomPad = if (labels.isEmpty()) 6 * dp1 else 22 * dp1
         val base = size.height - bottomPad
         val plotH = base - topPad
@@ -165,15 +169,16 @@ internal fun ScrubBarChartCanvas(
         }
         // baseline
         drawLine(c.text, Offset(0f, base), Offset(w, base), strokeWidth = dp1)
-        // dashed usual line with a bg-backed label at the right end
+        // dashed usual line; its label is a legend in the top lane (a short dash, then the words), right-aligned
         if (usual != null) {
             val yy = y(usual)
-            drawLine(c.bandLine, Offset(0f, yy), Offset(w, yy), strokeWidth = 1.5f * dp1, pathEffect = PathEffect.dashPathEffect(floatArrayOf(4 * dp1, 4 * dp1)))
-            if (usualLabel != null) {
-                val l = measurer.measure(usualLabel, axis.copy(color = c.textMuted))
-                val lx = w - l.size.width - 4 * dp1
-                val ly = yy - l.size.height - 3 * dp1
-                drawRect(c.base, Offset(lx - 4 * dp1, ly - 1 * dp1), Size(l.size.width + 8 * dp1, l.size.height + 2 * dp1))
+            val dash = PathEffect.dashPathEffect(floatArrayOf(4 * dp1, 4 * dp1))
+            drawLine(c.bandLine, Offset(0f, yy), Offset(w, yy), strokeWidth = 1.5f * dp1, pathEffect = dash)
+            usualLayout?.let { l ->
+                val lx = w - l.size.width
+                val ly = 4 * dp1
+                val my = ly + l.size.height / 2f
+                drawLine(c.bandLine, Offset(lx - 22 * dp1, my), Offset(lx - 6 * dp1, my), strokeWidth = 1.5f * dp1, pathEffect = dash)
                 drawText(l, topLeft = Offset(lx, ly))
             }
         }
@@ -231,9 +236,10 @@ fun ScrubLineChart(
     val axis = Aiimin.type.axis
     val haptics = LocalHapticFeedback.current
     val draw = remember { Animatable(0f) }
+    val reduce = LocalReduceMotion.current
     LaunchedEffect(points.size, points.firstOrNull()?.value) {
         draw.snapTo(0f)
-        draw.animateTo(1f, tween(700, easing = aiimin.designsystem.theme.Motion.enter))
+        draw.animateTo(1f, Motion.move(reduce, Motion.emphasised()))
     }
     val currentSelected = rememberUpdatedState(selected)
     val n = points.size.coerceAtLeast(1)
@@ -269,7 +275,9 @@ fun ScrubLineChart(
     ) {
         val dp1 = 1.dp.toPx()
         val w = size.width
-        val topPad = 14 * dp1
+        // D-041: the band's label is a legend in its own lane above the line, so it never sits on the line.
+        val bandLayout = if (bandLow != null && bandHigh != null && bandLabel != null) measurer.measure(bandLabel, axis.copy(color = c.violet)) else null
+        val topPad = 14 * dp1 + (bandLayout?.let { it.size.height + 6 * dp1 } ?: 0f)
         val bottomPad = if (labels.isEmpty()) 8 * dp1 else 24 * dp1
         val base = size.height - bottomPad
         val plotH = base - topPad
@@ -284,9 +292,11 @@ fun ScrubLineChart(
         fun x(i: Int) = if (n <= 1) w / 2 else i * (w / (n - 1))
         if (bandLow != null && bandHigh != null) {
             drawRect(c.bandScore, Offset(0f, y(bandHigh)), Size(w, y(bandLow) - y(bandHigh)))
-            if (bandLabel != null) {
-                val l = measurer.measure(bandLabel, axis.copy(color = c.violet))
-                drawText(l, topLeft = Offset(w - l.size.width - 4 * dp1, y(bandHigh) + 3 * dp1))
+            bandLayout?.let { l ->
+                val lx = w - l.size.width
+                val ly = 4 * dp1
+                drawRect(c.bandScore, Offset(lx - 18 * dp1, ly + l.size.height / 2f - 4 * dp1), Size(12 * dp1, 8 * dp1))
+                drawText(l, topLeft = Offset(lx, ly))
             }
         }
         drawLine(c.text, Offset(0f, base), Offset(w, base), strokeWidth = dp1)

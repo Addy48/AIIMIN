@@ -33,6 +33,15 @@ object Money {
         }
     }
 
+    /** Any currency: rupees get Indian grouping; others get their symbol (or code) and two decimals unless whole. */
+    fun formatIn(minor: Long, currency: String): String {
+        if (currency == "INR") return format(minor)
+        val symbol = when (currency) { "USD" -> "$"; "EUR" -> "€"; "GBP" -> "£"; "JPY" -> "¥"; else -> "$currency " }
+        val abs = kotlin.math.abs(minor)
+        val body = java.text.NumberFormat.getIntegerInstance(Locale.US).format(abs / 100) + if (abs % 100 != 0L) "." + (abs % 100).toString().padStart(2, '0') else ""
+        return (if (minor < 0) "−" else "") + symbol + body
+    }
+
     /** Whole rupees only, for averages and projections (no fake precision). */
     fun whole(paise: Long): String = format(((paise + 50) / 100) * 100)
 
@@ -79,6 +88,8 @@ object Dates {
     fun clockPlain(t: LocalTime): String = time12Plain.format(t)
     fun meridiem(t: LocalTime): String = if (t.hour < 12) "AM" else "PM"
     fun long(d: LocalDate): String = longLabel.format(d)
+    /** "Wednesday, 13 October 2027": the year added when it is not this year. */
+    fun longYear(d: LocalDate): String = long(d) + if (d.year != LocalDate.now().year) " ${d.year}" else ""
     fun clock(t: LocalTime): String = time12.format(t)
     fun clock(hhmm: String?): String? = hhmm?.let { runCatching { clock(LocalTime.parse(it)) }.getOrNull() }
 

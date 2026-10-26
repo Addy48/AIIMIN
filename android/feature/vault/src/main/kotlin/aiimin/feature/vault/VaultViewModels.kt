@@ -33,6 +33,7 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class VaultViewModel @Inject constructor(
     private val vault: VaultRepository,
+    private val backups: aiimin.core.data.vault.VaultBackupRepository,
     private val family: FamilyRepository,
     private val clock: DayClock,
 ) : ViewModel() {
@@ -58,6 +59,18 @@ class VaultViewModel @Inject constructor(
     }
 
     fun clearImport() { lastImport.value = null }
+
+    /** Phase 3: "Last good backup: 14 Oct", or the note that the last weekly one wasn't saved. */
+    fun backupLine(): String? {
+        val h = backups.health(0)
+        val fmt = java.time.format.DateTimeFormatter.ofPattern("d MMM", java.util.Locale.ENGLISH)
+        fun day(ms: Long) = fmt.format(java.time.Instant.ofEpochMilli(ms).atZone(java.time.ZoneId.systemDefault()))
+        return when {
+            h.failAt != null -> "This week's backup wasn't saved. Last good backup: ${h.lastAt?.let(::day) ?: "none"}"
+            h.lastAt != null -> "Last good backup: ${day(h.lastAt!!)}"
+            else -> null
+        }
+    }
     fun previewAs(id: String) = family.previewAs(id)
 
     suspend fun doc(id: String) = vault.get(id)
@@ -66,6 +79,11 @@ class VaultViewModel @Inject constructor(
     /** Drops a just-imported duplicate (V3 "This file is already in the vault"). */
     suspend fun removeCopy(id: String) { vault.delete(id) }
     fun setExpiry(id: String, date: LocalDate?, task: Boolean) = viewModelScope.launch { vault.setExpiry(id, date, task) }
+    /** Joins the cover first so the reminder lands on the version that is now current. */
+    suspend fun saveVersion(id: String, cover: String?, date: LocalDate?, task: Boolean) {
+        if (cover != null) vault.joinCover(id, cover) else if (lastImport.value?.covers?.isNotEmpty() == true) vault.keepSeparate(id)
+        vault.setExpiry(id, date, task)
+    }
     suspend fun today() = clock.today()
 }
 
@@ -100,7 +118,10 @@ class DocViewModel @Inject constructor(
         return out
     }
 
-    fun rename(d: DocEntity, title: String) = viewModelScope.launch { vault.edit(d.copy(title = title.trim())) }
+    suspend fun candidates(docId: String) = vault.candidates(docId)
+    suspend fun join(docId: String, cover: String) { vault.joinCover(docId, cover); vault.get(docId)?.let { vault.setExpiry(it.id, it.expires?.let(LocalDate::parse), renewalTask = false) } }
+    suspend fun keepSeparate(docId: String) = vault.keepSeparate(docId)
+        fun rename(d: DocEntity, title: String) = viewModelScope.launch { vault.edit(d.copy(title = title.trim())) }
     fun setCategory(d: DocEntity, cat: String) = viewModelScope.launch { vault.edit(d.copy(category = cat)) }
     suspend fun saveDoc(d: DocEntity) = vault.edit(d)
     /** Drops a just-imported duplicate (V3 "This file is already in the vault"). */

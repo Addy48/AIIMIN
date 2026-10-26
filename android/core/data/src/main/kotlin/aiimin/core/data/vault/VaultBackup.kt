@@ -1,5 +1,6 @@
 package aiimin.core.data.vault
 
+import aiimin.core.data.core.Crypto
 import aiimin.core.data.core.EventLogger
 import aiimin.core.data.util.newId
 import aiimin.core.database.DocEntity
@@ -99,7 +100,17 @@ object Seal {
         typed.uppercase().filter { it in ALPHABET }.chunked(5).joinToString("-")
 }
 
-data class BackupHealth(val lastAt: Long?, val where: String?, val folderSet: Boolean, val docs: Int) {
+data class BackupHealth(
+    val lastAt: Long?,
+    val where: String?,
+    val folderSet: Boolean,
+    val docs: Int,
+    /** Weekly automatic backup is set up (passphrase and recovery code chosen, key wrapped on this phone). */
+    val weekly: Boolean = false,
+    /** When the last weekly write could not be saved, and why; cleared by the next good one. */
+    val failAt: Long? = null,
+    val failWhy: String? = null,
+) {
     val overdue: Boolean get() = docs > 0 && (lastAt == null || System.currentTimeMillis() - lastAt > 14 * 86_400_000L)
 }
 
@@ -122,12 +133,100 @@ class VaultBackupRepository @Inject constructor(
     private val vaultDao: VaultDao,
     private val familyDao: FamilyDao,
     private val log: EventLogger,
+    private val crypto: Crypto,
 ) {
     private val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
     fun health(docs: Int): BackupHealth = BackupHealth(
         prefs.getLong("last_at", 0L).takeIf { it > 0 }, prefs.getString("where", null), prefs.getString("tree", null) != null, docs,
+        weekly = prefs.getBoolean("weekly", false) && prefs.getString("dk", null) != null,
+        failAt = prefs.getLong("fail_at", 0L).takeIf { it > 0 }, failWhy = prefs.getString("fail_why", null),
     )
+
+    // ------------------------------------------------------------------ weekly (VB2, PRD Part 5 Phase 3)
+
+    /**
+     * Sets up weekly backups once. A random data key seals every backup; it is kept on this phone wrapped by the
+     * Keystore, and in each file inside two slots: one for [passphrase], one for the recovery code returned here.
+     * The code is shown once and never stored.
+     */
+    suspend fun setupWeekly(passphrase: CharArray): String = withContext(Dispatchers.Default) {
+        val dk = KeySlots.newDataKey()
+        val code = KeySlots.newRecoveryCode()
+        val slots = listOf(KeySlots.slot(dk, passphrase), KeySlots.slot(dk, KeySlots.normalize(code).toCharArray()))
+        val (wrapped, iv) = crypto.encrypt(dk, Crypto.BACKUP)
+        dk.fill(0)
+        prefs.edit()
+            .putString("dk", b64(wrapped)).putString("dk_iv", b64(iv))
+            .putString("slots", slots.joinToString(",") { b64(it) })
+            .putBoolean("weekly", true).remove("fail_at").remove("fail_why").apply()
+        log.log("vault.weekly.setup", tier = Tier.A)
+        code
+    }
+
+    fun setWeekly(on: Boolean) = prefs.edit().putBoolean("weekly", on && prefs.getString("dk", null) != null).apply()
+
+    /** The weekly job: no secret needed. A failure is remembered for the notice and the Vault line. */
+    suspend fun weeklyNow(): String = withContext(Dispatchers.IO) {
+        try {
+            val tree = prefs.getString("tree", null)?.let(Uri::parse) ?: error("No backup folder chosen")
+            val dk = crypto.decrypt(unb64(prefs.getString("dk", null) ?: error("Weekly backup isn't set up")), unb64(prefs.getString("dk_iv", "")!!), Crypto.BACKUP)
+            val slots = prefs.getString("slots", "")!!.split(',').filter { it.isNotBlank() }.map(::unb64)
+            val docs = vaultDao.allNow().filter { !it.deleted }
+            val people = familyDao.allNow()
+            val sealed = KeySlots.seal(archive(docs, people, "backup", people.firstOrNull { it.id == ME }?.name.orEmpty()), dk, slots)
+            dk.fill(0)
+            val name = write(tree, sealed)
+            prefs.edit().putLong("last_at", System.currentTimeMillis()).remove("fail_at").remove("fail_why").apply()
+            log.log("vault.backup", data = mapOf("docs" to docs.size, "bytes" to sealed.size, "weekly" to true), tier = Tier.A, source = "system")
+            name
+        } catch (e: Exception) {
+            prefs.edit().putLong("fail_at", System.currentTimeMillis()).putString("fail_why", e.message ?: "The folder couldn't be written").apply()
+            log.log("vault.backup.fail", data = mapOf("why" to (e.message ?: "")), tier = Tier.A, source = "system")
+            throw e
+        }
+    }
+
+    private fun write(tree: Uri, sealed: ByteArray): String {
+        val name = "aiimin-vault-" + DateTimeFormatter.ofPattern("yyyy-MM-dd-HHmm", Locale.ENGLISH).format(Instant.now().atZone(ZoneId.systemDefault())) + ".aiimin"
+        val parent = DocumentsContract.buildDocumentUriUsingTree(tree, DocumentsContract.getTreeDocumentId(tree))
+        val out = DocumentsContract.createDocument(context.contentResolver, parent, "application/octet-stream", name) ?: error("Couldn't write to that folder")
+        context.contentResolver.openOutputStream(out)?.use { it.write(sealed) } ?: error("Couldn't write to that folder")
+        pruneOld(tree)
+        return name
+    }
+
+    /** A one-page PDF with the recovery code, to save or print. Made in cache and shared; never kept. */
+    suspend fun recoverySheet(code: String): File = withContext(Dispatchers.IO) {
+        val pdf = PdfDocument()
+        val page = pdf.startPage(PdfDocument.PageInfo.Builder(595, 842, 1).create())
+        val cv = page.canvas
+        val ink = Paint().apply { isAntiAlias = true; color = 0xFF1A1916.toInt() }
+        var y = 64f
+        fun line(t: String, size: Float, bold: Boolean = false, gap: Float = 8f) {
+            ink.textSize = size; ink.typeface = Typeface.create(Typeface.SANS_SERIF, if (bold) Typeface.BOLD else Typeface.NORMAL)
+            cv.drawText(t, 48f, y + size, ink); y += size + gap
+        }
+        line("AIIMIN · Backup recovery code", 20f, bold = true, gap = 20f)
+        val mono = Paint(ink).apply { typeface = Typeface.MONOSPACE; textSize = 26f }
+        code.split("-").chunked(3).forEach { row -> cv.drawText(row.joinToString("  "), 48f, y + 26f, mono); y += 38f }
+        y += 12f
+        listOf(
+            "This code opens your AIIMIN vault backups if you forget the passphrase.",
+            "On a new phone: AIIMIN › Vault › Backups › Restore, pick the newest backup, type this code.",
+            "Spaces and dashes don't matter.",
+            "Keep it somewhere safe and apart from the phone. Anyone with it and a backup file can open the backup.",
+            "If both the passphrase and this code are lost, the backup can't be opened by anyone, AIIMIN included.",
+        ).forEach { line(it, 11f, gap = 7f) }
+        pdf.finishPage(page)
+        val f = File(File(context.cacheDir, "exports").apply { mkdirs() }, "aiimin-recovery-code.pdf")
+        f.outputStream().use { pdf.writeTo(it) }
+        pdf.close()
+        f
+    }
+
+    private fun b64(b: ByteArray) = android.util.Base64.encodeToString(b, android.util.Base64.NO_WRAP)
+    private fun unb64(s: String) = android.util.Base64.decode(s, android.util.Base64.NO_WRAP)
 
     /** Remembers the folder the person picked (with a persistable grant) for this and later backups. */
     fun setFolder(tree: Uri) {
@@ -178,12 +277,8 @@ class VaultBackupRepository @Inject constructor(
         val docs = vaultDao.allNow().filter { !it.deleted }
         val people = familyDao.allNow()
         val sealed = Seal.seal(archive(docs, people, "backup", people.firstOrNull { it.id == ME }?.name.orEmpty()), passphrase, Seal.KIND_BACKUP)
-        val name = "aiimin-vault-" + DateTimeFormatter.ofPattern("yyyy-MM-dd-HHmm", Locale.ENGLISH).format(Instant.now().atZone(ZoneId.systemDefault())) + ".aiimin"
-        val parent = DocumentsContract.buildDocumentUriUsingTree(tree, DocumentsContract.getTreeDocumentId(tree))
-        val out = DocumentsContract.createDocument(context.contentResolver, parent, "application/octet-stream", name) ?: error("Couldn't write to that folder")
-        context.contentResolver.openOutputStream(out)?.use { it.write(sealed) } ?: error("Couldn't write to that folder")
-        pruneOld(tree)
-        prefs.edit().putLong("last_at", System.currentTimeMillis()).apply()
+        val name = write(tree, sealed)
+        prefs.edit().putLong("last_at", System.currentTimeMillis()).remove("fail_at").remove("fail_why").apply()
         log.log("vault.backup", data = mapOf("docs" to docs.size, "bytes" to sealed.size), tier = Tier.A)
         name
     }
@@ -206,7 +301,8 @@ class VaultBackupRepository @Inject constructor(
     suspend fun restore(uri: Uri, secret: CharArray, kitOwnerName: String? = null): RestoreResult = withContext(Dispatchers.IO) {
         val data = context.contentResolver.openInputStream(uri)?.use { it.readBytes() } ?: error("Can't read that file")
         val kind = Seal.kindOf(data) ?: throw Seal.NotAiimin()
-        val plain = Seal.open(data, secret)
+        // A weekly backup opens with the passphrase or the recovery code; older ones with the passphrase.
+        val plain = if (KeySlots.isWeekly(data)) KeySlots.open(data, secret) else Seal.open(data, secret)
         var manifest: JSONObject? = null
         val files = HashMap<String, ByteArray>()
         ZipInputStream(ByteArrayInputStream(plain)).use { zip ->
@@ -347,5 +443,33 @@ class VaultBackupRepository @Inject constructor(
 
     companion object {
         const val PREFS = "vault_backup"
+    }
+}
+
+/** Writes the weekly backup with the app closed (PRD Part 5 Phase 3). A failure shows a notice from the next Pulse beat. */
+class WeeklyBackupWorker(context: Context, params: androidx.work.WorkerParameters) : androidx.work.CoroutineWorker(context, params) {
+    @dagger.hilt.EntryPoint
+    @dagger.hilt.InstallIn(dagger.hilt.components.SingletonComponent::class)
+    interface Deps { fun backups(): VaultBackupRepository }
+
+    override suspend fun doWork(): Result {
+        val repo = dagger.hilt.android.EntryPointAccessors.fromApplication(applicationContext, Deps::class.java).backups()
+        if (!repo.health(0).weekly) return Result.success()
+        return runCatching { repo.weeklyNow() }.fold({ Result.success() }, { if (runAttemptCount < 3) Result.retry() else Result.success() })
+    }
+
+    companion object {
+        private const val NAME = "vault-weekly"
+        fun schedule(context: Context, on: Boolean) {
+            val wm = androidx.work.WorkManager.getInstance(context)
+            if (!on) { wm.cancelUniqueWork(NAME); return }
+            wm.enqueueUniquePeriodicWork(
+                NAME, androidx.work.ExistingPeriodicWorkPolicy.KEEP,
+                androidx.work.PeriodicWorkRequestBuilder<WeeklyBackupWorker>(7, java.util.concurrent.TimeUnit.DAYS)
+                    .setConstraints(androidx.work.Constraints.Builder().setRequiresBatteryNotLow(true).setRequiresStorageNotLow(true).build())
+                    .setBackoffCriteria(androidx.work.BackoffPolicy.EXPONENTIAL, 1, java.util.concurrent.TimeUnit.HOURS)
+                    .build(),
+            )
+        }
     }
 }

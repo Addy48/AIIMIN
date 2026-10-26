@@ -54,7 +54,7 @@ fun PinInput(value: String, onChange: (String) -> Unit, modifier: Modifier = Mod
                                 .border(if (on) 1.5.dp else 1.dp, if (on) c.text else c.borderStrong, RoundedCornerShape(8.dp)),
                             contentAlignment = Alignment.Center,
                         ) {
-                            if (i < value.length) Box(Modifier.size(10.dp).clip(androidx.compose.foundation.shape.CircleShape).background(c.text))
+                            if (i < value.length) Box(Modifier.size(12.dp).clip(androidx.compose.foundation.shape.CircleShape).background(c.text))
                         }
                     }
                 }

@@ -1,0 +1,132 @@
+import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
+import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.tasks.CacheableTask
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
+import org.gradle.api.tasks.TaskAction
+
+/**
+ * PRD Part 29: colours come only from `Palette.kt` and fonts only from `Type.kt`.
+ * PRD Part 26.5: durations and curves come only from `Motion.kt`; only transform and opacity animate.
+ * Runs before `preBuild` (the release command skips lint, so a lint rule would never fail it).
+ */
+@CacheableTask
+abstract class ThemeTokenGuard : DefaultTask() {
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val sources: ConfigurableFileCollection
+
+    @get:OutputFile
+    abstract val report: RegularFileProperty
+
+    @TaskAction
+    fun scan() {
+        val hits = sources.files
+            .filter { it.isFile && it.extension == "kt" }
+            .sortedBy { it.path }
+            .flatMap { file ->
+                val path = file.invariantSeparatorsPath
+                val rules = RULES.filter { r -> r.allowedIn.none { path.endsWith(it) } }
+                val copyChecked = COPY_EXEMPT.none { path.contains(it) }
+                file.readLines().mapIndexedNotNull { i, line ->
+                    val code = codeOf(line)
+                    val t = line.trimStart()
+                    rules.firstOrNull { it.pattern.containsMatchIn(code) }?.let { "${file.path}:${i + 1}: [${it.why}] ${line.trim()}" }
+                        ?: if (copyChecked && !t.startsWith("*") && !t.startsWith("/*") && guiltIn(code)) "${file.path}:${i + 1}: [guilt word, PRD 13.2] ${line.trim()}" else null
+                }
+            }
+        report.get().asFile.writeText(hits.joinToString("\n"))
+        if (hits.isNotEmpty()) {
+            throw GradleException(
+                "Design tokens only (PRD Parts 26.5 and 29): ${hits.size} use(s) outside Palette.kt / Type.kt / Motion.kt:\n" +
+                    hits.joinToString("\n"),
+            )
+        }
+    }
+
+    data class Rule(val why: String, val pattern: Regex, val allowedIn: Set<String>)
+
+    companion object {
+        // Allowed by path suffix, so another module's file of the same name is not exempt.
+        private val COLOUR = setOf("designsystem/theme/Palette.kt")
+        private val FONT = setOf("designsystem/theme/Type.kt", "designsystem/theme/Palette.kt")
+        private val MOTION = setOf("designsystem/theme/Motion.kt")
+        // The boot scene scales its type with the screen; buttons pick between two scale sizes.
+        private val TYPE_OK = FONT + setOf("designsystem/component/BootScene.kt", "designsystem/component/Controls.kt")
+        // The printable emergency sheet is a PDF drawn with android.graphics, not a screen.
+        private val PRINT = setOf("core/data/vault/VaultBackup.kt") + FONT
+        val RULES = listOf(
+            Rule("raw colour", Regex("""\bColor\(\s*(0x|red\s*=|[0-9.]+f\b)"""), COLOUR),
+            Rule("named colour", Regex("""\bColor\.(Black|White|Red|Gray|Grey|Blue|Green|Yellow|Cyan|Magenta|DarkGray|LightGray)\b"""), COLOUR),
+            Rule("system font", Regex("""\bFontFamily\.(Serif|SansSerif|Monospace|Cursive|Default)\b"""), FONT),
+            Rule("system typeface", Regex("""\bTypeface\.(DEFAULT|SANS_SERIF|SERIF|MONOSPACE|create)\b"""), PRINT),
+            Rule("raw duration", Regex("""\btween(<[^>]*>)?\(\s*(durationMillis\s*=\s*)?\d"""), MOTION),
+            Rule("raw spring", Regex("""\bspring(<[^>]*>)?\("""), MOTION),
+            Rule("raw keyframes", Regex("""\bkeyframes(<[^>]*>)?\s*\{"""), MOTION),
+            Rule("colour animation", Regex("""\banimateColorAsState\b"""), MOTION),
+            Rule("size animation", Regex("""\banimateContentSize\b"""), MOTION),
+            // PRD 4.4: an 8 dp grid with 4 dp half-steps. Spacing and small sizes off it read as misalignment.
+            Rule("off-grid spacing", Regex("""\b(padding|spacedBy|height|width|size|heightIn|widthIn)\([^()]*(?<![\w.])(3|5|6|7|9|10|11|13|14|15|17|18|19|21|22|23|25|26|27|29|30|31|33|34|35|37|38|39|41|42|43|45|46|47|49|50|51|53|54|55|57|58|59|61|62|63)\.dp"""), emptySet()),
+            // PRD 4.4: text sizes come from the type scale (Type.kt); one-off sizes are how screens drift apart.
+            Rule("one-off text size", Regex("""Aiimin\.type\.(caption|label|body|bodyStrong|title|headline)\.copy\([^)]*fontSize"""), TYPE_OK),
+        )
+
+        // PRD 13.2 / 8.3: no guilt words in anything a person reads. Parser vocabularies and wire names are not copy.
+        private val COPY_EXEMPT = listOf("/core/nlp/", "/core/network/", "/core/database/")
+        private val GUILT = Regex("""\b(miss|missed|misses|streaks?|overdue|behind|fail|failed|fails|forgot|don't break)\b""", RegexOption.IGNORE_CASE)
+        /** Part 23's fixed notification consent says what AIIMIN will never do: "no streak warnings". */
+        private val PROMISE = Regex("""\bno streak warnings\b""", RegexOption.IGNORE_CASE)
+        private val TIME_OF_DAY = Regex("""\blate[- ]night|\bit's late\b|\blate entries\b""", RegexOption.IGNORE_CASE)
+        private val LATENESS = Regex("""\b(late|lateness)\b""", RegexOption.IGNORE_CASE)
+        private val LITERAL = Regex(""""((?:[^"\\]|\\.)*)"""")
+        private val TEMPLATE = Regex("""\$\{[^}]*\}|\$[A-Za-z_]\w*""")
+
+        /** True when a string literal on the line (templates removed) contains a guilt word. */
+        fun guiltIn(code: String): Boolean = LITERAL.findAll(stripTemplates(code)).any { m ->
+            val text = PROMISE.replace(TEMPLATE.replace(m.groupValues[1], " "), " ")
+            // A space-less lowercase literal is a key, regex or wire name ("streak:", "a|b"), not copy, unless it is
+            // exactly a guilt word ("late", "missed"): those are shown as labels.
+            val whole = text.trim()
+            if (!whole.contains(' ') && whole.none { it.isUpperCase() } && !GUILT.matches(whole) && !LATENESS.matches(whole)) return@any false
+            GUILT.containsMatchIn(text) || LATENESS.containsMatchIn(TIME_OF_DAY.replace(text, " "))
+        }
+
+        /** Removes `${...}` template expressions (which may hold their own quotes), keeping the quotes around them. */
+        fun stripTemplates(code: String): String {
+            val out = StringBuilder()
+            var i = 0
+            while (i < code.length) {
+                if (code[i] == '$' && i + 1 < code.length && code[i + 1] == '{') {
+                    var depth = 1
+                    i += 2
+                    while (i < code.length && depth > 0) {
+                        if (code[i] == '{') depth++ else if (code[i] == '}') depth--
+                        i++
+                    }
+                    out.append(' ')
+                } else {
+                    out.append(code[i]); i++
+                }
+            }
+            return out.toString()
+        }
+
+        /** The line without its // comment; a "//" inside a string ("https://…") is kept. */
+        fun codeOf(line: String): String {
+            var inString = false
+            var i = 0
+            while (i < line.length) {
+                val ch = line[i]
+                if (ch == '\\' && inString) { i += 2; continue }
+                if (ch == '"') inString = !inString
+                if (!inString && ch == '/' && i + 1 < line.length && line[i + 1] == '/') return line.substring(0, i)
+                i++
+            }
+            return line
+        }
+    }
+}

@@ -99,9 +99,9 @@ class ActivityRepository @Inject constructor(
             when {
                 l.type.startsWith("task.") -> taskDao.get(id)?.title
                 l.type.startsWith("min.") -> minimumDao.get(id)?.name
-                l.type == "txn.add" -> moneyDao.get(id)?.let { "${it.title} ${aiimin.core.data.util.Money.whole(it.amountPaise)}" }
+                l.type == "txn.add" -> moneyDao.get(id)?.let { "${aiimin.core.data.money.payeeLabel(it.title)} ${aiimin.core.data.util.Money.whole(it.amountPaise)}" }
                 l.type == "txn.detect" -> (moneyDao.draft(id)?.let { it.title to it.amountPaise } ?: moneyDao.get(id)?.let { it.title to it.amountPaise })
-                    ?.let { (t, p) -> "$t ${aiimin.core.data.util.Money.whole(p)}" }
+                    ?.let { (t, p) -> "${aiimin.core.data.money.payeeLabel(t)} ${aiimin.core.data.util.Money.whole(p)}" }
                 l.type.startsWith("doc.") -> vaultDao.get(id)?.title
                 l.type == "note.create" -> noteDao.get(id)?.title
                 else -> null
@@ -127,7 +127,7 @@ class ActivityRepository @Inject constructor(
             "note.create" -> "Wrote a note"
             "ai.apply" -> "Applied ${d["n"]} change${if ((d["n"] as? Number)?.toInt() == 1) "" else "s"} from the assistant"
             "ai.undo" -> "Undid the assistant's changes"
-            "day.settle" -> "Day settled: ${e.ref?.id}"
+            "day.settle" -> daySettledText(e.ref?.id)
             "backfill" -> "Filed an entry to yesterday"
             "intent.change" -> "Changed what a signal means"
             "emergency.request" -> "Requested emergency access"
@@ -241,7 +241,8 @@ class SetupRepository @Inject constructor(
     /** Everything onboarding gathered. Nothing here needs an account. */
     data class SetupInput(
         val name: String,
-        val dob: java.time.LocalDate?,
+        /** The age band only; the date of birth itself never reaches storage (PRD 4.7). */
+        val ageBand: String?,
         val role: String,
         /** (minimum, tiny version) */
         val mins: List<Pair<String, String>>,
@@ -256,7 +257,7 @@ class SetupRepository @Inject constructor(
         val preset = RolePreset.byKey(i.role)
         settings.update {
             it.copy(
-                name = i.name.trim(), role = i.role, dob = i.dob?.toString(),
+                name = i.name.trim(), role = i.role, ageBand = i.ageBand,
                 batteryMode = preset?.suggestsBattery ?: i.battery,
                 batteryModeChangedOn = null,
                 intentions = preset?.applyTo(aiimin.core.engine.IntentionSet.default()) ?: it.intentions,
@@ -292,7 +293,8 @@ class ExportRepository @Inject constructor(
             }
             put("events.jsonl", db.events().all().joinToString("\n") { "{\"seq\":${it.seq},\"at\":${it.at},\"day\":\"${it.day}\",\"type\":\"${it.type}\",\"data\":${it.data},\"tier\":\"${it.tier}\",\"hash\":\"${it.hash}\"}" })
             put("tasks.csv", "day,time,title,done\n" + db.tasks().search("%").joinToString("\n") { "${it.day},${it.time.orEmpty()},\"${it.title.replace("\"", "'")}\",${it.done}" })
-            put("notes.md", db.notes().search("%").joinToString("\n\n---\n\n") { "# ${it.title}\n\n${it.body}" })
+            // Every kept note; a locked note's text stays locked here (Notes › Save all notes exports it after the screen lock).
+            put("notes.md", db.notes().keptNow().joinToString("\n\n---\n\n") { if (it.locked) "# Locked note\n\n(Locked. Export it from Notes › Bring in and save notes.)" else "# ${it.title}\n\n${it.body}" })
             if (includeJournal) put("journal.md", journal.entries.first().joinToString("\n\n---\n\n") { "## ${it.day}${it.mood?.let { m -> " · mood $m/5" } ?: ""}\n\n${it.text}" })
             File(context.filesDir, "vault").listFiles()?.filter { !it.name.endsWith(".enc") }?.forEach { f ->
                 z.putNextEntry(ZipEntry("vault/${f.name}")); f.inputStream().use { it.copyTo(z) }; z.closeEntry()
@@ -326,7 +328,12 @@ class DataControlRepository @Inject constructor(
     }
 }
 
+/** D-029: "Day settled: Sun 18 Oct", not the raw ISO date. */
+fun daySettledText(isoDay: String?): String =
+    isoDay?.let { runCatching { "Day settled: " + aiimin.core.data.util.Dates.short(java.time.LocalDate.parse(it)) }.getOrNull() } ?: "Day settled"
+
 /** "Added a task · Buy milk": the row's words plus what it was about, cut to fit one line. */
+
 fun withName(text: String, name: String?): String {
     val n = name?.trim().orEmpty()
     if (n.isEmpty()) return text

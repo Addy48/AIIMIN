@@ -149,15 +149,27 @@ fun DocScreen(id: String, vm: DocViewModel = hiltViewModel()) {
                 d.number?.let { LinkChip(if (d.sensitive) "Number ••••${it.takeLast(4)}" else it, AppIcons.Hash) {} }
                 if (d.sensitive) LinkChip("Sensitive", AppIcons.LockSimple) {}
             }
-            // page preview
-            Box(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 16.dp).fillMaxWidth().height(360.dp).clip(RoundedCornerShape(6.dp)).background(androidx.compose.ui.graphics.Color.White).border(1.dp, c.borderStrong, RoundedCornerShape(6.dp)).clickable { full = true }) {
-                val f = file
-                if (f == null) Skeleton(Modifier.fillMaxSize()) else FirstPage(d, f)
-                if (d.pages > 1) Box(Modifier.align(Alignment.BottomEnd).padding(10.dp).clip(RoundedCornerShape(4.dp)).background(c.text).padding(horizontal = 8.dp, vertical = 3.dp)) {
-                    Text("1 / ${d.pages}", style = Aiimin.type.caption.copy(color = if (c.isDark) c.base else androidx.compose.ui.graphics.Color.White, fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold))
+            // "Is this a new version of ...?" for a file that arrived without the save sheet (shared in).
+            var asked by remember(d.id) { mutableStateOf<List<Pair<DocEntity, aiimin.core.engine.vault.Renewal>>>(emptyList()) }
+            LaunchedEffect(d.id, d.coverId) { asked = vm.candidates(d.id) }
+            if (asked.isNotEmpty()) Column(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 12.dp)) {
+                val r = aiimin.core.data.vault.ImportResult(d.id, null, d.category, null, null, covers = asked)
+                VersionPrompt(r, null, instant = true) { cover ->
+                    scope.launch {
+                        if (cover != null) { vm.join(d.id, cover); toaster.show("Added as the new version") } else vm.keepSeparate(d.id)
+                        asked = emptyList()
+                    }
                 }
             }
-            Text("Tap to open full size. Double-tap or pinch to zoom.", style = Aiimin.type.caption.copy(fontSize = 12.sp), modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 6.dp))
+            // page preview
+            Box(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 16.dp).fillMaxWidth().height(360.dp).clip(RoundedCornerShape(6.dp)).background(c.paper).border(1.dp, c.borderStrong, RoundedCornerShape(6.dp)).clickable { full = true }) {
+                val f = file
+                if (f == null) Skeleton(Modifier.fillMaxSize()) else FirstPage(d, f)
+                if (d.pages > 1) Box(Modifier.align(Alignment.BottomEnd).padding(12.dp).clip(RoundedCornerShape(4.dp)).background(c.text).padding(horizontal = 8.dp, vertical = 4.dp)) {
+                    Text("1 / ${d.pages}", style = Aiimin.type.caption.copy(color = c.onInk, fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold))
+                }
+            }
+            Text("Tap to open full size. Double-tap or pinch to zoom.", style = Aiimin.type.caption, modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 8.dp))
             Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
                 SectionHeader("Found in the document")
                 FoundRow("Number", d.number?.let { if (d.sensitive) "••••••${it.takeLast(4)}" else it } ?: "Not found", found = d.number != null)
@@ -169,8 +181,15 @@ fun DocScreen(id: String, vm: DocViewModel = hiltViewModel()) {
                     trailing = { ExpiryVial(days?.let { (it / 365f).coerceIn(0f, 1f) }) },
                 )
                 if (d.vehicle != null) { Hairline(); FoundRow("Vehicle", d.vehicle!!, found = true) }
+                d.provider?.let { Hairline(); FoundRow("Provider", it, found = true) }
+                d.startsOn?.let { Hairline(); FoundRow("Starts", LocalDate.parse(it).let { s -> Dates.short(s) + " " + s.year }, found = true) }
+                Spacer(Modifier.height(8.dp))
+                ListRow(
+                    "Info and versions", subtitle = if (d.version > 1 || d.coverId != null) "Version ${d.version}${if (d.current) ", current" else ""} · timeline" else "Kind of paper, timeline, add a new version",
+                    leading = { IconTile(AppIcons.ClockCounter) }, onClick = { nav.open(Route.DocInfo(d.id)) },
+                )
                 Spacer(Modifier.height(16.dp))
-                Text("Stored only on this phone · ${if (d.sizeBytes < 1_048_576) "${maxOf(1, d.sizeBytes / 1024)} KB" else "%.1f MB".format(d.sizeBytes / 1_048_576.0)}", style = Aiimin.type.caption.copy(fontSize = 12.sp))
+                Text("Stored only on this phone · ${if (d.sizeBytes < 1_048_576) "${maxOf(1, d.sizeBytes / 1024)} KB" else "%.1f MB".format(d.sizeBytes / 1_048_576.0)}", style = Aiimin.type.caption)
                 Spacer(Modifier.height(24.dp))
             }
         }
@@ -230,10 +249,10 @@ fun DocScreen(id: String, vm: DocViewModel = hiltViewModel()) {
         var task by remember { mutableStateOf(true) }
         var pick by remember { mutableStateOf(false) }
         AppSheet({ remind = false }, title = "Expiry & reminders", subtitle = "Reminders at 90, 60, 30 and 7 days, a calendar marker on the day, and an optional renewal task.") {
-            ListRow("Expires", subtitle = date?.let(Dates::long) ?: "Not set", leading = { IconTile(AppIcons.Hourglass) }, onClick = { pick = true })
+            ListRow("Expires", subtitle = date?.let(Dates::longYear) ?: "Not set", leading = { IconTile(AppIcons.Hourglass) }, onClick = { pick = true })
             SwitchRow("Renewal task two weeks before", task, { task = it })
             Spacer(Modifier.height(12.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (d.expires != null) AppButton("Clear", { vm.setExpiry(d, null, false); remind = false }, Modifier.weight(1f), kind = ButtonKind.SECONDARY)
                 AppButton("Save", { vm.setExpiry(d, date, task); remind = false; toaster.show("Reminders set") }, Modifier.weight(1f), enabled = date != null)
             }
@@ -268,10 +287,10 @@ private fun whyText(a: Access): String = when (a) {
 
 @Composable
 private fun BarAction(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, onClick: () -> Unit) {
-    Column(Modifier.clip(Shapes.row).clickable(onClick = onClick).padding(horizontal = 14.dp, vertical = 6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Icon(icon, null, tint = Aiimin.colors.text, modifier = Modifier.size(22.dp))
+    Column(Modifier.clip(Shapes.row).clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Icon(icon, null, tint = Aiimin.colors.text, modifier = Modifier.size(24.dp))
         Spacer(Modifier.height(4.dp))
-        Text(label, style = Aiimin.type.caption.copy(color = Aiimin.colors.text, fontSize = 12.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Medium))
+        Text(label, style = Aiimin.type.caption.copy(color = Aiimin.colors.text, fontWeight = androidx.compose.ui.text.font.FontWeight.Medium))
     }
 }
 
@@ -322,7 +341,7 @@ private fun PdfPages(f: File) {
     val c = Aiimin.colors
     if (pages == 0) return
     Zoomable {
-        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             items((0 until pages).toList()) { i ->
                 val bmp by produceState<Bitmap?>(null, f, i) {
                     value = withContext(Dispatchers.IO) {
@@ -356,11 +375,11 @@ private fun PdfPages(f: File) {
 @Composable
 private fun ReadingView(text: String) {
     if (text.isBlank()) {
-        EmptyState(AppIcons.FileText, "No text to show", "This file has no readable text. Share or open it with another app from the menu.")
+        EmptyState(AppIcons.FileText, "No text to show", "This file has no readable text. Share or open it with another app from the menu.", sidePadding = 4.dp)
         return
     }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp, vertical = 16.dp)) {
-        Text(text, style = Aiimin.type.body.copy(fontSize = 16.sp, lineHeight = 26.sp))
+        Text(text, style = Aiimin.type.body)
     }
 }
 
@@ -425,7 +444,7 @@ private fun ShareSheet(
             Panel(Modifier.padding(vertical = 4.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Avatar(p.name, p.hue, size = 32.dp)
-                    Spacer(Modifier.width(10.dp))
+                    Spacer(Modifier.width(12.dp))
                     Text(p.name, style = Aiimin.type.bodyStrong, modifier = Modifier.weight(1f))
                     Text(level?.lowercase()?.replaceFirstChar { it.uppercase() } ?: "No access", style = Aiimin.type.caption)
                 }
@@ -476,7 +495,7 @@ fun PersonScreen(id: String, vm: PersonViewModel = hiltViewModel()) {
             item {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Avatar(person.name, person.hue, size = 64.dp)
-                    Spacer(Modifier.width(14.dp))
+                    Spacer(Modifier.width(16.dp))
                     Column {
                         Text(person.name, style = Aiimin.type.title)
                         Text(listOf(person.relation, role.label).filter { it.isNotBlank() }.joinToString(" · "), style = Aiimin.type.caption)
@@ -494,7 +513,7 @@ fun PersonScreen(id: String, vm: PersonViewModel = hiltViewModel()) {
                 Spacer(Modifier.height(16.dp))
             }
             item {
-                Panel(onClick = { nav.open(Route.EmergencyCard(person.id)) }) {
+                Panel(opens = Route.EmergencyCard(person.id), onClick = { nav.open(Route.EmergencyCard(person.id)) }) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         IconTile(AppIcons.FirstAid, tint = c.danger, background = c.dangerSoft)
                         Spacer(Modifier.width(12.dp))
@@ -511,12 +530,12 @@ fun PersonScreen(id: String, vm: PersonViewModel = hiltViewModel()) {
                 if (docs.isEmpty()) Text(if (person.linked && person.id != ME) "Their documents are private. They can share items with you." else "Nothing here yet.", style = Aiimin.type.caption)
             }
             items(docs, key = { it.doc.id }) { d ->
-                ListRow(d.doc.title, subtitle = d.doc.category, leading = { IconTile(kindIcon(d.doc.ext, d.doc.mime)) }, trailing = { ExpiryTag(d.daysToExpiry) }, onClick = { nav.open(Route.Doc(d.doc.id)) })
+                ListRow(d.doc.title, subtitle = d.doc.category, leading = { IconTile(kindIcon(d.doc.ext, d.doc.mime)) }, trailing = { ExpiryTag(d.daysToExpiry) }, opens = Route.Doc(d.doc.id), onClick = { nav.open(Route.Doc(d.doc.id)) })
             }
             if (person.id != ME) {
                 item {
                     SectionHeader("Tasks for ${person.name}")
-                    tasks.forEach { t -> ListRow(t.title, subtitle = t.day?.let { Dates.relative(LocalDate.parse(it), LocalDate.now()) }, leading = { IconTile(AppIcons.ListChecks) }, onClick = { nav.open(Route.Task(t.id)) }) }
+                    tasks.forEach { t -> ListRow(t.title, subtitle = t.day?.let { Dates.relative(LocalDate.parse(it), LocalDate.now()) }, leading = { IconTile(AppIcons.ListChecks) }, opens = Route.Task(t.id), onClick = { nav.open(Route.Task(t.id)) }) }
                     AppTextField(newTask, { newTask = it }, placeholder = "Remind ${person.name} to…", leading = AppIcons.Plus, onDone = { vm.addTask(newTask); newTask = "" })
                 }
                 if (role == Role.ELDER) {
@@ -550,7 +569,7 @@ fun PersonScreen(id: String, vm: PersonViewModel = hiltViewModel()) {
         AppSheet({ delegate = false }, title = "Caregiver for ${person.name}", subtitle = "${person.name} agrees to let you manage these categories. Re-confirmed every year.") {
             PillRow { listOf("Insurance", "Health", "Identity", "Vehicle", "Finance & Tax", "Property").forEach { k -> Pill(k, k in cats, { cats = if (k in cats) cats - k else cats + k }) } }
             Spacer(Modifier.height(12.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (person.delegateTo != null) AppButton("Remove", { vm.setDelegate(null, emptySet()); delegate = false }, Modifier.weight(1f), kind = ButtonKind.SECONDARY)
                 AppButton("Confirm", { vm.setDelegate(ME, cats); delegate = false }, Modifier.weight(1f), enabled = cats.isNotEmpty())
             }
@@ -570,23 +589,63 @@ fun EmergencyCardScreen(id: String, vm: PersonViewModel = hiltViewModel()) {
     val empty = listOf(person.blood, person.allergies, person.meds, person.doctor).all { it.isBlank() } && Codecs.decodeList(person.contacts).isEmpty()
     Column(Modifier.fillMaxSize().background(c.base)) {
         TopBar("Emergency card", onBack = { nav.back() }) { AppIconButton(AppIcons.Pencil, "Edit emergency card", { editing = true }) }
-        Column(Modifier.padding(Aiimin.space.gutter)) {
-            Text(person.name, style = Aiimin.type.title)
+        Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(Aiimin.space.gutter)) {
+            // Who this card is for: big name, initials and a plain badge (24 Oct pass: was a bare text list).
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Avatar(person.name, person.hue, size = 56.dp)
+                Spacer(Modifier.width(16.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(person.name, style = Aiimin.type.title)
+                    Spacer(Modifier.height(4.dp))
+                    Tag("Opens when the vault is locked", color = c.accentText, background = c.accentSoft, icon = AppIcons.FirstAid)
+                }
+            }
             // An empty card says how to fill it instead of four dashes.
             if (empty) {
-                Text("Nothing on this card yet. Add a blood group, allergies and someone to call; it opens even when the phone is locked.", style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(top = 8.dp))
+                Text("Nothing on this card yet. Add a blood group, allergies and someone to call; it opens even when the phone is locked.", style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(top = 16.dp))
                 AppButton("Fill in the card", { editing = true }, Modifier.padding(top = 16.dp))
+            } else {
+                Spacer(Modifier.height(20.dp))
+                val rows = listOf(
+                    Triple(AppIcons.Drop, "Blood group", person.blood),
+                    Triple(AppIcons.WarningCircle, "Allergies", person.allergies),
+                    Triple(AppIcons.Pill, "Medicines", person.meds),
+                    Triple(AppIcons.Stethoscope, "Doctor", person.doctor),
+                )
+                Panel(color = c.surface, bordered = true, padding = PaddingValues(horizontal = 16.dp)) {
+                    rows.forEachIndexed { i, (icon, k, v) ->
+                        if (i > 0) Hairline()
+                        Row(Modifier.padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                            IconTile(icon)
+                            Spacer(Modifier.width(16.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(k.uppercase(), style = Aiimin.type.eyebrow)
+                                Text(v.ifBlank { "Not added" }, style = if (v.isBlank()) Aiimin.type.body.copy(color = c.textFaint) else Aiimin.type.headline)
+                            }
+                        }
+                    }
+                }
             }
-            Spacer(Modifier.height(16.dp))
-            if (!empty) listOf("Blood group" to person.blood, "Allergies" to person.allergies, "Medicines" to person.meds, "Doctor" to person.doctor).forEach { (k, v) ->
-                Text(k.uppercase(), style = Aiimin.type.eyebrow)
-                Text(v.ifBlank { "—" }, style = Aiimin.type.headline.copy(fontSize = 22.sp), modifier = Modifier.padding(bottom = 14.dp))
+            val contacts = Codecs.decodeList(person.contacts)
+            if (contacts.isNotEmpty()) {
+                Spacer(Modifier.height(24.dp))
+                Text("WHO TO CALL", style = Aiimin.type.eyebrow)
+                Spacer(Modifier.height(8.dp))
             }
-            Codecs.decodeList(person.contacts).forEach { contact ->
-                val phone = Regex("[+\\d][\\d\\s-]{6,}").find(contact)?.value?.filter { it.isDigit() || it == '+' }
-                ListRow(contact, leading = { IconTile(AppIcons.Phonecall, tint = c.done, background = c.doneSoft) }, onClick = {
-                    if (phone != null) context.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phone")))
-                })
+            contacts.forEach { contact ->
+                val phone = Regex("[+\\d][\\d\\s-]{6,}").find(contact)?.value?.trim()
+                val who = (if (phone != null) contact.replace(phone, "") else contact).trim().trim(',', '·', '-', ' ')
+                Panel(Modifier.padding(bottom = 8.dp), color = c.doneSoft) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text(who.ifBlank { contact }, style = Aiimin.type.headline)
+                            if (phone != null) Text(phone, style = Aiimin.type.note.copy(color = c.text))
+                        }
+                        if (phone != null) AppButton("Call", {
+                            context.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:${phone.filter { it.isDigit() || it == '+' }}")))
+                        }, icon = AppIcons.Phonecall, compact = true)
+                    }
+                }
             }
         }
     }
@@ -636,14 +695,18 @@ fun FamilyScreen(vm: FamilyViewModel = hiltViewModel()) {
             item {
                 Panel(color = c.surface) {
                     Text("How sharing works", style = Aiimin.type.bodyStrong)
-                    Spacer(Modifier.height(6.dp))
-                    listOf(
-                        "Private by default. People share results, not inputs.",
-                        "Managing someone's account never means reading it.",
-                        "Journals are never visible to anyone else — no override.",
-                        "Life Scores are private unless the owner shares the number.",
-                        "Every access outside a share is logged and notified.",
-                    ).forEach { Text("· $it", style = Aiimin.type.caption, modifier = Modifier.padding(vertical = 2.dp)) }
+                    Spacer(Modifier.height(8.dp))
+                    // D-013: a real list with a hanging indent, inside the card's 16 dp padding.
+                    aiimin.designsystem.component.BulletList(
+                        listOf(
+                            "Private by default. People share results, not inputs.",
+                            "Managing someone's account never means reading it.",
+                            "Journals are never visible to anyone else — no override.",
+                            "Life Scores are private unless the owner shares the number.",
+                            "Every access outside a share is logged and notified.",
+                        ),
+                        style = Aiimin.type.note,
+                    )
                 }
                 Spacer(Modifier.height(8.dp))
             }
@@ -702,11 +765,11 @@ fun FamilyScreen(vm: FamilyViewModel = hiltViewModel()) {
 private fun LinkChip(text: String, icon: androidx.compose.ui.graphics.vector.ImageVector, warn: Boolean = false, onClick: () -> Unit) {
     val c = Aiimin.colors
     Row(
-        Modifier.clip(RoundedCornerShape(6.dp)).background(c.raised).clickable(onClick = onClick).heightIn(min = 36.dp).padding(horizontal = 11.dp),
-        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp),
+        Modifier.clip(RoundedCornerShape(6.dp)).background(c.raised).clickable(onClick = onClick).heightIn(min = 36.dp).padding(horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Icon(icon, null, tint = if (warn) c.accentText else c.text, modifier = Modifier.size(16.dp))
-        Text(text, style = Aiimin.type.label.copy(fontSize = 13.5.sp, color = if (warn) c.accentText else c.text), maxLines = 1)
+        Icon(icon, null, tint = if (warn) c.warn else c.text, modifier = Modifier.size(16.dp))
+        Text(text, style = Aiimin.type.label.copy(color = if (warn) c.warn else c.text), maxLines = 1)
     }
 }
 
@@ -714,10 +777,10 @@ private fun LinkChip(text: String, icon: androidx.compose.ui.graphics.vector.Ima
 private fun FoundRow(label: String, value: String, note: String? = null, found: Boolean, warnText: Boolean = false, trailing: (@Composable () -> Unit)? = null) {
     val c = Aiimin.colors
     Row(Modifier.fillMaxWidth().heightIn(min = 64.dp), verticalAlignment = Alignment.CenterVertically) {
-        Column(Modifier.weight(1f).padding(vertical = 10.dp)) {
+        Column(Modifier.weight(1f).padding(vertical = 12.dp)) {
             Text(label, style = Aiimin.type.caption)
-            Text(value, style = Aiimin.type.headline.copy(fontSize = 17.sp, color = if (warnText) c.accentText else c.text), modifier = Modifier.padding(top = 2.dp))
-            if (note != null) Text(note, style = Aiimin.type.caption.copy(fontSize = 12.sp), modifier = Modifier.padding(top = 2.dp))
+            Text(value, style = Aiimin.type.headline.copy(color = if (warnText) c.warn else c.text), modifier = Modifier.padding(top = 2.dp))
+            if (note != null) Text(note, style = Aiimin.type.caption, modifier = Modifier.padding(top = 2.dp))
         }
         if (trailing != null) trailing() else if (found) EvidenceDot('A')
     }

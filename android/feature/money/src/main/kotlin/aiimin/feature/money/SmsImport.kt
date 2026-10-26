@@ -1,5 +1,6 @@
 package aiimin.feature.money
 
+import aiimin.core.data.money.payeeLabel
 import aiimin.core.data.money.Categories
 import aiimin.core.data.money.Ledger
 import aiimin.core.data.money.MoneyRepository
@@ -184,19 +185,19 @@ fun SmsImportScreen(vm: SmsImportViewModel = hiltViewModel()) {
             )
             run?.let { YearCard(it, vm, onReview = { nav.open(Route.MoneyInbox) }) }
             if (!granted) {
-                Column(Modifier.padding(top = 18.dp).fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(c.surface).border(1.dp, c.border, RoundedCornerShape(14.dp)).padding(16.dp)) {
+                Column(Modifier.padding(top = 20.dp).fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(c.surface).border(1.dp, c.border, RoundedCornerShape(14.dp)).padding(16.dp)) {
                     Text("Let AIIMIN read your SMS", style = Aiimin.type.cardTitle)
-                    Spacer(Modifier.height(6.dp))
-                    Text("Only bank payments are used. OTPs, offers and personal chats are skipped and never stored.", style = Aiimin.type.caption.copy(fontSize = 14.sp))
+                    Spacer(Modifier.height(8.dp))
+                    Text("Only bank payments are used. OTPs, offers and personal chats are skipped and never stored.", style = Aiimin.type.note)
                 }
             }
 
-            SectionHeader("How", Modifier.padding(top = 18.dp))
+            SectionHeader("How", Modifier.padding(top = 20.dp))
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 SmsMode.entries.forEach { m -> ModeRow(m, mode == m) { vm.mode.value = m } }
             }
 
-            SectionHeader(if (mode == SmsMode.YEAR) "Which year" else "Which month", Modifier.padding(top = 18.dp))
+            SectionHeader(if (mode == SmsMode.YEAR) "Which year" else "Which month", Modifier.padding(top = 20.dp))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (mode == SmsMode.YEAR) {
                     listOf<Int?>(null, vm.now.year, vm.now.year - 1, vm.now.year - 2).forEach { y ->
@@ -208,11 +209,11 @@ fun SmsImportScreen(vm: SmsImportViewModel = hiltViewModel()) {
                 }
             }
 
-            SectionHeader("Filter", Modifier.padding(top = 18.dp), action = if (editing) "Done" else "Change", onAction = { editing = !editing })
+            SectionHeader("Filter", Modifier.padding(top = 20.dp), action = if (editing) "Done" else "Change", onAction = { editing = !editing })
             Text(filter.summary(), style = Aiimin.type.bodyStrong)
             if (editing) FilterEditor(filter, banks, accounts, vm::setFilter)
             Text(
-                "Always skipped: OTPs, offers, collect requests, failed payments, statements and balance updates.",
+                "Always skipped: OTPs, offers, collect requests, payments that didn't go through, statements and balance updates.",
                 style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp),
             )
 
@@ -220,7 +221,7 @@ fun SmsImportScreen(vm: SmsImportViewModel = hiltViewModel()) {
             Spacer(Modifier.height(24.dp))
         }
         val n = preview?.fresh?.size ?: 0
-        Column(Modifier.padding(horizontal = Aiimin.space.gutter, vertical = 10.dp)) {
+        Column(Modifier.padding(horizontal = Aiimin.space.gutter, vertical = 12.dp)) {
             val label = when {
                 !granted -> "Allow SMS access"
                 busy -> "Bringing them in…"
@@ -258,15 +259,15 @@ private fun ModeRow(m: SmsMode, selected: Boolean, onClick: () -> Unit) {
     val shape = RoundedCornerShape(14.dp)
     Row(
         Modifier.fillMaxWidth().clip(shape).background(if (selected) c.accentSoft else c.surface)
-            .border(1.dp, if (selected) c.accent else c.border, shape).pressable(onClick).padding(14.dp),
+            .border(1.dp, if (selected) c.accent else c.border, shape).pressable(onClick).padding(16.dp),
         verticalAlignment = Alignment.Top,
     ) {
-        Icon(if (selected) AppIcons.CheckCircle else AppIcons.Circle, null, tint = if (selected) c.accentText else c.textFaint, modifier = Modifier.padding(top = 2.dp).size(20.dp))
+        Icon(if (selected) AppIcons.CheckCircle else AppIcons.Circle, null, tint = if (selected) c.link else c.textFaint, modifier = Modifier.padding(top = 2.dp).size(20.dp))
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             Text(m.title, style = Aiimin.type.bodyStrong)
             Spacer(Modifier.height(2.dp))
-            Text(m.line, style = Aiimin.type.caption.copy(fontSize = 14.sp, lineHeight = 19.sp))
+            Text(m.line, style = Aiimin.type.note)
         }
     }
 }
@@ -275,7 +276,7 @@ private fun ModeRow(m: SmsMode, selected: Boolean, onClick: () -> Unit) {
 @Composable
 private fun FilterEditor(f: SmsFilter, banks: Map<String, Int>, accounts: Map<String, Int>, set: (SmsFilter) -> Unit) {
     var words by remember { mutableStateOf(f.words.joinToString(", ")) }
-    Column(Modifier.padding(top = 12.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+    Column(Modifier.padding(top = 12.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Column {
             Text("Banks", style = Aiimin.type.label, modifier = Modifier.padding(bottom = 8.dp))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -284,7 +285,7 @@ private fun FilterEditor(f: SmsFilter, banks: Map<String, Int>, accounts: Map<St
                     Pill(b, b in f.banks, { set(f.copy(banks = if (b in f.banks) f.banks - b else f.banks + b)) }, count = banks[b])
                 }
             }
-            if (banks.isEmpty()) Text("Banks appear here once AIIMIN has read your messages.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp))
+            if (banks.isEmpty()) Text("Banks appear here once AIIMIN has read your messages.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp))
         }
         if (accounts.size > 1) Column {
             Text("Accounts and cards", style = Aiimin.type.label, modifier = Modifier.padding(bottom = 8.dp))
@@ -318,7 +319,7 @@ private fun PreviewCard(mode: SmsMode, granted: Boolean, loading: Boolean, p: Sm
     if (!granted) return
     val c = Aiimin.colors
     val shape = RoundedCornerShape(14.dp)
-    Column(Modifier.padding(top = 18.dp).fillMaxWidth().clip(shape).background(c.surface).border(1.dp, c.border, shape).padding(16.dp)) {
+    Column(Modifier.padding(top = 20.dp).fillMaxWidth().clip(shape).background(c.surface).border(1.dp, c.border, shape).padding(16.dp)) {
         val period = if (mode == SmsMode.YEAR) SmsPeriods.yearLabel(vm.year.value, vm.now) else SmsPeriods.monthName(vm.month.value, vm.now)
         when {
             loading || p == null -> Text("Reading $period…", style = Aiimin.type.bodyStrong)
@@ -336,9 +337,9 @@ private fun PreviewCard(mode: SmsMode, granted: Boolean, loading: Boolean, p: Sm
                     SmsSift.skippedLine(p.sift.skipped).ifEmpty { null },
                     "${p.read} message${if (p.read == 1) "" else "s"} read".takeIf { p.read > 0 },
                 )
-                lines.forEach { Text(it, style = Aiimin.type.caption.copy(fontSize = 14.sp), modifier = Modifier.padding(top = 4.dp)) }
+                lines.forEach { Text(it, style = Aiimin.type.note, modifier = Modifier.padding(top = 4.dp)) }
                 if (mode == SmsMode.YEAR && run != null && !run.finished && !run.stopped) {
-                    Text("A year is already being read. Stop it to start another.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp))
+                    Text("A year is already being read. Stop it to start another.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 8.dp))
                 }
             }
         }
@@ -349,7 +350,7 @@ private fun PreviewCard(mode: SmsMode, granted: Boolean, loading: Boolean, p: Sm
 private fun YearCard(run: SmsYearRun, vm: SmsImportViewModel, onReview: () -> Unit) {
     val c = Aiimin.colors
     val shape = RoundedCornerShape(14.dp)
-    Column(Modifier.padding(top = 18.dp).fillMaxWidth().clip(shape).background(c.surface).border(1.dp, c.border, shape).padding(16.dp)) {
+    Column(Modifier.padding(top = 20.dp).fillMaxWidth().clip(shape).background(c.surface).border(1.dp, c.border, shape).padding(16.dp)) {
         Text(
             when {
                 run.finished -> run.doneLine()
@@ -358,9 +359,9 @@ private fun YearCard(run: SmsYearRun, vm: SmsImportViewModel, onReview: () -> Un
             },
             style = Aiimin.type.cardTitle,
         )
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(12.dp))
         Meter(run.doneMonths / run.total.coerceAtLeast(1).toFloat(), color = if (run.finished) c.done else c.accent)
-        Text(run.progressLine(), style = Aiimin.type.caption.copy(fontSize = 14.sp), modifier = Modifier.padding(top = 8.dp))
+        Text(run.progressLine(), style = Aiimin.type.note, modifier = Modifier.padding(top = 8.dp))
         Row(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             when {
                 run.finished -> {
@@ -410,17 +411,17 @@ private fun OneByOne(queue: List<SiftedSms>, vm: SmsImportViewModel, onDone: () 
                 Icon(AppIcons.CheckCircleFill, null, tint = c.done, modifier = Modifier.size(56.dp))
                 Spacer(Modifier.height(16.dp))
                 Text("All done", style = Aiimin.type.cardTitle)
-                Spacer(Modifier.height(6.dp))
-                Text(listOf("$booked booked", "$later in Review", "$skipped skipped").joinToString(" · "), style = Aiimin.type.caption.copy(fontSize = 14.sp))
-                Spacer(Modifier.height(22.dp))
+                Spacer(Modifier.height(8.dp))
+                Text(listOf("$booked booked", "$later in Review", "$skipped skipped").joinToString(" · "), style = Aiimin.type.note)
+                Spacer(Modifier.height(24.dp))
                 if (later > 0) AppButton("Open Review", onReview, compact = true)
                 AppButton("Done", onDone, kind = if (later > 0) ButtonKind.GHOST else ButtonKind.PRIMARY, compact = true, modifier = Modifier.padding(top = 8.dp))
             }
             return@Column
         }
-        Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Aiimin.space.gutter).padding(top = 14.dp)) {
+        Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Aiimin.space.gutter).padding(top = 16.dp)) {
             val shape = RoundedCornerShape(16.dp)
-            Column(Modifier.fillMaxWidth().clip(shape).background(c.surface).border(1.dp, c.border, shape).padding(18.dp)) {
+            Column(Modifier.fillMaxWidth().clip(shape).background(c.surface).border(1.dp, c.border, shape).padding(20.dp)) {
                 val at = Instant.ofEpochMilli(s.message.at).atZone(ZoneId.systemDefault())
                 Text(
                     listOfNotNull(Dates.dayMonthOf(at.toLocalDate()), s.bank, s.alert.accountLast4?.let { "••$it" }).joinToString(" · "),
@@ -428,14 +429,14 @@ private fun OneByOne(queue: List<SiftedSms>, vm: SmsImportViewModel, onDone: () 
                 )
                 Spacer(Modifier.height(12.dp))
                 Row(verticalAlignment = Alignment.Bottom) {
-                    Text(Money.format(s.alert.amount * 100), style = Aiimin.type.numberLarge.copy(fontSize = 44.sp, lineHeight = 48.sp))
+                    Text(Money.format(s.alert.paise), style = Aiimin.type.numberLarge)
                     Spacer(Modifier.width(8.dp))
-                    Text(if (s.alert.direction == MoneyDirection.IN) "Received" else "Paid", style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(bottom = 6.dp))
+                    Text(if (s.alert.direction == MoneyDirection.IN) "Received" else "Paid", style = Aiimin.type.body.copy(color = c.textMuted), modifier = Modifier.padding(bottom = 8.dp))
                 }
-                Spacer(Modifier.height(6.dp))
-                Text(draft?.title ?: s.alert.name, style = Aiimin.type.headline.copy(fontSize = 20.sp, lineHeight = 26.sp))
-                Spacer(Modifier.height(6.dp))
-                Text(s.message.body, style = Aiimin.type.caption.copy(fontFamily = FontFamily.Monospace, fontSize = 12.sp, lineHeight = 17.sp), maxLines = 4)
+                Spacer(Modifier.height(8.dp))
+                Text(payeeLabel(draft?.title ?: s.alert.name), style = Aiimin.type.cardTitle)
+                Spacer(Modifier.height(8.dp))
+                Text(s.message.body, style = Aiimin.type.code, maxLines = 4)
                 Spacer(Modifier.height(16.dp))
                 Text("CATEGORY", style = Aiimin.type.eyebrow)
                 Spacer(Modifier.height(8.dp))
@@ -444,7 +445,7 @@ private fun OneByOne(queue: List<SiftedSms>, vm: SmsImportViewModel, onDone: () 
                 }
             }
         }
-        Column(Modifier.padding(horizontal = Aiimin.space.gutter, vertical = 10.dp)) {
+        Column(Modifier.padding(horizontal = Aiimin.space.gutter, vertical = 12.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 AppButton("Skip", { next { vm.skip(it); skipped++ } }, kind = ButtonKind.GHOST, enabled = draft != null && !working, modifier = Modifier.weight(1f))
                 AppButton("Later", { next { later++ } }, kind = ButtonKind.SECONDARY, enabled = draft != null && !working, modifier = Modifier.weight(1f))

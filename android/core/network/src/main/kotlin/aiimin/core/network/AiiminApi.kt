@@ -128,12 +128,6 @@ interface AiiminApi {
     @GET("intelligence/correlations")
     suspend fun correlations(@Query("refresh") refresh: Int = 0): CorrelationsResponse
 
-    @GET("lab/summary")
-    suspend fun labSummary(): LabSummaryResponse
-
-    @POST("lab/practice/speaking")
-    suspend fun postSpeakingPractice(@Body body: SpeakingPracticeRequest): SpeakingPracticeResponse
-
     // Calendar: phone-made events travel both ways. Google-imported rows are read-only here.
     @GET("calendar/events")
     suspend fun calendarEvents(@Query("start") start: String, @Query("end") end: String): List<CalendarEventDto>

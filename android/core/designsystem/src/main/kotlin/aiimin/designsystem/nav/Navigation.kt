@@ -54,12 +54,19 @@ sealed interface Route {
     data object Language : Route
     data object Help : Route
     data object About : Route
+    /** Settings › Raahi (mode) and About Raahi (PRD 1.1). */
+    data object RaahiSettings : Route
+    /** Settings › Notifications (PRD 2.1). */
+    data object NotifySettings : Route
+    data object AboutRaahi : Route
     /** How AIIMIN is running: Pulse jobs and their last runs. */
     data object Running : Route
     data object Conflicts : Route
     data object Trash : Route
     data class SignIn(val createAccount: Boolean = false) : Route
     data object Privacy : Route
+    /** Settings > Privacy > Your rights (PRD 21 s.9a, DPDP Rules 3 and 14). */
+    data object YourRights : Route
     data object HealthPrivacy : Route
     data object PhoneDay : Route
     data object Body : Route
@@ -82,6 +89,10 @@ sealed interface Route {
 
     // vault / family
     data class Doc(val id: String) : Route
+    /** V7: a document's cover, its versions and its lifecycle (PRD Part 5 Phase 1). */
+    data class DocInfo(val id: String) : Route
+    /** A car's or a home's papers on one page. */
+    data class Asset(val key: String) : Route
     data class Person(val id: String) : Route
     data object Family : Route
     data object VaultBackup : Route
@@ -91,9 +102,12 @@ sealed interface Route {
     // notes / journal
     data object Notes : Route
     data class Note(val id: String? = null) : Route
+    /** Part 11.7 Q-1: bring notes in (Keep, Apple Notes, Markdown) and save them all. */
+    data object NotesImport : Route
     data object Journal : Route
     data object MoodYear : Route
-    data class JournalWrite(val id: String? = null) : Route
+    /** [prefill]: text typed into the "+" sheet that belongs in private writing (Pour). */
+    data class JournalWrite(val id: String? = null, val prefill: String? = null, val tool: String? = null) : Route
 
     // assistant
     data object RecentCaptures : Route
@@ -104,8 +118,8 @@ interface AppNavigator {
     fun open(route: Route)
     fun back()
     fun tab(tab: Tab)
-    /** Open the global capture sheet (＋), optionally pre-filled. */
-    fun capture(prefill: String? = null, voice: Boolean = false)
+    /** Open the global capture sheet (＋), optionally pre-filled or with a quick type picked ("expense"). */
+    fun capture(prefill: String? = null, voice: Boolean = false, type: String? = null)
 }
 
 val LocalNavigator = staticCompositionLocalOf<AppNavigator> { error("No navigator") }

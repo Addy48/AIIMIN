@@ -1,5 +1,6 @@
 package aiimin.feature.money
 
+import aiimin.designsystem.component.bleed
 import aiimin.core.data.money.AccountRepository
 import aiimin.core.data.money.AccountType
 import aiimin.core.data.money.AccountView
@@ -119,13 +120,19 @@ private fun ago(ms: Long?): String {
 @HiltViewModel
 class AccountsViewModel @Inject constructor(private val repo: AccountRepository) : ViewModel() {
     val views = MutableStateFlow<List<AccountView>?>(null)
+    /** Accounts bank messages named that are not added yet (owner, 20 Oct). */
+    val found = MutableStateFlow<List<aiimin.core.data.money.SeenAccount>>(emptyList())
 
     init {
         viewModelScope.launch {
             repo.ensureSeeded()
-            repo.accounts.collect { views.value = repo.views() }
+            repo.accounts.collect { views.value = repo.views(); found.value = repo.suggestions() }
         }
     }
+
+    fun linkTarget(s: aiimin.core.data.money.SeenAccount) = s.linkTarget(views.value.orEmpty().map { it.account })?.name
+    fun acceptFound(s: aiimin.core.data.money.SeenAccount) { found.value = found.value - s; viewModelScope.launch { repo.accept(s) } }
+    fun dismissFound(s: aiimin.core.data.money.SeenAccount) { found.value = found.value - s; viewModelScope.launch { repo.dismiss(s.last4); found.value = repo.suggestions() } }
 
     fun save(a: AccountEntity) = viewModelScope.launch { repo.save(a) }
     fun archive(id: String) = viewModelScope.launch { repo.archive(id) }
@@ -143,13 +150,17 @@ fun AccountsScreen(vm: AccountsViewModel = hiltViewModel()) {
     Column(Modifier.fillMaxSize().background(c.base)) {
         TopBar("Accounts", onBack = { nav.back() }) { AppIconButton(AppIcons.Plus, "Add account", { adding = true }) }
         val items = list ?: return@Column
+        val found by vm.found.collectAsStateWithLifecycle()
         LazyColumn(contentPadding = PaddingValues(start = Aiimin.space.gutter, end = Aiimin.space.gutter, bottom = 40.dp)) {
-            if (items.isEmpty()) item {
-                EmptyState(AppIcons.Bank, "No accounts yet", "Add the bank accounts, cards and wallets you pay from. Bank alerts fill in the last four digits for you.", action = "Add account", onAction = { adding = true })
+            items(found, key = { "found-" + it.last4 }) { s ->
+                AccountFoundCard(s, vm.linkTarget(s), onAdd = { vm.acceptFound(s) }, onNotMine = { vm.dismissFound(s) }, modifier = Modifier.padding(vertical = 8.dp))
+            }
+            if (items.isEmpty() && found.isEmpty()) item {
+                EmptyState(AppIcons.Bank, "No accounts yet", "Add the bank accounts, cards and wallets you pay from. When a bank message names an account, AIIMIN offers to add it.", action = "Add account", onAction = { adding = true }, sidePadding = 0.dp)
             }
             items(items, key = { it.account.id }) { v ->
                 val a = v.account
-                Row(Modifier.fillMaxWidth().pressable({ editing = a }).heightIn(min = 64.dp).padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.fillMaxWidth().pressable({ editing = a }).heightIn(min = 64.dp).padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                     IconTile(
                         when (a.type) {
                             AccountType.CASH.name -> AppIcons.Coins
@@ -168,7 +179,7 @@ fun AccountsScreen(vm: AccountsViewModel = hiltViewModel()) {
                         val health = if (a.type == AccountType.CASH.name) "Logged by you" else ago(v.lastAlertAt) + if (v.quiet()) " · Check" else ""
                         Text(
                             listOfNotNull(type, Ledger.entries.firstOrNull { it.name == a.ledger }?.label, health, a.trackFrom?.let { "Track from ${Dates.short(LocalDate.parse(it))}" }).joinToString(" · "),
-                            style = Aiimin.type.caption.copy(color = if (v.quiet()) c.accentText else c.textMuted),
+                            style = Aiimin.type.caption.copy(color = if (v.quiet()) c.warn else c.textMuted),
                         )
                     }
                     Chevron()
@@ -178,7 +189,7 @@ fun AccountsScreen(vm: AccountsViewModel = hiltViewModel()) {
             item {
                 Text(
                     "Spends you speak or type without naming an account go to the primary one. Bank alerts always use the account they came from.",
-                    style = Aiimin.type.caption, modifier = Modifier.padding(top = 14.dp),
+                    style = Aiimin.type.caption, modifier = Modifier.padding(top = 16.dp),
                 )
             }
         }
@@ -202,7 +213,7 @@ private fun AccountSheet(a: AccountEntity, onDismiss: () -> Unit, onSave: (Accou
     var pickDate by remember { mutableStateOf(false) }
     AppSheet(onDismiss, title = a.name + (a.last4?.let { " ••$it" } ?: "")) {
         AppTextField(name, { name = it }, label = "Name")
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(12.dp))
         AppTextField(last4, { v -> last4 = v.filter(Char::isDigit).take(4) }, label = "Last 4 digits", keyboardType = KeyboardType.Number)
         SectionHeader("Type")
         PillRow { AccountType.entries.forEach { t -> Pill(t.label, type == t.name, { type = t.name }) } }
@@ -215,7 +226,7 @@ private fun AccountSheet(a: AccountEntity, onDismiss: () -> Unit, onSave: (Accou
             ListRow("Track from", subtitle = trackFrom?.let { Dates.long(LocalDate.parse(it)) } ?: "All alerts", trailing = { Chevron() }, onClick = { pickDate = true })
         }
         AppTextField(nickname, { nickname = it }, label = "Name for voice", placeholder = "salary account, business card")
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(16.dp))
         AppButton("Save", {
             onSave(a.copy(name = name, last4 = last4.ifBlank { null }, type = type, ledger = ledger, primary = primary, nickname = nickname.trim(), notifAlerts = notif, smsAlerts = sms, trackFrom = trackFrom))
         }, Modifier.fillMaxWidth())
@@ -233,13 +244,13 @@ private fun NewAccountSheet(onDismiss: () -> Unit, onCreate: (String, AccountTyp
     var ledger by remember { mutableStateOf(Ledger.PERSONAL) }
     AppSheet(onDismiss, title = "Add account") {
         AppTextField(name, { name = it }, label = "Bank or name", placeholder = "HDFC, Paytm wallet, Cash")
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(12.dp))
         AppTextField(last4, { v -> last4 = v.filter(Char::isDigit).take(4) }, label = "Last 4 digits (optional)", keyboardType = KeyboardType.Number)
         SectionHeader("Type")
         PillRow { AccountType.entries.forEach { t -> Pill(t.label, type == t, { type = t }) } }
         SectionHeader("Payments go to")
         Segmented(Ledger.entries.map { it.label }, Ledger.entries.indexOf(ledger), { ledger = Ledger.entries[it] })
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(16.dp))
         AppButton("Add", { onCreate(name, type, last4.ifBlank { null }, ledger) }, Modifier.fillMaxWidth(), enabled = name.isNotBlank())
     }
 }
@@ -280,6 +291,7 @@ fun SplitsScreen(vm: SplitsViewModel = hiltViewModel()) {
                     AppIcons.Handshake, "All square",
                     "Split a payment from its page (\"Split with…\"), or say \"split with Rahul\" when you add it. When someone pays for you, record it here.",
                     action = "Record what I owe", onAction = { recording = true },
+                    sidePadding = 0.dp,
                 )
             }
             val owed = items.filter { it.theyOwe }
@@ -289,7 +301,7 @@ fun SplitsScreen(vm: SplitsViewModel = hiltViewModel()) {
             if (owe.isNotEmpty()) item { SectionHeader("You owe · ${Money.whole(-owe.sumOf { it.netPaise })}") }
             items(owe, key = { "i" + it.who }) { b -> BalanceRow(b) { nav.open(Route.SplitPerson(b.who)) } }
             item {
-                Text("AIIMIN doesn't process payments. Payments happen in your UPI app.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 18.dp))
+                Text("AIIMIN doesn't process payments. Payments happen in your UPI app.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 20.dp))
             }
         }
     }
@@ -309,7 +321,7 @@ private fun BalanceRow(b: Balance, onClick: () -> Unit) {
         // Gap + amount over its words, so a long date never runs into it at 1.3× text (audit A-042).
         Spacer(Modifier.width(12.dp))
         Column(horizontalAlignment = Alignment.End) {
-            Text(Money.whole(kotlin.math.abs(b.netPaise)), style = Aiimin.type.bodyStrong.copy(color = if (b.theyOwe) c.done else c.accentText), maxLines = 1)
+            Text(Money.whole(kotlin.math.abs(b.netPaise)), style = Aiimin.type.bodyStrong.copy(color = if (b.theyOwe) c.done else c.textMuted), maxLines = 1)
             Text(if (b.theyOwe) "owes you" else "you owe", style = Aiimin.type.caption, maxLines = 1)
         }
     }
@@ -329,13 +341,13 @@ private fun IOweSheet(people: List<PersonEntity>, onDismiss: () -> Unit, onSave:
             people.filter { it.id != "me" && it.id != "household" }.forEach { p -> Pill(p.name, who?.first == p.id, { who = p.id to p.name; other = "" }) }
         }
         AppTextField(other, { other = it; who = null }, placeholder = "Or type a name", modifier = Modifier.padding(top = 8.dp))
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(12.dp))
         AppTextField(amount, { v -> amount = v.filter { it.isDigit() } }, label = "Your part (₹)", keyboardType = KeyboardType.Number)
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(12.dp))
         AppTextField(title, { title = it }, label = "What for", placeholder = "Dinner at Vaishali")
         SectionHeader("Category")
         PillRow { Categories.SPEND.forEach { k -> Pill(k, cat == k, { cat = k }) } }
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(16.dp))
         val target = who ?: other.trim().takeIf { it.isNotBlank() }?.let { "name:" + it.lowercase() to it }
         val paise = (amount.toLongOrNull() ?: 0L) * 100
         AppButton("Save", { if (target != null && paise > 0) onSave(target.first, target.second, paise, title, cat) }, Modifier.fillMaxWidth(), enabled = target != null && paise > 0)
@@ -384,7 +396,7 @@ fun PersonBalanceScreen(who: String, vm: SplitsViewModel = hiltViewModel()) {
                             copy(context, pay); toaster.show("No UPI app took the amount. UPI ID copied.")
                         }
                     }, Modifier.fillMaxWidth(), icon = AppIcons.ArrowUpRight, enabled = pay != null)
-                    if (pay != null) Text("Copy UPI ID", style = Aiimin.type.label.copy(color = c.accentText, fontSize = 14.sp), modifier = Modifier.padding(top = 10.dp).pressable({ copy(context, pay); toaster.show("Copied $pay") }))
+                    if (pay != null) Text("Copy UPI ID", style = Aiimin.type.labelLarge.copy(color = c.link), modifier = Modifier.padding(top = 12.dp).pressable({ copy(context, pay); toaster.show("Copied $pay") }))
                 } else {
                     val mine = s?.myUpiId.orEmpty()
                     if (mine.isBlank()) {
@@ -405,7 +417,7 @@ fun PersonBalanceScreen(who: String, vm: SplitsViewModel = hiltViewModel()) {
                 SectionHeader("Shared payments")
             }
             items(b.lines, key = { it.txn.id + it.share.who }) { l ->
-                Row(Modifier.fillMaxWidth().pressable({ nav.open(Route.Txn(l.txn.id)) }).heightIn(min = 56.dp).padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.fillMaxWidth().pressable({ nav.open(Route.Txn(l.txn.id)) }).heightIn(min = 56.dp).padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         Text(l.txn.title, style = Aiimin.type.bodyStrong)
                         Text(
@@ -418,7 +430,7 @@ fun PersonBalanceScreen(who: String, vm: SplitsViewModel = hiltViewModel()) {
                 Hairline()
             }
             item {
-                Text("AIIMIN doesn't process payments. Payments happen in your UPI app. Nothing is settled on its own.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 18.dp))
+                Text("AIIMIN doesn't process payments. Payments happen in your UPI app. Nothing is settled on its own.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 20.dp))
             }
         }
     }
@@ -456,7 +468,7 @@ fun SplitSheet(amountPaise: Long, people: List<PersonEntity>, onDismiss: () -> U
             val each = amountPaise / (picked.size + 1)
             Text("${picked.joinToString { it.second }} ${if (picked.size == 1) "owes" else "each owe"} ${Money.whole(each)}", style = Aiimin.type.body, modifier = Modifier.padding(top = 12.dp))
         }
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(16.dp))
         AppButton("Split", { onSplit(picked) }, Modifier.fillMaxWidth(), enabled = picked.isNotEmpty())
     }
 }
@@ -499,7 +511,7 @@ fun RecurringScreen(vm: BillsViewModel = hiltViewModel()) {
             if (suggested.isNotEmpty()) {
                 item { SectionHeader("Looks recurring") }
                 items(suggested, key = { it.id }) { b ->
-                    Column(Modifier.fillMaxWidth().padding(vertical = 10.dp)) {
+                    Column(Modifier.fillMaxWidth().padding(vertical = 12.dp)) {
                         Text("Looks ${runCatching { Cadence.valueOf(b.cadence).label.lowercase() }.getOrDefault("monthly")}: ${b.title} ${Money.whole(b.amountPaise)}", style = Aiimin.type.bodyStrong)
                         Text("Last paid ${b.lastPaid?.let { Dates.short(LocalDate.parse(it)) } ?: "—"} · next around ${Dates.short(LocalDate.parse(b.nextDue))}", style = Aiimin.type.caption)
                         Row(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -512,7 +524,7 @@ fun RecurringScreen(vm: BillsViewModel = hiltViewModel()) {
             }
             item { SectionHeader(if (confirmed.isEmpty()) "Bills" else "Bills · ${Money.whole(confirmed.sumOf { it.amountPaise })} a cycle") }
             if (confirmed.isEmpty()) item {
-                Text("Confirmed bills show here with their next date. AIIMIN spots them after two or three similar payments, or add one with ＋.", style = Aiimin.type.caption, modifier = Modifier.padding(vertical = 6.dp))
+                Text("Confirmed bills show here with their next date. AIIMIN spots them after two or three similar payments, or add one with ＋.", style = Aiimin.type.caption, modifier = Modifier.padding(vertical = 8.dp))
             }
             items(confirmed.filter { !it.autopay }, key = { it.id }) { b -> BillRow(b, today, { editing = b }, { vm.paid(b.id); toaster.show("Marked paid") }) }
             val auto = confirmed.filter { it.autopay }
@@ -543,11 +555,11 @@ private fun BillRow(b: BillEntity, today: LocalDate, onOpen: () -> Unit, onPaid:
                     when { days < 0 -> "was due ${Dates.short(due)}"; days == 0L -> "due today"; days == 1L -> "due tomorrow"; days < 10 -> "in $days days"; else -> Dates.short(due) },
                     runCatching { Cadence.valueOf(b.cadence).label }.getOrNull(), if (b.remind) "reminder a day before" else null,
                 ).joinToString(" · "),
-                style = Aiimin.type.caption.copy(color = if (days in 0..2) c.accentText else c.textMuted),
+                style = Aiimin.type.caption.copy(color = if (days in 0..2) c.warn else c.textMuted),
             )
         }
         Text(Money.whole(b.amountPaise), style = Aiimin.type.bodyStrong)
-        if (onPaid != null) Text("Paid", style = Aiimin.type.label.copy(color = c.accentText, fontSize = 14.sp), modifier = Modifier.padding(start = 14.dp).heightIn(min = 48.dp).pressable(onPaid).padding(top = 14.dp))
+        if (onPaid != null) Text("Paid", style = Aiimin.type.labelLarge.copy(color = c.link), modifier = Modifier.padding(start = 16.dp).heightIn(min = 48.dp).pressable(onPaid).padding(top = 16.dp))
     }
     Hairline()
 }
@@ -560,12 +572,12 @@ private fun MonthStrip(today: LocalDate, bills: List<BillEntity>) {
     val dueDays = bills.map { LocalDate.parse(it.nextDue) }.filter { YearMonth.from(it) == ym }.map { it.dayOfMonth }.toSet()
     Column(Modifier.padding(top = 8.dp)) {
         Text(ym.month.getDisplayName(TextStyle.FULL, Locale.ENGLISH), style = Aiimin.type.caption)
-        Row(Modifier.fillMaxWidth().padding(top = 6.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+        Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
             (1..ym.lengthOfMonth()).forEach { d ->
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Box(Modifier.size(width = 4.dp, height = if (d == today.dayOfMonth) 16.dp else 10.dp).clip(RoundedCornerShape(1.dp)).background(if (d < today.dayOfMonth) c.text else c.border))
-                    Spacer(Modifier.height(3.dp))
-                    Box(Modifier.size(5.dp).clip(CircleShape).background(if (d in dueDays) c.accent else androidx.compose.ui.graphics.Color.Transparent))
+                    Spacer(Modifier.height(4.dp))
+                    Box(Modifier.size(4.dp).clip(CircleShape).background(if (d in dueDays) c.accent else androidx.compose.ui.graphics.Color.Transparent))
                 }
             }
         }
@@ -583,7 +595,7 @@ private fun BillSheet(b: BillEntity?, today: LocalDate, onDismiss: () -> Unit, o
     var pick by remember { mutableStateOf(false) }
     AppSheet(onDismiss, title = if (b == null) "Add a bill" else b.title) {
         AppTextField(title, { title = it }, label = "Name", placeholder = "Rent, Netflix, Airtel")
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(12.dp))
         AppTextField(amount, { v -> amount = v.filter(Char::isDigit) }, label = "Amount (₹)", keyboardType = KeyboardType.Number)
         SectionHeader("Repeats")
         Segmented(Cadence.entries.map { it.label }, Cadence.entries.indexOf(cadence), { cadence = Cadence.entries[it] })
@@ -618,7 +630,7 @@ fun ExportSheet(money: suspend (YearMonth, Ledger) -> Pair<Int, String>, export:
         Spacer(Modifier.height(12.dp))
         Text(info?.let { "${it.second} · ${it.first} rows · CSV" } ?: "Counting…", style = Aiimin.type.body.copy(color = Aiimin.colors.textMuted))
         Text("Date, time, payee, category, account, method, UPI reference and note. Receipts stay in the vault.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 4.dp))
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(16.dp))
         AppButton("Export", {
             scope.launch {
                 val f = export(month, ledger)
@@ -633,7 +645,18 @@ fun ExportSheet(money: suspend (YearMonth, Ledger) -> Pair<Int, String>, export:
 // =================================================================== M16 Payee memory
 
 @HiltViewModel
-class PayeeMemoryViewModel @Inject constructor(private val repo: PayeeMemoryRepository, private val money: aiimin.core.data.money.MoneyRepository) : ViewModel() {
+class PayeeMemoryViewModel @Inject constructor(
+    private val repo: PayeeMemoryRepository,
+    private val money: aiimin.core.data.money.MoneyRepository,
+    accountsRepo: AccountRepository,
+) : ViewModel() {
+    /** Smart rules (Phase 2), in the order they run. */
+    val moneyRules = money.moneyRules().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    val accounts = accountsRepo.accounts.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    fun saveRule(r: aiimin.core.database.MoneyRuleEntity) = viewModelScope.launch { money.saveRule(r) }
+    fun deleteRule(id: String) = viewModelScope.launch { money.deleteRule(id) }
+    fun moveRule(id: String, up: Boolean) = viewModelScope.launch { money.moveRule(id, up) }
+    fun makeRule(place: PayeeRuleEntity) = viewModelScope.launch { money.makeRule(place) }
     val query = MutableStateFlow("")
     /** One row per place: a place is remembered under several keys (UPI handle, its name, the bank's name for it). */
     val rules = combine(repo.rules, query) { r, q ->
@@ -659,13 +682,21 @@ fun PayeeMemoryScreen(vm: PayeeMemoryViewModel = hiltViewModel()) {
     var editing by remember { mutableStateOf<Pair<PayeeRuleEntity, List<String>>?>(null) }
     val spendCats by vm.categories.collectAsStateWithLifecycle()
     val custom by vm.custom.collectAsStateWithLifecycle()
+    val moneyRules by vm.moneyRules.collectAsStateWithLifecycle()
+    val accounts by vm.accounts.collectAsStateWithLifecycle()
+    var ruleSheet by remember { mutableStateOf(false) }
+    var ruleEditing by remember { mutableStateOf<aiimin.core.database.MoneyRuleEntity?>(null) }
     Column(Modifier.fillMaxSize().background(c.base)) {
-        TopBar("Places and categories", onBack = { nav.back() })
+        TopBar("Places and rules", onBack = { nav.back() })
         Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
             AppTextField(q, { vm.query.value = it }, placeholder = "Search payee or category", leading = AppIcons.Search)
         }
         val items = list ?: return@Column
         LazyColumn(contentPadding = PaddingValues(start = Aiimin.space.gutter, end = Aiimin.space.gutter, bottom = 40.dp)) {
+            if (q.isBlank()) item(key = "rules") {
+                RulesBlock(moneyRules, onNew = { ruleEditing = null; ruleSheet = true }, onOpen = { ruleEditing = it; ruleSheet = true }, onMove = { r, up -> vm.moveRule(r.id, up) })
+                SectionHeader("Places AIIMIN remembers", Modifier.padding(top = 8.dp))
+            }
             if (items.isEmpty()) item {
                 Text(
                     if (q.isBlank()) "Nothing learned yet. When you confirm a payment and keep \"Remember\" on, the payee's category lands here." else "No payee matches.",
@@ -693,7 +724,8 @@ fun PayeeMemoryScreen(vm: PayeeMemoryViewModel = hiltViewModel()) {
                 items(custom, key = { "cat-" + it.id }) { cat ->
                     ListRow(
                         cat.name, subtitle = if (cat.archived) "Archived · hidden from the chips" else if (cat.kind == "in") "Money in" else "Money out",
-                        trailing = { AppButton(if (cat.archived) "Restore" else "Archive", { vm.archive(cat, !cat.archived) }, kind = ButtonKind.GHOST, compact = true) },
+                        // D-011: the word ends on the margin like the chevrons above; the button's padding hangs into it.
+                        trailing = { AppButton(if (cat.archived) "Restore" else "Archive", { vm.archive(cat, !cat.archived) }, Modifier.bleed(end = 14.dp), kind = ButtonKind.GHOST, compact = true) },
                     )
                 }
             }
@@ -713,8 +745,19 @@ fun PayeeMemoryScreen(vm: PayeeMemoryViewModel = hiltViewModel()) {
             SwitchRow("Always ask for this payee", ask, { ask = it }, subtitle = "For shops where one payment is groceries and the next is a gift")
             Spacer(Modifier.height(12.dp))
             AppButton("Save", { vm.save(r.copy(category = cat, ledger = ledger, alwaysAsk = ask, label = label.trim()), keys); editing = null; toaster.show("Saved") }, Modifier.fillMaxWidth())
+            // Phase 2: any remembered place can become a rule that books it without asking.
+            if (!ask && !aiimin.core.data.money.SmartRules.covers(moneyRules, keys)) {
+                Spacer(Modifier.height(8.dp))
+                AppButton("Make this a rule", { vm.makeRule(r.copy(category = cat, ledger = ledger, label = label.trim())); editing = null; toaster.show("Rule made") }, Modifier.fillMaxWidth(), kind = ButtonKind.SECONDARY)
+            }
             Spacer(Modifier.height(8.dp))
             AppButton("Forget this payee", { vm.delete(keys); editing = null; toaster.show("Forgotten") }, Modifier.fillMaxWidth(), kind = ButtonKind.GHOST)
         }
     }
+    if (ruleSheet) RuleSheet(
+        ruleEditing, spendCats, accounts,
+        onDismiss = { ruleSheet = false },
+        onSave = { vm.saveRule(it); ruleSheet = false; toaster.show(if (ruleEditing == null) "Rule saved · new alerts follow it" else "Rule saved") },
+        onDelete = ruleEditing?.let { r -> { vm.deleteRule(r.id); ruleSheet = false; toaster.show("Rule deleted") } },
+    )
 }

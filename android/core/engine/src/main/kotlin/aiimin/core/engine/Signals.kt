@@ -88,7 +88,7 @@ object Signals {
         SignalDef(FAMILY, "Family commitments kept", "%", "people", Tier.C, "Family tasks assigned to you that were due"),
         SignalDef(SLEEP, "Sleep", "min", "body", Tier.A, "Health Connect sleep for the night you woke from"),
         SignalDef(SLEEP_REGULARITY, "Sleep regularity", "/100", "body", Tier.A, "How steady your sleep midpoint is across the last 7 nights"),
-        SignalDef(LATE_SCREEN, "Late-night screen time", "min", "mind", Tier.A, "Phone use after your late hour (23:00 by default)"),
+        SignalDef(LATE_SCREEN, "Night screen time", "min", "mind", Tier.A, "Phone use after your wind-down hour (23:00 by default)"),
         SignalDef(UNLOCKS, "Phone unlocks", "count", "mind", Tier.A, "Times the phone was unlocked"),
     ).associateBy { it.key }
 }
@@ -152,8 +152,9 @@ data class IntentionSet(
                     Signals.FOCUS to card(Direction.MORE, 120.0, 2),
                     Signals.MINIMUMS to card(Direction.MORE, 75.0, 3),
                     Signals.STEPS to card(Direction.MORE, 8000.0, 2),
-                    Signals.JOURNAL to card(Direction.MORE, 1.0, 1),
-                    Signals.DRILLS to card(Direction.MORE, 70.0, 1),
+                    // Journal and Pour are never scored (owner, 21 Oct; PRD 12.2). Drills were dropped with the Lab.
+                    Signals.JOURNAL to card(Direction.TRACK, 0.0, 0),
+                    Signals.DRILLS to card(Direction.TRACK, 0.0, 0),
                     Signals.SCREEN_PERSONAL to card(Direction.LESS, 150.0, 1),
                     Signals.SCREEN_WORK to card(Direction.TRACK, 0.0, 0),
                     Signals.MONEY_PACE to card(Direction.LESS, 100.0, 2),

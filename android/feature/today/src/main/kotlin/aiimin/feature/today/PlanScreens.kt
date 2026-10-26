@@ -1,5 +1,10 @@
 package aiimin.feature.today
 
+import aiimin.designsystem.component.bleed
+import aiimin.designsystem.component.IconButtonInset
+import aiimin.designsystem.component.CheckInset
+import aiimin.designsystem.theme.LocalReduceMotion
+import aiimin.designsystem.theme.Motion
 import aiimin.core.data.day.DayRepository
 import aiimin.core.data.plan.DayPart
 import aiimin.core.data.util.Dates
@@ -39,6 +44,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -123,10 +130,10 @@ fun TaskScreen(id: String, vm: TaskViewModel = hiltViewModel()) {
             item {
                 Row(verticalAlignment = Alignment.Top) {
                     CheckCircle(task.done, { scope.launch { vm.toggle(task)?.let { if (it.done) toaster.show(if (it.xp > 0) "Done · +${it.xp} XP" else "Done") } } }, "Mark done")
-                    Box(Modifier.weight(1f).padding(top = 10.dp)) {
+                    Box(Modifier.weight(1f).padding(top = 12.dp)) {
                         BasicTextField(
                             title, { title = it; vm.setTitle(task, it) },
-                            textStyle = Aiimin.type.title.copy(fontSize = 24.sp), cursorBrush = SolidColor(Aiimin.colors.accent),
+                            textStyle = Aiimin.type.cardTitle, cursorBrush = SolidColor(Aiimin.colors.accent),
                             modifier = Modifier.fillMaxWidth(),
                         )
                     }
@@ -174,7 +181,7 @@ fun TaskScreen(id: String, vm: TaskViewModel = hiltViewModel()) {
                 if (notes != task.notes) AppButton("Save notes", { vm.setNotes(task, notes) }, kind = ButtonKind.SECONDARY, compact = true, modifier = Modifier.padding(top = 8.dp))
             }
         }
-        Row(Modifier.fillMaxWidth().navigationBarsPadding().padding(Aiimin.space.gutter), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(Modifier.fillMaxWidth().navigationBarsPadding().padding(Aiimin.space.gutter), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             AppButton("Focus on this", { nav.open(Route.Focus(taskId = task.id, label = task.title)) }, Modifier.weight(1f), kind = ButtonKind.SECONDARY, icon = AppIcons.Timer)
             AppButton(if (task.done) "Reopen" else "Mark done", { scope.launch { vm.toggle(task)?.let { if (it.done) { toaster.show(if (it.xp > 0) "Done · +${it.xp} XP" else "Done"); nav.back() } } } }, Modifier.weight(1f), icon = AppIcons.Check)
         }
@@ -232,7 +239,7 @@ fun CalendarScreen(vm: CalendarViewModel = hiltViewModel()) {
         Hairline(Modifier.padding(top = 8.dp))
         LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(Aiimin.space.gutter)) {
             if (agenda.events.isEmpty() && agenda.tasks.none { it.time != null }) {
-                item { EmptyState(AppIcons.Calendar, "Nothing scheduled", "A free day. Add an event, or ask the assistant to block time.", action = "New event", onAction = { adding = true }) }
+                item { EmptyState(raahi = aiimin.core.engine.raahi.RaahiPose.IDLE, icon = AppIcons.Calendar, title = "Nothing scheduled", body = "A free day. Add an event, or ask the assistant to block time.", action = "New event", onAction = { adding = true }, sidePadding = 0.dp) }
             }
             items(agenda.events, key = { it.id }) { e ->
                 val st = vm.instant(e.startAt).toLocalTime()
@@ -252,7 +259,7 @@ fun CalendarScreen(vm: CalendarViewModel = hiltViewModel()) {
             if (timed.isNotEmpty()) {
                 item { SectionHeader("Timed tasks") }
                 items(timed, key = { "t" + it.id }) { t ->
-                    ListRow(t.title, subtitle = Dates.clock(t.time), leading = { IconTile(AppIcons.ListChecks) }, onClick = { nav.open(Route.Task(t.id)) })
+                    ListRow(t.title, subtitle = Dates.clock(t.time), leading = { IconTile(AppIcons.ListChecks) }, opens = Route.Task(t.id), onClick = { nav.open(Route.Task(t.id)) })
                 }
             }
         }
@@ -292,18 +299,18 @@ private fun EventSheet(
     var pick by remember { mutableStateOf<String?>(null) }
     AppSheet(onDismiss, title = if (initial == null) "New event" else "Edit event") {
         AppTextField(title, { title = it }, placeholder = "What's happening")
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(12.dp))
         ListRow("Date", subtitle = Dates.long(day), leading = { IconTile(AppIcons.Calendar) }, onClick = { pick = "date" })
         SwitchRow("All day", allDay, { allDay = it })
         if (!allDay) {
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 ListRow("Starts", subtitle = Dates.clock(start), modifier = Modifier.weight(1f), onClick = { pick = "start" })
                 ListRow("Ends", subtitle = Dates.clock(end), modifier = Modifier.weight(1f), onClick = { pick = "end" })
             }
         }
         AppTextField(location, { location = it }, placeholder = "Place (optional)", leading = AppIcons.Compass)
         Spacer(Modifier.height(16.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             if (onDelete != null) AppButton("Delete", onDelete, kind = ButtonKind.DANGER, modifier = Modifier.weight(1f))
             AppButton("Save", { if (title.isNotBlank()) onSave(title, day, start, end, allDay, location) }, Modifier.weight(1f), enabled = title.isNotBlank())
         }
@@ -339,7 +346,7 @@ fun FocusScreen(route: Route.Focus, vm: FocusViewModel = hiltViewModel()) {
                 val elapsed = a.elapsedMs(now)
                 val planned = a.plannedMin * 60_000L
                 val remaining = planned - elapsed
-                val p by animateFloatAsState((elapsed.toFloat() / planned).coerceIn(0f, 1f), tween(900), label = "focus")
+                val p by animateFloatAsState((elapsed.toFloat() / planned).coerceIn(0f, 1f), Motion.move(LocalReduceMotion.current, Motion.emphasised()), label = "focus")
                 Spacer(Modifier.height(24.dp))
                 Text(a.label, style = Aiimin.type.headline, textAlign = TextAlign.Center)
                 Spacer(Modifier.height(24.dp))
@@ -382,21 +389,34 @@ fun FocusScreen(route: Route.Focus, vm: FocusViewModel = hiltViewModel()) {
                 var minutes by remember { mutableStateOf(route.minutes) }
                 Spacer(Modifier.height(24.dp))
                 AppTextField(label, { label = it }, placeholder = "What are you focusing on?", leading = AppIcons.Target)
-                Spacer(Modifier.height(24.dp))
-                // One duration, shown once: − and + sit beside the number, presets below (audit A-020).
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    AppIconButton(AppIcons.Minus, "5 minutes less", { minutes = (minutes - 5).coerceAtLeast(5) })
-                    Column(Modifier.padding(horizontal = 12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("%d".format(minutes), style = Aiimin.type.display)
-                        Text("minutes", style = Aiimin.type.caption)
-                    }
-                    AppIconButton(AppIcons.Plus, "5 minutes more", { minutes = (minutes + 5).coerceAtMost(180) })
-                }
-                Spacer(Modifier.height(16.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf(15, 25, 50, 90).forEach { m -> Pill("$m", minutes == m, { minutes = m }) }
-                }
+                // One duration, shown once and centred: the ring previews the session (a full ring is 90 min),
+                // round − and + flank it, presets below (audit A-020; 24 Oct layout pass).
                 Spacer(Modifier.weight(1f))
+                val share by animateFloatAsState((minutes / 90f).coerceIn(0f, 1f), Motion.move(LocalReduceMotion.current, Motion.emphasised()), label = "focusPlan")
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    RoundStep(AppIcons.Minus, "5 minutes less") { minutes = (minutes - 5).coerceAtLeast(5) }
+                    Box(contentAlignment = Alignment.Center) {
+                        val track = c.raised
+                        val ring = c.accent
+                        Canvas(Modifier.size(208.dp)) {
+                            val sw = 4.dp.toPx()
+                            val s = Size(size.width - sw, size.height - sw)
+                            drawArc(track, 0f, 360f, false, Offset(sw / 2, sw / 2), s, style = Stroke(sw))
+                            drawArc(ring, -90f, 360f * share, false, Offset(sw / 2, sw / 2), s, style = Stroke(sw, cap = StrokeCap.Round))
+                        }
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("%d".format(minutes), style = Aiimin.type.heroNumber.copy(fontSize = 80.sp, lineHeight = 80.sp))
+                            Text("minutes", style = Aiimin.type.note)
+                        }
+                    }
+                    RoundStep(AppIcons.Plus, "5 minutes more") { minutes = (minutes + 5).coerceAtMost(180) }
+                }
+                Spacer(Modifier.height(28.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    listOf(15, 25, 50, 90).forEach { m -> Pill("$m", minutes == m, { minutes = m }, Modifier.semantics { this.contentDescription = "$m minutes" }) }
+                }
+                Spacer(Modifier.weight(1.2f))
+                Text("Leave the app if you like. Time in other apps is taken out, so the minutes stay honest.", style = Aiimin.type.caption.copy(textAlign = TextAlign.Center), modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp))
                 AppButton("Start", { vm.start(label.ifBlank { "Focus" }, minutes, route.taskId) }, Modifier.fillMaxWidth(), icon = AppIcons.Play)
             }
         }
@@ -433,11 +453,13 @@ fun MinimumsScreen(vm: MinimumsViewModel = hiltViewModel()) {
                 Text("The floor for a day you keep. Small enough to do on a bad day; the plan freezes at the start of each day, so new ones join tomorrow.", style = Aiimin.type.caption)
                 Spacer(Modifier.height(12.dp))
             }
-            if (list.isEmpty()) item { EmptyState(AppIcons.ListChecks, "No minimums yet", "Try: Read 10 pages · Walk 20 minutes · No phone in bed.", action = "Add one", onAction = { adding = true }) }
+            if (list.isEmpty()) item { EmptyState(raahi = aiimin.core.engine.raahi.RaahiPose.POINTING, icon = AppIcons.ListChecks, title = "No minimums yet", body = "Try: Read 10 pages · Walk 20 minutes · No phone in bed.", action = "Add one", onAction = { adding = true }, sidePadding = 0.dp) }
             items(list, key = { it.minimum.id }) { m ->
-                Panel(Modifier.padding(vertical = 4.dp), padding = PaddingValues(start = 4.dp, end = 4.dp, top = 4.dp, bottom = 4.dp)) {
+                // D-020: checkbox and camera sit on the page margins like the Pause row below.
+                Panel(Modifier.padding(vertical = 4.dp), padding = PaddingValues(vertical = 4.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        CheckCircle(m.done, { scope.launch { vm.toggle(m.minimum.id) } }, "Keep ${m.minimum.name}")
+                        CheckCircle(m.done, { scope.launch { vm.toggle(m.minimum.id) } }, "Keep ${m.minimum.name}", Modifier.bleed(start = CheckInset))
+                        Spacer(Modifier.width(8.dp))
                         Column(Modifier.weight(1f).clickable { editing = m.minimum }) {
                             Text(m.minimum.name, style = Aiimin.type.bodyStrong)
                             val sub = listOfNotNull(
@@ -450,7 +472,7 @@ fun MinimumsScreen(vm: MinimumsViewModel = hiltViewModel()) {
                         AppIconButton(AppIcons.Camera, "Add proof photo", {
                             proofFor = m.minimum.id
                             picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                        }, tint = c.textFaint)
+                        }, tint = c.textFaint, modifier = Modifier.bleed(end = IconButtonInset))
                     }
                 }
             }
@@ -462,7 +484,7 @@ fun MinimumsScreen(vm: MinimumsViewModel = hiltViewModel()) {
                 val paused = state?.paused == true
                 ListRow(
                     if (paused) "Today is paused" else "Pause today",
-                    subtitle = if (paused) "Score, streak and battery are neutral today. Tap to resume." else "Sick, travelling, a festival. Up to 14 days a quarter; illness can extend.",
+                    subtitle = if (paused) "Score, kept days and battery are neutral today. Tap to resume." else "Sick, travelling, a festival. Up to 14 days a quarter; illness can extend.",
                     leading = { IconTile(AppIcons.Pause) }, maxSubtitleLines = 3,
                     onClick = { if (paused) scope.launch { vm.pause(false, null) } else pausing = true },
                 )
@@ -476,7 +498,7 @@ fun MinimumsScreen(vm: MinimumsViewModel = hiltViewModel()) {
         var domain by remember { mutableStateOf(e?.domain ?: "discipline") }
         AppSheet({ adding = false; editing = null }, title = if (e == null) "New minimum" else "Edit minimum", subtitle = if (e == null && list.isNotEmpty()) "Joins your plan tomorrow." else null) {
             AppTextField(name, { name = it }, placeholder = "e.g. Read 10 pages")
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(12.dp))
             AppTextField(tiny, { tiny = it }, placeholder = "Tiny version for low days, e.g. Read 1 page")
             Spacer(Modifier.height(12.dp))
             PillRow {
@@ -485,7 +507,7 @@ fun MinimumsScreen(vm: MinimumsViewModel = hiltViewModel()) {
                 }
             }
             Spacer(Modifier.height(16.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (e != null) AppButton("Archive", { vm.archive(e.id); editing = null }, kind = ButtonKind.DANGER, modifier = Modifier.weight(1f))
                 AppButton("Save", {
                     if (e == null) vm.add(name, tiny, domain) else vm.edit(e.copy(name = name.trim(), tiny = tiny.trim(), domain = domain))
@@ -495,7 +517,7 @@ fun MinimumsScreen(vm: MinimumsViewModel = hiltViewModel()) {
         }
     }
     if (pausing) {
-        AppSheet({ pausing = false }, title = "Pause today", subtitle = "Nothing is lost. The day is neutral for your score, streak and battery.") {
+        AppSheet({ pausing = false }, title = "Pause today", subtitle = "Nothing is lost. The day is neutral for your score, kept days and battery.") {
             listOf("sick" to "Unwell", "travel" to "Travelling", "festival" to "Festival or family event", "illness" to "Longer illness (extends the limit)").forEach { (k, l) ->
                 ListRow(l, onClick = {
                     scope.launch {
@@ -521,9 +543,9 @@ private fun Heat(history: Map<String, Int>, today: LocalDate, total: Int) {
                 week.forEach { d ->
                     val share = (history[d.toString()] ?: 0).toFloat() / total
                     Box(
-                        Modifier.weight(1f).height(22.dp).clip(Shapes.small)
+                        Modifier.weight(1f).height(24.dp).clip(Shapes.small)
                             .background(if (share <= 0f) c.raised else c.done.copy(alpha = 0.25f + 0.75f * share.coerceAtMost(1f)))
-                            .then(if (d == today) Modifier.border(1.dp, c.accent, Shapes.small) else Modifier),
+                            .then(if (d == today) Modifier.border(1.dp, c.text, Shapes.small) else Modifier),
                     )
                 }
             }
@@ -542,7 +564,7 @@ fun UpcomingScreen(vm: UpcomingViewModel = hiltViewModel()) {
     Column(Modifier.fillMaxSize().background(c.base)) {
         TopBar("Upcoming", onBack = { nav.back() })
         if (list.isEmpty()) {
-            EmptyState(AppIcons.Calendar, "Nothing ahead", "Tasks for later days and someday ideas collect here.")
+            EmptyState(raahi = aiimin.core.engine.raahi.RaahiPose.SLEEPING, icon = AppIcons.Calendar, title = "Nothing ahead", body = "Tasks for later days and someday ideas collect here.")
             return@Column
         }
         val groups = list.groupBy { t ->
@@ -564,7 +586,7 @@ fun UpcomingScreen(vm: UpcomingViewModel = hiltViewModel()) {
                             t.title,
                             subtitle = listOfNotNull(t.day?.let { Dates.relative(LocalDate.parse(it), today) }, t.time?.let(Dates::clock)).joinToString(" · ").ifBlank { null },
                             onClick = { nav.open(Route.Task(t.id)) },
-                            trailing = { Text("Do today", style = Aiimin.type.label.copy(color = c.accentText), modifier = Modifier.clip(Shapes.small).clickable(onClickLabel = "Move to today") { vm.moveToday(t.id) }.heightIn(min = 48.dp).padding(horizontal = 8.dp, vertical = 14.dp)) },
+                            trailing = { Text("Do today", style = Aiimin.type.label.copy(color = c.link), modifier = Modifier.bleed(end = 8.dp).clip(Shapes.small).clickable(onClickLabel = "Move to today") { vm.moveToday(t.id) }.heightIn(min = 48.dp).padding(horizontal = 8.dp, vertical = 16.dp)) },
                         )
                     }
                 }
@@ -589,11 +611,11 @@ private fun WeekList(selected: LocalDate, byDay: Map<LocalDate, List<CalendarEve
             (0..6).map { start.plusDays(it.toLong()) }.forEach { d ->
                 item(key = d.toString()) {
                     val evs = byDay[d].orEmpty()
-                    Column(Modifier.fillMaxWidth().padding(vertical = 10.dp)) {
+                    Column(Modifier.fillMaxWidth().padding(vertical = 12.dp)) {
                         Text(Dates.short(d), style = Aiimin.type.bodyStrong.copy(color = if (d == LocalDate.now()) c.accentText else c.text), modifier = Modifier.clickable { onPick(d) })
                         if (evs.isEmpty()) Text("Free", style = Aiimin.type.caption)
                         evs.forEach { e ->
-                            Row(Modifier.fillMaxWidth().clickable { onOpen(e) }.padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Row(Modifier.fillMaxWidth().clickable { onOpen(e) }.padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                                 Text(if (e.allDay) "all day" else Dates.clock(vm.instant(e.startAt).toLocalTime()), style = Aiimin.type.caption, maxLines = 1, softWrap = false, modifier = Modifier.widthIn(min = 64.dp))
                                 Text(e.title, style = Aiimin.type.body, maxLines = 1)
                             }
@@ -647,4 +669,17 @@ private fun MonthGrid(selected: LocalDate, byDay: Map<LocalDate, List<CalendarEv
             }
         }
     }
+}
+
+/** A round 52 dp step button for the Focus timer: hairline ring, 24 dp icon, labelled for TalkBack. */
+@Composable
+private fun RoundStep(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, onClick: () -> Unit) {
+    val c = Aiimin.colors
+    val round = androidx.compose.foundation.shape.CircleShape
+    Box(
+        Modifier.size(52.dp).clip(round).border(1.dp, c.borderStrong, round)
+            .clickable(role = androidx.compose.ui.semantics.Role.Button, onClickLabel = label, onClick = onClick)
+            .semantics { this.contentDescription = label },
+        contentAlignment = Alignment.Center,
+    ) { Icon(icon, null, tint = c.text, modifier = Modifier.size(24.dp)) }
 }

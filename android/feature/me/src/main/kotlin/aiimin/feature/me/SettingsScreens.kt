@@ -76,11 +76,50 @@ fun SettingsScreen(vm: MeViewModel = hiltViewModel()) {
     val integrity by vm.integrity.collectAsStateWithLifecycle()
     var dayMode by remember { mutableStateOf(false) }
     var quietPick by remember { mutableStateOf<String?>(null) }
+    var dayEndPick by remember { mutableStateOf(false) }
+    var settingsQuery by remember { mutableStateOf("") }
     val c = Aiimin.colors
     val st = s ?: return
+    if (dayEndPick) aiimin.designsystem.component.TimePick(
+        java.time.LocalTime.of((st.dayEndMin / 60) % 24, st.dayEndMin % 60),
+        { t -> vm.update { it.copy(dayEndMin = t.hour * 60 + t.minute, dayEndMode = "PINNED", dayEndChangedOn = java.time.LocalDate.now().toString()) }; dayEndPick = false },
+        { dayEndPick = false },
+    )
     Column(Modifier.fillMaxSize().background(c.base)) {
         TopBar("Settings", onBack = { nav.back() })
-        LazyColumn(contentPadding = PaddingValues(start = Aiimin.space.gutter, end = Aiimin.space.gutter, bottom = 40.dp)) {
+        AppTextField(
+            settingsQuery, { settingsQuery = it }, placeholder = "Search settings",
+            leading = AppIcons.Search,
+            modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(bottom = 8.dp),
+        )
+        if (settingsQuery.isNotBlank()) {
+            val settingTitles = setOf(
+                "Account and sync", "Plans", "Linked devices", "Notification settings", "Phone data", "Money settings",
+                "Assistant and voice", "Raahi", "Appearance", "Language and region", "How AIIMIN is running",
+                "Help", "About and legal", "Trash", "Privacy",
+            )
+            val q = settingsQuery.trim().lowercase()
+            val matches = aiimin.designsystem.nav.FeatureIndex.all.filter { entry ->
+                if (entry.title !in settingTitles) return@filter false
+                val aliases = when (entry.title) {
+                    "Appearance" -> listOf("reduce motion", "font size")
+                    "Notification settings" -> listOf("quiet hours", "quiet notifications")
+                    "Privacy" -> listOf("app lock", "privacy data", "export data")
+                    else -> emptyList()
+                }
+                val terms = listOf(entry.title, entry.subtitle).plus(entry.keywords).plus(aliases)
+                q.split(Regex("\\s+")).all { token -> terms.any { it.contains(token) || it.contains(token.removeSuffix("s")) } }
+            }
+            LazyColumn(contentPadding = PaddingValues(start = Aiimin.space.gutter, end = Aiimin.space.gutter, bottom = 40.dp)) {
+                if (matches.isEmpty()) item { Text("No settings found for “${settingsQuery.trim()}”.", style = Aiimin.type.caption, modifier = Modifier.padding(vertical = 12.dp)) }
+                else {
+                    item { SectionHeader("Settings · ${matches.size}") }
+                    items(matches, key = { "setting-" + it.title }) { entry ->
+                        ListRow(entry.title, subtitle = entry.subtitle, leading = { IconTile(entry.icon) }, trailing = { Chevron() }, onClick = { nav.open(entry.route) })
+                    }
+                }
+            }
+        } else LazyColumn(contentPadding = PaddingValues(start = Aiimin.space.gutter, end = Aiimin.space.gutter, bottom = 40.dp)) {
             item {
                 // Every settings page in one place, so nothing is only reachable from somewhere else.
                 SectionHeader("Account")
@@ -88,15 +127,20 @@ fun SettingsScreen(vm: MeViewModel = hiltViewModel()) {
                 SettingsLink(AppIcons.Star, "Plan", "Free, Plus, Pro, Family") { nav.open(Route.Plans) }
                 SettingsLink(AppIcons.Devices, "Linked devices", "Browsers and phones on your account") { nav.open(Route.LinkedDevices) }
                 SectionHeader("App")
-                SettingsLink(AppIcons.Bell, "Notifications", "Inbox and what AIIMIN tells you") { nav.open(Route.Notifications) }
+                SettingsLink(AppIcons.Bell, "Notifications", "How many, which kinds, lock screen") { nav.open(Route.NotifySettings) }
                 SettingsLink(AppIcons.Footprints, "Phone data", "Screen time, steps, sleep, work apps") { nav.open(Route.Sensors) }
                 SettingsLink(AppIcons.Wallet, "Money", "Ledgers, accounts, bank messages, payee memory") { nav.open(Route.MoneySettings) }
                 SettingsLink(AppIcons.ChatCircleText, "Assistant and voice", "What it may read, recent captures") { nav.open(Route.AiSettings) }
+                SettingsLink(AppIcons.ChatCircleText, "Raahi", "How chatty: " + aiimin.core.engine.raahi.RaahiMode.of(st.raahiMode).name.lowercase().replaceFirstChar { it.uppercase() }) { nav.open(Route.RaahiSettings) }
                 SettingsLink(AppIcons.TextAa, "Appearance", "Text size, motion") { nav.open(Route.Appearance) }
+                // PRD 1.2: the day-end hour shows where it came from; editing pins it (never overwritten).
+                val dayEnd = java.time.LocalTime.of((st.dayEndMin / 60) % 24, st.dayEndMin % 60)
+                SettingsLink(
+                    AppIcons.MoonStars, "Day ends at ${aiimin.core.data.util.Dates.clock(dayEnd)}",
+                    when (st.dayEndMode) { "LEARNING" -> "Learned from the last 7 nights · Edit"; "PINNED" -> "Set by you · Edit"; else -> "From your sleep time · Edit" },
+                ) { dayEndPick = true }
                 SettingsLink(AppIcons.Translate, "Language and region", "English (India)") { nav.open(Route.Language) }
                 SettingsLink(AppIcons.Pulse, "How AIIMIN is running", "Background jobs and their last run") { nav.open(Route.Running) }
-                SettingsLink(AppIcons.Lifebuoy, "Help", "Questions and contact") { nav.open(Route.Help) }
-                SettingsLink(AppIcons.Info, "About and legal", "Version, privacy policy, terms") { nav.open(Route.About) }
             }
             item {
                 SectionHeader("Look")
@@ -110,19 +154,19 @@ fun SettingsScreen(vm: MeViewModel = hiltViewModel()) {
                         DayMode.Midnight -> "Midnight"
                         is DayMode.FixedEnd -> "${m.endHour}:00 AM the next morning"
                         is DayMode.Roster -> "Shift roster · ${m.pattern.joinToString("")}"
-                    } + " · late entries can be filed to yesterday until noon",
+                    } + " · until noon you can still file things to yesterday",
                     leading = { IconTile(AppIcons.MoonStars) }, maxSubtitleLines = 2, onClick = { dayMode = true },
                 )
-                ListRow("Late-night screen time starts", subtitle = "Phone use after this counts as late", leading = { IconTile(AppIcons.Moon) })
+                ListRow("Night screen time starts", subtitle = "Phone use after this counts as night use", leading = { IconTile(AppIcons.Moon) })
                 Row(Modifier.padding(start = 52.dp, bottom = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     listOf(22 to "10 PM", 23 to "11 PM", 0 to "Midnight").forEach { (h, label) -> Pill(label, st.lateHour == h, { vm.update { it.copy(lateHour = h) } }) }
                 }
             }
             item {
                 SectionHeader("Notifications")
-                SwitchRow("Quiet hours", st.quiet.enabled, { v -> vm.update { it.copy(quiet = it.quiet.copy(enabled = v)) } }, subtitle = "Holds back low and medium alerts. Important ones still come through.")
+                SwitchRow("Quiet hours", st.quiet.enabled, { v -> vm.update { it.copy(quiet = it.quiet.copy(enabled = v)) } }, subtitle = "Nudges wait for the morning. Your reminders still arrive, without sound; safety alerts always ring.")
                 if (st.quiet.enabled) {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         ListRow("From", subtitle = Dates.clock(LocalTime.of(st.quiet.fromMin / 60, st.quiet.fromMin % 60)), modifier = Modifier.weight(1f), onClick = { quietPick = "from" })
                         ListRow("Until", subtitle = Dates.clock(LocalTime.of(st.quiet.toMin / 60, st.quiet.toMin % 60)), modifier = Modifier.weight(1f), onClick = { quietPick = "to" })
                     }
@@ -135,15 +179,16 @@ fun SettingsScreen(vm: MeViewModel = hiltViewModel()) {
             }
             item {
                 SectionHeader("Privacy & data")
+                SwitchRow("Show task titles on widget", st.widgetTitles, { v -> vm.update { it.copy(widgetTitles = v) } }, subtitle = "Off: the home-screen widget shows only times and counts. Money and documents never show there.")
                 SwitchRow("Lock the app", st.appLock, { v -> vm.update { it.copy(appLock = v) } }, subtitle = "Fingerprint or screen lock when opening AIIMIN", icon = AppIcons.Fingerprint)
                 ListRow("Check data integrity", subtitle = when (integrity) {
                     null -> "Verifies the hash chain of your activity log"
                     true -> "Intact — nothing changed outside AIIMIN"
                     false -> "Data was changed outside AIIMIN. Your score is greyed until you re-baseline."
                 }, leading = { IconTile(AppIcons.ShieldCheck) }, maxSubtitleLines = 2, onClick = { vm.verify() })
-                ListRow("Privacy and data", subtitle = "Where your data lives, export, erase, delete", leading = { IconTile(AppIcons.ShieldCheck) }, trailing = { Chevron() }, onClick = { nav.open(Route.Privacy) })
-                ListRow("Sync", subtitle = "What goes to aiimin.in, when, and changes to choose", leading = { IconTile(AppIcons.ArrowsClockwise) }, trailing = { Chevron() }, onClick = { nav.open(Route.SyncSettings) })
-                ListRow("Trash", subtitle = "Deleted items, kept 30 days", leading = { IconTile(AppIcons.Trash) }, trailing = { Chevron() }, onClick = { nav.open(Route.Trash) })
+                ListRow("Privacy and data", subtitle = "Where your data lives, export, erase, delete", leading = { IconTile(AppIcons.ShieldCheck) }, trailing = { Chevron() }, opens = Route.Privacy, onClick = { nav.open(Route.Privacy) })
+                ListRow("Sync", subtitle = "What goes to aiimin.in, when, and changes to choose", leading = { IconTile(AppIcons.ArrowsClockwise) }, trailing = { Chevron() }, opens = Route.SyncSettings, onClick = { nav.open(Route.SyncSettings) })
+                ListRow("Trash", subtitle = "Deleted items, kept 30 days", leading = { IconTile(AppIcons.Trash) }, trailing = { Chevron() }, opens = Route.Trash, onClick = { nav.open(Route.Trash) })
                 ListRow("Export everything", subtitle = "A zip of your log, tasks, notes and vault files", leading = { IconTile(AppIcons.Export) }, onClick = {
                     scope.launch {
                         val f = vm.exportAll(journal = false)
@@ -151,7 +196,12 @@ fun SettingsScreen(vm: MeViewModel = hiltViewModel()) {
                         context.startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).setType("application/zip").putExtra(Intent.EXTRA_STREAM, uri).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION), "Export"))
                     }
                 })
-                Text("No lending, no credit scoring, no selling data. SMS and documents are read on this phone.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 10.dp))
+                Text("No lending, no credit scoring, no selling data. SMS and documents are read on this phone.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 12.dp))
+            }
+            item {
+                SectionHeader("Help and about")
+                SettingsLink(AppIcons.Lifebuoy, "Help", "Questions and contact") { nav.open(Route.Help) }
+                SettingsLink(AppIcons.Info, "About and legal", "Version, privacy policy, terms") { nav.open(Route.About) }
             }
         }
     }
@@ -161,12 +211,12 @@ fun SettingsScreen(vm: MeViewModel = hiltViewModel()) {
         var mode by remember { mutableStateOf(when (st.dayMode) { DayMode.Midnight -> 0; is DayMode.FixedEnd -> 1; is DayMode.Roster -> 2 }) }
         AppSheet({ dayMode = false }, title = "When your day ends", subtitle = "Applies from tomorrow; can change once every 14 days, so nobody moves midnight to save a day.") {
             Segmented(listOf("Midnight", "Later", "Shift roster"), mode, { mode = it })
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(12.dp))
             when (mode) {
                 1 -> PillRow { (1..5).forEach { h -> Pill("$h AM", end == h, { end = h }) } }
                 2 -> AppTextField(roster, { roster = it.uppercase() }, label = "Pattern from today (D day · N night · O off)")
             }
-            Spacer(Modifier.height(14.dp))
+            Spacer(Modifier.height(16.dp))
             AppButton("Save", {
                 scope.launch {
                     val m = when (mode) {
@@ -213,7 +263,7 @@ fun SensorsScreen(vm: SensorsViewModel = hiltViewModel()) {
                 Spacer(Modifier.height(12.dp))
             }
             item {
-                SensorRow("Screen time & app use", "Usage access — screen time per app, unlocks, late-night use, notifications", a?.usage) { context.startActivity(vm.usageSettings()) }
+                SensorRow("Screen time & app use", "Usage access — screen time per app, unlocks, night use, notifications", a?.usage) { context.startActivity(vm.usageSettings()) }
                 SensorRow(
                     "Steps, sleep, heart rate", when (a?.health) {
                         HealthAvailability.NEEDS_UPDATE -> "Health Connect needs an update"
@@ -287,7 +337,7 @@ fun AiSettingsScreen(vm: MeViewModel = hiltViewModel()) {
         LazyColumn(contentPadding = PaddingValues(Aiimin.space.gutter)) {
             item {
                 Text("The assistant proposes and you approve. It never changes anything silently, never edits settled days, never touches your score, and never writes your journal.", style = Aiimin.type.body)
-                ListRow("Recent captures", subtitle = "The last 24 hours of ＋, with undo per capture", leading = { IconTile(AppIcons.Waveform) }, trailing = { Chevron() }, onClick = { nav.open(Route.RecentCaptures) })
+                ListRow("Recent captures", subtitle = "The last 24 hours of ＋, with undo per capture", leading = { IconTile(AppIcons.Waveform) }, trailing = { Chevron() }, opens = Route.RecentCaptures, onClick = { nav.open(Route.RecentCaptures) })
                 SectionHeader("What it may read")
             }
             items(AiModule.entries) { m ->

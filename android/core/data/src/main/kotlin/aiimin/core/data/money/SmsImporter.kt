@@ -103,7 +103,8 @@ class SmsImporter @Inject constructor(
         val p = preview(months, f) ?: return null
         openTrackFrom(months.min())
         var added = 0
-        for (s in p.fresh) if (money.capture(s.message.body, "sms", s.message.at) is MoneyRepository.Capture.Added) added++
+        // Past messages go to Review, filled in by the person's rules but never booked by them (30.A).
+        for (s in p.fresh) if (money.capture(s.message.body, "sms", s.message.at, allowAutoBook = false) is MoneyRepository.Capture.Added) added++
         log.log("txn.sms_import", data = mapOf("months" to months.size, "added" to added), tier = Tier.A, source = "user")
         return Result(p.read, added, p.already + (p.fresh.size - added), p.sift.skipped)
     }
@@ -111,7 +112,8 @@ class SmsImporter @Inject constructor(
     /** One by one: this payment goes to Review now, and comes back as its draft for the person to settle. */
     suspend fun addOne(s: SiftedSms): TxnDraftEntity? {
         openTrackFrom(YearMonth.from(day(s.message.at)))
-        return (money.capture(s.message.body, "sms", s.message.at) as? MoneyRepository.Capture.Added)?.draft
+        // The person settles (or skips) this one by hand, so a rule only fills it in here; it never books it.
+        return (money.capture(s.message.body, "sms", s.message.at, allowAutoBook = false) as? MoneyRepository.Capture.Added)?.draft
     }
 
     /** One by one: skipped for good. Kept as a dismissed draft so it never comes back on the next import. */

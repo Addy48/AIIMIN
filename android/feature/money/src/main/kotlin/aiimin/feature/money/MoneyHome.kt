@@ -1,5 +1,10 @@
 package aiimin.feature.money
 
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+
+import aiimin.core.data.money.payeeLabel
+import aiimin.designsystem.theme.Motion
 import aiimin.designsystem.component.PaceChartData
 import aiimin.designsystem.component.PaceChart
 import aiimin.core.data.money.MoneyChartMath
@@ -33,7 +38,6 @@ import aiimin.designsystem.theme.Aiimin
 import aiimin.designsystem.theme.Shapes
 import android.content.Intent
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -108,19 +112,23 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
     var adding by remember { mutableStateOf(false) }
     var pasting by remember { mutableStateOf(false) }
     var exporting by remember { mutableStateOf(false) }
+    var picking by remember { mutableStateOf(false) }
     val extras by vm.extras.collectAsStateWithLifecycle()
+    val found by vm.found.collectAsStateWithLifecycle()
+    androidx.lifecycle.compose.LifecycleResumeEffect(Unit) { vm.refreshFoundNow(); onPauseOrDispose { } }
     val prefs by vm.prefs.collectAsStateWithLifecycle()
     val accountFilter by vm.accountFilter.collectAsStateWithLifecycle()
     val quiet by vm.quietAccounts.collectAsStateWithLifecycle()
     val c = Aiimin.colors
     LaunchedEffect(range, ledger, offset) { selection.value = null }
+    val shownLedgers = Ledger.entries.filter { it == Ledger.PERSONAL || it.name in (prefs?.ledgersOn ?: emptySet()) }
 
     LazyColumn(Modifier.fillMaxSize().background(c.base), contentPadding = PaddingValues(bottom = 32.dp)) {
-        item { LargeHeader("Money") { RootActions(unread) } }
+        // 4.4: one small "Personal ▾" in the header instead of a second pill bar.
         item {
-            Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
-                val shownLedgers = Ledger.entries.filter { it == Ledger.PERSONAL || it.name in (prefs?.ledgersOn ?: emptySet()) }
-                if (shownLedgers.size > 1) Segmented(shownLedgers.map { it.label }, shownLedgers.indexOf(ledger).coerceAtLeast(0), { vm.ledger.value = shownLedgers[it] })
+            LargeHeader("Money") {
+                aiimin.designsystem.component.RaahiGuideButton(aiimin.designsystem.component.RaahiArea.MONEY)
+                RootActions(unread)
             }
         }
         val s = series
@@ -133,25 +141,28 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
         item {
             val selected = selection.value
             val bar = selected?.let { s.bars.getOrNull(it) }
-            Column(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 22.dp)) {
-                Headline(s, bar, d.budget?.totalPaise, d.remaining, ledger, monthIsCurrent, d.paceLine, today)
-                Spacer(Modifier.height(16.dp))
-                Segmented(MoneyRange.entries.map { it.label }, MoneyRange.entries.indexOf(range), { vm.setRange(MoneyRange.entries[it]) })
-                Spacer(Modifier.height(14.dp))
-                if (!(s.range == MoneyRange.D) && s.range != MoneyRange.Y || true) PeriodNav(s, offset, onPage = { vm.page(it) })
+            Column(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 24.dp)) {
+                // The ledger switch sits beside the headline it changes, so the header row stays one line (24 Oct pass).
+                Box(Modifier.fillMaxWidth()) {
+                    Headline(s, bar, d.budget?.totalPaise, d.remaining, ledger, monthIsCurrent, d.paceLine, today)
+                    if (shownLedgers.size > 1) Box(Modifier.align(Alignment.TopEnd)) { LedgerPicker(ledger) { picking = true } }
+                }
+                Spacer(Modifier.height(12.dp))
+                PeriodNav(s, offset, onPage = { vm.page(it) })
                 val plan = d.budget?.totalPaise?.takeIf { it > 0 && ledger == Ledger.PERSONAL }
                 if (s.range == MoneyRange.M) {
                     // The month as one climbing line against the even pace to plan (plan Phase 20).
                     val pc = remember(s, plan, today) { paceData(s, plan, today) }
                     PaceChart(
                         data = pc.chart, selected = selected, onSelect = { selection.value = it },
-                        barTint = MoneyGold,
+                        barTint = Aiimin.colors.moneyGold,
                         description = pc.summary,
                     )
                     pc.footnote?.let {
-                        Row(Modifier.padding(top = 4.dp).fillMaxWidth().clip(Shapes.small).pressable({ nav.open(Route.Budget) }).heightIn(min = 40.dp), verticalAlignment = Alignment.CenterVertically) {
+                        // D-005: the chevron stays on the first line when the line wraps.
+                        Row(Modifier.padding(top = 4.dp).fillMaxWidth().clip(Shapes.small).pressable({ nav.open(Route.Budget) }).heightIn(min = 48.dp).padding(vertical = 8.dp), verticalAlignment = Alignment.Top) {
                             Text(it, style = Aiimin.type.caption, modifier = Modifier.weight(1f))
-                            Icon(AppIcons.CaretRight, "Open budget", tint = c.textFaint, modifier = Modifier.size(14.dp))
+                            Icon(AppIcons.CaretRight, "Open budget", tint = c.textFaint, modifier = Modifier.padding(top = 2.dp, start = 8.dp).size(16.dp))
                         }
                     }
                 } else {
@@ -167,27 +178,39 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
                         alert = if (s.range == MoneyRange.Y && plan != null) s.bars.indices.filter { s.bars[it].paise > plan }.toSet() else emptySet(),
                         planLine = if (s.range == MoneyRange.Y && plan != null) plan / 100.0 else null,
                         planLabel = if (s.range == MoneyRange.Y && plan != null) "Plan ${shortRupees(plan)}" else null,
-                        tint = MoneyGold,
+                        tint = Aiimin.colors.moneyGold,
                     )
                 }
+                // 4.4: range tabs under the chart (Copilot and Monarch).
+                Spacer(Modifier.height(12.dp))
+                Segmented(MoneyRange.entries.map { it.label }, MoneyRange.entries.indexOf(range), { vm.setRange(MoneyRange.entries[it]) })
             }
         }
-        // accounts (M1 item 6): wrapping chips; tap filters the payments below
-        val accts = extras?.accounts.orEmpty().filter { it.ledger == ledger.name || it.type == "CASH" }
-        if (accts.isNotEmpty()) item {
-            Column(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 18.dp)) {
-                androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    accts.forEach { a ->
-                        val label = a.name + (a.last4?.let { " ••$it" } ?: "") + if (a.primary) " · Primary" else ""
-                        Box {
-                            aiimin.designsystem.component.Pill(label, accountFilter == a.id, { vm.accountFilter.value = if (accountFilter == a.id) null else a.id })
-                            if (a.id in quiet) Box(Modifier.align(Alignment.TopEnd).padding(top = 4.dp, end = 4.dp).size(6.dp).clip(androidx.compose.foundation.shape.CircleShape).background(c.accent))
-                        }
-                    }
-                    Text("Manage", style = Aiimin.type.label.copy(color = c.accentText, fontSize = 14.sp), modifier = Modifier.clip(Shapes.small).pressable({ nav.open(Route.Accounts) }).padding(horizontal = 6.dp, vertical = 8.dp))
+        // 4.4: one "Needs you" row; the list itself is the Review screen.
+        if (d.pending.isNotEmpty()) item(key = "needs") {
+            Row(
+                Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 20.dp).fillMaxWidth().clip(Shapes.row).background(c.surface)
+                    .pressable({ nav.open(Route.MoneyInbox) }).heightIn(min = 64.dp).padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text("Needs you · ${d.pending.size} to review", style = Aiimin.type.bodyStrong)
+                    Text("From bank alerts on this phone. None of these is booked until you look.", style = Aiimin.type.caption)
                 }
+                Spacer(Modifier.width(8.dp))
+                Icon(AppIcons.CaretRight, null, tint = c.textFaint, modifier = Modifier.size(16.dp))
             }
         }
+        // Owner, 20 Oct: an account a bank message named that is not added yet; one at a time, newest first.
+        found.firstOrNull()?.let { s ->
+            item(key = "found-${s.last4}") {
+                AccountFoundCard(
+                    s, vm.linkTarget(s), onAdd = { vm.acceptFound(s) }, onNotMine = { vm.dismissFound(s) },
+                    modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 20.dp),
+                )
+            }
+        }
+        // 4.4: accounts live in Money settings now; the payments below are not filtered by account here.
         // payments for the selection; follows the finger once it rests, not on every bar it crosses
         item {
             val settled by remember(s) { snapshotFlow { selection.value }.debounce(140) }.collectAsState(selection.value)
@@ -197,41 +220,20 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
                 s.range == MoneyRange.D -> s.bars.flatMap { it.txns }.sortedByDescending { it.at }
                 else -> s.bars.flatMap { it.txns }.sortedByDescending { it.amountPaise }
             }
-            val filtered = accountFilter?.let { id -> all.filter { vm.accountOf(it) == id } } ?: all
-            val list = if (bar == null && s.range != MoneyRange.D) filtered.take(5) else filtered
+            val list = if (bar == null && s.range != MoneyRange.D) all.take(5) else all
             val title = when {
                 bar != null -> "Payments · ${bar.label}"
                 s.range == MoneyRange.D -> "Today's payments"
                 s.range == MoneyRange.M -> "Biggest in ${YearMonth.from(today).month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)}"
                 else -> "Biggest payments"
             }
-            Column(Modifier.padding(horizontal = Aiimin.space.gutter).animateContentSize(tween(200))) {
+            Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
                 SectionHeader(title, action = if (bar == null) "All payments" else null, onAction = { nav.open(Route.Payments) })
-                if (list.isEmpty()) Text(if (bar?.future == true) "Nothing yet." else "No payments here.", style = Aiimin.type.caption, modifier = Modifier.padding(vertical = 6.dp))
+                if (list.isEmpty()) Text(if (bar?.future == true) "Nothing yet." else "No payments here.", style = Aiimin.type.caption, modifier = Modifier.padding(vertical = 8.dp))
                 val biggest = if (bar == null && s.range != MoneyRange.D) list.firstOrNull()?.id else null
                 list.forEach { t ->
                     PaymentRow(t, t.id == biggest) { nav.open(Route.Txn(t.id)) }
                     Hairline()
-                }
-            }
-        }
-        // floating above: detected, not booked
-        if (d.pending.isNotEmpty()) {
-            item {
-                Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
-                    SectionHeader("Not booked yet · ${d.pending.size}", action = "Review", onAction = { nav.open(Route.MoneyInbox) })
-                    Text("Read from bank alerts on this phone. Nothing is booked until you look.", style = Aiimin.type.caption)
-                    Spacer(Modifier.height(6.dp))
-                    d.pending.take(2).forEach { p ->
-                        Row(Modifier.fillMaxWidth().pressable({ nav.open(Route.MoneyInbox) }).heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Column(Modifier.weight(1f)) {
-                                Text(p.title, style = Aiimin.type.bodyStrong)
-                                Text(listOfNotNull(p.account4?.let { "••$it" }, Dates.clock(java.time.Instant.ofEpochMilli(p.detectedAt).atZone(java.time.ZoneId.systemDefault()).toLocalTime()), "${p.category}?").joinToString(" · "), style = Aiimin.type.caption)
-                            }
-                            Text((if (p.direction == "in") "+" else "−") + Money.format(p.amountPaise).removePrefix("−"), style = Aiimin.type.bodyStrong)
-                        }
-                        Hairline()
-                    }
                 }
             }
         }
@@ -246,8 +248,8 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(cat.category, style = Aiimin.type.bodyStrong, modifier = Modifier.weight(1f))
                                 Text(Money.format(cat.paise), style = Aiimin.type.bodyStrong)
-                                Spacer(Modifier.width(10.dp))
-                                Text(if (d.spent > 0) "${(cat.paise * 100 / d.spent)}%" else "", style = Aiimin.type.caption, maxLines = 1, softWrap = false, textAlign = androidx.compose.ui.text.style.TextAlign.End, modifier = Modifier.widthIn(min = 34.dp))
+                                Spacer(Modifier.width(12.dp))
+                                Text(if (d.spent > 0) "${(cat.paise * 100 / d.spent)}%" else "", style = Aiimin.type.caption, maxLines = 1, softWrap = false, textAlign = androidx.compose.ui.text.style.TextAlign.End, modifier = Modifier.widthIn(min = 36.dp))
                             }
                             Spacer(Modifier.height(8.dp))
                             Box(Modifier.fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)).background(c.overlay)) {
@@ -283,7 +285,7 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
                 SectionHeader("Owed")
                 Text(
                     owed.take(3).joinToString(" · ") { b -> if (b.theyOwe) "${b.name} owes you ${Money.whole(b.netPaise)}" else "You owe ${b.name} ${Money.whole(-b.netPaise)}" },
-                    style = Aiimin.type.body, modifier = Modifier.fillMaxWidth().pressable({ nav.open(Route.Splits) }).padding(vertical = 10.dp),
+                    style = Aiimin.type.body, modifier = Modifier.fillMaxWidth().pressable({ nav.open(Route.Splits) }).padding(vertical = 12.dp),
                 )
                 Hairline()
             }
@@ -292,7 +294,7 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
         item {
             Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
                 SectionHeader("Coming up", action = "Bills", onAction = { nav.open(Route.Recurring) })
-                if (coming.isEmpty()) Text("No bills in the next 10 days.", style = Aiimin.type.caption, modifier = Modifier.padding(vertical = 6.dp))
+                if (coming.isEmpty()) Text("No bills in the next 10 days.", style = Aiimin.type.caption, modifier = Modifier.padding(vertical = 8.dp))
                 coming.take(4).forEach { b ->
                     val due = LocalDate.parse(b.nextDue)
                     val days = java.time.temporal.ChronoUnit.DAYS.between(today, due)
@@ -300,7 +302,7 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
                         Text(b.title, style = Aiimin.type.bodyStrong, modifier = Modifier.weight(1f))
                         Text(
                             Money.whole(b.amountPaise) + " · " + when { days <= 0 -> "today"; days == 1L -> "tomorrow"; days < 7 -> "in $days days"; else -> Dates.shortDm(due) },
-                            style = Aiimin.type.body.copy(color = if (days <= 2) c.accentText else c.text),
+                            style = Aiimin.type.body.copy(color = if (days <= 2) c.warn else c.text),
                         )
                     }
                     Hairline()
@@ -314,22 +316,33 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
                 listOf(
                     aiimin.designsystem.component.Tool(AppIcons.Plus, "Add payment") { adding = true },
                     aiimin.designsystem.component.Tool(AppIcons.ChatText, "Paste a bank SMS") { pasting = true },
-                    aiimin.designsystem.component.Tool(AppIcons.ClockCounter, "Past bank messages") { nav.open(Route.SmsImport) },
+                    aiimin.designsystem.component.Tool(AppIcons.ClockCounter, "Past bank messages", opens = Route.SmsImport) { nav.open(Route.SmsImport) },
                     aiimin.designsystem.component.Tool(AppIcons.Export, "Export for CA") { exporting = true },
-                    aiimin.designsystem.component.Tool(AppIcons.Bookmark, "Places and categories") { nav.open(Route.PayeeMemory) },
-                    aiimin.designsystem.component.Tool(AppIcons.HandCoins, "Splits") { nav.open(Route.Splits) },
-                    aiimin.designsystem.component.Tool(AppIcons.Repeat, "Bills") { nav.open(Route.Recurring) },
+                    aiimin.designsystem.component.Tool(AppIcons.Bookmark, "Places and rules", opens = Route.PayeeMemory) { nav.open(Route.PayeeMemory) },
+                    aiimin.designsystem.component.Tool(AppIcons.HandCoins, "Splits", opens = Route.Splits) { nav.open(Route.Splits) },
+                    aiimin.designsystem.component.Tool(AppIcons.Repeat, "Bills", opens = Route.Recurring) { nav.open(Route.Recurring) },
+                    aiimin.designsystem.component.Tool(AppIcons.Gear, "Money settings", opens = Route.MoneySettings) { nav.open(Route.MoneySettings) },
                 ),
                 Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 8.dp),
             )
             Text(
                 "For personal budgeting only. Not investment, tax or credit advice. AIIMIN is not registered with SEBI.",
-                style = Aiimin.type.caption.copy(fontSize = 11.5.sp),
-                modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 14.dp, bottom = 8.dp),
+                style = Aiimin.type.caption,
+                modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 16.dp, bottom = 8.dp),
             )
         }
     }
 
+    if (picking) AppSheet({ picking = false }, title = "Ledger") {
+        shownLedgers.forEach { l ->
+            aiimin.designsystem.component.ListRow(
+                l.label, subtitle = when (l) { Ledger.PERSONAL -> "Your own money"; Ledger.HOUSEHOLD -> "Shared at home"; Ledger.BUSINESS -> "Kept apart, never in your Life Score" },
+                trailing = { if (l == ledger) Icon(AppIcons.Check, "Selected", tint = c.text, modifier = Modifier.size(20.dp)) },
+                onClick = { vm.ledger.value = l; picking = false },
+            )
+        }
+        aiimin.designsystem.component.ListRow("Ledgers in Money settings", trailing = { aiimin.designsystem.component.Chevron() }, onClick = { picking = false; nav.open(Route.MoneySettings) })
+    }
     if (exporting) ExportSheet({ m, l -> vm.exportInfo(m, l) }, { m, l -> vm.exportFor(m, l) }, today, { exporting = false })
     val spendCats by vm.categoriesOut.collectAsStateWithLifecycle()
     val incomeCats by vm.categoriesIn.collectAsStateWithLifecycle()
@@ -347,14 +360,32 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
             Spacer(Modifier.height(12.dp))
             AppButton("Read it", {
                 scope.launch {
-                    when (vm.capture(text)) {
-                        is MoneyRepository.Capture.Added -> { toaster.show("Added to your review inbox"); pasting = false; nav.open(Route.MoneyInbox) }
+                    when (val it = vm.capture(text)) {
+                        is MoneyRepository.Capture.Added -> {
+                            pasting = false
+                            val by = it.filedBy
+                            if (by != null) toaster.show("Booked by your rule “$by”") else { toaster.show("Added to your review inbox"); nav.open(Route.MoneyInbox) }
+                        }
                         MoneyRepository.Capture.Duplicate -> toaster.show("Already captured (same reference)")
                         MoneyRepository.Capture.NotABankAlert -> toaster.show("No amount found. Is this a bank alert?")
                     }
                 }
             }, Modifier.fillMaxWidth(), enabled = text.isNotBlank())
         }
+    }
+}
+
+/** "Personal ▾": the ledger shown, as one small header control (4.4). */
+@Composable
+private fun LedgerPicker(ledger: Ledger, onClick: () -> Unit) {
+    Row(
+        Modifier.heightIn(min = 48.dp).clip(Shapes.small).pressable(onClick).padding(horizontal = 8.dp)
+            .semantics(mergeDescendants = true) { contentDescription = "Ledger: ${ledger.label}. Change" },
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(ledger.label, style = Aiimin.type.labelLarge)
+        Spacer(Modifier.width(4.dp))
+        Icon(AppIcons.CaretDown, null, tint = Aiimin.colors.textMuted, modifier = Modifier.size(16.dp))
     }
 }
 
@@ -367,7 +398,7 @@ private fun Headline(s: aiimin.core.data.money.SpendSeries, bar: SpendBar?, plan
     Column(Modifier.heightIn(min = 100.dp)) {
         AnimatedContent(
             targetState = HeadlineState(bar?.label ?: s.title, bar?.paise ?: s.totalPaise, bar == null, bar?.future == true),
-            transitionSpec = { fadeIn(tween(120)) togetherWith fadeOut(tween(90)) },
+            transitionSpec = { fadeIn(Motion.quick()) togetherWith fadeOut(Motion.tap()) },
             label = "headline",
         ) { (label, paise, overall, future) ->
             Column {
@@ -385,16 +416,17 @@ private fun Headline(s: aiimin.core.data.money.SpendSeries, bar: SpendBar?, plan
                     }
                 } else if (monthIsCurrent && ledger == Ledger.PERSONAL && plan != null && remaining != null) {
                     val daysLeft = YearMonth.from(today).lengthOfMonth() - today.dayOfMonth
-                    val word = when {
-                        pace == null -> ""
-                        s.totalPaise <= pace -> "On pace"
-                        else -> "${Money.whole(s.totalPaise - pace)} ahead of pace"
-                    }
-                    // Each part stays on one line; the line only breaks between parts, never inside "On pace" (audit A-006).
-                    listOf("${Money.whole(remaining.coerceAtLeast(0))} left of ${Money.whole(plan)}", "$daysLeft days to go", word).filter { it.isNotBlank() }
+                    // Each part stays on one line; the line only breaks between parts (audit A-006). The pace word is a tag below.
+                    listOf("${Money.whole(remaining.coerceAtLeast(0))} left of ${shortRupees(plan)}", "$daysLeft days to go")
                         .joinToString(" · ") { it.replace(' ', '\u00A0') }
                 } else if (monthIsCurrent && ledger == Ledger.PERSONAL) "Set a monthly plan to see your pace" else "${Money.whole(s.usualPaise)} a ${s.unit} on average"
-                Text(sub, style = Aiimin.type.caption.copy(fontSize = 14.sp, lineHeight = 20.sp))
+                // D-005: the parts wrap as whole parts; no "·" is left at a line end.
+                aiimin.designsystem.component.MetaLine(sub, style = Aiimin.type.note)
+                if (overall && monthIsCurrent && ledger == Ledger.PERSONAL && plan != null && pace != null) {
+                    Spacer(Modifier.height(8.dp))
+                    if (s.totalPaise <= pace) aiimin.designsystem.component.Tag("On pace", color = c.done, background = c.doneSoft, icon = AppIcons.Check)
+                    else aiimin.designsystem.component.Tag("${Money.whole(s.totalPaise - pace)} ahead of pace", color = c.accentText, background = c.accentSoft)
+                }
             }
         }
     }
@@ -404,14 +436,14 @@ private fun Headline(s: aiimin.core.data.money.SpendSeries, bar: SpendBar?, plan
 private fun PeriodNav(s: aiimin.core.data.money.SpendSeries, offset: Int, onPage: (Int) -> Unit) {
     val c = Aiimin.colors
     Row(Modifier.fillMaxWidth().heightIn(min = 36.dp), verticalAlignment = Alignment.CenterVertically) {
-        Row(Modifier.clip(Shapes.small).pressable({ onPage(-1) }).padding(end = 10.dp).heightIn(min = 36.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(AppIcons.CaretLeft, null, tint = c.textMuted, modifier = Modifier.size(14.dp))
+        Row(Modifier.clip(Shapes.small).pressable({ onPage(-1) }).padding(end = 12.dp).heightIn(min = 36.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(AppIcons.CaretLeft, null, tint = c.textMuted, modifier = Modifier.size(16.dp))
             Text("Earlier", style = Aiimin.type.caption)
         }
         Spacer(Modifier.weight(1f))
-        if (offset < 0) Row(Modifier.clip(Shapes.small).pressable({ onPage(1) }).padding(start = 10.dp).heightIn(min = 36.dp), verticalAlignment = Alignment.CenterVertically) {
+        if (offset < 0) Row(Modifier.clip(Shapes.small).pressable({ onPage(1) }).padding(start = 12.dp).heightIn(min = 36.dp), verticalAlignment = Alignment.CenterVertically) {
             Text("Later", style = Aiimin.type.caption)
-            Icon(AppIcons.CaretRight, null, tint = c.textMuted, modifier = Modifier.size(14.dp))
+            Icon(AppIcons.CaretRight, null, tint = c.textMuted, modifier = Modifier.size(16.dp))
         }
     }
 }
@@ -424,32 +456,25 @@ internal fun PaymentRow(t: aiimin.core.database.TxnEntity, biggest: Boolean, onC
     Row(Modifier.fillMaxWidth().pressable(onClick).heightIn(min = 60.dp), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f).padding(vertical = 8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(if (t.giftHideFrom != null) "Gift" else t.title, style = Aiimin.type.bodyStrong, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
+                Text(if (t.giftHideFrom != null) "Gift" else payeeLabel(t.title), style = Aiimin.type.bodyStrong, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
                 if (biggest) {
                     Spacer(Modifier.width(8.dp))
-                    Text("Biggest", style = Aiimin.type.caption.copy(color = c.accentText, fontWeight = FontWeight.SemiBold, fontSize = 11.5.sp))
+                    Text("Biggest", style = Aiimin.type.caption.copy(color = c.textMuted, fontWeight = FontWeight.SemiBold))
                 }
             }
-            Text(
-                listOfNotNull(t.category, t.account4?.let { "••$it" }, Dates.clock(java.time.Instant.ofEpochMilli(t.at).atZone(java.time.ZoneId.systemDefault()).toLocalTime())).joinToString(" · "),
-                style = Aiimin.type.caption,
+            aiimin.designsystem.component.MetaLine(
+                t.category, t.account4?.let { "••$it" }, Dates.clock(java.time.Instant.ofEpochMilli(t.at).atZone(java.time.ZoneId.systemDefault()).toLocalTime()),
             )
         }
+        // D-010: one quiet mark per row (how the payment was known), not two icons.
         Column(horizontalAlignment = Alignment.End) {
             Text((if (t.direction == "in") "+" else "−") + Money.format(t.amountPaise).removePrefix("−"), style = Aiimin.type.bodyStrong)
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                Icon(
-                    when (t.source) { "notification" -> AppIcons.BellSimple; "sms", "paste" -> AppIcons.ChatText; "ai" -> AppIcons.Mic; else -> AppIcons.Pencil },
-                    null, tint = c.textFaint, modifier = Modifier.size(12.dp),
-                )
-                EvidenceDot(if (t.source == "notification" || t.source == "sms") 'A' else 'C', size = 8.dp)
-            }
+            EvidenceDot(if (t.source == "notification" || t.source == "sms") 'A' else 'C', size = 8.dp)
         }
     }
 }
 
 /** Money's colour family on charts: the "money" domain gold, warm against the cream base. */
-private val MoneyGold = androidx.compose.ui.graphics.Color(0xFFB8893A)
 
 /** "₹20k", "₹1.2L": short enough to sit on a chart. */
 private fun shortRupees(paise: Long): String {

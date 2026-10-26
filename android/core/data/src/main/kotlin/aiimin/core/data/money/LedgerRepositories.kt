@@ -57,7 +57,7 @@ class AccountRepository @Inject constructor(
 
     suspend fun get(id: String) = dao.account(id)
 
-    /** First open: build the list from what onboarding knows and the cards alerts have shown. */
+    /** First open: build the list from what onboarding knows (banks picked, cash wallet). */
     suspend fun ensureSeeded() {
         val existing = dao.accountsNow()
         val now = System.currentTimeMillis()
@@ -69,15 +69,30 @@ class AccountRepository @Inject constructor(
             }
             if (s.cashWallet) dao.upsertAccount(AccountEntity(newId(), "Cash", type = AccountType.CASH.name, notifAlerts = false, smsAlerts = false, createdAt = now + 50, updatedAt = now))
         }
-        // Learned last-four digits: fill the primary bank's blank first, then add the rest.
-        val all = dao.accountsNow()
-        val known = all.mapNotNull { it.last4 }.toSet()
-        for (l4 in dao.knownLast4().filter { it !in known }) {
-            val blank = dao.accountsNow().firstOrNull { it.last4 == null && it.type != AccountType.CASH.name && !it.archived }
-            if (blank != null) dao.upsertAccount(blank.copy(last4 = l4, updatedAt = now))
-            else dao.upsertAccount(AccountEntity(newId(), "Bank", last4 = l4, primary = dao.accountsNow().none { it.primary }, createdAt = now, updatedAt = now))
-        }
+        // Numbers learned from alerts are no longer added silently: they are offered (see [suggestions]).
     }
+
+    /** Masked numbers from bank alerts that are not accounts yet (owner, 20 Oct): offered, never added silently. */
+    suspend fun suggestions(): List<SeenAccount> {
+        val seen = dao.seenAccounts().map { SeenAccount(it.account4.takeLast(4), it.raw?.let(::bankFromRaw), 1, it.at) }
+        return suggestAccounts(seen, dao.accountsNow(), settings.current().dismissedAccounts)
+    }
+
+    /** "Add this account": links to a same-bank account that has no number yet, else adds a new one. */
+    suspend fun accept(s: SeenAccount): AccountEntity? {
+        val now = System.currentTimeMillis()
+        val all = dao.accountsNow()
+        // A second tap (or a number added meanwhile) changes nothing: one account per number.
+        if (all.any { a -> a.last4?.let { sameNumber(it, s.last4) } == true }) return null
+        val target = s.linkTarget(all)?.copy(last4 = s.last4, updatedAt = now)
+            ?: AccountEntity(newId(), s.bank ?: "Bank", s.bank.orEmpty(), s.last4, primary = all.none { it.primary && !it.archived }, createdAt = now, updatedAt = now)
+        dao.upsertAccount(target)
+        log.log("account.from_alert", "account", target.id, mapOf("linked" to (target.createdAt < now)))
+        return target
+    }
+
+    /** "Not mine": this number is never offered again. */
+    suspend fun dismiss(last4: String) = settings.update { it.copy(dismissedAccounts = it.dismissedAccounts + last4) }
 
     suspend fun save(a: AccountEntity): String {
         val now = System.currentTimeMillis()

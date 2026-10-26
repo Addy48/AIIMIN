@@ -71,13 +71,20 @@ class ChatViewModel @Inject constructor(private val repo: AssistantRepository) :
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 @HiltViewModel
-class CaptureViewModel @Inject constructor(private val repo: AssistantRepository, private val log: aiimin.core.data.ai.CaptureLog) : ViewModel() {
+class CaptureViewModel @Inject constructor(
+    private val repo: AssistantRepository,
+    private val log: aiimin.core.data.ai.CaptureLog,
+    private val settings: aiimin.core.data.settings.SettingsStore,
+) : ViewModel() {
     val text = MutableStateFlow("")
-    val preview: StateFlow<List<Action>> = text.debounce(180).mapLatest { repo.preview(it) }
+    /** The type the person picked on the chooser; reset whenever the text changes. */
+    val forced = MutableStateFlow<aiimin.core.nlp.Kind?>(null)
+    val preview: StateFlow<List<Action>> = kotlinx.coroutines.flow.combine(text.debounce(180), forced) { t, f -> t to f }
+        .mapLatest { (t, f) -> repo.preview(t, f) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     suspend fun save(): List<Source> {
-        val list = repo.preview(text.value)
+        val list = repo.preview(text.value, forced.value)
         val created = repo.execute(list, "capture")
         log.record(text.value, created)
         text.value = ""
@@ -88,11 +95,16 @@ class CaptureViewModel @Inject constructor(private val repo: AssistantRepository
     suspend fun saveActions(list: List<Action>): List<Source> {
         val created = repo.execute(list, "capture")
         log.record(text.value, created)
+        // First-week ladder: "Say one capture" is done (PRD 1.2).
+        if (created.isNotEmpty() && !settings.current().firstCaptureDone) settings.update { it.copy(firstCaptureDone = true) }
         text.value = ""
         return created
     }
 
     fun revert(created: List<Source>) = viewModelScope.launch { repo.revert(created) }
+
+    /** Saves in the view model's scope, so closing the sheet mid-save never loses it; [done] runs on the main thread. */
+    fun saveAll(list: List<Action>, done: (List<Source>) -> Unit) = viewModelScope.launch { done(saveActions(list)) }
 }
 
 @HiltViewModel

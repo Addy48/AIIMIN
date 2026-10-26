@@ -13,7 +13,10 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
@@ -47,12 +50,53 @@ fun rememberVoiceInput(
     val mic = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
         if (ok) session.start(language, text.value, partial.value, level.value, listening.value, unavailable.value) else unavailable.value()
     }
+    // Part 23: the microphone text comes first, then Android's own prompt; Not now means no.
+    var asking by remember { mutableStateOf(false) }
+    if (asking) ConsentSheet(
+        ConsentText.MICROPHONE,
+        onAllow = { asking = false; mic.launch(Manifest.permission.RECORD_AUDIO) },
+        onNotNow = { asking = false; unavailable.value() },
+    )
     return {
         when {
             session.active -> session.stop()
-            ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED -> mic.launch(Manifest.permission.RECORD_AUDIO)
+            ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED -> asking = true
             else -> session.start(language, text.value, partial.value, level.value, listening.value, unavailable.value)
         }
+    }
+}
+
+/** Press-and-hold speech (Pour, 12.2): [VoiceHold.start] on press, [VoiceHold.stop] on release, whatever state it is in. */
+class VoiceHold internal constructor(val start: () -> Unit, val stop: () -> Unit)
+
+@Composable
+fun rememberVoiceHold(
+    onText: (String) -> Unit,
+    onUnavailable: () -> Unit = {},
+    onListening: (Boolean) -> Unit = {},
+    language: String = "en-IN",
+): VoiceHold {
+    val context = LocalContext.current
+    val text = rememberUpdatedState(onText)
+    val listening = rememberUpdatedState(onListening)
+    val unavailable = rememberUpdatedState(onUnavailable)
+    val session = remember { VoiceSession(context.applicationContext) }
+    DisposableEffect(Unit) { onDispose { session.release() } }
+    val mic = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok -> if (!ok) unavailable.value() }
+    var asking by remember { mutableStateOf(false) }
+    if (asking) ConsentSheet(
+        ConsentText.MICROPHONE,
+        onAllow = { asking = false; mic.launch(Manifest.permission.RECORD_AUDIO) },
+        onNotNow = { asking = false; unavailable.value() },
+    )
+    return remember {
+        VoiceHold(
+            start = {
+                if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) asking = true
+                else if (!session.active) session.start(language, text.value, {}, {}, listening.value, unavailable.value)
+            },
+            stop = { session.stop() },
+        )
     }
 }
 
