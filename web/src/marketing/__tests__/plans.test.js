@@ -40,8 +40,8 @@ describe('public copy only promises what the ladder and the referral plan say', 
   });
 
   test('the referral rewards are stated exactly', () => {
-    expect(REFERRAL.friendGets).toBe('1 month of Plus free');
+    expect(REFERRAL.friendGets).toBe('1 month of Plus on us');
     expect(REFERRAL.tiers.map((t) => t.friends)).toEqual([1, 3, 10]);
-    expect(text).toContain('3 months of Plus free');
+    expect(text).toContain('3 months of Plus on us');
   });
 });

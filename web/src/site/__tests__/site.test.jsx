@@ -80,14 +80,36 @@ test('after joining, a founding signup sees its seat number', async () => {
   expect(screen.getAllByText(/of 251/).length).toBeGreaterThan(0);
 });
 
-test('the hero walks one day through four real screens', () => {
+test('the hero walks one day through four real screens', async () => {
   const { container } = wrap(<WaitlistPage />);
   const imgs = container.querySelectorAll('.s-dayhero .s-phone__screen img');
   expect(imgs).toHaveLength(4);
   const rail = screen.getByRole('group', { name: 'One sample day' });
   fireEvent.click(rail.querySelectorAll('button')[3]);
-  expect(container.querySelector('.s-dayhero').dataset.phase).toBe('night');
+  // The day eases toward the picked time over a few frames, so the phase settles rather than jumps.
+  await waitFor(() => expect(container.querySelector('.s-dayhero').dataset.phase).toBe('night'), { timeout: 3000 });
   expect(imgs[3].getAttribute('alt')).toMatch(/night/);
+});
+
+test('the night moon is anchored inside the phone figure behind the phone frame', () => {
+  const { container } = wrap(<WaitlistPage />);
+  const moon = container.querySelector('.s-dayhero .s-hero__moon');
+  const phone = container.querySelector('.s-dayhero .s-phone');
+  expect(moon.parentElement).toHaveClass('s-device');
+  expect(moon.nextElementSibling).toBe(phone);
+  expect(moon).toHaveAttribute('aria-hidden', 'true');
+});
+
+test('invalid waitlist email is focused and its compact form has no dangling description', async () => {
+  const { container } = wrap(<WaitlistPage />);
+  const input = container.querySelector('#join input[type="email"]');
+  fireEvent.submit(input.closest('form'));
+  await waitFor(() => expect(input).toHaveFocus());
+  expect(input).toHaveAttribute('aria-invalid', 'true');
+  expect(document.getElementById(input.getAttribute('aria-describedby'))).toHaveAttribute('role', 'alert');
+
+  const compactInput = container.querySelectorAll('.s-join input[type="email"]')[1];
+  expect(compactInput).not.toHaveAttribute('aria-describedby');
 });
 
 test('/app links no APK until a checksum exists', () => {
@@ -107,6 +129,16 @@ test('public routes do not flash the waitlist access fallback while access state
     expect(shouldShowWaitlistAccessFallback(path, true, true)).toBe(false);
   });
   expect(shouldShowWaitlistAccessFallback('/settings', true, true)).toBe(true);
+});
+
+test('mobile menu closes on Escape and restores focus to its trigger', async () => {
+  const { container } = wrap(<WaitlistPage />);
+  const trigger = screen.getByRole('button', { name: 'Open menu' });
+  fireEvent.click(trigger);
+  expect(container.querySelector('#s-menu')).not.toHaveAttribute('hidden');
+  fireEvent.keyDown(document, { key: 'Escape' });
+  await waitFor(() => expect(trigger).toHaveFocus());
+  expect(container.querySelector('#s-menu')).toHaveAttribute('hidden');
 });
 
 test('no public page uses retired claims', () => {

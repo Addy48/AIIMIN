@@ -115,7 +115,7 @@ export default function AppPage() {
             <p className="s-lede">Every screen below shows sample data. Your app starts empty and fills with your own day.</p>
           </div>
           <p className="s-gallery-hint">Swipe to see all four screens</p>
-          <div className="s-gallery">
+          <div className="s-gallery" role="region" aria-label="AIIMIN app screen gallery" tabIndex={0}>
             {SCREENS.map(([src, t, d]) => (
               <figure key={t} className="s-gallery__item s-rv"><Phone src={src} alt={`The ${t} screen`} caption={null} /><figcaption><b>{t}</b>{d}</figcaption></figure>
             ))}
