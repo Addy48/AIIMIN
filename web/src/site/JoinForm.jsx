@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { ArrowRight, Check, Copy, WhatsappLogo } from '@phosphor-icons/react';
 import { API_URL } from '../utils/api';
 
@@ -18,6 +18,7 @@ function refFromUrl() {
 /** Email only (PRD 32.7 W2). Nothing is sent to analytics: the old form passed the email to gtag. */
 export default function JoinForm({ id, button = 'Get early access', compact = false }) {
   const inputId = useId();
+  const inputRef = useRef(null);
   const [email, setEmail] = useState('');
   const [state, setState] = useState('idle'); // idle | busy | error | done
   const [msg, setMsg] = useState('');
@@ -35,7 +36,11 @@ export default function JoinForm({ id, button = 'Get early access', compact = fa
   const submit = async (e) => {
     e.preventDefault();
     const clean = email.trim().toLowerCase();
-    if (!EMAIL_RE.test(clean)) { setState('error'); setMsg('That email looks incomplete. Check it and try again.'); return; }
+    if (!EMAIL_RE.test(clean)) {
+      setState('error'); setMsg('That email looks incomplete. Check it and try again.');
+      inputRef.current?.focus();
+      return;
+    }
     setState('busy'); setMsg(''); setOffline(false);
     try {
       const payload = { email: clean, source: 'site_v4' };
@@ -92,9 +97,9 @@ export default function JoinForm({ id, button = 'Get early access', compact = fa
     <form className="s-join" id={id} onSubmit={submit} noValidate>
       <label htmlFor={inputId} className="s-sr">Email address</label>
       <div className="s-join__row" data-error={state === 'error'}>
-        <input id={inputId} type="email" inputMode="email" autoComplete="email" placeholder="you@email.com" value={email}
+        <input ref={inputRef} id={inputId} type="email" inputMode="email" autoComplete="email" placeholder="you@email.com" value={email}
           onChange={(e) => { setEmail(e.target.value); if (state === 'error') setState('idle'); }}
-          aria-invalid={state === 'error'} aria-describedby={`${inputId}-n`} required />
+          aria-invalid={state === 'error'} aria-describedby={state === 'error' || !compact ? `${inputId}-n` : undefined} required />
         <button className="s-btn" type="submit" disabled={state === 'busy'}>
           {state === 'busy' ? 'Adding you…' : <>{button} <ArrowRight weight="bold" /></>}
         </button>

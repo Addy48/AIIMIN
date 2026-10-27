@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   AirplaneTilt, ArrowRight, ChatCircleText, Check, DeviceMobile, EyeSlash, FileLock, Lock,
@@ -147,48 +147,207 @@ const DAY = [
   { key: 'evening', label: 'Evening', time: '6:50 pm', alt: 'Today at 6:50 in the evening: the day arc past its peak, with Walk 20 minutes as the next minimum' },
   { key: 'night', label: 'Night', time: '10:15 pm', alt: 'Today at 10:15 at night: the day arc almost finished, with three minimums still open' },
 ];
-const STEP_MS = 4200;
+
+// Day progress p runs 0 (morning) to 3 (night). One rAF loop eases the painted value toward the target and writes
+// opacity and transforms straight to the elements, so scrolling never re-renders React and never steps.
+const SUN_KF = [[-0.35, -0.75, 1.55], [0, -0.6, 1.05], [1, 0, -0.04], [2, 0.6, 1.05], [2.7, 0.82, 1.5]];
+const SUN_RGB = [[255, 154, 110], [255, 107, 53], [228, 103, 58]];
+const DAY_SCROLL_SHARE = 0.8; // Keep the night screen pinned for a short final scroll after the moon has risen.
+const sstep = (t) => t * t * (3 - 2 * t);
+const lerpN = (a, b, t) => a + (b - a) * t;
+const clampN = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+function sunAt(p) {
+  let k = 0;
+  while (k < SUN_KF.length - 2 && p > SUN_KF[k + 1][0]) k += 1;
+  const [p0, x0, y0] = SUN_KF[k]; const [p1, x1, y1] = SUN_KF[k + 1];
+  const t = sstep(clampN((p - p0) / (p1 - p0), 0, 1));
+  return [lerpN(x0, x1, t), lerpN(y0, y1, t)];
+}
+function sunColor(p) {
+  const f = clampN(p, 0, 2); const k = Math.min(1, Math.floor(f)); const t = f - k;
+  return SUN_RGB[k].map((c, n) => Math.round(lerpN(c, SUN_RGB[k + 1][n], t))).join(',');
+}
 
 function HeroDay() {
   const [i, setI] = useState(0);
-  const [held, setHeld] = useState(false);
-  const [visible, setVisible] = useState(true);
-  const [still, setStill] = useState(false);
-  const [first, setFirst] = useState(true); // the sunrise plays once, on load
   const ref = useRef(null);
-  useEffect(() => { if (i !== 0) setFirst(false); }, [i]);
-  useEffect(() => {
-    setStill(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-    if (!('IntersectionObserver' in window) || !ref.current) return undefined;
-    const io = new IntersectionObserver(([e]) => setVisible(e.isIntersecting), { threshold: 0.25 });
-    io.observe(ref.current);
-    return () => io.disconnect();
+  const sunRef = useRef(null);
+  const moonRef = useRef(null);
+  const imgs = useRef([]);
+  const st = useRef({ cur: -0.35, target: 0, raf: 0, last: 0, shown: -1, still: false, narrow: false, w: 0, heroVisibility: 1 });
+
+  const paint = useCallback((p) => {
+    const s = st.current;
+    const base = Math.min(DAY.length - 1, Math.max(0, Math.floor(p)));
+    const frac = clampN(p - base, 0, 1);
+    const moonScale = 1.08;
+    imgs.current.forEach((im, n) => {
+      if (!im) return;
+      im.style.opacity = n === base ? '1' : n === base + 1 ? String(sstep(clampN((frac - 0.38) / 0.24, 0, 1))) : '0';
+    });
+    const sun = sunRef.current; const moon = moonRef.current;
+    if (sun && moon) {
+      if (!s.w) s.w = sun.offsetWidth / 0.6 || 300;
+      const k = s.narrow ? 0.83 : 1;
+      const [x, y] = sunAt(p);
+      const so = p < 0 ? clampN(1 + p / 0.35, 0, 1) : clampN(1 - (p - 2) / 0.6, 0, 1);
+      sun.style.transform = `translate3d(${(x * k * s.w).toFixed(1)}px, ${(y * s.w).toFixed(1)}px, 0)`;
+      sun.style.opacity = so.toFixed(3);
+      sun.style.backgroundColor = `rgb(${sunColor(p)})`;
+      const warmth = clampN(1 - Math.abs(y + 0.04) / 2.4, 0.22, 1);
+      sun.style.boxShadow = `0 0 ${(s.w * (0.16 + warmth * 0.16)).toFixed(1)}px ${(s.w * 0.04).toFixed(1)}px rgba(255,107,53,${(0.12 + warmth * 0.18).toFixed(3)})`;
+      const m = sstep(clampN((p - 2.35) / 0.65, 0, 1));
+      const sc = moonScale;
+      // CSS anchors the moon to the phone's outer left edge; scroll only moves it vertically.
+      const ty = 0.5 * s.w * (1 - m);
+      moon.style.transform = `translate3d(0, ${ty.toFixed(1)}px, 0) scale(${sc})`;
+      const moonLife = s.heroVisibility;
+      moon.style.opacity = (m * moonLife).toFixed(3);
+    }
+    const near = Math.round(clampN(p, 0, DAY.length - 1));
+    const rail = ref.current?.querySelector('.s-dayrail');
+    if (rail) {
+      rail.querySelectorAll('button').forEach((button, n) => {
+        button.style.setProperty('--fill', String(clampN(p - n, 0, 1)));
+      });
+    }
+    if (near !== s.shown) { s.shown = near; setI(near); }
   }, []);
-  const running = !still && !held && visible;
+
+  const tick = useCallback((now) => {
+    const s = st.current;
+    const dt = Math.min(64, now - (s.last || now)); s.last = now;
+    const d = s.target - s.cur;
+    if (s.still || Math.abs(d) < 0.0007) { s.cur = s.target; paint(s.cur); s.raf = 0; s.last = 0; return; }
+    s.cur += d * (1 - Math.exp(-dt / 70));
+    paint(s.cur);
+    s.raf = requestAnimationFrame(tick);
+  }, [paint]);
+  const go = useCallback((p) => {
+    const s = st.current; s.target = p;
+    if (!s.raf) s.raf = requestAnimationFrame(tick);
+  }, [tick]);
+
   useEffect(() => {
-    if (!running) return undefined;
-    const t = setTimeout(() => { if (!document.hidden) setI((n) => (n + 1) % DAY.length); }, STEP_MS);
-    return () => clearTimeout(t);
-  }, [i, running]);
+    const s = st.current;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    s.still = reduceMotion.matches;
+    s.narrow = window.matchMedia('(max-width: 520px)').matches;
+    if (s.still) s.cur = 0;
+    go(0);
+    const onMotionChange = () => {
+      s.still = reduceMotion.matches;
+      if (s.still) {
+        if (s.raf) cancelAnimationFrame(s.raf);
+        s.raf = 0; s.last = 0; s.cur = s.target; paint(s.cur);
+      } else if (Math.abs(s.target - s.cur) >= 0.0007) go(s.target);
+    };
+    const onResize = () => { s.w = 0; s.narrow = window.matchMedia('(max-width: 520px)').matches; paint(s.cur); };
+    reduceMotion.addEventListener('change', onMotionChange);
+    window.addEventListener('resize', onResize);
+    return () => { reduceMotion.removeEventListener('change', onMotionChange); window.removeEventListener('resize', onResize); cancelAnimationFrame(s.raf); s.raf = 0; };
+  }, [go, paint]);
+
+  // On phones, only the Today stage pins while its own scroll track scrubs the day. The rest of the page stays in flow.
+  useEffect(() => {
+    const sec = ref.current && ref.current.closest('.s-hero');
+    const track = ref.current && ref.current.closest('.s-hero__scroll');
+    const mq = window.matchMedia('(prefers-reduced-motion: no-preference)');
+    const mobile = window.matchMedia('(max-width: 900px)');
+    if (!sec) return undefined;
+    const prog = () => {
+      const r = sec.getBoundingClientRect();
+      const viewportHeight = Math.max(1, window.innerHeight);
+      const visibleHeight = Math.max(1, Math.min(r.height, viewportHeight));
+      const visible = clampN(Math.min(r.bottom, viewportHeight) - Math.max(r.top, 0), 0, visibleHeight);
+      st.current.heroVisibility = visible / visibleHeight;
+      if (mobile.matches && track) {
+        const trackRect = track.getBoundingClientRect();
+        const trackTop = trackRect.top + window.scrollY;
+        const trackBottom = trackRect.bottom + window.scrollY;
+        const stickyTop = Number.parseFloat(window.getComputedStyle(ref.current).top) || 72;
+        const start = trackTop - stickyTop;
+        const travel = Math.max(1, trackBottom - trackTop - ref.current.offsetHeight);
+        const dayProgress = clampN((window.scrollY - start) / (travel * DAY_SCROLL_SHARE), 0, 1);
+        return dayProgress * (DAY.length - 1);
+      }
+      const grid = sec.querySelector('.s-hero__grid');
+      if (grid) {
+        const stickyTop = Number.parseFloat(window.getComputedStyle(grid).top) || 64;
+        const sectionTop = r.top + window.scrollY;
+        const gridTop = sectionTop + (Number.parseFloat(window.getComputedStyle(sec).paddingTop) || 0);
+        const sectionBottom = r.bottom + window.scrollY;
+        const start = gridTop - stickyTop;
+        const travel = Math.max(1, sectionBottom - grid.offsetHeight - start);
+        const dayProgress = clampN((window.scrollY - start) / (travel * DAY_SCROLL_SHARE), 0, 1);
+        return dayProgress * (DAY.length - 1);
+      }
+      return 0;
+    };
+    const onScroll = () => { go(prog()); };
+    const sync = () => {
+      if (mq.matches) { window.addEventListener('scroll', onScroll, { passive: true }); onScroll(); }
+      else window.removeEventListener('scroll', onScroll);
+    };
+    sync();
+    mq.addEventListener('change', sync);
+    mobile.addEventListener('change', onScroll);
+    return () => { mq.removeEventListener('change', sync); mobile.removeEventListener('change', onScroll); window.removeEventListener('scroll', onScroll); };
+  }, [go]);
+
+  const pick = (n) => go(n);
   return (
-    <div className="s-hero__stage s-dayhero" data-phase={DAY[i].key} data-first={first} ref={ref}
-      onPointerEnter={() => setHeld(true)} onPointerLeave={() => setHeld(false)}
-      onFocus={() => setHeld(true)} onBlur={() => setHeld(false)}>
-      <span className="s-hero__sun" aria-hidden="true" />
+    <div className="s-hero__stage s-dayhero" data-phase={DAY[i].key} ref={ref}>
+      <span className="s-hero__sun" ref={sunRef} aria-hidden="true" />
       <figure className="s-device">
+      <span className="s-hero__moon" ref={moonRef} aria-hidden="true">
+      <svg viewBox="0 0 100 100" width="100%" height="100%" focusable="false">
+        <defs>
+          <radialGradient id="today-moon-face" cx="31%" cy="27%" r="78%">
+            <stop offset="0" stopColor="#fff4e2" />
+            <stop offset=".36" stopColor="#e5ded2" />
+            <stop offset=".72" stopColor="#b4b8bd" />
+            <stop offset="1" stopColor="#737f8e" />
+          </radialGradient>
+          <radialGradient id="today-moon-warmth" cx="24%" cy="48%" r="75%">
+            <stop offset="0" stopColor="#ffc28f" stopOpacity=".42" />
+            <stop offset=".56" stopColor="#f0a477" stopOpacity=".16" />
+            <stop offset="1" stopColor="#f0a477" stopOpacity="0" />
+          </radialGradient>
+          <clipPath id="today-moon-clip"><circle cx="50" cy="50" r="45" /></clipPath>
+        </defs>
+        <circle cx="50" cy="50" r="44" fill="url(#today-moon-face)" />
+        <circle cx="50" cy="50" r="44" fill="url(#today-moon-warmth)" />
+        <circle cx="50" cy="50" r="44" fill="none" stroke="#fff0db" strokeOpacity=".42" strokeWidth=".9" />
+        <g clipPath="url(#today-moon-clip)">
+          <ellipse cx="60" cy="42" rx="20" ry="16" fill="#475362" fillOpacity=".075" />
+          <ellipse cx="39" cy="49" rx="8" ry="5" fill="#45515f" fillOpacity=".09" />
+          <ellipse cx="62" cy="69" rx="12" ry="8" fill="#45515f" fillOpacity=".075" />
+          <g fill="#4d5967" fillOpacity=".085" stroke="#fff5e7" strokeOpacity=".18" strokeWidth=".8">
+            <circle cx="35" cy="35" r="5.2" />
+            <circle cx="73" cy="47" r="3.6" />
+            <circle cx="43" cy="71" r="2.7" />
+          </g>
+          <g fill="none" stroke="#414b57" strokeOpacity=".16" strokeWidth=".8">
+            <circle cx="35" cy="35" r="3" />
+            <circle cx="73" cy="47" r="2" />
+          </g>
+        </g>
+      </svg>
+      </span>
         <div className="s-phone">
           <div className="s-phone__screen">
             {DAY.map((d, n) => (
-              <img key={d.key} src={`/site/screens/day-${d.key}.webp`} alt={n === i ? d.alt : ''} aria-hidden={n !== i}
-                width="1440" height="2960" data-on={n === i}
-                loading={n === 0 ? 'eager' : 'lazy'} fetchPriority={n === 0 ? 'high' : undefined} decoding="async" />
+              <img key={d.key} ref={(el) => { imgs.current[n] = el; }} src={`/site/screens/day-${d.key}.webp`} alt={n === i ? d.alt : ''} aria-hidden={n !== i}
+                width="760" height="1562" style={{ opacity: n === 0 ? 1 : 0 }}
+                loading="eager" fetchPriority={n === 0 ? 'high' : undefined} decoding="async" />
             ))}
           </div>
         </div>
       </figure>
       <div className="s-dayrail" role="group" aria-label="One sample day">
         {DAY.map((d, n) => (
-          <button key={d.key} type="button" aria-pressed={n === i} data-run={n === i && running} onClick={() => setI(n)}>
+          <button key={d.key} type="button" aria-pressed={n === i} onClick={() => pick(n)}>
             <span className="s-dayrail__bar" aria-hidden="true"><i key={`${i}-${n}`} /></span>
             <b>{d.label}</b><span className="num">{d.time}</span>
           </button>
@@ -368,7 +527,9 @@ export default function WaitlistPage() {
               {count && <span className="num"><Check weight="bold" /> {count.toLocaleString('en-IN')} people waiting</span>}
             </div>
           </div>
-          <HeroDay />
+          <div className="s-hero__scroll">
+            <HeroDay />
+          </div>
         </div>
       </section>
 
@@ -380,7 +541,7 @@ export default function WaitlistPage() {
           </div>
           <div className="s-moment-gallery-wrap">
             <p className="s-gallery-hint">Swipe to see 3 sample screens</p>
-            <div className="s-moment-gallery" aria-label="Sample app screens">
+            <div className="s-moment-gallery" role="region" aria-label="Sample app screens" tabIndex={0}>
               {MOMENTS.map((m) => (
                 <div key={m.time} className="s-moment-gallery__item">
                   <Phone src={m.screen} alt={m.alt} caption={m.time} />
@@ -413,7 +574,7 @@ export default function WaitlistPage() {
         <div className="s-wrap s-raahi">
           <div className="s-raahi__art s-rv">
             <img src={raahi('scene_sitting_sunset')} alt="Raahi sitting on a hill, watching the sun set" width="640" height="579" loading="lazy" />
-            <p className="s-bubble" data-out={out} aria-live="polite">{LINES[line][1]}</p>
+            <p className="s-bubble" data-out={out}>{LINES[line][1]}</p>
           </div>
           <div className="s-rv">
             <h2 id="raahi-h" className="s-h2">Meet Raahi.</h2>

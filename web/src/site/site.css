@@ -12,9 +12,9 @@
   --border-strong: #C9C2B6;
   --ink: #1A1916;
   --muted: #625E57;
-  --faint: #8A8478;
+  --faint: #746E64;
   --accent: #FF6B35;
-  --accent-text: #C24E20;
+  --accent-text: #AD4219;
   --accent-soft: #F6E5DA;
   --done: #2F6B4F;
   --slate: #4B5A68;
@@ -59,7 +59,7 @@
 .s-skip:focus { left: 8px; }
 
 /* ── Header ───────────────────────────────────────── */
-.s-head { position: sticky; top: 0; z-index: 40; background: color-mix(in srgb, var(--base) 88%, transparent); backdrop-filter: saturate(1.2) blur(10px); -webkit-backdrop-filter: saturate(1.2) blur(10px); border-bottom: 1px solid transparent; transition: border-color .3s; }
+.s-head { position: sticky; top: 0; z-index: 40; background: color-mix(in srgb, var(--base) 94%, transparent); border-bottom: 1px solid transparent; transition: border-color .3s; }
 .s-head[data-scrolled='true'] { border-bottom-color: var(--border); }
 .s-head__row { display: flex; align-items: center; gap: 24px; height: 64px; }
 .s-brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
@@ -75,6 +75,14 @@
   .s-nav a:not(.s-btn) { display: none; }
   .s-nav .s-nav__keep { display: inline-block !important; }
 }
+@media (max-width: 380px) {
+  .s-head__row { gap: 12px; }
+  .s-brand { gap: 0; }
+  .s-brand .s-word { display: none; }
+  .s-nav { gap: 2px; }
+  .s-nav .s-btn { margin-left: 0; padding-inline: 12px; font-size: 14px; }
+  .s-menu-btn { margin-left: 0; }
+}
 
 /* ── Buttons and links ────────────────────────────
    One state system for every control: hover lightens or fills, press scales to .97 (120ms), focus shows a ring.
@@ -88,7 +96,7 @@
 .s-btn svg { width: 18px; height: 18px; flex: none; transition: transform .22s var(--press); }
 .s-btn:active { transform: scale(.97); transition-duration: .12s; }
 .s-btn[disabled] { opacity: .7; cursor: progress; transform: none; box-shadow: none; }
-.s-btn--sm { min-height: 40px; padding: 0 16px; font-size: 15px; border-radius: 10px; }
+.s-btn--sm { min-height: 44px; padding: 0 16px; font-size: 15px; border-radius: 10px; }
 .s-btn--ghost { background: transparent; box-shadow: none; border-color: var(--border-strong); }
 .site a.s-btn--ghost, .site button.s-btn--ghost { color: var(--ink); background: transparent; }
 @media (hover: hover) and (pointer: fine) {
@@ -140,6 +148,7 @@
 .s-hero__copy { grid-column: 1; grid-row: 1; align-self: end; }
 .s-hero__actions { grid-column: 1; grid-row: 2; align-self: start; }
 .s-hero__stage { grid-column: 2; grid-row: 1 / span 2; }
+.s-hero__scroll { grid-column: 2; grid-row: 1 / span 2; min-width: 0; }
 .s-hero h1 { font-size: clamp(56px, 8.6vw, 116px); font-weight: 650; letter-spacing: -0.04em; line-height: .92; }
 .s-hero h1 .s-dot { color: var(--accent-text); }
 .s-hero__sub { margin: 32px 0 30px; font-size: clamp(18px, 1.6vw, 21px); color: var(--muted); max-width: 40ch; }
@@ -153,8 +162,9 @@
 @keyframes s-sunrise { from { transform: translate(-108%, 60%); opacity: 0; } 30% { opacity: 1; } to { transform: translateX(-108%); opacity: 1; } }
 @media (max-width: 900px) {
   .s-hero__grid { grid-template-columns: 1fr; grid-template-rows: auto; gap: 16px; }
-  .s-hero__copy, .s-hero__stage, .s-hero__actions { grid-column: 1; grid-row: auto; }
+  .s-hero__copy, .s-hero__scroll, .s-hero__actions { grid-column: 1; grid-row: auto; }
   .s-hero .s-hero__sub { margin-bottom: 0; }
+  .s-hero__scroll { min-height: 0; }
   .s-hero__stage { max-width: 560px; width: 100%; margin: 0 auto; padding-top: 0; }
 }
 @media (max-width: 520px) { .s-hero__sun { transform: translateX(-80%); animation-name: s-sunrise-sm; } @keyframes s-sunrise-sm { from { transform: translate(-80%, 60%); opacity: 0; } to { transform: translateX(-80%); opacity: 1; } } }
@@ -215,7 +225,7 @@
 .s-story .s-phone__screen img { position: absolute; inset: 0; opacity: 0; transform: scale(1.015); transition: opacity .55s var(--ease-out), transform .7s var(--ease-out); }
 .s-story .s-phone__screen img[data-on='true'] { opacity: 1; transform: none; }
 .s-story__dots { margin: 18px 0 0; padding: 4px; display: flex; gap: 4px; border-radius: 999px; background: var(--raised); }
-.s-story__dots button { appearance: none; border: 0; background: transparent; cursor: pointer; min-height: 36px; padding: 0 16px; border-radius: 999px; font: 500 14px var(--body); color: var(--muted); transition: background-color .25s var(--ease-out), color .2s ease, transform .12s var(--press); }
+.s-story__dots button { appearance: none; border: 0; background: transparent; cursor: pointer; min-height: 44px; padding: 0 16px; border-radius: 999px; font: 500 14px var(--body); color: var(--muted); transition: background-color .25s var(--ease-out), color .2s ease, transform .12s var(--press); }
 @media (hover: hover) and (pointer: fine) { .s-story__dots button:not([data-on='true']):hover { color: var(--ink); background: rgba(251,250,247,.6); } }
 .s-story__dots button:active { transform: scale(.96); }
 .s-story__dots button[data-on='true'] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(26,25,22,.1); }
@@ -273,7 +283,7 @@
 .s-plans-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px 48px; flex-wrap: wrap; margin-bottom: clamp(32px, 4vw, 48px); }
 .s-plans-head .s-lede { max-width: 52ch; }
 .s-bill { display: inline-flex; padding: 4px; border-radius: 999px; background: var(--raised); border: 1px solid var(--border); flex: none; }
-.s-bill button { border: 0; background: none; font: 500 15px var(--body); color: var(--muted); padding: 9px 18px; border-radius: 999px; cursor: pointer; display: inline-flex; gap: 8px; align-items: baseline; transition: background-color .2s ease, color .2s ease, box-shadow .2s ease, transform .12s var(--press); }
+.s-bill button { min-height: 44px; border: 0; background: none; font: 500 15px var(--body); color: var(--muted); padding: 9px 18px; border-radius: 999px; cursor: pointer; display: inline-flex; gap: 8px; align-items: baseline; transition: background-color .2s ease, color .2s ease, box-shadow .2s ease, transform .12s var(--press); }
 .s-bill button small { font-size: 12px; font-weight: 600; color: var(--accent-text); }
 .s-bill button[aria-pressed='true'] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(26,25,22,.08), 0 4px 12px -6px rgba(26,25,22,.25); }
 .s-bill button:active { transform: scale(.97); }
@@ -297,6 +307,9 @@
 .s-plan li svg { width: 16px; height: 16px; margin-top: 3px; color: var(--done); }
 .s-plan__soon { margin-top: auto; padding-top: 22px; font-size: 13px; color: var(--faint); }
 .s-plan__soon b { font-weight: 600; color: var(--muted); }
+/* The plan row arrives as one quiet, sequential reveal after the earlier page sections. */
+.s-io .s-plans.s-stagger[data-in='true'] > .s-plan { opacity: 1; animation: s-plan-rise .72s var(--ease-out) backwards; animation-delay: calc(var(--k, 0) * 110ms); }
+@keyframes s-plan-rise { from { opacity: 0; transform: translate3d(0, 24px, 0) scale(.985); } }
 /* The recommended plan carries the page's one ink card in this section. */
 .s-plan[data-rec='true'] { background: var(--ink); border-color: var(--ink); color: #F5F3EE; box-shadow: 0 30px 60px -36px rgba(26,25,22,.6); }
 .s-plan[data-rec='true'] .s-plan__promise, .s-plan[data-rec='true'] .s-plan__price span, .s-plan[data-rec='true'] .s-plan__year, .s-plan[data-rec='true'] ul { color: #BDB6AA; }
@@ -479,10 +492,10 @@
 .s-bg-day__when { display: block; font-size: 14px; font-weight: 600; color: var(--muted); }
 .s-bg-day q { display: block; margin-top: 10px; font-family: var(--display); font-size: clamp(20px, 1.9vw, 26px); line-height: 1.25; letter-spacing: -.02em; quotes: '“' '”'; }
 .s-bg-day { padding-bottom: clamp(180px, 16vw, 200px); }
-.s-io .s-bg-day .s-bg-day__path { stroke-dashoffset: 1; transition: stroke-dashoffset 1.6s var(--ease-out) .15s; }
-.s-io .s-bg-day[data-in='true'] .s-bg-day__path { stroke-dashoffset: 0; }
-.s-io .s-bg-day .s-bg-day__dot { transform: scale(0); transition: transform .5s var(--ease-out) calc(.35s + var(--i) * .28s); }
-.s-io .s-bg-day[data-in='true'] .s-bg-day__dot { transform: none; }
+.s-io .s-bg-day .s-bg-day__path { opacity: 0; transition: opacity .42s var(--ease-out) .15s; }
+.s-io .s-bg-day[data-in='true'] .s-bg-day__path { opacity: 1; }
+.s-io .s-bg-day .s-bg-day__dot { opacity: 0; transform: scale(.9); transition: opacity .25s var(--ease-out) calc(.35s + var(--i) * .28s), transform .35s var(--ease-out) calc(.35s + var(--i) * .28s); }
+.s-io .s-bg-day[data-in='true'] .s-bg-day__dot { opacity: 1; transform: none; }
 
 /* What Raahi won't do */
 .s-bg-never { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 clamp(24px, 4vw, 56px); }
@@ -573,6 +586,7 @@
   .s-io .s-rv { opacity: 1; transform: none; filter: none; }
 }
 .s-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+html.site-doc { scroll-behavior: smooth; scroll-padding-top: 88px; }
 html.site-doc, html.site-doc body { height: auto !important; min-height: 100%; overflow-x: clip !important; overflow-y: visible !important; background: #F5F3EE; }
 
 /* ── Page transitions (View Transitions API; see usePageTransitions in Shell.jsx) ─────────
@@ -590,10 +604,11 @@ html.site-doc, html.site-doc body { height: auto !important; min-height: 100%; o
 @keyframes s-vt-in { from { opacity: 0; transform: translateY(14px); } }
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+  .s-menu[data-open='true'] { animation: none; }
 }
 
 /* Small screens: the nav links fold into a menu under the header. */
-.s-menu-btn { display: none; width: 40px; height: 40px; margin-left: 6px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--ink); place-items: center; cursor: pointer; transition: background-color .18s ease, transform .12s cubic-bezier(0.23, 1, 0.32, 1); }
+.s-menu-btn { display: none; width: 44px; height: 44px; margin-left: 6px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--ink); place-items: center; cursor: pointer; transition: background-color .18s ease, transform .12s cubic-bezier(0.23, 1, 0.32, 1); }
 .s-menu-btn svg { width: 18px; height: 18px; }
 .s-menu-btn:active { transform: scale(.94); }
 .s-menu-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
@@ -610,44 +625,62 @@ html.site-doc, html.site-doc body { height: auto !important; min-height: 100%; o
 /* ── Hero: one sample day ────────────────────────────
    The Today screen crossfades through four real times while the sun travels behind the phone: low left at
    morning, over the top at midday, low right at dusk, then a pale moon. Reduced motion: no autoplay, no travel. */
-.s-dayhero .s-phone__screen img { position: absolute; inset: 0; opacity: 0; transition: opacity .9s cubic-bezier(0.4, 0, 0.2, 1); }
-.s-dayhero .s-phone__screen img[data-on='true'] { opacity: 1; }
-/* The sun walks an arc around the phone: low on the left at morning, over the top at midday, low on the right at dusk,
-   then a pale moon high on the left. Offsets are fractions of the phone width, so it scales with the phone. */
-.s-dayhero { padding-top: calc(var(--phone-w) * .36); --sun-s: 1; }
-.s-dayhero .s-hero__sun { top: 0; left: 50%; width: calc(var(--phone-w) * .6); margin-left: calc(var(--phone-w) * -.3); animation: none;
-  transform: translate(var(--sun-x), var(--sun-y)) scale(var(--sun-s));
-  transition: transform 1.9s cubic-bezier(0.77, 0, 0.175, 1), background-color 1.9s ease, box-shadow 1.9s ease; }
-.s-dayhero[data-phase='morning'] { --sun-x: calc(var(--phone-w) * -.6); --sun-y: calc(var(--phone-w) * 1.05); }
-.s-dayhero[data-phase='afternoon'] { --sun-x: 0px; --sun-y: calc(var(--phone-w) * -.04); }
-.s-dayhero[data-phase='evening'] { --sun-x: calc(var(--phone-w) * .6); --sun-y: calc(var(--phone-w) * 1.05); }
-.s-dayhero[data-phase='night'] { --sun-x: calc(var(--phone-w) * -.56); --sun-y: calc(var(--phone-w) * .12); --sun-s: .55; }
-.s-dayhero[data-phase='morning'] .s-hero__sun { background: #FF9A6E; }
-.s-dayhero[data-phase='afternoon'] .s-hero__sun { background: var(--accent); }
-.s-dayhero[data-phase='evening'] .s-hero__sun { background: #E4673A; }
-.s-dayhero[data-phase='night'] .s-hero__sun { background: #E9E0CF; box-shadow: inset -22px -12px 0 0 #D8CCB5; }
-/* First load only: the morning sun rises from below the horizon. */
-.s-dayhero[data-first='true'] .s-hero__sun { animation: s-dayrise 1.6s var(--ease-out) .2s both; }
-@keyframes s-dayrise { from { opacity: 0; transform: translate(var(--sun-x), calc(var(--sun-y) + var(--phone-w) * .5)); } 30% { opacity: 1; } to { opacity: 1; transform: translate(var(--sun-x), var(--sun-y)); } }
+.s-dayhero .s-phone__screen img { position: absolute; inset: 0; will-change: opacity; }
+/* Sun and moon are moved by script every frame (transform + opacity only); offsets are fractions of the phone width. */
+.s-dayhero { padding-top: calc(var(--phone-w) * .36); }
+.s-dayhero .s-hero__sun, .s-dayhero .s-hero__moon { position: absolute; top: 0; left: 50%; aspect-ratio: 1; border-radius: 50%; animation: none; transition: none; will-change: transform, opacity; }
+.s-dayhero .s-hero__sun { z-index: -1; width: calc(var(--phone-w) * .6); margin-left: calc(var(--phone-w) * -.3); background: rgb(255, 154, 110); transform: translate3d(calc(var(--phone-w) * -.75), calc(var(--phone-w) * 1.55), 0); opacity: 0; }
+.s-dayhero .s-device { isolation: isolate; }
+.s-dayhero .s-phone { position: relative; z-index: 1; }
+.s-dayhero .s-hero__moon { z-index: 0; top: calc(var(--phone-w) * -.146); left: 50%; width: calc(var(--phone-w) * .492); margin-left: calc(var(--phone-w) * -.746); display: block; overflow: visible; opacity: 0; transform-origin: center; filter: drop-shadow(0 5px 12px rgba(31, 38, 49, .24)) drop-shadow(0 0 16px rgba(238, 151, 104, .24)) drop-shadow(0 0 34px rgba(127, 149, 190, .14)); pointer-events: none; }
+.s-dayhero .s-hero__moon svg { display: block; width: 100%; height: 100%; }
 .s-dayrail { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; width: min(calc(var(--phone-w) * 1.28), 100%); margin-top: 22px; }
-.s-dayrail button { border: 0; background: none; padding: 0 2px 4px; text-align: left; cursor: pointer; color: var(--faint); font: inherit; display: grid; gap: 2px; transition: color .2s ease; }
+.s-dayrail button { min-height: 44px; border: 0; background: none; padding: 0 2px 4px; text-align: left; cursor: pointer; color: var(--faint); font: inherit; display: grid; gap: 2px; transition: color .2s ease; }
 .s-dayrail b { font-size: 13.5px; font-weight: 600; }
 .s-dayrail .num { font-size: 12px; }
 .s-dayrail__bar { display: block; height: 3px; border-radius: 3px; background: var(--border); overflow: hidden; margin-bottom: 8px; }
-.s-dayrail__bar i { display: block; height: 100%; width: 100%; background: var(--ink); transform-origin: left; transform: scaleX(0); }
+.s-dayrail__bar i { display: block; height: 100%; width: 100%; background: var(--accent-text); transform-origin: left; transform: scaleX(var(--fill, 0)); }
 .s-dayrail button[aria-pressed='true'] { color: var(--ink); }
-.s-dayrail button[aria-pressed='true'] .s-dayrail__bar i { transform: scaleX(1); }
-.s-dayrail button[data-run='true'] .s-dayrail__bar i { animation: s-dayfill 4.2s linear both; }
-@keyframes s-dayfill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 @media (hover: hover) and (pointer: fine) { .s-dayrail button[aria-pressed='false']:hover { color: var(--muted); } }
 .s-dayrail button:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; border-radius: 6px; }
-@media (max-width: 520px) {
-  .s-dayhero[data-phase='morning'] { --sun-x: calc(var(--phone-w) * -.5); }
-  .s-dayhero[data-phase='evening'] { --sun-x: calc(var(--phone-w) * .5); }
-  .s-dayhero[data-phase='night'] { --sun-x: calc(var(--phone-w) * -.46); }
+
+/* Desktop story: hold the hero composition while Today scrubs through the four states, then release normal flow. */
+@media (min-width: 901px) {
+  .s-hero { min-height: 280vh; min-height: 280svh; }
+  .s-hero__grid {
+    position: sticky; top: 64px; top: calc(64px + env(safe-area-inset-top, 0px));
+    height: calc(100vh - 64px); height: calc(100svh - 64px - env(safe-area-inset-top, 0px));
+  }
+  .s-hero__scroll { align-self: stretch; display: grid; align-items: center; }
+}
+
+/* Mobile day story: the page scrolls normally through this tall track while the Today screen alone stays pinned.
+   It releases at the track end, so the next page section flows in naturally. */
+@media (max-width: 900px) {
+  .s-hero { min-height: 0; }
+  .s-hero__grid { position: relative; top: auto; height: auto; }
+  .s-hero { --phone-w: clamp(172px, min(58vw, calc((100vh - 242px) / 2.35)), 270px); }
+  @supports (height: 100svh) {
+    .s-hero { --phone-w: clamp(172px, min(58vw, calc((100svh - 242px) / 2.35)), 270px); }
+  }
+  .s-hero__scroll { min-height: 290vh; min-height: 290svh; }
+  .s-dayhero {
+    position: sticky; top: 72px; top: calc(72px + env(safe-area-inset-top, 0px));
+    min-height: calc(100vh - 96px);
+    min-height: calc(100svh - 96px - env(safe-area-inset-top, 0px));
+    align-content: center; padding: clamp(16px, 3vh, 28px) 0;
+  }
+  .s-dayhero::before {
+    content: ''; position: absolute; z-index: -2; inset: 12% -8% 8%; pointer-events: none; border-radius: 50%;
+    background: radial-gradient(ellipse at 50% 48%, rgba(255,107,53,.11), transparent 68%);
+    opacity: .85;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .s-dayhero .s-hero__sun, .s-dayhero .s-phone__screen img { transition: none; }
+  .s-hero { min-height: 0; }
+  .s-hero__grid { position: relative; top: auto; height: auto; }
+  .s-hero__scroll { min-height: 0; }
+  .s-dayhero { position: relative; top: auto; min-height: 0; }
 }
 
 /* ── Web companion ─────────────────────────────── */
@@ -682,15 +715,10 @@ html.site-doc, html.site-doc body { height: auto !important; min-height: 100%; o
 /* The founding bar fills when the offer scrolls in. */
 .s-io .s-offer .s-offer__meter i::after { transform: scaleX(0); transform-origin: left; transition: transform 1.4s var(--ease-out) .5s; }
 .s-io .s-offer[data-in='true'] .s-offer__meter i::after { transform: none; }
-/* Browsers with scroll-driven animations get a reading-progress line and a gentle lift on the hero phone. */
-@supports (animation-timeline: scroll()) {
-  .s-head::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--accent); transform-origin: left; transform: scaleX(0); animation: s-progress linear both; animation-timeline: scroll(root block); pointer-events: none; }
-  @keyframes s-progress { to { transform: scaleX(1); } }
-  .s-dayhero .s-device { animation: s-lift linear both; animation-timeline: view(); animation-range: exit 0% exit 90%; }
-  @keyframes s-lift { to { transform: translateY(-36px) scale(.98); } }
-}
 @media (prefers-reduced-motion: reduce) {
+  html.site-doc { scroll-behavior: auto; }
   .s-io .s-stagger > *, .s-io .s-stagger[data-in='true'] > * { opacity: 1; animation: none; }
-  .s-head::after, .s-dayhero .s-device { animation: none; }
+  .s-io .s-plans.s-stagger[data-in='true'] > .s-plan { opacity: 1; transform: none; animation: none; }
   .s-io .s-offer .s-offer__meter i::after { transform: none; transition: none; }
+  .s-io .s-bg-day .s-bg-day__path, .s-io .s-bg-day .s-bg-day__dot { opacity: 1; transform: none; transition: none; }
 }

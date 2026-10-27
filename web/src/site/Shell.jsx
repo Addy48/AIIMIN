@@ -65,10 +65,16 @@ function Header({ cta }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
+  const menuButtonRef = useRef(null);
   useEffect(() => { setOpen(false); }, [key]);
   useEffect(() => {
     if (!open) return undefined;
-    const esc = (e) => { if (e.key === 'Escape') setOpen(false); };
+    const esc = (e) => {
+      if (e.key === 'Escape') {
+        setOpen(false);
+        menuButtonRef.current?.focus();
+      }
+    };
     const away = (e) => { if (!menuRef.current?.contains(e.target)) setOpen(false); };
     document.addEventListener('keydown', esc);
     document.addEventListener('pointerdown', away);
@@ -95,7 +101,7 @@ function Header({ cta }) {
             </Link>
           ))}
           {cta || <Link className="s-btn s-btn--sm" to="/waitlist#join">Get early access</Link>}
-          <button type="button" className="s-menu-btn" aria-expanded={open} aria-controls="s-menu" aria-label={open ? 'Close menu' : 'Open menu'} onClick={() => setOpen((o) => !o)}>
+          <button ref={menuButtonRef} type="button" className="s-menu-btn" aria-expanded={open} aria-controls="s-menu" aria-label={open ? 'Close menu' : 'Open menu'} onClick={() => setOpen((o) => !o)}>
             {open ? <X weight="bold" aria-hidden="true" /> : <List weight="bold" aria-hidden="true" />}
           </button>
         </nav>
