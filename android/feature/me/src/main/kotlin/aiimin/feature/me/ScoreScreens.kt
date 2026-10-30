@@ -89,25 +89,18 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 
-// =================================================================== Me
+// =================================================================== Library
 
 @Composable
-fun MeScreen(vm: MeViewModel = hiltViewModel()) {
+fun LibraryScreen(vm: MeViewModel = hiltViewModel()) {
     val nav = LocalNavigator.current
-    val context = androidx.compose.ui.platform.LocalContext.current
     val life by vm.life.collectAsStateWithLifecycle()
-    val s by vm.settings.collectAsStateWithLifecycle()
-    val session by vm.session.collectAsStateWithLifecycle()
     val (noteCount, pinned) = vm.noteCounts.collectAsStateWithLifecycle().value
     val events by vm.eventsThisWeek.collectAsStateWithLifecycle()
-    val plan by vm.plan.collectAsStateWithLifecycle()
     val c = Aiimin.colors
-    val settings = s ?: return
     val r = life?.readout
-    val name = settings.name.ifBlank { "You" }
-    LazyColumn(Modifier.fillMaxSize().background(c.base), contentPadding = PaddingValues(bottom = 120.dp)) {
-        item { LargeHeader("You") { RootActions(0) } }
-        // Search row: every feature and setting is one search away (findability plan §2.3.5).
+    LazyColumn(Modifier.fillMaxSize().background(c.base), contentPadding = PaddingValues(bottom = 180.dp)) {
+        item { LargeHeader("Library") { RootActions(0) } }
         item {
             Row(
                 Modifier.padding(horizontal = Aiimin.space.gutter, vertical = 4.dp).fillMaxWidth().clip(RoundedCornerShape(10.dp))
@@ -116,120 +109,94 @@ fun MeScreen(vm: MeViewModel = hiltViewModel()) {
             ) {
                 androidx.compose.material3.Icon(AppIcons.Search, null, tint = c.textMuted, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(12.dp))
-                Text("Search features and settings", style = Aiimin.type.body.copy(color = c.textMuted), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                Text("Search papers, notes and features", style = Aiimin.type.body.copy(color = c.textMuted), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
             }
         }
-        item {
-            Row(
-                Modifier.fillMaxWidth().clickable { nav.open(Route.EditProfile) }.padding(horizontal = Aiimin.space.gutter, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Box(Modifier.size(56.dp).clip(RoundedCornerShape(12.dp)).background(c.text), contentAlignment = Alignment.Center) {
-                    Text(name.split(" ").filter { it.isNotBlank() }.take(2).joinToString("") { it.take(1).uppercase() }, style = Aiimin.type.cardTitle.copy(color = c.base))
-                }
-                Spacer(Modifier.width(16.dp))
-                Column(Modifier.weight(1f)) {
-                    Text(name, style = Aiimin.type.cardTitle)
-                    Text(
-                        listOfNotNull(settings.city.ifBlank { null }, plan.label + " plan", if (session?.signedIn == true) "synced" else "only on this phone").joinToString(" · "),
-                        style = Aiimin.type.body.copy(color = c.textMuted),
-                    )
-                }
-            }
-        }
-        item {
-            Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
-                Hairline(Modifier.padding(top = 8.dp))
-                Row(
-                    Modifier.fillMaxWidth().clickable { nav.open(Route.Score) }.padding(vertical = 20.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Column(Modifier.weight(1f)) {
-                        Text("Life Score", style = Aiimin.type.body.copy(color = c.textMuted))
-                        val score = r?.score
-                        Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 4.dp)) {
-                            if (settings.hideScore || score == null) {
-                                Text(if (settings.hideScore) "Hidden" else "Calibrating", style = Aiimin.type.title)
-                            } else {
-                                Text(score.toString(), style = Aiimin.type.numberLarge.copy(color = c.text))
-                                Spacer(Modifier.width(12.dp))
-                                val rising = r.series.takeLast(8).mapNotNull { it.score }.let { it.size >= 2 && it.last() > it.first() }
-                                Text("${r.band.label}${if (rising) " · Rising ↑" else ""}", style = Aiimin.type.headline, modifier = Modifier.padding(bottom = 8.dp))
-                            }
-                        }
-                    }
-                    Chevron()
-                }
-                Hairline()
-                Row(Modifier.fillMaxWidth().padding(vertical = 20.dp)) {
-                    // C-003: kept days, never a "0 days streak" tile.
-                    MeStat("${r?.streak?.totalKept ?: 0}", if ((r?.streak?.totalKept ?: 0) == 1) "day kept" else "days kept", Modifier.weight(1f))
-                    MeStat(
-                        "${r?.battery?.value ?: 0}", "battery", Modifier.weight(1f),
-                        detail = r?.battery?.mode?.name?.lowercase()?.replaceFirstChar(Char::uppercase) ?: "Gentle",
-                    )
-                    if (!settings.hideXp) MeStat("%,d".format(settings.xp.xp), "XP", Modifier.weight(1f), detail = "level ${settings.xp.level}")
-                }
-            }
-        }
-        // Part 17.3: "You" is four short groups. Features live in Progress and Your things; Settings hold settings.
-        meGroup("Progress", listOf(
-            MeLink(AppIcons.Pulse, "Why this score", "Day by day, what moved it") { nav.open(Route.WhyScore) },
-            MeLink(AppIcons.Sparkle, "Patterns", "What goes with what") { nav.open(Route.Patterns) },
-            MeLink(AppIcons.ListChecks, "Weekly review", "Sundays, or any time") { nav.open(Route.WeeklyReview) },
+        meGroup("Papers", listOf(
+            MeLink(AppIcons.FileText, "Documents", "Your vault") { nav.open(Route.Vault) },
+            MeLink(AppIcons.Users, "Family", "People and their papers") { nav.open(Route.Family) },
+            MeLink(AppIcons.FirstAid, "My emergency card", "Blood group, allergies, contacts") { nav.open(Route.EmergencyCard("me")) },
+        ))
+        meGroup("Writing", listOf(
+            MeLink(AppIcons.Note, "Notes", if (noteCount == 0) null else "$noteCount ${if (noteCount == 1) "note" else "notes"}${if (pinned > 0) " · $pinned pinned" else ""}") { nav.open(Route.Notes) },
+            MeLink(AppIcons.Drop, "Pour", "Private writing · on this phone") { nav.open(Route.Journal) },
+        ))
+        meGroup("Plans", listOf(
+            MeLink(AppIcons.Calendar, "Calendar", "$events ${if (events == 1) "event" else "events"} this week") { nav.open(Route.Calendar) },
+            MeLink(AppIcons.ListChecks, "Upcoming tasks", null) { nav.open(Route.Upcoming) },
             MeLink(AppIcons.Flag, "Goals", null) { nav.open(Route.Goals) },
-            MeLink(AppIcons.Sliders, "What counts for you", "Intentions, targets, weights") { nav.open(Route.Signals) },
-            MeLink(AppIcons.BatteryHigh, "Discipline battery", r?.battery?.let { "${it.value}% · ${it.mode.name.lowercase().replaceFirstChar(Char::uppercase)}" }) { nav.open(Route.Battery) },
+            MeLink(AppIcons.CheckSquare, "Daily minimums", null) { nav.open(Route.Minimums) },
+            MeLink(AppIcons.Timer, "Focus", null) { nav.open(Route.Focus()) },
+            MeLink(AppIcons.ListChecks, "Weekly review", "Sundays, or any time") { nav.open(Route.WeeklyReview) },
+        ))
+        meGroup("Insights", listOf(
+            MeLink(AppIcons.Pulse, "Life Score", r?.score?.let { "$it · ${r.band.label}" } ?: "Calibrating") { nav.open(Route.Score) },
+            MeLink(AppIcons.Sparkle, "Patterns", "What goes with what") { nav.open(Route.Patterns) },
             MeLink(AppIcons.Phone, "Phone day", "Screen time and unlocks") { nav.open(Route.PhoneDay) },
             MeLink(AppIcons.Footprints, "Body", "Steps, sleep, heart rate") { nav.open(Route.Body) },
             MeLink(AppIcons.ClockCounter, "Activity", "Everything you did, from the log") { nav.open(Route.Activity) },
+            MeLink(AppIcons.Sliders, "What counts for you", "Intentions, targets, weights") { nav.open(Route.Signals) },
+            MeLink(AppIcons.BatteryHigh, "Discipline battery", r?.battery?.let { "${it.value}% · ${it.mode.name.lowercase().replaceFirstChar(Char::uppercase)}" }) { nav.open(Route.Battery) },
         ))
-        meGroup("Your things", listOf(
-            MeLink(AppIcons.Note, "Notes", if (noteCount == 0) null else "$noteCount ${if (noteCount == 1) "note" else "notes"}${if (pinned > 0) " · $pinned pinned" else ""}") { nav.open(Route.Notes) },
-            // Pour (Part 12) grows out of the journal in B7b; the private writing lives here until then.
-            MeLink(AppIcons.Drop, "Pour", "Private writing · on this phone") { nav.open(Route.Journal) },
-            MeLink(AppIcons.Calendar, "Calendar", "$events ${if (events == 1) "event" else "events"} this week") { nav.open(Route.Calendar) },
-            MeLink(AppIcons.FileText, "Documents", "Your vault") { nav.tab(aiimin.designsystem.nav.Tab.VAULT) },
-            MeLink(AppIcons.Timer, "Focus", null) { nav.open(Route.Focus()) },
-            MeLink(AppIcons.CheckSquare, "Daily minimums", null) { nav.open(Route.Minimums) },
-            MeLink(AppIcons.ListChecks, "Upcoming tasks", null) { nav.open(Route.Upcoming) },
-            MeLink(AppIcons.FirstAid, "My emergency card", "Blood group, allergies, contacts") { nav.open(Route.EmergencyCard("me")) },
-            MeLink(AppIcons.Users, "Family", "People and their papers") { nav.open(Route.Family) },
+        meGroup("Raahi", listOf(
             MeLink(AppIcons.ChatCircleText, "Assistant", "Ask or tell Raahi anything") { nav.open(Route.Assistant()) },
-        ))
-        meGroup("Settings", listOf(
-            MeLink(AppIcons.Sliders, "Settings", "Day, notifications, privacy, phone data, money, appearance") { nav.open(Route.Settings) },
-            MeLink(AppIcons.CloudCheck, "Account and sync", if (session?.signedIn == true) "Synced with aiimin.in" else "Only on this phone") { nav.open(Route.Account) },
-            MeLink(AppIcons.Star, "Plan", plan.label + if (plan == aiimin.core.data.plan.Plan.FREE) " · see what plans add" else "") { nav.open(if (plan == aiimin.core.data.plan.Plan.FREE) Route.Plans else Route.Subscription) },
-        ))
-        meGroup("Help and legal", listOf(
-            MeLink(AppIcons.Lifebuoy, "Help and feedback", null) { nav.open(Route.Help) },
-            MeLink(AppIcons.Share, "Tell a friend", "Send them a link to the beta") {
-                val send = android.content.Intent(android.content.Intent.ACTION_SEND).setType("text/plain").putExtra(android.content.Intent.EXTRA_TEXT, inviteText())
-                runCatching { context.startActivity(android.content.Intent.createChooser(send, "Tell a friend about AIIMIN")) }
-            },
-            MeLink(AppIcons.Info, "About and legal", null) { nav.open(Route.About) },
         ))
     }
 }
 
+// =================================================================== You (pushed from the avatar)
+
 @Composable
-private fun MeStat(value: String, label: String, modifier: Modifier, detail: String? = null) {
-    // Equal columns keep each stat in its lane. Details move to a second line only when the column is narrow.
-    androidx.compose.foundation.layout.BoxWithConstraints(modifier.padding(end = 8.dp)) {
-        val splitDetail = detail != null && maxWidth < 140.dp
-        Column {
-            Text(value, style = Aiimin.type.cardTitle.copy(fontFeatureSettings = "tnum"), maxLines = 1)
-            val labelLine = if (detail != null && !splitDetail) "$label · $detail" else label
-            Text(labelLine, style = Aiimin.type.caption, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
-            if (splitDetail) Text(detail, style = Aiimin.type.caption, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+fun MeScreen(vm: MeViewModel = hiltViewModel()) {
+    val nav = LocalNavigator.current
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val s by vm.settings.collectAsStateWithLifecycle()
+    val session by vm.session.collectAsStateWithLifecycle()
+    val plan by vm.plan.collectAsStateWithLifecycle()
+    val c = Aiimin.colors
+    val settings = s ?: return
+    val name = settings.name.ifBlank { "You" }
+    Column(Modifier.fillMaxSize().background(c.base)) {
+        TopBar("You", onBack = { nav.back() })
+        LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(bottom = 48.dp)) {
+            item {
+                Row(
+                    Modifier.fillMaxWidth().clickable { nav.open(Route.EditProfile) }.padding(horizontal = Aiimin.space.gutter, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(Modifier.size(56.dp).clip(RoundedCornerShape(12.dp)).background(c.text), contentAlignment = Alignment.Center) {
+                        Text(name.split(" ").filter { it.isNotBlank() }.take(2).joinToString("") { it.take(1).uppercase() }, style = Aiimin.type.cardTitle.copy(color = c.base))
+                    }
+                    Spacer(Modifier.width(16.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(name, style = Aiimin.type.cardTitle)
+                        Text(
+                            listOfNotNull(settings.city.ifBlank { null }, plan.label + " plan", if (session?.signedIn == true) "synced" else "only on this phone").joinToString(" · "),
+                            style = Aiimin.type.body.copy(color = c.textMuted),
+                        )
+                    }
+                }
+            }
+            meGroup("Settings", listOf(
+                MeLink(AppIcons.Sliders, "Settings", "Day, notifications, privacy, phone data, money, appearance") { nav.open(Route.Settings) },
+                MeLink(AppIcons.CloudCheck, "Account and sync", if (session?.signedIn == true) "Synced with aiimin.in" else "Only on this phone") { nav.open(Route.Account) },
+                MeLink(AppIcons.Star, "Plan", plan.label + if (plan == aiimin.core.data.plan.Plan.FREE) " · see what plans add" else "") { nav.open(if (plan == aiimin.core.data.plan.Plan.FREE) Route.Plans else Route.Subscription) },
+            ))
+            meGroup("Help and legal", listOf(
+                MeLink(AppIcons.Lifebuoy, "Help and feedback", null) { nav.open(Route.Help) },
+                MeLink(AppIcons.Share, "Tell a friend", "Send them a link to the beta") {
+                    val send = android.content.Intent(android.content.Intent.ACTION_SEND).setType("text/plain").putExtra(android.content.Intent.EXTRA_TEXT, inviteText())
+                    runCatching { context.startActivity(android.content.Intent.createChooser(send, "Tell a friend about AIIMIN")) }
+                },
+                MeLink(AppIcons.Info, "About and legal", null) { nav.open(Route.About) },
+            ))
         }
     }
 }
 
-private class MeLink(val icon: androidx.compose.ui.graphics.vector.ImageVector, val title: String, val sub: String?, val onClick: () -> Unit)
+internal class MeLink(val icon: androidx.compose.ui.graphics.vector.ImageVector, val title: String, val sub: String?, val onClick: () -> Unit)
 
-private fun androidx.compose.foundation.lazy.LazyListScope.meGroup(title: String, links: List<MeLink>) {
+internal fun androidx.compose.foundation.lazy.LazyListScope.meGroup(title: String, links: List<MeLink>) {
     item {
         val c = Aiimin.colors
         Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {

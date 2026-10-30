@@ -365,7 +365,7 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
                         aiimin.core.engine.today.SetupStep.SCREEN_TIME -> runCatching { context.startActivity(vm.usageSettings()) }
                         aiimin.core.engine.today.SetupStep.MINIMUM -> nav.open(Route.Minimums)
                         aiimin.core.engine.today.SetupStep.CAPTURE -> nav.capture()
-                        aiimin.core.engine.today.SetupStep.DOCUMENT -> nav.tab(aiimin.designsystem.nav.Tab.VAULT)
+                        aiimin.core.engine.today.SetupStep.DOCUMENT -> nav.open(Route.Vault)
                         aiimin.core.engine.today.SetupStep.BUDGET -> nav.open(Route.Budget)
                     }
                 },

@@ -31,13 +31,13 @@ class SyncUiState(val ui: SyncUi, val onClick: () -> Unit)
 val LocalSyncUi = androidx.compose.runtime.staticCompositionLocalOf { SyncUiState(SyncUi.SIGNED_OUT) {} }
 
 /**
- * Every root bar: search and the bell (findability plan §2.3.6, at most two icons).
+ * Every root bar: search, the bell and the avatar that opens You (app structure, 30 Oct 2026).
  * The sync icon joins them only when sync needs you (offline, attention, syncing); the calm state
  * lives in Me → Account and sync. The Assistant lives in Me, search and the ＋ sheet's voice.
  * The bell is the only place a notification count appears.
  */
 @Composable
-fun RowScope.RootActions(unread: Int, sync: SyncUi = LocalSyncUi.current.ui, onSync: () -> Unit = LocalSyncUi.current.onClick) {
+fun RowScope.RootActions(unread: Int, showYou: Boolean = true, sync: SyncUi = LocalSyncUi.current.ui, onSync: () -> Unit = LocalSyncUi.current.onClick) {
     val nav = LocalNavigator.current
     val c = Aiimin.colors
     val syncIcon = when (sync) {
@@ -65,4 +65,5 @@ fun RowScope.RootActions(unread: Int, sync: SyncUi = LocalSyncUi.current.ui, onS
         // On the bell's top-right corner, inside the button so it never reaches the screen edge (S5, D-003).
         CountBadge(unread, Modifier.align(Alignment.TopEnd).offset(x = (-4).dp, y = 4.dp))
     }
+    if (showYou) AppIconButton(AppIcons.UserCircle, "You: profile, settings and account", { nav.open(Route.Me) })
 }

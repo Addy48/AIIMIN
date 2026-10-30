@@ -160,7 +160,7 @@ data class DockItem(
  * The centre button is a 56 dp square (radius 12), ink fill, white plus.
  */
 @Composable
-fun Dock(items: List<DockItem>, onPlus: () -> Unit, onPlusLong: () -> Unit, modifier: Modifier = Modifier, plusOpen: Boolean = false) {
+fun Dock(items: List<DockItem>, onPlus: (() -> Unit)? = null, onPlusLong: () -> Unit = {}, modifier: Modifier = Modifier, plusOpen: Boolean = false) {
     val c = Aiimin.colors
     val onInk = c.onInk
     Column(modifier.fillMaxWidth().background(c.base)) {
@@ -170,6 +170,11 @@ fun Dock(items: List<DockItem>, onPlus: () -> Unit, onPlusLong: () -> Unit, modi
             Modifier.fillMaxWidth().navigationBarsPadding().heightIn(min = 72.dp).padding(horizontal = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            if (onPlus == null) {
+                // Three tabs, no centre button: capture is the box above the bar (app structure, 30 Oct 2026).
+                items.forEach { DockButton(it) }
+                return@Row
+            }
             val half = items.size / 2
             items.take(half).forEach { DockButton(it) }
             Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
@@ -252,6 +257,31 @@ private fun Modifier.plusClickable(source: androidx.compose.foundation.interacti
             role = Role.Button,
         ),
     )
+
+// ------------------------------------------------------------------ box
+
+/**
+ * The one box on every tab root (app structure, 30 Oct 2026): replaces the "+" button and the
+ * separate assistant door. Tap opens capture with the keyboard up; the mic or a long press speaks.
+ */
+@Composable
+fun CaptureBox(hint: String, onType: () -> Unit, onSpeak: () -> Unit, modifier: Modifier = Modifier) {
+    val c = Aiimin.colors
+    Row(
+        modifier.fillMaxWidth().background(c.base).padding(horizontal = Aiimin.space.gutter, vertical = 8.dp)
+            .clip(Shapes.control).background(c.raised)
+            .boxClickable(onClick = onType, onLongClick = onSpeak, label = "Capture. Long-press to speak")
+            .heightIn(min = 48.dp).padding(start = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(hint, style = Aiimin.type.body.copy(color = c.textMuted), maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+        AppIconButton(AppIcons.Mic, "Speak", onSpeak)
+    }
+}
+
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+private fun Modifier.boxClickable(onClick: () -> Unit, onLongClick: () -> Unit, label: String): Modifier =
+    this.then(Modifier.combinedClickable(onClick = onClick, onLongClick = onLongClick, onClickLabel = label, role = Role.Button))
 
 // ------------------------------------------------------------------ sheets
 

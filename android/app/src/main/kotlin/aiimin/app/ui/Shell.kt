@@ -174,13 +174,12 @@ class ShellViewModel @Inject constructor(
     }
 }
 
-private val ROOTS = setOf<Route>(Route.Today, Route.Money, Route.Vault, Route.Me)
+private val ROOTS = setOf<Route>(Route.Today, Route.Money, Route.Library)
 
 private fun Tab.root(): Route = when (this) {
     Tab.TODAY -> Route.Today
     Tab.MONEY -> Route.Money
-    Tab.VAULT -> Route.Vault
-    Tab.ME -> Route.Me
+    Tab.LIBRARY -> Route.Library
 }
 
 /** Pending launch request from a notification or a share. */
@@ -336,6 +335,7 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
                     entryProvider = entryProvider {
                         entry<Route.Today> { TodayScreen() }
                         entry<Route.Money> { MoneyScreen() }
+                        entry<Route.Library> { aiimin.feature.me.LibraryScreen() }
                         entry<Route.Vault> { VaultScreen() }
                         entry<Route.Me> { MeScreen() }
                         entry<Route.Task> { TaskScreen(it.id) }
@@ -425,26 +425,30 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
                     enter = if (reduce) fadeIn(Motion.reducedFade()) else slideInVertically(Motion.standard()) { it } + fadeIn(Motion.quick()),
                     exit = if (reduce) fadeOut(Motion.reducedFade()) else slideOutVertically(Motion.exit()) { it } + fadeOut(Motion.exit()),
                 ) {
-                    Dock(
-                        items = listOf(
-                            DockItem("Today", AppIcons.CalendarCheck, top == Route.Today, { navigator.tab(Tab.TODAY) }, iconFill = AppIcons.CalendarCheckFill),
-                            DockItem("Money", AppIcons.Wallet, top == Route.Money, { navigator.tab(Tab.MONEY) }, iconFill = AppIcons.WalletFill, count = reviewCount),
-                            DockItem("Vault", AppIcons.Archive, top == Route.Vault, { navigator.tab(Tab.VAULT) }, iconFill = AppIcons.ArchiveFill, badge = expiringSoon),
-                            // Part 17.1: "Me" is renamed "You".
-                            DockItem("You", AppIcons.UserCircle, top == Route.Me, { navigator.tab(Tab.ME) }, iconFill = AppIcons.UserCircleFill),
-                        ),
-                        onPlus = { navigator.capture() },
-                        onPlusLong = { navigator.capture(voice = true) },
-                        plusOpen = capture != null,
-                    )
+                    Column {
+                        // One box on every tab root; on Money it files into Money (app structure, 30 Oct 2026).
+                        aiimin.designsystem.component.CaptureBox(
+                            hint = if (top == Route.Money) "Spent, received or owed…" else "Type or say anything",
+                            onType = { navigator.capture() },
+                            onSpeak = { navigator.capture(voice = true) },
+                        )
+                        Dock(
+                            items = listOf(
+                                DockItem("Today", AppIcons.CalendarCheck, top == Route.Today, { navigator.tab(Tab.TODAY) }, iconFill = AppIcons.CalendarCheckFill),
+                                DockItem("Money", AppIcons.Wallet, top == Route.Money, { navigator.tab(Tab.MONEY) }, iconFill = AppIcons.WalletFill, count = reviewCount),
+                                // Vault, notes, plans and insights; the dot means a paper ends within 7 days.
+                                DockItem("Library", AppIcons.Stack, top == Route.Library, { navigator.tab(Tab.LIBRARY) }, badge = expiringSoon),
+                            ),
+                        )
+                    }
                 }
             }
             focus?.let { f ->
                 if (top !is Route.Focus) {
-                    FocusPill(f, Modifier.align(Alignment.BottomCenter).padding(bottom = if (top in ROOTS) 96.dp else 24.dp)) { navigator.open(Route.Focus()) }
+                    FocusPill(f, Modifier.align(Alignment.BottomCenter).padding(bottom = if (top in ROOTS) 160.dp else 24.dp)) { navigator.open(Route.Focus()) }
                 }
             }
-            ToastHost(toaster, Modifier.align(Alignment.BottomCenter).padding(bottom = if (top in ROOTS) 88.dp else 16.dp))
+            ToastHost(toaster, Modifier.align(Alignment.BottomCenter).padding(bottom = if (top in ROOTS) 152.dp else 16.dp))
             // Content scrolls edge to edge; this strip keeps it from running under the clock and battery icons.
             androidx.compose.foundation.layout.Spacer(
                 Modifier.align(Alignment.TopCenter).fillMaxWidth()

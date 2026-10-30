@@ -79,7 +79,8 @@ object FeatureIndex {
         f("Backups", "Keep a copy of your vault", Route.VaultBackup, { AppIcons.CloudArrowUp }, "backup", "export", "restore", "copy"),
 
         // Account and settings
-        f("You", "Your progress, things and settings", Route.Me, { AppIcons.UserCircle }, "profile", "you"),
+        f("You", "Profile, settings and account", Route.Me, { AppIcons.UserCircle }, "profile", "you", "account"),
+        f("Library", "Papers, notes, plans and insights", Route.Library, { AppIcons.Stack }, "library", "things", "all"),
         f("Search", "Find anything", Route.Search, { AppIcons.Search }, "find", "look up"),
         f("Settings", "Every setting in one place", Route.Settings, { AppIcons.Gear }, "preferences", "options"),
         f("Account and sync", "Sign in, profile, what syncs", Route.Account, { AppIcons.Key }, "pin", "password", "sign in", "login", "os-id", "osid", "account"),
@@ -155,11 +156,10 @@ object FeatureIndex {
     }
 }
 
-/** Opens a feature: dock areas switch tabs (so the dock stays right), everything else opens on top. */
+/** Opens a feature: tab roots switch tabs (so the bar stays right), everything else opens on top. */
 fun AppNavigator.go(route: Route) = when (route) {
     Route.Today -> tab(Tab.TODAY)
     Route.Money -> tab(Tab.MONEY)
-    Route.Vault -> tab(Tab.VAULT)
-    Route.Me -> tab(Tab.ME)
+    Route.Library -> tab(Tab.LIBRARY)
     else -> open(route)
 }

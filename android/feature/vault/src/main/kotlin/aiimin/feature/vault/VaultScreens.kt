@@ -150,9 +150,10 @@ fun VaultScreen(vm: VaultViewModel = hiltViewModel()) {
     Box(Modifier.fillMaxSize().background(c.base)) {
         LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 32.dp)) {
             item {
-                LargeHeader("Vault") {
+                // Opened from Library since 30 Oct 2026, so it has a back arrow, not the tab-root actions.
+                aiimin.designsystem.component.TopBar("Vault", onBack = { nav.back() }) {
                     aiimin.designsystem.component.RaahiGuideButton(aiimin.designsystem.component.RaahiArea.VAULT)
-                    RootActions(0)
+                    AppIconButton(AppIcons.Search, "Search", { nav.open(Route.Search) })
                     AppIconButton(AppIcons.Plus, "Add document", { adding = true })
                 }
             }

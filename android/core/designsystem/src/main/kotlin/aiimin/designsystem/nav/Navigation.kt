@@ -4,8 +4,8 @@ import aiimin.designsystem.component.Toaster
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 
-/** The four dock areas. Capture (＋) is a sheet, not a tab. */
-enum class Tab { TODAY, MONEY, VAULT, ME }
+/** The three tabs (app structure, 30 Oct 2026). Capture is the box above them, not a tab. */
+enum class Tab { TODAY, MONEY, LIBRARY }
 
 /**
  * Every place the app can go. Screens for viewing; sheets (inside screens) for
@@ -13,9 +13,12 @@ enum class Tab { TODAY, MONEY, VAULT, ME }
  */
 @Immutable
 sealed interface Route {
-    // dock roots
+    // tab roots
     data object Today : Route
     data object Money : Route
+    data object Library : Route
+
+    // pushed from Library and the avatar (were tabs before 30 Oct 2026)
     data object Vault : Route
     data object Me : Route
 
