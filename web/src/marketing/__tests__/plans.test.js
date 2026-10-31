@@ -51,8 +51,9 @@ describe('prices follow where the visitor is', () => {
   test('the connection country picks the region', () => {
     expect(regionForCountry('IN')).toBe('in');
     expect(['US', 'GB', 'DE', 'AE', 'SG', 'JP', 'AU'].map(regionForCountry)).toEqual(Array(7).fill('z1'));
-    expect(['BR', 'MX', 'PL', 'MY', 'TR', 'ZA'].map(regionForCountry)).toEqual(Array(6).fill('z2'));
-    expect(['PK', 'BD', 'ID', 'PH', 'NG'].map(regionForCountry)).toEqual(Array(5).fill('z3'));
+    expect(['BR', 'MX', 'PL', 'TR', 'ZA'].map(regionForCountry)).toEqual(Array(5).fill('z2'));
+    expect(['MY', 'TH', 'ID', 'PH', 'VN'].map(regionForCountry)).toEqual(Array(5).fill('sea'));
+    expect(['PK', 'BD', 'LK', 'NG', 'KE'].map(regionForCountry)).toEqual(Array(5).fill('z3'));
     expect(regionForCountry('')).toBe('z2');
   });
 
@@ -61,16 +62,18 @@ describe('prices follow where the visitor is', () => {
     expect(regionFromTimeZone('America/New_York')).toBe('z1');
     expect(regionFromTimeZone('Asia/Karachi')).toBe('z3');
     expect(regionFromTimeZone('America/Sao_Paulo')).toBe('z2');
+    expect(regionFromTimeZone('Asia/Kuala_Lumpur')).toBe('sea');
   });
 
   test('every region prices every paid plan, yearly cheaper than 12 months', () => {
     Object.values(REGIONS).forEach((r) => ['plus', 'pro', 'family'].forEach((id) => {
       const [m, y] = r[id];
       expect(y).toBeLessThan(m * 12);
+      if (r.currency === 'USD') expect(y).toBeGreaterThan(m * 6);
     }));
     const pro = PLANS.find((p) => p.id === 'pro');
     expect(regionPrice(pro, 'in')).toEqual({ monthly: 119, yearly: 799 });
-    expect(money(regionPrice(pro, 'z1').yearly, 'z1')).toBe('$39.99');
-    expect(money(99, 'z1')).toBe('$99');
+    expect(money(regionPrice(pro, 'z1').yearly, 'z1')).toBe('$54.99');
+    expect(money(149, 'z1')).toBe('$149');
   });
 });

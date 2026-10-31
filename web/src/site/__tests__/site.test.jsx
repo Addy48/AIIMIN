@@ -180,7 +180,9 @@ test('when the sign-up list is unreachable, the form offers email instead', asyn
 test('a visitor abroad sees their own prices, and can switch region', () => {
   sessionStorage.setItem('aiimin.region', JSON.stringify({ region: 'z1', country: 'US', source: 'network' }));
   wrap(<WaitlistPage />);
-  expect(screen.getAllByText('$5.99').length).toBeGreaterThan(0); // Pro, monthly, Zone 1
+  expect(screen.getAllByText('$6.99').length).toBeGreaterThan(0); // Pro, monthly, Zone 1
+  fireEvent.change(screen.getByLabelText('Where you live'), { target: { value: 'sea' } });
+  expect(screen.getAllByText('$4.49').length).toBeGreaterThan(0);
   fireEvent.change(screen.getByLabelText('Where you live'), { target: { value: 'in' } });
   expect(screen.getAllByText('₹119').length).toBeGreaterThan(0);
 });

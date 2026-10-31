@@ -100,21 +100,24 @@ export const REFERRAL = {
 };
 
 /**
- * Prices by region (owner-approved 31 Oct 2026). Google Play charges each country in its own money; these are the
- * amounts the website shows. India uses PLANS above. Zone 3 outside India is the rupee ladder converted at ₹84 = $1.
+ * Prices by region (owner-approved 31 Oct 2026, revised the same day). Google Play charges each country in its own
+ * money; these are the amounts the website shows. India uses PLANS above and stays the cheapest. Yearly is about a
+ * third off 12 months outside India.
  */
 export const LIFETIME_PRO_INR = 2999;
 export const REGIONS = {
   in: { label: 'India', currency: 'INR', plus: [59, 399], pro: [119, 799], family: [199, 1299], lifetime: LIFETIME_PRO_INR },
-  z3: { label: 'South Asia, South-East Asia and Africa', currency: 'USD', plus: [0.69, 4.79], pro: [1.39, 9.49], family: [2.39, 15.49], lifetime: 35.99 },
-  z2: { label: 'Latin America, Eastern Europe, Malaysia, Turkey, South Africa', currency: 'USD', plus: [1.69, 10.99], pro: [3.29, 21.99], family: [5.49, 37.99], lifetime: 54.99 },
-  z1: { label: 'US, UK, Western Europe, the Gulf, Australia, Singapore, Japan', currency: 'USD', plus: [2.99, 19.99], pro: [5.99, 39.99], family: [9.99, 69.99], lifetime: 99 },
+  z3: { label: 'Pakistan, Bangladesh, Sri Lanka, Nepal and Africa', currency: 'USD', plus: [1.49, 9.99], pro: [2.49, 17.99], family: [3.99, 27.99], lifetime: 49 },
+  sea: { label: 'South-East Asia', currency: 'USD', plus: [2.49, 17.99], pro: [4.49, 32.99], family: [7.49, 52.99], lifetime: 79 },
+  z2: { label: 'Latin America, Eastern Europe, Turkey, South Africa', currency: 'USD', plus: [2.99, 19.99], pro: [4.99, 34.99], family: [7.99, 54.99], lifetime: 89 },
+  z1: { label: 'US, UK, Western Europe, the Gulf, Australia, Singapore, Japan', currency: 'USD', plus: [3.99, 29.99], pro: [6.99, 54.99], family: [11.49, 89.99], lifetime: 149 },
 };
 const Z1 = 'US CA GB IE FR DE NL BE LU AT CH LI DK SE NO FI IS IT ES PT MT CY GR MC AU NZ SG JP KR HK TW IL AE SA QA KW BH OM';
-const Z2 = 'PL CZ SK HU RO BG HR SI EE LV LT RS BA ME MK AL MD UA BY RU GE AM AZ KZ MX BR AR CL CO PE UY PY BO EC VE CR PA DO GT SV HN NI JM TT PR MY TH CN TR ZA MA TN DZ JO LB IQ IR';
-const Z3 = 'PK BD LK NP BT MV MM AF ID PH VN KH LA NG KE GH ET TZ UG RW EG SN CI CM ZM ZW MZ';
+const Z2 = 'PL CZ SK HU RO BG HR SI EE LV LT RS BA ME MK AL MD UA BY RU GE AM AZ KZ MX BR AR CL CO PE UY PY BO EC VE CR PA DO GT SV HN NI JM TT PR CN TR ZA MA TN DZ JO LB IQ IR';
+const Z3 = 'PK BD LK NP BT MV AF NG KE GH ET TZ UG RW EG SN CI CM ZM ZW MZ';
+const SEA = 'MY TH ID PH VN KH LA MM BN';
 const ZONE_OF = {};
-[[Z1, 'z1'], [Z2, 'z2'], [Z3, 'z3']].forEach(([list, z]) => list.split(' ').forEach((c) => { ZONE_OF[c] = z; }));
+[[Z1, 'z1'], [Z2, 'z2'], [SEA, 'sea'], [Z3, 'z3']].forEach(([list, z]) => list.split(' ').forEach((c) => { ZONE_OF[c] = z; }));
 
 /** Two-letter country code (from the visitor's connection) to a price region. Unknown countries get Zone 2. */
 export function regionForCountry(country) {
@@ -127,7 +130,8 @@ export function regionForCountry(country) {
 export function regionFromTimeZone(tz) {
   if (!tz) return 'in';
   if (tz === 'Asia/Kolkata' || tz === 'Asia/Calcutta') return 'in';
-  if (/^(Asia\/(Karachi|Dhaka|Colombo|Kathmandu|Thimphu|Jakarta|Manila|Ho_Chi_Minh|Saigon|Yangon)|Africa\/(Lagos|Nairobi|Accra|Cairo|Addis_Ababa))$/.test(tz)) return 'z3';
+  if (/^(Asia\/(Karachi|Dhaka|Colombo|Kathmandu|Thimphu)|Africa\/(Lagos|Nairobi|Accra|Cairo|Addis_Ababa))$/.test(tz)) return 'z3';
+  if (/^Asia\/(Jakarta|Makassar|Jayapura|Manila|Ho_Chi_Minh|Saigon|Yangon|Kuala_Lumpur|Kuching|Bangkok|Phnom_Penh|Vientiane|Brunei)$/.test(tz)) return 'sea';
   if (/^(America\/(New_York|Chicago|Denver|Los_Angeles|Phoenix|Anchorage|Toronto|Vancouver)|Europe\/(London|Dublin|Paris|Berlin|Amsterdam|Brussels|Madrid|Rome|Lisbon|Vienna|Zurich|Stockholm|Oslo|Copenhagen|Helsinki)|Australia\/.*|Pacific\/Auckland|Asia\/(Singapore|Tokyo|Seoul|Dubai|Riyadh|Qatar|Hong_Kong))$/.test(tz)) return 'z1';
   return 'z2';
 }
