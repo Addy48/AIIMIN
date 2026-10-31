@@ -98,8 +98,23 @@
   <style>
     html, body { min-height: 100%; margin: 0; background: #F5F3EE; color: #1A1916; }
     #root { min-height: 100vh; }
-    #site-start { min-height: 100vh; display: grid; place-content: center; justify-items: center; gap: 12px; font: 500 15px/1.5 system-ui, sans-serif; color: #625E57; }
-    #site-start b { color: #1A1916; font: 700 22px/1 Georgia, serif; letter-spacing: .06em; }
+    /* First paint, before the app's code arrives. If it never arrives (slow or broken network), the same screen
+       says so after 9 seconds and offers a reload, instead of hanging on a blank page. */
+    @font-face { font-family: 'AIIMIN Mark'; src: url('/site/fonts/bodoni_moda.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+    #site-start { min-height: 100vh; display: grid; place-content: center; justify-items: center; gap: 18px; padding: 24px; text-align: center; font: 400 15px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif; color: #625E57; background: #F5F3EE; }
+    #site-start .lock { display: flex; align-items: center; gap: 10px; color: #1A1916; }
+    #site-start .lock svg { width: 40px; height: 32px; }
+    #site-start .lock b { font: 700 28px/1 'AIIMIN Mark', 'Bodoni Moda', Didot, Georgia, serif; letter-spacing: -0.03em; }
+    #site-start .line { width: 140px; height: 2px; border-radius: 2px; background: #E4DED3; overflow: hidden; }
+    #site-start .line i { display: block; width: 40%; height: 100%; border-radius: 2px; background: #FF6B35; animation: ss-run 1.1s cubic-bezier(.65,0,.35,1) infinite; }
+    #site-start .msg { min-height: 22px; max-width: 34ch; }
+    #site-start .acts { display: none; gap: 8px; flex-wrap: wrap; justify-content: center; }
+    #site-start .acts a, #site-start .acts button { min-height: 44px; padding: 0 18px; border-radius: 999px; border: 1px solid #C9C2B6; background: #FBFAF7; color: #1A1916; font: 600 15px/1 system-ui, sans-serif; display: inline-flex; align-items: center; cursor: pointer; text-decoration: none; }
+    #site-start .acts button { background: #1A1916; border-color: #1A1916; color: #fff; }
+    #site-start[data-state='slow'] .line i, #site-start[data-state='offline'] .line i { animation: none; width: 100%; background: #C9C2B6; }
+    #site-start[data-state='slow'] .acts, #site-start[data-state='offline'] .acts { display: flex; }
+    @keyframes ss-run { from { transform: translateX(-110%); } to { transform: translateX(260%); } }
+    @media (prefers-reduced-motion: reduce) { #site-start .line i { animation-duration: 2.4s; } }
   </style>
 </head>
 
@@ -107,9 +122,21 @@
   <noscript>You need to enable JavaScript to run AIIMIN.</noscript>
   <div id="root">
     <div id="site-start" role="status" aria-live="polite">
-      <b>AIIMIN</b>
-      <span>Opening your page…</span>
+      <span class="lock" aria-label="AIIMIN"><svg viewBox="62 96 388 304" fill="none" aria-hidden="true"><path d="M80 384C80 192 208 112 256 112s176 80 176 272" stroke="#D1D5DB" stroke-width="26" stroke-linecap="round"/><path d="M144 384 256 176l112 208" stroke="#1A1916" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/><path d="m192 368 64-96 64 96" stroke="#6B7280" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/><circle cx="256" cy="240" r="30" fill="#FF6B35"/></svg><b>AIIMIN</b></span>
+      <span class="line" aria-hidden="true"><i></i></span>
+      <span class="msg">Opening your page…</span>
+      <span class="acts"><button type="button" onclick="location.reload()">Try again</button><a href="mailto:support@aiimin.in">Tell us</a></span>
     </div>
+    <script>
+      (function () {
+        var el = document.getElementById('site-start');
+        if (!el) return;
+        function say(state, text) { if (!document.getElementById('site-start')) return; el.setAttribute('data-state', state); el.querySelector('.msg').textContent = text; }
+        if (navigator.onLine === false) say('offline', 'You seem to be offline. Connect to the internet and try again.');
+        addEventListener('offline', function () { say('offline', 'You seem to be offline. Connect to the internet and try again.'); });
+        setTimeout(function () { say('slow', 'This is taking longer than usual. Your connection may be slow, or we may be having a problem.'); }, 9000);
+      })();
+    </script>
   </div>
 </body>
 

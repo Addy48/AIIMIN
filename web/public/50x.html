@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Back soon · AIIMIN</title>
+  <meta name="robots" content="noindex, follow" />
+  <link rel="icon" href="/favicon.ico" />
+  <!-- Standalone backup page: no app code, no outside requests, so it still shows when everything else is down. -->
+  <style>
+    @font-face { font-family: 'AIIMIN Mark'; src: url('/site/fonts/bodoni_moda.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+    @font-face { font-family: 'Funnel Display'; src: url('/site/fonts/funnel_display.woff2') format('woff2'); font-weight: 400 700; font-display: swap; }
+    * { box-sizing: border-box; margin: 0; }
+    body { min-height: 100vh; display: flex; flex-direction: column; background: #F5F3EE; color: #1A1916; font: 400 16px/1.6 system-ui, -apple-system, 'Segoe UI', sans-serif; }
+    header { padding: 20px clamp(20px, 5vw, 64px); }
+    .lock { display: inline-flex; align-items: center; gap: 10px; color: #1A1916; text-decoration: none; }
+    .lock svg { width: 34px; height: 27px; }
+    .lock b { font: 700 23px/1 'AIIMIN Mark', 'Bodoni Moda', Didot, Georgia, serif; letter-spacing: -0.03em; }
+    main { flex: 1; display: grid; place-items: center; padding: 24px clamp(20px, 5vw, 64px) 64px; text-align: center; }
+    img { width: min(240px, 60vw); height: auto; margin: 0 auto 8px; display: block; }
+    h1 { font: 600 clamp(32px, 6vw, 52px)/1.05 'Funnel Display', system-ui, sans-serif; letter-spacing: -0.035em; margin-bottom: 12px; text-wrap: balance; }
+    p { color: #625E57; max-width: 44ch; margin: 0 auto 28px; }
+    .acts { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+    .acts a, .acts button { min-height: 48px; padding: 0 22px; border-radius: 999px; border: 1px solid #C9C2B6; background: #FBFAF7; color: #1A1916; font: 600 15px/1 system-ui, sans-serif; display: inline-flex; align-items: center; text-decoration: none; cursor: pointer; transition: transform .16s cubic-bezier(.23,1,.32,1); }
+    .acts .pri { background: #1A1916; border-color: #1A1916; color: #fff; }
+    .acts a:active, .acts button:active { transform: scale(.97); }
+    a:focus-visible, button:focus-visible { outline: 2px solid #1A1916; outline-offset: 3px; }
+    footer { padding: 20px; text-align: center; font-size: 13px; color: #746E64; }
+  </style>
+</head>
+<body>
+  <header><a class="lock" href="/" aria-label="AIIMIN home"><svg viewBox="62 96 388 304" fill="none" aria-hidden="true"><path d="M80 384C80 192 208 112 256 112s176 80 176 272" stroke="#D1D5DB" stroke-width="26" stroke-linecap="round"/><path d="M144 384 256 176l112 208" stroke="#1A1916" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/><path d="m192 368 64-96 64 96" stroke="#6B7280" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/><circle cx="256" cy="240" r="30" fill="#FF6B35"/></svg><b>AIIMIN</b></a></header>
+  <main><div>
+    <img src="/site/raahi/raahi_pose_sleeping_hero.webp" alt="" width="768" height="768" />
+    <h1>We’re fixing something.</h1>
+    <p>AIIMIN is having a problem on our side. Your data is safe: everything on your phone keeps working. Try again in a few minutes.</p>
+    <div class="acts"><button class="pri" type="button" onclick="location.reload()">Try again</button><a href="mailto:support@aiimin.in">Email support</a></div>
+  </div></main>
+  <footer>support@aiimin.in · Start small. Keep going.</footer>
+</body>
+</html>
