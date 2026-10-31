@@ -23,15 +23,14 @@ const About = () => {
                     and an emergency card for the people you look after. It only ever compares you with you.
                 </Para>
                 <Para>
-                    It runs on the web at aiimin.in, on phones as a capture surface at aiimin.in/m, and as a native
-                    Android companion (closed device testing now — status at <a href="/app" style={link}>/app</a>).
-                    The same account, the same data, and the same legal terms apply on every surface.
+                    It is an Android app (in closed testing now — status at <a href="/app" style={link}>/app</a>), with the
+                    web at aiimin.in as its bigger screen. The same account and the same legal terms apply on both.
                 </Para>
             </Section>
 
             <Section title="Who operates it">
                 <Para>
-                    {LEGAL.entityNote} It is built and maintained by {LEGAL.operator}. Contact details, including the
+                    {LEGAL.entityNote} Contact details, including the
                     Grievance Officer, are on the <a href="/contact" style={link}>Contact</a> page.
                 </Para>
             </Section>
@@ -39,8 +38,8 @@ const About = () => {
             <Section title="How it is priced">
                 <Para>
                     <strong>Free</strong> is free for one person, for as long as you like. <strong>Plus</strong>,
-                    {' '}<strong>Pro</strong> and <strong>Family</strong> are paid monthly or yearly subscriptions in Indian
-                    Rupees, at the same prices on the web and in the Android app. Plan
+                    {' '}<strong>Pro</strong> and <strong>Family</strong> are paid monthly or yearly subscriptions. In India they are priced in rupees;
+                    elsewhere a local price applies, shown on the plans and charged in your own currency. Plan
                     prices, renewal, cancellation and refunds are set out in{' '}
                     <a href="/refunds" style={link}>Refund, Billing &amp; Cancellation</a>.
                 </Para>

@@ -68,7 +68,7 @@ const AiDisclosure = () => {
                     crisis service.
                 </Para>
                 <Para>
-                    Practice scoring (including the AIIMIN English Index) is an <strong>estimate</strong> produced by
+                    Practice reports (pace, fillers and pauses in a 1-minute talk) are an <strong>estimate</strong> produced by
                     software, calibrated against published proficiency bands. It is not an official language certification
                     and no institution is obliged to accept it.
                 </Para>

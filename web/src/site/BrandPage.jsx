@@ -130,7 +130,7 @@ export default function BrandPage() {
             <div className="s-bg-money s-rv">
               <h2 id="money-title">How AIIMIN pays its way.</h2>
               <div>
-                <p>Your subscription is the business. Plans run from ₹{plus.monthly} a month, billed through Google Play, and nothing renews without telling you first.</p>
+                <p>Your subscription is the business. In India, paid plans start at ₹{plus.monthly} a month, billed through Google Play, and nothing renews without telling you first.</p>
                 <p>So there is no ad or tracking code inside the app, and nothing about you is ever sold.</p>
                 <Link className="s-bg-link" to="/waitlist#plans">Compare the plans <ArrowRight weight="bold" /></Link>
               </div>

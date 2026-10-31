@@ -19,7 +19,7 @@ const LegalHub = () => {
             <Section title="Every document, in one place">
                 <Para>
                     All documents below are effective {LEGAL.effectiveDate} and cover every AIIMIN surface: aiimin.in, the
-                    web app, aiimin.in/m, the Android app, and api.aiimin.in. There is exactly one Privacy Policy and one
+                    web app, the Android app, and api.aiimin.in. There is exactly one Privacy Policy and one
                     Terms of Service across all surfaces.
                 </Para>
                 <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>

@@ -372,7 +372,7 @@ function WebCompanion() {
       <div className="s-wrap s-web">
         <div className="s-web__copy s-rv">
           <h2 id="web-h" className="s-h2">Your phone, with a bigger screen.</h2>
-          <p className="s-lede">AIIMIN lives on your phone. When you want room to think, open the same month at aiimin.in on your laptop.</p>
+          <p className="s-lede">AIIMIN lives on your phone. With the public launch, you can open the same month at aiimin.in on a laptop when you want room to think.</p>
           <ul className="s-web__list s-rv s-stagger">
             {WEB.map(([I, b, t]) => <li key={b}><I aria-hidden="true" /><div><b>{b}</b><span>{t}</span></div></li>)}
           </ul>
@@ -397,7 +397,7 @@ const PAID = PLANS.filter((p) => p.monthly > 0);
 const FREE = PLANS.find((p) => p.monthly === 0);
 const BEST_FOR = {
   plus: 'For one person who wants every month of their history and every ledger.',
-  pro: 'For people who want AIIMIN to explain their money and write their reviews.',
+  pro: 'Everything in Plus today. Each Pro feature listed below arrives at no extra cost as it ships.',
   family: 'For the person who looks after everyone’s papers, money and plans.',
 };
 const saving = (r) => Math.round((1 - r.yearly / (r.monthly * 12)) * 100);
@@ -592,7 +592,7 @@ export default function WaitlistPage() {
           </div>
           <div className="s-rv">
             <h2 id="raahi-h" className="s-h2">Meet Raahi.</h2>
-            <p className="s-lede">Raahi means traveller. It walks your day beside the clock, says one short line when you open the app, and rests when you do. No sad faces, no guilt, no streaks to lose.</p>
+            <p className="s-lede">Raahi means traveller. It walks through your day with you, says one short line when you open the app, and rests when you do. No sad faces, no guilt, no streaks to lose.</p>
             <ul className="s-lines s-rv s-stagger">
               {LINES.map(([w, l]) => <li key={w}><em>{w}</em><b>"{l}"</b></li>)}
             </ul>

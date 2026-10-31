@@ -91,7 +91,7 @@ export function priceLine(plan) {
 export const REFERRAL = {
   friendGets: '1 month of Plus on us',
   tiers: [
-    { friends: 1, reward: 'Beta access sooner: you move up the queue' },
+    { friends: 1, reward: 'You move up the queue and get the beta sooner' },
     { friends: 3, reward: '3 months of Plus on us' },
     { friends: 10, reward: '1 year of Pro on us' },
   ],

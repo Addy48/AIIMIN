@@ -20,15 +20,15 @@ const Privacy = () => {
             <Section title="Applies to">
                 <Para>
                     Effective {LEGAL.effectiveDate}. This policy applies to aiimin.in, the AIIMIN web app,
-                    aiimin.in/m, the AIIMIN Android app, and api.aiimin.in. A native iOS app is not offered
+                    the AIIMIN Android app, and api.aiimin.in. A native iOS app is not offered
                     in the current product plan; if that changes, this policy will be updated before launch.
                 </Para>
             </Section>
 
             <Section title="1. Summary in plain language">
                 <Para>
-                    AIIMIN is a Personal Life OS. You put your life into it — days, habits, money, documents, people,
-                    practice sessions — and it gives you back an honest picture.
+                    AIIMIN keeps your day, your money and your family's papers in one place. You add your tasks, spending,
+                    documents and the people you look after, and it gives you back an honest picture.
                 </Para>
                 <Para>Four commitments that will not change:</Para>
                 <List
@@ -99,8 +99,7 @@ const Privacy = () => {
 
                 <Para><strong>3.3 Derived data we compute</strong></Para>
                 <Para>
-                    Life Score and its per-domain components; Depth state; streaks; AIIMIN English Index (AEI) and skill
-                    levels; correlations and weekly/monthly insight text; suggested structure from your own text. Derived
+                    Life Score and its per-domain components; streaks; practice reports; correlations and weekly/monthly insight text; suggested structure from your own text. Derived
                     data is produced from the data above and is deleted with it.
                 </Para>
 
@@ -114,14 +113,14 @@ const Privacy = () => {
                         [<strong>Google People / phone contacts</strong>, 'Only the individual contacts you select in the picker', 'Your whole address book, call logs, message logs', 'Display name, optional email, a one-way hash of the phone number for matching, and the phone number itself only if you keep it visible'],
                         [<strong>Health Connect (Android)</strong>, 'Daily totals: steps, distance, active minutes, sleep duration', 'Workout GPS routes, heart-rate streams, medical records', 'Daily totals only, per day'],
                         [<strong>Device usage / screen time (Android)</strong>, 'Daily total screen time; app categories only if you opt in', 'Per-app minute-by-minute history, app contents', 'Daily total (and category totals if opted in)'],
-                        [<strong>Payment alert reading (Android, opt-in)</strong>, 'Amount, direction, counterparty text and reference from payment alerts, matched on-device against a bank/UPI template list', 'OTPs, personal messages, message bodies', <><strong>Nothing raw.</strong> Only the transaction draft you approve</>],
-                        [<strong>Microphone</strong>, 'Audio only while a practice session is running and you started it', 'Any background audio', 'Nothing by default — audio stays on your device and is discarded after scoring, unless you turn on cloud replay'],
+                        [<strong>Bank texts (Android SMS, opt-in)</strong>, 'Amount, direction, counterparty text and reference from payment alerts, matched on-device against a bank/UPI template list', 'OTPs, personal messages, message bodies', <><strong>Nothing raw.</strong> Only the transaction draft you approve</>],
+                        [<strong>Microphone</strong>, 'Audio only while you hold to speak a task, or during a practice session you started', 'Any background audio', 'Nothing. Your phone turns speech into text, and AIIMIN keeps no audio'],
                         [<strong>Camera</strong>, 'Frames while you are scanning a receipt or document', 'Anything outside a scan you started', 'The resulting file, if you save it'],
                         [<strong>Notifications</strong>, '—', '—', 'Push token per device'],
                     ]}
                 />
                 <Para>
-                    <strong>We do not request location. We do not request call logs. We do not request SMS permissions.</strong>
+                    <strong>We do not request location or call logs. The SMS permission is asked for only if you switch on bank-text reading; only payment texts from banks are read, on your phone, and the texts themselves never leave it.</strong>
                 </Para>
 
                 <Para><strong>3.5 Analytics and error reporting — consent first</strong></Para>

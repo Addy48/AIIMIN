@@ -42,7 +42,7 @@ const Refunds = () => {
                     ])}
                 />
                 <Para>
-                    Prices are in Indian Rupees and include GST. Features a plan lists as coming are not part of what you pay for until they ship. AIIMIN is a digital
+                    These are the prices for India, in Indian Rupees, including GST. Other countries pay the local price shown on the plans, charged by Google Play in local currency with local taxes. Features a plan lists as coming are not part of what you pay for until they ship. AIIMIN is a digital
                     service delivered immediately on payment; there is nothing to ship.
                 </Para>
             </Section>
