@@ -6,7 +6,8 @@ import {
 } from '@phosphor-icons/react';
 import Shell, { Meta, Phone, raahi } from './Shell';
 import JoinForm from './JoinForm';
-import { PLANS, REFERRAL, FOUNDING, foundingPrice, inr, yearlySaving } from '../marketing/plans';
+import { PLANS, REFERRAL, FOUNDING, REGIONS, foundingPrice, money, regionPrice } from '../marketing/plans';
+import useRegion from './useRegion';
 import { API_URL } from '../utils/api';
 
 // The opening-screen motif (PRD Part 26): one sun rises once behind the phone. Reduced motion: already risen.
@@ -73,7 +74,7 @@ const LINES = [
 ];
 
 const FAQ = [
-  ['What does it cost?', <p key="a">Plus is ₹49 a month, Pro ₹99 and Family ₹179, billed through Google Play, with about a quarter off when you pay yearly. The first {FOUNDING.seats} testers keep 50% off any of them for life. A Free plan covers the essentials for one person. Testers pay nothing during the beta and hear 14 days before paid plans begin.</p>],
+  ['What does it cost?', <p key="a">In India, Plus is ₹59 a month, Pro ₹119 and Family ₹199, billed through Google Play, with about 40% off when you pay yearly. Other countries pay a local price, shown in the plans above. The first {FOUNDING.seats} testers keep 50% off any of them for life. A Free plan covers the essentials for one person. Testers pay nothing during the beta and hear 14 days before paid plans begin.</p>],
   ['Which phones does it work on?', <p key="a">AIIMIN works on Android phones running Android 8 or later. There is no iPhone app yet.</p>],
   ['Does AIIMIN read my messages?', <><p key="a">Only if you say yes, and only texts from banks. OTPs, offers and personal chats are skipped. The text is read on your phone and is never sent anywhere.</p><p key="b">You can switch it off any time, and the rest of the app keeps working.</p></>],
   ['Is my data safe?', <p key="a">Your data stays on your phone. Sensitive documents are locked with a key only your phone holds. If you set up a backup, it is encrypted with your passphrase and saved to a folder you choose. <Link to="/privacy">Read the privacy policy</Link>.</p>],
@@ -399,10 +400,13 @@ const BEST_FOR = {
   pro: 'For people who want AIIMIN to explain their money and write their reviews.',
   family: 'For the person who looks after everyone’s papers, money and plans.',
 };
-const MAX_SAVING = Math.max(...PAID.map(yearlySaving));
+const saving = (r) => Math.round((1 - r.yearly / (r.monthly * 12)) * 100);
+const maxSaving = (region) => Math.max(...PAID.map((p) => saving(regionPrice(p, region))));
 
-function Plans() {
+function Plans({ reg }) {
   const [yearly, setYearly] = useState(false);
+  const { region } = reg;
+  const m = (n) => money(n, region);
   return (
     <section className="s-sec" id="plans" aria-labelledby="plans-h">
       <div className="s-wrap">
@@ -411,23 +415,32 @@ function Plans() {
             <h2 id="plans-h" className="s-h2">Pay for what it does for you.</h2>
             <p className="s-lede">Each plan lists only what works in the app today. Billing goes through Google Play, and nothing renews without telling you first.</p>
           </div>
-          <div className="s-bill" role="group" aria-label="Billing period">
-            <button type="button" aria-pressed={!yearly} onClick={() => setYearly(false)}>Monthly</button>
-            <button type="button" aria-pressed={yearly} onClick={() => setYearly(true)}>Yearly <small>save up to {MAX_SAVING}%</small></button>
+          <div className="s-plans-ctl">
+            <label className="s-region">
+              <span>Prices for</span>
+              <select value={region} onChange={(e) => reg.choose(e.target.value)} aria-label="Where you live">
+                {Object.entries(REGIONS).map(([k, r]) => <option key={k} value={k}>{r.label}</option>)}
+              </select>
+            </label>
+            <div className="s-bill" role="group" aria-label="Billing period">
+              <button type="button" aria-pressed={!yearly} onClick={() => setYearly(false)}>Monthly</button>
+              <button type="button" aria-pressed={yearly} onClick={() => setYearly(true)}>Yearly <small>save up to {maxSaving(region)}%</small></button>
+            </div>
           </div>
         </div>
         <div className="s-plans s-rv s-stagger">
           {PAID.map((p) => {
-            const price = yearly ? p.yearly : p.monthly;
+            const rp = regionPrice(p, region);
+            const price = yearly ? rp.yearly : rp.monthly;
             return (
               <article key={p.id} className="s-plan" data-rec={!!p.recommended}>
                 <header>
                   <p className="s-plan__name">{p.name}{p.recommended && <small>Recommended</small>}</p>
                   <p className="s-plan__promise">{p.promise}</p>
                 </header>
-                <p className="s-plan__price num">{inr(price)}<span>{yearly ? ' / year' : ' / month'}</span></p>
-                <p className="s-plan__year num">{yearly ? `${inr(Math.round(p.yearly / 12))} a month, ${yearlySaving(p)}% less than monthly` : `or ${inr(p.yearly)} a year`}</p>
-                <p className="s-plan__found num"><b>{inr(foundingPrice(price))}</b> for founding members</p>
+                <p className="s-plan__price num">{m(price)}<span>{yearly ? ' / year' : ' / month'}</span></p>
+                <p className="s-plan__year num">{yearly ? `${m(Math.round(rp.yearly / 12 * 100) / 100)} a month, ${saving(rp)}% less than monthly` : `or ${m(rp.yearly)} a year`}</p>
+                <p className="s-plan__found num"><b>{m(foundingPrice(price))}</b> for founding members</p>
                 <p className="s-plan__hero">{BEST_FOR[p.id]}</p>
                 <ul>{p.includes.map((i) => <li key={i}><Check weight="bold" aria-hidden="true" />{i}</li>)}</ul>
                 {p.coming?.length > 0 && <p className="s-plan__soon"><b>Coming next:</b> {p.coming.join(' · ')}</p>}
@@ -444,7 +457,7 @@ function Plans() {
   );
 }
 
-function Founding({ count }) {
+function Founding({ count, reg }) {
   const left = count != null ? Math.max(FOUNDING.seats - count, 0) : null;
   const full = left === 0;
   const pro = PLANS.find((p) => p.id === 'pro');
@@ -463,7 +476,7 @@ function Founding({ count }) {
                 {[pro, fam].map((p) => (
                   <div key={p.id}>
                     <dt>{p.name}</dt>
-                    <dd className="num"><s>{inr(p.monthly)}</s> <b>{inr(foundingPrice(p.monthly))}</b><span> / month</span></dd>
+                    <dd className="num"><s>{money(regionPrice(p, reg.region).monthly, reg.region)}</s> <b>{money(foundingPrice(regionPrice(p, reg.region).monthly), reg.region)}</b><span> / month</span></dd>
                   </div>
                 ))}
               </dl>
@@ -494,6 +507,7 @@ function Founding({ count }) {
 
 export default function WaitlistPage() {
   const count = useCount();
+  const reg = useRegion();
   const [line, setLine] = useState(0);
   const [out, setOut] = useState(false);
   useEffect(() => {
@@ -588,9 +602,9 @@ export default function WaitlistPage() {
         </div>
       </section>
 
-      <Plans />
+      <Plans reg={reg} />
 
-      <Founding count={count} />
+      <Founding count={count} reg={reg} />
 
       <section className="s-sec--tight" aria-labelledby="faq-h">
         <div className="s-wrap s-faq-wrap">

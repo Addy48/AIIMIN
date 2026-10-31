@@ -80,8 +80,8 @@ enum class Plan(
     ;
 
     /** Plan §13.2 prices in whole rupees, shown whenever Google Play has no product (beta). */
-    val plannedMonthlyInr: Int get() = when (this) { FREE -> 0; PLUS -> 49; PRO -> 99; FAMILY -> 179 }
-    val plannedYearlyInr: Int get() = when (this) { FREE -> 0; PLUS -> 449; PRO -> 899; FAMILY -> 1599 }
+    val plannedMonthlyInr: Int get() = when (this) { FREE -> 0; PLUS -> 59; PRO -> 119; FAMILY -> 199 }
+    val plannedYearlyInr: Int get() = when (this) { FREE -> 0; PLUS -> 399; PRO -> 799; FAMILY -> 1299 }
 
     /** True when every hero feature is built. Drives the "some features coming" note; never hides a plan. */
     val complete: Boolean get() = this == FREE || Feature.entries.filter { this in it.heroFor }.let { h -> h.isNotEmpty() && h.all { it.shipped } }

@@ -14,6 +14,10 @@
       "config": {
         "distDir": "web/build"
       }
+    },
+    {
+      "src": "api/geo.js",
+      "use": "@vercel/node"
     }
   ],
   "redirects": [
@@ -35,6 +39,10 @@
     }
   ],
   "rewrites": [
+    {
+      "source": "/api/geo",
+      "destination": "/api/geo.js"
+    },
     {
       "source": "/api/(.*)",
       "destination": "https://api.aiimin.in/api/$1"

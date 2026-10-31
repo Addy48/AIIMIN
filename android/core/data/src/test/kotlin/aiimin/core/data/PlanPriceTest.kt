@@ -9,8 +9,8 @@ class PlanPriceTest {
     @Test fun `free is zero`() = assertThat(planPriceLabel(Plan.FREE, null, null, null, yearly = false)).isEqualTo("₹0")
 
     @Test fun `without Google Play the planned price shows, never a dash`() {
-        assertThat(planPriceLabel(Plan.PRO, null, null, null, yearly = false)).isEqualTo("₹99/month")
-        assertThat(planPriceLabel(Plan.PRO, null, null, null, yearly = true)).isEqualTo("₹899/year")
+        assertThat(planPriceLabel(Plan.PRO, null, null, null, yearly = false)).isEqualTo("₹119/month")
+        assertThat(planPriceLabel(Plan.PRO, null, null, null, yearly = true)).isEqualTo("₹799/year")
     }
 
     @Test fun `the Play Store price wins when there is one`() =

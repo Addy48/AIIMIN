@@ -64,7 +64,7 @@
 .s-head__row { display: flex; align-items: center; gap: 24px; height: 64px; }
 .s-brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
 .s-brand svg { width: 30px; height: 30px; }
-.s-word { font-family: var(--mark); font-weight: 700; font-size: 21px; letter-spacing: 0.06em; }
+.s-word { font-family: var(--mark); font-weight: 700; font-size: 22px; letter-spacing: -0.03em; }
 .s-nav { display: flex; gap: 4px; margin-left: auto; align-items: center; }
 .s-nav a { text-decoration: none; font-size: 15px; color: var(--muted); padding: 8px 12px; border-radius: 999px; transition: color .2s, background .2s; }
 @media (hover: hover) and (pointer: fine) { .s-nav a:not(.s-btn):hover { color: var(--ink); background: var(--raised); } }
@@ -287,6 +287,10 @@
 .s-bill button small { font-size: 12px; font-weight: 600; color: var(--accent-text); }
 .s-bill button[aria-pressed='true'] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(26,25,22,.08), 0 4px 12px -6px rgba(26,25,22,.25); }
 .s-bill button:active { transform: scale(.97); }
+.s-plans-ctl { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.s-region { display: inline-flex; align-items: center; gap: 8px; min-height: 52px; padding: 0 14px 0 16px; border-radius: 999px; background: var(--raised); border: 1px solid var(--border); font-size: 14px; color: var(--muted); }
+.s-region select { border: 0; background: transparent; font: 600 15px var(--body); color: var(--ink); max-width: 260px; cursor: pointer; padding: 6px 0; }
+.s-region select:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; border-radius: 6px; }
 @media (hover: hover) and (pointer: fine) { .s-bill button[aria-pressed='false']:hover { color: var(--ink); } }
 .s-bill button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 

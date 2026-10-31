@@ -10,6 +10,9 @@ import { isPublicSurfacePath, shouldShowWaitlistAccessFallback } from '../public
 
 const wrap = (ui) => render(<HelmetProvider><MemoryRouter>{ui}</MemoryRouter></HelmetProvider>);
 
+// Prices depend on where the visitor is; these tests read the India prices.
+beforeEach(() => { sessionStorage.setItem('aiimin.region', JSON.stringify({ region: 'in', country: 'IN', source: 'chosen' })); });
+
 beforeAll(() => {
   window.matchMedia = window.matchMedia || (() => ({ matches: false, addListener() {}, removeListener() {} }));
   window.IntersectionObserver = class { observe() {} unobserve() {} disconnect() {} };
@@ -59,10 +62,10 @@ test('site prices are the app ladder', () => {
 test('plans lead with value: yearly toggle, founding half price for the first 251, and no "free" pitch', () => {
   const { container } = wrap(<WaitlistPage />);
   expect(FOUNDING.seats).toBe(251);
-  expect(screen.getAllByText('₹49.50').length).toBeGreaterThan(0); // Pro, founding, monthly
+  expect(screen.getAllByText('₹59.50').length).toBeGreaterThan(0); // Pro, founding, monthly
   fireEvent.click(screen.getByRole('button', { name: /Yearly/ }));
-  expect(screen.getAllByText('₹899').length).toBeGreaterThan(0);
-  expect(screen.getAllByText('₹449.50').length).toBeGreaterThan(0); // Pro, founding, yearly
+  expect(screen.getAllByText('₹799').length).toBeGreaterThan(0);
+  expect(screen.getAllByText('₹399.50').length).toBeGreaterThan(0); // Pro, founding, yearly
   expect(container.textContent).toContain('first 251 testers');
   expect(container.textContent).not.toMatch(/Free during the beta|free beta|Is it really free|No card, no catch/i);
 });
@@ -172,4 +175,12 @@ test('when the sign-up list is unreachable, the form offers email instead', asyn
   } finally {
     global.fetch = before;
   }
+});
+
+test('a visitor abroad sees their own prices, and can switch region', () => {
+  sessionStorage.setItem('aiimin.region', JSON.stringify({ region: 'z1', country: 'US', source: 'network' }));
+  wrap(<WaitlistPage />);
+  expect(screen.getAllByText('$5.99').length).toBeGreaterThan(0); // Pro, monthly, Zone 1
+  fireEvent.change(screen.getByLabelText('Where you live'), { target: { value: 'in' } });
+  expect(screen.getAllByText('₹119').length).toBeGreaterThan(0);
 });

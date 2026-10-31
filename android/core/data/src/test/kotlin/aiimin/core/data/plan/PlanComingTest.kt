@@ -24,7 +24,7 @@ class PlanComingTest {
 
     @Test fun `the website lists the same plans at the same prices`() {
         // web/src/marketing/plans.js mirrors these; change both together.
-        assertThat(Plan.entries.map { it.plannedMonthlyInr }).containsExactly(0, 49, 99, 179).inOrder()
-        assertThat(Plan.entries.map { it.plannedYearlyInr }).containsExactly(0, 449, 899, 1599).inOrder()
+        assertThat(Plan.entries.map { it.plannedMonthlyInr }).containsExactly(0, 59, 119, 199).inOrder()
+        assertThat(Plan.entries.map { it.plannedYearlyInr }).containsExactly(0, 399, 799, 1299).inOrder()
     }
 }

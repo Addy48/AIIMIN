@@ -2,7 +2,7 @@
  * The one plan ladder for every public page, copied from the Android app so the two never disagree:
  * prices from `Plan.plannedMonthlyInr / plannedYearlyInr` (android/core/data/plan/PlayBilling.kt),
  * features from `Plan.adds` and `FeatureCatalog` (`shipped = false` → listed under `coming`).
- * Change a price or feature there first, then here.
+ * Change a price or feature there first, then here. Rupee prices are India's; other countries use REGIONS below.
  */
 export const PLANS = [
   {
@@ -24,8 +24,8 @@ export const PLANS = [
   {
     id: 'plus',
     name: 'Plus',
-    monthly: 49,
-    yearly: 449,
+    monthly: 59,
+    yearly: 399,
     promise: 'Your whole history, everywhere',
     hero: 'Every ledger and every month of your history, on your phone and the web.',
     includes: [
@@ -40,8 +40,8 @@ export const PLANS = [
   {
     id: 'pro',
     name: 'Pro',
-    monthly: 99,
-    yearly: 899,
+    monthly: 119,
+    yearly: 799,
     promise: 'Does the thinking for you',
     hero: 'AIIMIN explains your patterns and writes your reviews.',
     recommended: true,
@@ -57,8 +57,8 @@ export const PLANS = [
   {
     id: 'family',
     name: 'Family',
-    monthly: 179,
-    yearly: 1599,
+    monthly: 199,
+    yearly: 1299,
     promise: 'Everyone you look after',
     hero: 'Pro for up to 6 people, each with their own private space.',
     includes: ['Everything in Pro', 'Emergency kits for everyone in the family'],
@@ -81,7 +81,7 @@ export const foundingPrice = (n) => Math.round(n * (1 - FOUNDING.off) * 100) / 1
 /** Whole-percent saving of the yearly price against twelve monthly payments. */
 export const yearlySaving = (p) => (p.monthly ? Math.round((1 - p.yearly / (p.monthly * 12)) * 100) : 0);
 
-/** "Free" or "₹99/month · ₹899/year", the way the app's Plans screen shows it. */
+/** "Free" or "₹119/month · ₹799/year", the way the app's Plans screen shows it. */
 export function priceLine(plan) {
   if (plan.monthly === 0) return 'Free';
   return `${inr(plan.monthly)}/month · ${inr(plan.yearly)}/year`;
@@ -98,3 +98,47 @@ export const REFERRAL = {
   rules:
     'A friend counts once they verify their email. Each reward is given once. Plan rewards start when paid plans go on sale.',
 };
+
+/**
+ * Prices by region (owner-approved 31 Oct 2026). Google Play charges each country in its own money; these are the
+ * amounts the website shows. India uses PLANS above. Zone 3 outside India is the rupee ladder converted at ₹84 = $1.
+ */
+export const LIFETIME_PRO_INR = 2999;
+export const REGIONS = {
+  in: { label: 'India', currency: 'INR', plus: [59, 399], pro: [119, 799], family: [199, 1299], lifetime: LIFETIME_PRO_INR },
+  z3: { label: 'South Asia, South-East Asia and Africa', currency: 'USD', plus: [0.69, 4.79], pro: [1.39, 9.49], family: [2.39, 15.49], lifetime: 35.99 },
+  z2: { label: 'Latin America, Eastern Europe, Malaysia, Turkey, South Africa', currency: 'USD', plus: [1.69, 10.99], pro: [3.29, 21.99], family: [5.49, 37.99], lifetime: 54.99 },
+  z1: { label: 'US, UK, Western Europe, the Gulf, Australia, Singapore, Japan', currency: 'USD', plus: [2.99, 19.99], pro: [5.99, 39.99], family: [9.99, 69.99], lifetime: 99 },
+};
+const Z1 = 'US CA GB IE FR DE NL BE LU AT CH LI DK SE NO FI IS IT ES PT MT CY GR MC AU NZ SG JP KR HK TW IL AE SA QA KW BH OM';
+const Z2 = 'PL CZ SK HU RO BG HR SI EE LV LT RS BA ME MK AL MD UA BY RU GE AM AZ KZ MX BR AR CL CO PE UY PY BO EC VE CR PA DO GT SV HN NI JM TT PR MY TH CN TR ZA MA TN DZ JO LB IQ IR';
+const Z3 = 'PK BD LK NP BT MV MM AF ID PH VN KH LA NG KE GH ET TZ UG RW EG SN CI CM ZM ZW MZ';
+const ZONE_OF = {};
+[[Z1, 'z1'], [Z2, 'z2'], [Z3, 'z3']].forEach(([list, z]) => list.split(' ').forEach((c) => { ZONE_OF[c] = z; }));
+
+/** Two-letter country code (from the visitor's connection) to a price region. Unknown countries get Zone 2. */
+export function regionForCountry(country) {
+  const c = String(country || '').toUpperCase();
+  if (c === 'IN') return 'in';
+  return ZONE_OF[c] || 'z2';
+}
+
+/** No-network first guess from the browser's time zone, used until the connection's country is known. */
+export function regionFromTimeZone(tz) {
+  if (!tz) return 'in';
+  if (tz === 'Asia/Kolkata' || tz === 'Asia/Calcutta') return 'in';
+  if (/^(Asia\/(Karachi|Dhaka|Colombo|Kathmandu|Thimphu|Jakarta|Manila|Ho_Chi_Minh|Saigon|Yangon)|Africa\/(Lagos|Nairobi|Accra|Cairo|Addis_Ababa))$/.test(tz)) return 'z3';
+  if (/^(America\/(New_York|Chicago|Denver|Los_Angeles|Phoenix|Anchorage|Toronto|Vancouver)|Europe\/(London|Dublin|Paris|Berlin|Amsterdam|Brussels|Madrid|Rome|Lisbon|Vienna|Zurich|Stockholm|Oslo|Copenhagen|Helsinki)|Australia\/.*|Pacific\/Auckland|Asia\/(Singapore|Tokyo|Seoul|Dubai|Riyadh|Qatar|Hong_Kong))$/.test(tz)) return 'z1';
+  return 'z2';
+}
+
+const usd = (n) => '$' + (n % 1 ? n.toFixed(2) : String(n));
+/** Formats an amount the way the region is charged on the website. */
+export const money = (n, region = 'in') => (REGIONS[region].currency === 'INR' ? inr(n) : usd(n));
+
+/** Monthly and yearly price of a plan in a region: { monthly, yearly } (0 and 0 for Free). */
+export function regionPrice(plan, region = 'in') {
+  if (plan.monthly === 0) return { monthly: 0, yearly: 0 };
+  const [monthly, yearly] = REGIONS[region][plan.id];
+  return { monthly, yearly };
+}
