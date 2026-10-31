@@ -74,12 +74,21 @@ const LINES = [
 ];
 
 const FAQ = [
-  ['What does it cost?', <p key="a">In India, Plus is ₹59 a month, Pro ₹119 and Family ₹199, billed through Google Play, with about 40% off when you pay yearly. Other countries pay a local price, shown in the plans above. The first {FOUNDING.seats} testers keep 50% off any of them for life. A Free plan covers the essentials for one person. Testers pay nothing during the beta and hear 14 days before paid plans begin.</p>],
-  ['Which phones does it work on?', <p key="a">AIIMIN works on Android phones running Android 8 or later. There is no iPhone app yet.</p>],
+  ['What is AIIMIN?', <p key="a">One app for your day, your money and your family's papers. Plan the day and keep a few small habits, see where your money went from your bank texts, and keep documents with their expiry dates. It lives on your Android phone, and the website is its bigger screen.</p>],
+  ['How do I get it?', <p key="a">Join the list with your email. Invites go out in small groups, and we email you an install link when yours is ready. Each friend who joins with your link moves you up the queue.</p>],
+  ['How do I install it?', <p key="a">When your invite is ready we email you a link. Open it on your phone, tap download, allow the install once, and you are in. The <Link to="/app">Android app page</Link> shows each step. Play Store comes later.</p>],
+  ['Which phones does it work on?', <p key="a">AIIMIN works on Android phones running Android 8 or later. There is no iPhone app yet. The website works in any modern browser.</p>],
+  ['Do I need an account?', <p key="a">Not to start. Everything you add is saved on the phone. You need an account only for things that go beyond one phone, like using the website.</p>],
   ['Does AIIMIN read my messages?', <><p key="a">Only if you say yes, and only texts from banks. OTPs, offers and personal chats are skipped. The text is read on your phone and is never sent anywhere.</p><p key="b">You can switch it off any time, and the rest of the app keeps working.</p></>],
   ['Is my data safe?', <p key="a">Your data stays on your phone. Sensitive documents are locked with a key only your phone holds. If you set up a backup, it is encrypted with your passphrase and saved to a folder you choose. <Link to="/privacy">Read the privacy policy</Link>.</p>],
-  ['Who is Raahi?', <p key="a">Raahi is the small traveller who keeps you company through the day, and the name on everything the app's AI writes. Raahi never guilts you, and you can switch Raahi off. <Link to="/brand">Meet Raahi</Link>.</p>],
-  ['How do I install it?', <p key="a">When your invite is ready we email you a link. Open it on your phone, tap download, allow the install once, and you are in. The <Link to="/app">Android app page</Link> shows each step. Play Store comes later.</p>],
+  ['Are there ads? Do you sell data?', <p key="a">No to both. There is no ad or tracking code in the app or on the website, and nothing about you is sold.</p>],
+  ['Does it work without internet?', <p key="a">Yes. You can add things, get reminders and open your papers in airplane mode. The internet is needed only for things you switch on, like sign-in and sync.</p>],
+  ['Who is Raahi?', <p key="a">Raahi is the small traveller who keeps you company through the day, and the name on everything the app's AI writes, so you always know what AI wrote. Raahi never guilts you, and you can switch Raahi off. <Link to="/brand">Meet Raahi</Link>.</p>],
+  ['How does Family work?', <p key="a">One plan for you and up to 5 others. Each person uses their own phone and has their own private space.</p>],
+  ['What does it cost?', <p key="a">In India, Plus is ₹59 a month, Pro ₹119 and Family ₹199, billed through Google Play, with about 40% off when you pay yearly. Other countries pay a local price, shown in the plans above. The first {FOUNDING.seats} testers keep 50% off any of them for life. A Free plan covers the essentials for one person, with no time limit. Testers pay nothing during the beta and hear 14 days before paid plans begin.</p>],
+  ['Why are prices different by country?', <p key="a">We price for what things cost where you live. The plans above show the price for your country, and Google Play charges you in your own money.</p>],
+  ['Can I cancel?', <p key="a">Any time, in Google Play. You keep the plan until the end of the period you paid for. If you stop paying, nothing is deleted: you move to Free, and anything above the Free limits stays readable and can be exported.</p>],
+  ['Do you offer refunds?', <p key="a">Yes. If you are unhappy within 7 days of your first payment on a plan, write to <a href="mailto:support@aiimin.in">support@aiimin.in</a>. Approved refunds reach you in 5 to 7 working days. <Link to="/refunds">Refund policy</Link>.</p>],
   ['Can I delete everything?', <p key="a">Yes, in one tap from Settings › Privacy. Uninstalling the app removes everything stored on your phone. <Link to="/data-deletion">How deletion works</Link>.</p>],
 ];
 
